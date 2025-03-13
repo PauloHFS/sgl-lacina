@@ -9,11 +9,13 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				// "mikestead.dotenv",
-				// "amiralizadeh9480.laravel-extra-intellisense",
-				// "ryannaddy.laravel-artisan",
-				// "onecentlin.laravel5-snippets",
-				// "onecentlin.laravel-blade"
+				"formulahendry.auto-complete-tag",
+				"naumovs.color-highlight",
+				"eamodio.gitlens",
+				"xdebug.php-debug",
+				"bmewburn.vscode-intelephense-client",
+				"esbenp.prettier-vscode",
+				"Gruntfuggly.todo-tree"
 			],
 			"settings": {}
 		}
