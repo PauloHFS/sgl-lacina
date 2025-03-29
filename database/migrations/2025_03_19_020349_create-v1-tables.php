@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Cria os tipos enum
         DB::statement("CREATE TYPE tipo_vinculo AS ENUM ('ALUNO_GRADUACAO', 'ALUNO_MESTRADO', 'ALUNO_DOUTORADO', 'PROFISSIONAL')");
         DB::statement("CREATE TYPE status_participacao_projeto AS ENUM ('APROVADO', 'PENDENTE', 'REJEITADO')");
         DB::statement("CREATE TYPE status_solicitacao_troca_projeto AS ENUM ('PENDENTE', 'APROVADO', 'REJEITADO')");
@@ -20,131 +21,140 @@ return new class extends Migration
         DB::statement("CREATE TYPE tipo_folga AS ENUM ('COLETIVA', 'INDIVIDUAL')");
         DB::statement("CREATE TYPE status_folga AS ENUM ('PENDENTE', 'APROVADO', 'REJEITADO')");
 
+        // Tabela colaboradores - ajustado conforme DBML
         Schema::create('colaboradores', function (Blueprint $table) {
-            $table->foreignId('id')->constrained('users')->onDelete('cascade')->primary();
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+
             $table->string('linkedin')->nullable();
             $table->string('github')->nullable();
             $table->string('figma')->nullable();
             $table->string('foto')->nullable();
-            $table->string('curriculo')->nullable();
-            $table->string('areas_atuacao')->nullable();
-            $table->string('tecnologias')->nullable();
+            $table->text('curriculo')->nullable(); // Mudado para text
+            $table->string('area_atuacao')->nullable(); // Corrigido (era areas_atuacao)
+            $table->text('tecnologias')->nullable(); // Mudado para text
             $table->string('cpf')->unique();
             $table->string('rg')->unique();
             $table->string('uf_rg')->nullable();
-            $table->string('orgao_emissor')->nullable();
             $table->string('conta_bancaria')->nullable();
             $table->string('agencia')->nullable();
-            $table->string('banco')->nullable();
+            $table->string('codigo_banco')->nullable(); // Corrigido (era banco)
             $table->string('telefone')->nullable();
-            $table->timestampsTz();
+            $table->timestamps(); // Standard Laravel timestamps
         });
 
+        // Tabela colaborador_vinculo
         Schema::create('colaborador_vinculo', function (Blueprint $table) {
-            $table->foreignId('colaborador_id')->constrained('users');
-            $table->string('tipo_vinculo')->type('tipo_vinculo');
+            $table->foreignId('colaborador_id')->constrained('colaboradores');
+            $table->string('tipo_vinculo'); // Definimos como string primeiro
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
 
             $table->primary(['colaborador_id', 'data_fim']);
         });
+        // Alterar o tipo da coluna usando SQL direto
+        DB::statement('ALTER TABLE colaborador_vinculo ALTER COLUMN tipo_vinculo TYPE tipo_vinculo USING tipo_vinculo::tipo_vinculo');
 
         Schema::create('docentes', function (Blueprint $table) {
-            $table->foreignId('id')->constrained('colaboradores')->primary();
-            $table->timestampsTz();
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
         });
 
         Schema::create('projetos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('descricao')->nullable();
-            $table->timestamptz('data_inicio');
-            $table->timestamptz('data_fim')->nullable();
+            $table->text('descricao')->nullable();
+            $table->date('data_inicio');
+            $table->date('data_termino')->nullable(); // Mudado conforme DBML
             $table->string('cliente');
-            $table->string('slack')->nullable();
-            $table->string('discord')->nullable();
-            $table->string('board')->nullable();
+            $table->string('link_slack')->nullable(); // Corrigido (era slack)
+            $table->string('link_discord')->nullable(); // Corrigido (era discord)
+            $table->string('link_board')->nullable(); // Corrigido (era board)
             $table->string('tipo')->nullable();
-            $table->timestampsTz();
+            $table->timestamps();
         });
 
         Schema::create('docente_projeto', function (Blueprint $table) {
             $table->foreignId('docente_id')->constrained('docentes');
             $table->foreignId('projeto_id')->constrained('projetos');
-            $table->timestampsTz();
 
             $table->primary(['docente_id', 'projeto_id']);
+            $table->timestamps();
         });
 
         Schema::create('participacao_projeto', function (Blueprint $table) {
             $table->id();
             $table->foreignId('colaborador_id')->constrained('colaboradores');
             $table->foreignId('projeto_id')->constrained('projetos');
-            $table->timestampTz('data_inicio');
-            $table->timestampTz('data_fim')->nullable();
-            $table->integer('carga_horaria_semanal');
-            $table->string('status_participacao_projeto')->type('status_participacao_projeto');
-            $table->timestampsTz();
+            $table->dateTime('data_inicio');
+            $table->dateTime('data_fim')->nullable();
+            $table->integer('carga_horaria');
+            $table->string('status');
+            $table->timestamps();
         });
+        DB::statement('ALTER TABLE participacao_projeto ALTER COLUMN status TYPE status_participacao_projeto USING status::status_participacao_projeto');
 
         Schema::create('solicitacoes_troca_projeto', function (Blueprint $table) {
-            $table->foreignId('colaboradores_id')->constrained('colaboradores');
+            $table->foreignId('colaborador_id')->constrained('colaboradores'); // Corrigido (era colaboradores_id)
             $table->foreignId('projeto_atual_id')->constrained('projetos');
             $table->foreignId('projeto_novo_id')->constrained('projetos');
-            $table->string('motivo');
-            $table->string('resposta')->nullable();
-            $table->string('status')->type('status_participacao_projeto');
-            $table->timestampTz('data_solicitacao');
-            $table->timestampTz('data_resposta')->nullable();
-            $table->timestampsTz();
-            $table->string('status')->type('status_participacao_projeto');
+            $table->text('motivo');
+            $table->text('resposta')->nullable();
+            $table->string('status');
+            $table->date('data_solicitacao');
+            $table->date('data_resposta')->nullable();
 
-
-            $table->primary(['colaboradores_id', 'projeto_atual_id', 'projeto_novo_id']);
+            $table->primary(['colaborador_id', 'projeto_atual_id', 'projeto_novo_id']);
+            $table->timestamps();
         });
+        DB::statement('ALTER TABLE solicitacoes_troca_projeto ALTER COLUMN status TYPE status_solicitacao_troca_projeto USING status::status_solicitacao_troca_projeto');
 
         Schema::create('horarios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('colaborador_id')->constrained('colaboradores');
-            $table->string('dia_semana')->type('week_day');
-            $table->string('tipo')->type('tipo_horario');
-            $table->time('hora_inicio');
-            $table->time('hora_fim');
-            $table->timestampsTz();
+            $table->string('dia_semana');
+            $table->time('horario_inicio'); // Corrigido (era hora_inicio)
+            $table->time('horario_termino'); // Corrigido (era hora_fim)
+            $table->string('tipo');
+            $table->timestamps();
         });
+        DB::statement('ALTER TABLE horarios ALTER COLUMN dia_semana TYPE week_day USING dia_semana::week_day');
+        DB::statement('ALTER TABLE horarios ALTER COLUMN tipo TYPE tipo_horario USING tipo::tipo_horario');
 
         Schema::create('folgas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('colaborador_id')->constrained('colaboradores');
-            $table->string('tipo')->type('tipo_folga');
-            $table->string('status')->type('status_folga');
-            $table->string('dia_semana')->type('week_day');
-            $table->timestampTz('data_inicio');
-            $table->timestampTz('data_fim');
-            $table->string('justificativa');
-            $table->timestampsTz();
+            $table->string('tipo');
+            $table->string('status');
+            $table->date('data_inicio');
+            $table->date('data_fim');
+            $table->text('justificativa')->nullable();
+            $table->timestamps();
         });
+        DB::statement('ALTER TABLE folgas ALTER COLUMN tipo TYPE tipo_folga USING tipo::tipo_folga');
+        DB::statement('ALTER TABLE folgas ALTER COLUMN status TYPE status_folga USING status::status_folga');
 
         Schema::create('salas', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('senha_porta')->nullable();
-            $table->timestampsTz();
+            $table->string('senha_porta');
+            $table->timestamps();
         });
 
         Schema::create('baias', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sala_id')->constrained('salas');
             $table->string('nome');
-            $table->timestampsTz();
+            $table->timestamps();
         });
 
-        Schema::create('horario_baia', function (Blueprint $table) {
+        Schema::create('horarios_baia', function (Blueprint $table) { // Corrigido (era horario_baia)
             $table->foreignId('horario_id')->constrained('horarios');
-            $table->foreignId('baia_id')->constrained('baias');
-            $table->timestampsTz();
+            $table->foreignId('sala_id')->constrained('salas'); // Ajustado para sala_id conforme DBML
 
-            $table->primary(['horario_id', 'baia_id']);
+            $table->primary(['horario_id', 'sala_id']);
+            $table->timestamps();
         });
     }
 
@@ -153,8 +163,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop tables in reverse order to respect foreign key constraints
-        Schema::dropIfExists('horario_baia');
+        // Drop tabelas em ordem reversa para respeitar constraints
+        Schema::dropIfExists('horarios_baia');
         Schema::dropIfExists('baias');
         Schema::dropIfExists('salas');
         Schema::dropIfExists('folgas');
@@ -167,7 +177,7 @@ return new class extends Migration
         Schema::dropIfExists('colaborador_vinculo');
         Schema::dropIfExists('colaboradores');
 
-        // Drop enum types
+        // Drop types enum
         DB::statement('DROP TYPE IF EXISTS tipo_vinculo');
         DB::statement('DROP TYPE IF EXISTS status_participacao_projeto');
         DB::statement('DROP TYPE IF EXISTS status_solicitacao_troca_projeto');
