@@ -12,14 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Cria os tipos enum
-        DB::statement("CREATE TYPE tipo_vinculo AS ENUM ('ALUNO_GRADUACAO', 'ALUNO_MESTRADO', 'ALUNO_DOUTORADO', 'PROFISSIONAL')");
-        DB::statement("CREATE TYPE status_participacao_projeto AS ENUM ('APROVADO', 'PENDENTE', 'REJEITADO')");
-        DB::statement("CREATE TYPE status_solicitacao_troca_projeto AS ENUM ('PENDENTE', 'APROVADO', 'REJEITADO')");
-        DB::statement("CREATE TYPE week_day AS ENUM ('SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO')");
-        DB::statement("CREATE TYPE tipo_horario AS ENUM ('AULA', 'TRABALHO', 'AUSENTE')");
-        DB::statement("CREATE TYPE tipo_folga AS ENUM ('COLETIVA', 'INDIVIDUAL')");
-        DB::statement("CREATE TYPE status_folga AS ENUM ('PENDENTE', 'APROVADO', 'REJEITADO')");
+        $this->createEnumIfNotExists('tipo_vinculo', ['ALUNO_GRADUACAO', 'ALUNO_MESTRADO', 'ALUNO_DOUTORADO', 'PROFISSIONAL']);
+        $this->createEnumIfNotExists('status_participacao_projeto', ['APROVADO', 'PENDENTE', 'REJEITADO']);
+        $this->createEnumIfNotExists('status_solicitacao_troca_projeto', ['PENDENTE', 'APROVADO', 'REJEITADO']);
+        $this->createEnumIfNotExists('week_day', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
+        $this->createEnumIfNotExists('tipo_horario', ['AULA', 'TRABALHO', 'AUSENTE']);
+        $this->createEnumIfNotExists('tipo_folga', ['COLETIVA', 'INDIVIDUAL']);
+        $this->createEnumIfNotExists('status_folga', ['PENDENTE', 'APROVADO', 'REJEITADO']);
 
         // Tabela colaboradores - ajustado conforme DBML
         Schema::create('colaboradores', function (Blueprint $table) {
@@ -178,12 +177,22 @@ return new class extends Migration
         Schema::dropIfExists('colaboradores');
 
         // Drop types enum
-        DB::statement('DROP TYPE IF EXISTS tipo_vinculo');
-        DB::statement('DROP TYPE IF EXISTS status_participacao_projeto');
-        DB::statement('DROP TYPE IF EXISTS status_solicitacao_troca_projeto');
-        DB::statement('DROP TYPE IF EXISTS week_day');
-        DB::statement('DROP TYPE IF EXISTS tipo_horario');
-        DB::statement('DROP TYPE IF EXISTS tipo_folga');
-        DB::statement('DROP TYPE IF EXISTS status_folga');
+        Schema::dropIfExists('status_folga');
+        Schema::dropIfExists('tipo_folga');
+        Schema::dropIfExists('tipo_horario');
+        Schema::dropIfExists('week_day');
+        Schema::dropIfExists('status_solicitacao_troca_projeto');
+        Schema::dropIfExists('status_participacao_projeto');
+        Schema::dropIfExists('tipo_vinculo');
+    }
+
+    private function createEnumIfNotExists($name, $values)
+    {
+        $typeExists = DB::select("SELECT 1 FROM pg_type WHERE typname = ?", [$name]);
+
+        if (empty($typeExists)) {
+            $valuesString = implode("', '", $values);
+            DB::statement("CREATE TYPE $name AS ENUM ('$valuesString')");
+        }
     }
 };
