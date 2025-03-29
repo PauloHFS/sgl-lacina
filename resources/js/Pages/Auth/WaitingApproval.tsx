@@ -76,6 +76,40 @@ export default function WaitingApproval() {
                             </ul>
                         </div>
 
+                        <div className="mt-6 border-t border-gray-200 pt-6">
+                            <h3 className="text-lg font-medium text-gray-900">
+                                O que você precisa fazer?
+                            </h3>
+                            <ul className="mt-4 space-y-2 text-left text-gray-600">
+                                <li className="flex items-start">
+                                    <span
+                                        className="h-5 w-5 flex-shrink-0 text-blue-600"
+                                        aria-hidden="true"
+                                    >
+                                        •
+                                    </span>
+                                    <span className="ml-2">
+                                        Verificar seu email no sistema pelo link
+                                        recebido. (Verifique também a caixa de
+                                        spam)
+                                    </span>
+                                </li>
+                                <li className="flex items-start">
+                                    <span
+                                        className="h-5 w-5 flex-shrink-0 text-blue-600"
+                                        aria-hidden="true"
+                                    >
+                                        •
+                                    </span>
+                                    <span className="ml-2">
+                                        Verificar regularmente seu e-mail para
+                                        atualizações sobre o status do seu
+                                        cadastro.
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
                         <div className="mt-6">
                             <a
                                 href="/login"

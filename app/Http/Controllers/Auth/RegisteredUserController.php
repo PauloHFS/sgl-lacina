@@ -69,6 +69,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        event(new Registered($user));
+
         event(new ColaboradorRegistrado($user, $request->email_docente));
 
         // Auth::login($user);
