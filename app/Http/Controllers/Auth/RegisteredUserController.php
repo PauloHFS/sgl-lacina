@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Docente;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,8 +32,32 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            'lab_password' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if ($value !== '1234') {
+                        $fail('A senha do laboratório está incorreta.');
+                    }
+                }
+            ],
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'email_docente' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'exists:' . User::class . ',email',
+                function ($attribute, $value, $fail) {
+                    $user = User::where('email', $value)->first();
+
+                    if (!$user || !Docente::where('id', $user->id)->exists()) {
+                        $fail('O email informado não pertence a um docente válido.');
+                    }
+                }
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
