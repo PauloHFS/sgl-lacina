@@ -64,3 +64,30 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Requisitos para o desenvolvimento
+
+- Docker
+- VSCode
+
+## Como executar o projeto para desenvolvimento
+
+1. Clone o repositório
+
+2. Acesse o diretório do projeto
+
+```bash
+$ cd laravel
+```
+
+3. Copie o arquivo `.env.example` para `.env`
+
+```bash
+$ cp .env.example .env
+```
+
+4. Execute o comando para abrir o container
+
+```bash
+$ devcontainer open .
+```

@@ -8,8 +8,10 @@ import { FormEventHandler } from 'react';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
+        lab_password: '',
         name: '',
         email: '',
+        email_docente: '',
         password: '',
         password_confirmation: '',
     });
@@ -28,7 +30,33 @@ export default function Register() {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel
+                        htmlFor="lab_password"
+                        value="Senha do Laboratório"
+                    />
+
+                    <TextInput
+                        id="lab_password"
+                        type="password"
+                        name="lab_password"
+                        value={data.lab_password}
+                        className="mt-1 block w-full"
+                        autoComplete="name"
+                        isFocused={true}
+                        onChange={(e) =>
+                            setData('lab_password', e.target.value)
+                        }
+                        required
+                    />
+
+                    <InputError
+                        message={errors.lab_password}
+                        className="mt-2"
+                    />
+                </div>
+
+                <div className="mt-4">
+                    <InputLabel htmlFor="name" value="Nome Completo" />
 
                     <TextInput
                         id="name"
@@ -62,7 +90,32 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel
+                        htmlFor="email_docente"
+                        value="Email do professor responsável"
+                    />
+
+                    <TextInput
+                        id="email_docente"
+                        type="email"
+                        name="email_docente"
+                        value={data.email_docente}
+                        className="mt-1 block w-full"
+                        autoComplete="username"
+                        onChange={(e) =>
+                            setData('email_docente', e.target.value)
+                        }
+                        required
+                    />
+
+                    <InputError
+                        message={errors.email_docente}
+                        className="mt-2"
+                    />
+                </div>
+
+                <div className="mt-4">
+                    <InputLabel htmlFor="password" value="Senha" />
 
                     <TextInput
                         id="password"
@@ -81,7 +134,7 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Confirme a Senha"
                     />
 
                     <TextInput
