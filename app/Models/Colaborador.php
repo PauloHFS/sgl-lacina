@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Colaborador extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $table = 'colaboradores';
 
@@ -28,6 +29,21 @@ class Colaborador extends Model
         'codigo_banco',
         'telefone'
     ];
+
+
+    public function toSearchableArray()
+    {
+        $array = $this->toArray();
+
+        $user = $this->user;
+
+        if ($user) {
+            $array['name'] = $user->name;
+            $array['email'] = $user->email;
+        }
+
+        return $array;
+    }
 
     public function user()
     {

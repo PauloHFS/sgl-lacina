@@ -12,8 +12,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
 class DocenteProjeto extends Model
 {
     /** @use HasFactory<\Database\Factories\DocenteProjetoFactory> */
-    use HasFactory;
-    use HasCompositeKey;
+    use HasFactory, HasCompositeKey;
 
     protected $table = 'docente_projeto';
 

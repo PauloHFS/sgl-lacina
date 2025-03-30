@@ -33,6 +33,14 @@ export default function Authenticated({
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('colaboradores.index')}
+                                    active={route().current(
+                                        'colaboradores.index',
+                                    )}
+                                >
+                                    Colaboradores
+                                </NavLink>
                             </div>
                         </div>
 

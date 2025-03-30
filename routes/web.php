@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -18,15 +19,18 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route::get('/pos-cadastro', function () {
-//     return Inertia::render('PosCadastro');
-// });
-// ->middleware(['auth', 'verified'])->name('pos-cadastro');
+Route::get('/pos-cadastro', function () {
+    return Inertia::render('PosCadastro');
+})->middleware(['auth', 'verified'])->name('pos-cadastro');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
 });
 
 require __DIR__ . '/auth.php';

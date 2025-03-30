@@ -13,7 +13,9 @@
         "inertiajs/inertia-laravel": "^1.0",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
+        "laravel/scout": "^10.14",
         "laravel/tinker": "^2.9",
+        "meilisearch/meilisearch-php": "^1.13",
         "resend/resend-laravel": "^0.16.1",
         "thiagoprz/eloquent-composite-key": "^1.0",
         "tightenco/ziggy": "^2.0"
