@@ -17,7 +17,28 @@ class FolgasFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'tipo_folga' => $this->faker->randomElement(['COLETIVA', 'INDIVIDUAL']),
+            'data_inicio' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'data_fim' => $this->faker->dateTimeBetween('now', '+1 year'),
+            'status' => $this->faker->randomElement(['PENDENTE', 'APROVADO', 'REJEITADO']),
+            'justificativa' => $this->faker->sentence(),
         ];
+    }
+
+    public function withColaborador($colaboradorId): static
+    {
+        return $this->state(function (array $attributes) use ($colaboradorId) {
+            return [
+                'colaborador_id' => $colaboradorId,
+            ];
+        });
+    }
+    public function withTipoFolga($tipoFolga): static
+    {
+        return $this->state(function (array $attributes) use ($tipoFolga) {
+            return [
+                'tipo_folga' => $tipoFolga,
+            ];
+        });
     }
 }

@@ -17,7 +17,14 @@ class BaiasFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'nome' => $this->faker->word(),
         ];
+    }
+
+    public function withSala(int $salaId): static
+    {
+        return $this->state([
+            'sala_id' => $salaId,
+        ]);
     }
 }

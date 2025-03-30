@@ -15,6 +15,7 @@ class Salas extends Model
     protected $fillable = [
         'id',
         'nome',
+        'senha_porta',
         'created_at',
         'updated_at',
     ];

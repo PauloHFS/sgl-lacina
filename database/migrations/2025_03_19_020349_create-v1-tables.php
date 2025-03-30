@@ -96,8 +96,7 @@ return new class extends Migration
 
         Schema::create('solicitacoes_troca_projeto', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('colaborador_id')->constrained('colaboradores');
-            $table->foreignId('projeto_atual_id')->constrained('projetos');
+            $table->foreignId('participacao_projeto_id')->constrained('participacao_projeto');
             $table->foreignId('projeto_novo_id')->constrained('projetos');
             $table->text('motivo');
             $table->text('resposta')->nullable();
@@ -136,7 +135,7 @@ return new class extends Migration
         Schema::create('salas', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('senha_porta');
+            $table->string('senha_porta')->nullable();
             $table->timestamps();
         });
 

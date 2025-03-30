@@ -17,7 +17,10 @@ class SalasFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'nome' => $this->faker->word(),
+            'senha_porta' => $this->faker->numberBetween(1000, 9999),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }
