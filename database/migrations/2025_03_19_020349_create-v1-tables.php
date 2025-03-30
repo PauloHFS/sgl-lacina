@@ -95,16 +95,15 @@ return new class extends Migration
         DB::statement('ALTER TABLE participacao_projeto ALTER COLUMN status TYPE status_participacao_projeto USING status::status_participacao_projeto');
 
         Schema::create('solicitacoes_troca_projeto', function (Blueprint $table) {
-            $table->foreignId('colaborador_id')->constrained('colaboradores'); // Corrigido (era colaboradores_id)
+            $table->id();
+            $table->foreignId('colaborador_id')->constrained('colaboradores');
             $table->foreignId('projeto_atual_id')->constrained('projetos');
             $table->foreignId('projeto_novo_id')->constrained('projetos');
             $table->text('motivo');
             $table->text('resposta')->nullable();
             $table->string('status');
-            $table->date('data_solicitacao');
             $table->date('data_resposta')->nullable();
 
-            $table->primary(['colaborador_id', 'projeto_atual_id', 'projeto_novo_id']);
             $table->timestamps();
         });
         DB::statement('ALTER TABLE solicitacoes_troca_projeto ALTER COLUMN status TYPE status_solicitacao_troca_projeto USING status::status_solicitacao_troca_projeto');
@@ -113,8 +112,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('colaborador_id')->constrained('colaboradores');
             $table->string('dia_semana');
-            $table->time('horario_inicio'); // Corrigido (era hora_inicio)
-            $table->time('horario_termino'); // Corrigido (era hora_fim)
+            $table->time('horario_inicio');
+            $table->time('horario_termino');
             $table->string('tipo');
             $table->timestamps();
         });
@@ -148,11 +147,11 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('horarios_baia', function (Blueprint $table) { // Corrigido (era horario_baia)
+        Schema::create('horario_baia', function (Blueprint $table) {
             $table->foreignId('horario_id')->constrained('horarios');
-            $table->foreignId('sala_id')->constrained('salas'); // Ajustado para sala_id conforme DBML
+            $table->foreignId('baia_id')->constrained('baias');
 
-            $table->primary(['horario_id', 'sala_id']);
+            $table->primary(['horario_id', 'baia_id']);
             $table->timestamps();
         });
     }
@@ -163,7 +162,7 @@ return new class extends Migration
     public function down(): void
     {
         // Drop tabelas em ordem reversa para respeitar constraints
-        Schema::dropIfExists('horarios_baia');
+        Schema::dropIfExists('horario_baia');
         Schema::dropIfExists('baias');
         Schema::dropIfExists('salas');
         Schema::dropIfExists('folgas');
