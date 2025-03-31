@@ -1,12 +1,7 @@
+import Paggination, { Paginated } from '@/Components/Paggination';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import React, { useState } from 'react';
-
-interface PaginationLink {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
 
 interface Colaborador {
     id: number;
@@ -22,24 +17,8 @@ interface Colaborador {
     tem_projeto: boolean;
 }
 
-interface PaginatedColaboradores {
-    current_page: number;
-    data: Colaborador[];
-    first_page_url: string;
-    from: number;
-    last_page: number;
-    last_page_url: string;
-    links: PaginationLink[];
-    next_page_url: string | null;
-    path: string;
-    per_page: number;
-    prev_page_url: string | null;
-    to: number;
-    total: number;
-}
-
 interface IndexProps {
-    colaboradores: PaginatedColaboradores;
+    colaboradores: Paginated<Colaborador>;
 }
 
 export default function Index({ colaboradores }: IndexProps) {
@@ -386,11 +365,18 @@ export default function Index({ colaboradores }: IndexProps) {
                             </div>
 
                             {/* Pagination */}
-                            {/* {colaboradores.length > 0 && (
-                                <div className="mt-6">
-                                    <Pagination links={colaboradores.links} />
-                                </div>
-                            )} */}
+                            <Paggination
+                                paginated={colaboradores}
+                                onPageChange={(page) =>
+                                    router.get(
+                                        route('colaboradores.index'),
+                                        { page },
+                                        { preserveState: true },
+                                    )
+                                }
+                                preserveScroll={true}
+                                preserveState={true}
+                            />
                         </div>
                     </div>
                 </div>

@@ -8,6 +8,7 @@ use App\Models\Docente;
 use Illuminate\Database\Seeder;
 use App\Models\DocenteProjeto;
 use App\Models\Projeto;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +21,8 @@ class DatabaseSeeder extends Seeder
 
         $colaborador = Colaborador::factory()->withUser([
             'name' => 'Paulo Hernane Fontes e Silva',
-            'email' => 'paulo.hernane.Silva@ccc.ufcg.edu.br',
+            'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312')
         ])->create();
 
         $docente = Docente::factory()->withUser([
