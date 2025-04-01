@@ -24,7 +24,7 @@ class EnviarEmailSolicitacaoColaboradorParaDocenteNotificacao
         // enviar email para o docente
         Mail::to($event->docente_email)->send(new ColaboradorRegistradoMail(
             $event->user,
-            config('app.url') . '/dashboard'
+            config('app.url') . '/validar-pre-candidato/' . $event->user->id
         ));
     }
 }

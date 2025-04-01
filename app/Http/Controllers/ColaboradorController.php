@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Colaborador;
+use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 
@@ -42,6 +43,29 @@ class ColaboradorController extends Controller
 
         return Inertia::render('Colaboradores/Index', [
             'colaboradores' => $colaboradores,
+        ]);
+    }
+
+    /**
+     * Rederiza a view de Validar o pre cadastro do colaborador.
+     * recebe o id na url
+     */
+    public function showValidateUsuario(Request $request, string $preCandidatoUserId)
+    {
+        $usuario = User::where('id', $preCandidatoUserId)->first();
+
+        if ($usuario) {
+            return Inertia::render('PreCandidato/AvaliacaoInicial', [
+                'status' => 'success',
+                'message' => 'Colaborador encontrado.',
+                'user' => $usuario,
+            ]);
+        }
+
+        return Inertia::render('PreCandidato/AvaliacaoInicial', [
+            'user' => null,
+            'status' => 'error',
+            'message' => 'Colaborador não encontrado.',
         ]);
     }
 }

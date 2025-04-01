@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
+    Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 });
 
 require __DIR__ . '/auth.php';
