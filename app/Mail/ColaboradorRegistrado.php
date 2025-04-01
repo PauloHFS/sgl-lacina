@@ -19,6 +19,7 @@ class ColaboradorRegistrado extends Mailable
      */
     public function __construct(
         public User $colaborador,
+        public string $url
     ) {
         //
     }

@@ -21,6 +21,7 @@ interface IndexProps {
     colaboradores: Paginated<Colaborador>;
 }
 
+// TODO ARRUMAR O DARK MODE
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);

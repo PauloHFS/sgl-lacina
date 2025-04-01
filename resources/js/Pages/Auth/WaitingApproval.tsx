@@ -1,6 +1,7 @@
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head } from '@inertiajs/react';
 
+// TODO: FIX DARK MODE
 export default function WaitingApproval() {
     return (
         <GuestLayout>
