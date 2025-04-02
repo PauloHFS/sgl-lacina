@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ * Se mudar o modelo, lembrar de mudar também em: /resources/js/types/index.d.ts
+ */
 class Docente extends Model
 {
     use HasFactory;

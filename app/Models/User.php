@@ -45,4 +45,16 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function colaborador()
+    {
+        // Relacionamento 1:1 com Colaborador
+        return $this->hasOne(Colaborador::class, 'id', 'id');
+    }
+
+    public function docente()
+    {
+        // Relacionamento 1:1 com Docente
+        return $this->hasOne(Docente::class, 'id', 'id');
+    }
 }

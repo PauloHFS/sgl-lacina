@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified', 'checkUserRole:docente'])->group(function () {
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
     Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 });

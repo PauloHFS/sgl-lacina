@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 
+/**
+ * 
+ * Se mudar o modelo, lembrar de mudar também em: /resources/js/types/index.d.ts
+ */
 class Colaborador extends Model
 {
     use HasFactory, Searchable;
