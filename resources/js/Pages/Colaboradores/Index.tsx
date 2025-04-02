@@ -24,7 +24,6 @@ interface IndexProps {
 // TODO ARRUMAR O DARK MODE
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,17 +32,6 @@ export default function Index({ colaboradores }: IndexProps) {
             { search: searchTerm },
             { preserveState: true },
         );
-    };
-
-    const handleFilterChange = (key: string, value: any) => {
-        // Inertia.get(
-        //     route('colaboradores.index'),
-        //     {
-        //         ...filters,
-        //         [key]: value,
-        //     },
-        //     { preserveState: true },
-        // );
     };
 
     return (
@@ -83,80 +71,9 @@ export default function Index({ colaboradores }: IndexProps) {
                                         >
                                             Buscar
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setShowFilters(!showFilters)
-                                            }
-                                            className="ml-2 flex items-center rounded-md border border-gray-300 px-3 py-2"
-                                        >
-                                            {/* <FilterIcon className="mr-1 h-5 w-5 text-gray-500" /> */}
-                                            Filtros
-                                        </button>
                                     </form>
                                 </div>
-
-                                <div className="mt-4 sm:mt-0">
-                                    <a
-                                        // href={route('colaboradores.create')}
-                                        className="focus:shadow-outline-indigo inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-700 focus:border-indigo-900 focus:outline-none active:bg-indigo-900"
-                                    >
-                                        {/* <PlusIcon className="mr-1 h-4 w-4" /> */}
-                                        Novo Colaborador
-                                    </a>
-                                </div>
                             </div>
-
-                            {/* Filters */}
-                            {showFilters && (
-                                <div className="mb-6 rounded-md bg-gray-50 p-4">
-                                    <h3 className="mb-3 text-sm font-medium text-gray-700">
-                                        Filtros
-                                    </h3>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                        <div>
-                                            <label className="mb-1 block text-sm font-medium text-gray-700">
-                                                Área de Atuação
-                                            </label>
-                                            <select
-                                                className="w-full rounded-md border-gray-300 shadow-sm"
-                                                onChange={(e) =>
-                                                    handleFilterChange(
-                                                        'area_atuacao',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            >
-                                                <option value="">
-                                                    Todas as áreas
-                                                </option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="mb-1 block text-sm font-medium text-gray-700">
-                                                Status de Projeto
-                                            </label>
-                                            <select
-                                                className="w-full rounded-md border-gray-300 shadow-sm"
-                                                onChange={(e) =>
-                                                    handleFilterChange(
-                                                        'sem_projeto',
-                                                        e.target.value ===
-                                                            'sem',
-                                                    )
-                                                }
-                                            >
-                                                <option value="todos">
-                                                    Todos os colaboradores
-                                                </option>
-                                                <option value="sem">
-                                                    Sem projeto
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Table */}
                             <div className="overflow-x-auto">
@@ -191,12 +108,6 @@ export default function Index({ colaboradores }: IndexProps) {
                                                 scope="col"
                                                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                             >
-                                                Status
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                            >
                                                 Links
                                             </th>
                                             <th
@@ -216,10 +127,12 @@ export default function Index({ colaboradores }: IndexProps) {
                                                             {colaborador.foto ? (
                                                                 <img
                                                                     src={
-                                                                        colaborador.foto
+                                                                        'https://robohash.org/set1/' +
+                                                                        colaborador.name +
+                                                                        '.png'
                                                                     }
                                                                     alt={`Foto de ${colaborador.name}`}
-                                                                    className="h-10 w-10 rounded-full object-cover"
+                                                                    className="h-15 w-15 rounded-full object-cover"
                                                                 />
                                                             ) : (
                                                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
@@ -275,17 +188,6 @@ export default function Index({ colaboradores }: IndexProps) {
                                                                           )
                                                                     : '-'}
                                                             </div>
-                                                        </td>
-                                                        <td className="whitespace-nowrap px-6 py-4">
-                                                            {colaborador.tem_projeto ? (
-                                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                                                                    Em projeto
-                                                                </span>
-                                                            ) : (
-                                                                <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-                                                                    Sem projeto
-                                                                </span>
-                                                            )}
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                                             <div className="flex space-x-2">
