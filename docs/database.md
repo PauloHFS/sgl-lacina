@@ -3,23 +3,13 @@
 Quando lidando com as migrations e com as tabelas, levem em consideração o seguinte DBML:
 
 ```dbml
-table users {
+table usuarios {
   id bigint [pk]
-  name varchar(255)
-  email varchar(255)
-  email_verified_at timestamp(0)
-  password varchar(255)
-  remember_token varchar(100) [note: "necessário para o Laravel Sanctum"]
-  created_at timestamp(0)
-  updated_at timestamp(0)
-}
-
-table colaboradores {
-  id bigint [pk, ref: > users.id, note: 'mesmo id de user']
-  linkedin varchar
-  github varchar
-  figma varchar
-  foto varchar
+  nome varchar(255)
+  linkedin_url varchar
+  github_url varchar
+  figma_url varchar
+  foto_url varchar
   curriculo text
   area_atuacao varchar
   tecnologias text
@@ -29,57 +19,64 @@ table colaboradores {
   codigo_banco varchar
   rg varchar
   uf_rg varchar
+  orgao_emissor_rg varchar
   telefone varchar
-  created_at datetime
-  updated_at datetime
+  email varchar(255)
+  email_verified_at timestamp(0)
+  password varchar(255)
+  remember_token varchar(100)
+  created_at timestamp(0)
+  updated_at timestamp(0)
 }
 
 enum TipoVinculo {
-  ALUNO_GRADUACAO
-  ALUNO_MESTRADO
-  ALUNO_DOUTORADO
-  PROFISSIONAL
+  COORDENADOR
+  COLABORADOR
 }
 
-table colaborador_vinculo {
-  colaborador_id bigint [ref: > users.id]
+enum Funcao {
+  COODERNADOR
+  PESQUISADOR
+  DESENVOLVEDOR
+  TECNICO
+  ALUNO
+}
+
+table usuario_vinculo {
+  projeto_id bigint [ref: > projetos.id]
+  usuario_id bigint [ref: > usuarios.id]
   tipo_vinculo TipoVinculo [not null]
+  funcao Funcao [not null]
   data_inicio datetime [not null]
   data_fim datetime
 
   indexes {
-    (colaborador_id, data_fim) [pk]
+    (projeto_id, usuario_id, data_fim) [pk]
   }
 }
 
-table docentes {
-  id bigint [pk, ref: > users.id, note: "mesmo id de user"]
-  created_at datetime
-  updated_at datetime
+enum TipoProjeto {
+  PDI
+  TCC
+  MESTRADO
+  DOUTORADO
+  SUPORTE
 }
 
 table projetos {
   id bigint [pk, increment]
-  // docente_id bigint [not null, ref: > docentes.id]  // Docente (coordenador) responsável pelo projeto
   nome varchar [not null]
   data_inicio date [not null]
   data_termino date
   cliente varchar [not null]
-  link_slack varchar
-  link_discord varchar
-  link_board varchar
-  tipo varchar // quais são os possiveis tipos de projetos?
+  descricao text
+  slack_url varchar
+  discord_url varchar
+  board_url varchar
+  git_url varchar
+  tipo TipoProjeto [not null]
   created_at datetime
   updated_at datetime
-}
-
-table docente_projeto {
-  docente_id bitint [not null, ref: > docentes.id]
-  projeto_id bigint [not null, ref: > projetos.id]
-
-  indexes {
-    (docente_id, projeto_id) [pk]
-  }
 }
 
 enum StatusParticipacaoProjeto {
@@ -88,17 +85,10 @@ enum StatusParticipacaoProjeto {
   REJEITADO
 }
 
-table participacao_projeto {
-  /*
-    O primeiro registro nessa tabela vai ser na solicitação pelo colaborador para entrar em um projeto
-    O status será alterado baseado na decisão do Docente que receber a solicitação
-  */
+table solicitacoes_projeto {
   id bigint [pk, increment]
-  colaborador_id bigint [ref: > colaboradores.id]
+  usuario_id bigint [ref: > usuarios.id]
   projeto_id bigint [ref: > projetos.id]
-  data_inicio datetime [not null]
-  data_fim datetime // Data de término da participação (caso o colaborador saia)
-  carga_horaria int [not null]
   status StatusParticipacaoProjeto [not null]
   created_at datetime
   updated_at datetime
@@ -111,11 +101,7 @@ enum StatusSolicitacaoTrocaProjeto {
 }
 
 table solicitacoes_troca_projeto {
-  /*
-  Criada quando colaborador solicita a troca de projeto
-  Caso aprovada atribui uma data_fim para a participacao_projeto e cria uma participacao_projeto nova
-  */
-  colaborador_id bigint [Ref: > colaboradores.id]
+  usuario_id bigint [Ref: > usuarios.id]
   projeto_atual_id bigint [Ref: > projetos.id]
   projeto_novo_id bigint [Ref: > projetos.id]
   motivo text [not null]
@@ -125,7 +111,7 @@ table solicitacoes_troca_projeto {
   data_resposta date
 
   indexes {
-    (colaborador_id, projeto_atual_id, projeto_novo_id) [pk]
+    (usuario_id, projeto_atual_id, projeto_novo_id) [pk]
   }
 }
 
@@ -147,7 +133,7 @@ enum TipoHorario {
 
 table horarios {
   id bigint [pk, increment]
-  colaborador_id bigint [ref: > colaboradores.id]
+  colaborador_id bigint [ref: > usuarios.id]
   dia_semana WeekDay [not null]
   horario_inicio time [not null]
   horario_termino time [not null]
@@ -158,7 +144,7 @@ table horarios {
 
 table folgas {
   id int [pk, increment]
-  colaborador_id bigint [ref: > colaboradores.id, note: "Colaborador que solicitou a folga"]
+  usuario_id bigint [ref: > usuarios.id, note: "Colaborador que solicitou a folga"]
   tipo varchar [not null, note: "Pode ser 'coletiva' ou 'pessoal'"]
   data_inicio date [not null]
   data_fim date [not null]
@@ -198,7 +184,7 @@ table horarios_baia {
 // >>>>>>>>>>>>>>> Tabelas do LARAVEL
 table sessions {
   id varchar(255) [pk]
-  user_id bigint [ref: > users.id]
+  user_id bigint [ref: > usuarios.id]
   ip_address varchar(45)
   user_agent text
   payload text

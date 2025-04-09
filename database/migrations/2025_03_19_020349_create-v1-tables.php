@@ -12,79 +12,53 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $this->createEnumIfNotExists('tipo_vinculo', ['ALUNO_GRADUACAO', 'ALUNO_MESTRADO', 'ALUNO_DOUTORADO', 'PROFISSIONAL']);
-        $this->createEnumIfNotExists('status_participacao_projeto', ['APROVADO', 'PENDENTE', 'REJEITADO']);
-        $this->createEnumIfNotExists('status_solicitacao_troca_projeto', ['PENDENTE', 'APROVADO', 'REJEITADO']);
-        $this->createEnumIfNotExists('week_day', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
-        $this->createEnumIfNotExists('tipo_horario', ['AULA', 'TRABALHO', 'AUSENTE']);
-        $this->createEnumIfNotExists('tipo_folga', ['COLETIVA', 'INDIVIDUAL']);
-        $this->createEnumIfNotExists('status_folga', ['PENDENTE', 'APROVADO', 'REJEITADO']);
+        $this->createEnumIfNotExists('tipo_vinculo', ['COORDENADOR', 'COLABORADOR']);
+        $this->createEnumIfNotExists('funcao', ['COODERNADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']);
 
-        // Tabela colaboradores - ajustado conforme DBML
-        Schema::create('colaboradores', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
-            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
-
-            $table->string('linkedin')->nullable();
-            $table->string('github')->nullable();
-            $table->string('figma')->nullable();
-            $table->string('foto')->nullable();
-            $table->text('curriculo')->nullable(); // Mudado para text
-            $table->string('area_atuacao')->nullable(); // Corrigido (era areas_atuacao)
-            $table->text('tecnologias')->nullable(); // Mudado para text
-            $table->string('cpf')->unique();
-            $table->string('rg')->unique();
-            $table->string('uf_rg')->nullable();
-            $table->string('conta_bancaria')->nullable();
-            $table->string('agencia')->nullable();
-            $table->string('codigo_banco')->nullable(); // Corrigido (era banco)
-            $table->string('telefone')->nullable();
-            $table->timestamps(); // Standard Laravel timestamps
-        });
-
-        // Tabela colaborador_vinculo
-        Schema::create('colaborador_vinculo', function (Blueprint $table) {
-            $table->foreignId('colaborador_id')->constrained('colaboradores');
+        Schema::create('usuario_vinculo', function (Blueprint $table) {
+            $table->foreignId('projeto_id')->constrained('projetos');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->string('tipo_vinculo'); // Definimos como string primeiro
+            $table->string('funcao'); // Definimos como string primeiro
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
 
-            $table->primary(['colaborador_id', 'data_fim']);
+            $table->primary(['usuario_id', 'data_fim']);
         });
-        // Alterar o tipo da coluna usando SQL direto
-        DB::statement('ALTER TABLE colaborador_vinculo ALTER COLUMN tipo_vinculo TYPE tipo_vinculo USING tipo_vinculo::tipo_vinculo');
 
-        Schema::create('docentes', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
-            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
-            $table->timestamps();
-        });
+        // Alterar o tipo da coluna usando SQL direto
+        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN tipo_vinculo TYPE tipo_vinculo USING tipo_vinculo::tipo_vinculo');
+        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN funcao TYPE funcao USING funcao::funcao');
+
+        // >>>>>>
+
+        $this->createEnumIfNotExists('tipo_projeto', ['PDI', 'TCC', 'MESTRADO', 'DOUTORADO', 'SUPORTE']);
 
         Schema::create('projetos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->text('descricao')->nullable();
             $table->date('data_inicio');
-            $table->date('data_termino')->nullable(); // Mudado conforme DBML
+            $table->date('data_termino')->nullable();
             $table->string('cliente');
-            $table->string('link_slack')->nullable(); // Corrigido (era slack)
-            $table->string('link_discord')->nullable(); // Corrigido (era discord)
-            $table->string('link_board')->nullable(); // Corrigido (era board)
-            $table->string('tipo')->nullable();
+            $table->text('descricao')->nullable();
+            $table->string('slack_url')->nullable();
+            $table->string('discord_url')->nullable();
+            $table->string('board_url')->nullable();
+            $table->string('git_url')->nullable();
+            $table->string('tipo'); // Definimos como string primeiro
             $table->timestamps();
         });
 
-        Schema::create('docente_projeto', function (Blueprint $table) {
-            $table->foreignId('docente_id')->constrained('docentes');
-            $table->foreignId('projeto_id')->constrained('projetos');
+        // Alterar o tipo da coluna usando SQL direto
+        DB::statement('ALTER TABLE projetos ALTER COLUMN tipo TYPE tipo_projeto USING tipo::tipo_projeto');
 
-            $table->primary(['docente_id', 'projeto_id']);
-            $table->timestamps();
-        });
+        // >>>>>>
 
-        Schema::create('participacao_projeto', function (Blueprint $table) {
+        $this->createEnumIfNotExists('status_participacao_projeto', ['APROVADO', 'PENDENTE', 'REJEITADO']);
+
+        Schema::create('solicitacoes_projeto', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('colaborador_id')->constrained('colaboradores');
+            $table->foreignId('usuario_id')->constrained('usuarios');
             $table->foreignId('projeto_id')->constrained('projetos');
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
@@ -94,44 +68,69 @@ return new class extends Migration
         });
         DB::statement('ALTER TABLE participacao_projeto ALTER COLUMN status TYPE status_participacao_projeto USING status::status_participacao_projeto');
 
+        // >>>>>>
+
+        $this->createEnumIfNotExists('status_solicitacao_troca_projeto', ['PENDENTE', 'APROVADO', 'REJEITADO']);
+
         Schema::create('solicitacoes_troca_projeto', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('participacao_projeto_id')->constrained('participacao_projeto');
+            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('projeto_atual_id')->constrained('projetos');
             $table->foreignId('projeto_novo_id')->constrained('projetos');
             $table->text('motivo');
             $table->text('resposta')->nullable();
-            $table->string('status');
+            $table->string('status'); // Definimos como string primeiro
+            $table->date('data_solicitacao');
             $table->date('data_resposta')->nullable();
-
             $table->timestamps();
+
+            $table->primary(['usuario_id', 'projeto_atual_id', 'data_solicitacao']);
         });
+
+        // Alterar o tipo da coluna usando SQL direto
         DB::statement('ALTER TABLE solicitacoes_troca_projeto ALTER COLUMN status TYPE status_solicitacao_troca_projeto USING status::status_solicitacao_troca_projeto');
+
+        // >>>>>>
+
+        $this->createEnumIfNotExists('week_day', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
+        $this->createEnumIfNotExists('tipo_horario', ['AULA', 'TRABALHO', 'AUSENTE']);
 
         Schema::create('horarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('colaborador_id')->constrained('colaboradores');
-            $table->string('dia_semana');
+            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->string('dia_semana'); // Definimos como string primeiro
             $table->time('horario_inicio');
             $table->time('horario_termino');
-            $table->string('tipo');
+            $table->string('tipo'); // Definimos como string primeiro
             $table->timestamps();
         });
+
+        // Alterar o tipo da coluna usando SQL direto
         DB::statement('ALTER TABLE horarios ALTER COLUMN dia_semana TYPE week_day USING dia_semana::week_day');
         DB::statement('ALTER TABLE horarios ALTER COLUMN tipo TYPE tipo_horario USING tipo::tipo_horario');
 
+        // >>>>>>
+
+        $this->createEnumIfNotExists('tipo_folga', ['COLETIVA', 'INDIVIDUAL']);
+        $this->createEnumIfNotExists('status_folga', ['PENDENTE', 'APROVADO', 'REJEITADO']);
+
         Schema::create('folgas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('colaborador_id')->constrained('colaboradores');
-            $table->string('tipo');
-            $table->string('status');
+            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->string('tipo'); // Definimos como string primeiro
+            $table->string('status'); // Definimos como string primeiro
             $table->date('data_inicio');
             $table->date('data_fim');
             $table->text('justificativa')->nullable();
             $table->timestamps();
         });
+
+        // Alterar o tipo da coluna usando SQL direto
         DB::statement('ALTER TABLE folgas ALTER COLUMN tipo TYPE tipo_folga USING tipo::tipo_folga');
         DB::statement('ALTER TABLE folgas ALTER COLUMN status TYPE status_folga USING status::status_folga');
 
+        // >>>>>>
+
+        // TODO Validar isso aqui ainda
         Schema::create('salas', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
@@ -153,6 +152,8 @@ return new class extends Migration
             $table->primary(['horario_id', 'baia_id']);
             $table->timestamps();
         });
+
+        // >>>>>>
     }
 
     /**
@@ -167,12 +168,9 @@ return new class extends Migration
         Schema::dropIfExists('folgas');
         Schema::dropIfExists('horarios');
         Schema::dropIfExists('solicitacoes_troca_projeto');
-        Schema::dropIfExists('participacao_projeto');
-        Schema::dropIfExists('docente_projeto');
+        Schema::dropIfExists('solicitacoes_projeto');
         Schema::dropIfExists('projetos');
-        Schema::dropIfExists('docentes');
-        Schema::dropIfExists('colaborador_vinculo');
-        Schema::dropIfExists('colaboradores');
+        Schema::dropIfExists('usuario_vinculo');
 
         // Drop types enum
         Schema::dropIfExists('status_folga');

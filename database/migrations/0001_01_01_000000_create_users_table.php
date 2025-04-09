@@ -18,6 +18,23 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+
+            // -- Campos Adicionais --
+            $table->string('linkedin')->nullable();
+            $table->string('github')->nullable();
+            $table->string('figma')->nullable();
+            $table->string('foto')->nullable();
+            $table->text('curriculo')->nullable();
+            $table->text('area_atuacao')->nullable();
+            $table->text('tecnologias')->nullable();
+            $table->string('cpf')->unique();
+            $table->string('rg')->unique();
+            $table->string('uf_rg')->nullable();
+            $table->string('orgao_emissor_rg')->nullable();
+            $table->string('conta_bancaria')->nullable();
+            $table->string('agencia')->nullable();
+            $table->string('codigo_banco')->nullable();
+
             $table->timestamps();
         });
 
