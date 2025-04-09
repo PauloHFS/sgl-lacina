@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // TODO Traduzir essa tabela
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -20,13 +21,14 @@ return new class extends Migration
             $table->rememberToken();
 
             // -- Campos Adicionais --
-            $table->string('linkedin')->nullable();
-            $table->string('github')->nullable();
-            $table->string('figma')->nullable();
-            $table->string('foto')->nullable();
+            $table->string('linkedin_url')->nullable();
+            $table->string('github_url')->nullable();
+            $table->string('figma_url')->nullable();
+            $table->string('foto_url')->nullable();
             $table->text('curriculo')->nullable();
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
+
             $table->string('cpf')->unique();
             $table->string('rg')->unique();
             $table->string('uf_rg')->nullable();

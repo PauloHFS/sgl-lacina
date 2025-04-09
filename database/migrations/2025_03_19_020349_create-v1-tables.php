@@ -12,26 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $this->createEnumIfNotExists('tipo_vinculo', ['COORDENADOR', 'COLABORADOR']);
-        $this->createEnumIfNotExists('funcao', ['COODERNADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']);
-
-        Schema::create('usuario_vinculo', function (Blueprint $table) {
-            $table->foreignId('projeto_id')->constrained('projetos');
-            $table->foreignId('usuario_id')->constrained('users');
-            $table->string('tipo_vinculo'); // Definimos como string primeiro
-            $table->string('funcao'); // Definimos como string primeiro
-            $table->dateTime('data_inicio');
-            $table->dateTime('data_fim')->nullable();
-
-            $table->primary(['usuario_id', 'data_fim']);
-        });
-
-        // Alterar o tipo da coluna usando SQL direto
-        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN tipo_vinculo TYPE tipo_vinculo USING tipo_vinculo::tipo_vinculo');
-        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN funcao TYPE funcao USING funcao::funcao');
-
-        // >>>>>>
-
         $this->createEnumIfNotExists('tipo_projeto', ['PDI', 'TCC', 'MESTRADO', 'DOUTORADO', 'SUPORTE']);
 
         Schema::create('projetos', function (Blueprint $table) {
@@ -54,11 +34,31 @@ return new class extends Migration
 
         // >>>>>>
 
+        $this->createEnumIfNotExists('tipo_vinculo', ['COORDENADOR', 'COLABORADOR']);
+        $this->createEnumIfNotExists('funcao', ['COODERNADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']);
+
+        Schema::create('usuario_vinculo', function (Blueprint $table) {
+            $table->foreignId('projeto_id')->constrained('projetos');
+            $table->foreignId('usuario_id')->constrained('users');
+            $table->string('tipo_vinculo'); // Definimos como string primeiro
+            $table->string('funcao'); // Definimos como string primeiro
+            $table->dateTime('data_inicio');
+            $table->dateTime('data_fim')->nullable();
+
+            $table->primary(['usuario_id', 'data_fim']);
+        });
+
+        // Alterar o tipo da coluna usando SQL direto
+        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN tipo_vinculo TYPE tipo_vinculo USING tipo_vinculo::tipo_vinculo');
+        DB::statement('ALTER TABLE usuario_vinculo ALTER COLUMN funcao TYPE funcao USING funcao::funcao');
+
+        // >>>>>>
+
         $this->createEnumIfNotExists('status_participacao_projeto', ['APROVADO', 'PENDENTE', 'REJEITADO']);
 
         Schema::create('solicitacoes_projeto', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->foreignId('projeto_id')->constrained('projetos');
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
@@ -66,14 +66,14 @@ return new class extends Migration
             $table->string('status');
             $table->timestamps();
         });
-        DB::statement('ALTER TABLE participacao_projeto ALTER COLUMN status TYPE status_participacao_projeto USING status::status_participacao_projeto');
+        DB::statement('ALTER TABLE solicitacoes_projeto ALTER COLUMN status TYPE status_participacao_projeto USING status::status_participacao_projeto');
 
         // >>>>>>
 
         $this->createEnumIfNotExists('status_solicitacao_troca_projeto', ['PENDENTE', 'APROVADO', 'REJEITADO']);
 
         Schema::create('solicitacoes_troca_projeto', function (Blueprint $table) {
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->foreignId('projeto_atual_id')->constrained('projetos');
             $table->foreignId('projeto_novo_id')->constrained('projetos');
             $table->text('motivo');
@@ -96,7 +96,7 @@ return new class extends Migration
 
         Schema::create('horarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->string('dia_semana'); // Definimos como string primeiro
             $table->time('horario_inicio');
             $table->time('horario_termino');
@@ -115,7 +115,7 @@ return new class extends Migration
 
         Schema::create('folgas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->string('tipo'); // Definimos como string primeiro
             $table->string('status'); // Definimos como string primeiro
             $table->date('data_inicio');
