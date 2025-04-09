@@ -29,12 +29,12 @@ table usuarios {
   updated_at timestamp(0)
 }
 
-enum TipoVinculo {
+enum tipo_vinculo {
   COORDENADOR
   COLABORADOR
 }
 
-enum Funcao {
+enum funcao {
   COODERNADOR
   PESQUISADOR
   DESENVOLVEDOR
@@ -55,7 +55,7 @@ table usuario_vinculo {
   }
 }
 
-enum TipoProjeto {
+enum tipo_projeto {
   PDI
   TCC
   MESTRADO
@@ -79,7 +79,7 @@ table projetos {
   updated_at datetime
 }
 
-enum StatusParticipacaoProjeto {
+enum status_participacao_projeto {
   APROVADO
   PENDENTE
   REJEITADO
@@ -94,7 +94,7 @@ table solicitacoes_projeto {
   updated_at datetime
 }
 
-enum StatusSolicitacaoTrocaProjeto {
+enum status_solicitacao_troca_projeto {
   PENDENTE
   APROVADO
   REJEITADO
@@ -115,7 +115,7 @@ table solicitacoes_troca_projeto {
   }
 }
 
-enum WeekDay {
+enum dia_da_semana {
   SEGUNDA
   TERCA
   QUARTA
@@ -125,7 +125,7 @@ enum WeekDay {
   DOMINGO
 }
 
-enum TipoHorario {
+enum tipo_horario {
   AULA
   TRABALHO
   AUSENTE

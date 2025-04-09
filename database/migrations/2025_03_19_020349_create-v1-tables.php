@@ -91,7 +91,7 @@ return new class extends Migration
 
         // >>>>>>
 
-        $this->createEnumIfNotExists('week_day', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
+        $this->createEnumIfNotExists('dia_da_semana', ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO']);
         $this->createEnumIfNotExists('tipo_horario', ['AULA', 'TRABALHO', 'AUSENTE']);
 
         Schema::create('horarios', function (Blueprint $table) {
