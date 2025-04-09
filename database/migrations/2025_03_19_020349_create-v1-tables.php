@@ -169,8 +169,8 @@ return new class extends Migration
         Schema::dropIfExists('horarios');
         Schema::dropIfExists('solicitacoes_troca_projeto');
         Schema::dropIfExists('solicitacoes_projeto');
-        Schema::dropIfExists('projetos');
         Schema::dropIfExists('usuario_vinculo');
+        Schema::dropIfExists('projetos');
 
         // Drop types enum
         Schema::dropIfExists('status_folga');
