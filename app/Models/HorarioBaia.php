@@ -13,6 +13,7 @@ class HorarioBaia extends Model
     protected $table = 'horario_baia';
 
     protected $primaryKey = ['baia_id', 'horario_id'];
+    public $incrementing = false;
 
     protected $fillable = [
         'baia_id',
