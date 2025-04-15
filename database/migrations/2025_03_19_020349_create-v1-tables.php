@@ -17,10 +17,10 @@ return new class extends Migration
         Schema::create('projetos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->text('descricao')->nullable();
             $table->date('data_inicio');
             $table->date('data_termino')->nullable();
             $table->string('cliente');
-            $table->text('descricao')->nullable();
             $table->string('slack_url')->nullable();
             $table->string('discord_url')->nullable();
             $table->string('board_url')->nullable();
@@ -45,7 +45,7 @@ return new class extends Migration
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
 
-            $table->primary(['usuario_id', 'data_fim']);
+            $table->primary(['projeto_id', 'usuario_id', 'data_fim']);
         });
 
         // Alterar o tipo da coluna usando SQL direto

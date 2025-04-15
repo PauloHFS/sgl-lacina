@@ -16,14 +16,24 @@ class Projeto extends Model
         'nome',
         'descricao',
         'data_inicio',
-        'data_fim',
-        'status',
-        'link_github',
-        'link_figma',
-        'link_trello',
-        'link_drive',
-        'link_site',
-        'link_video',
-        'link_documentacao'
+        'data_termino',
+        'cliente',
+        'slack_url',
+        'discord_url',
+        'board_url',
+        'git_url',
+        'tipo'
     ];
+
+    protected $casts = [
+        'data_inicio' => 'datetime',
+        'data_termino' => 'datetime',
+    ];
+
+    public function usuarios()
+    {
+        return $this->belongsToMany(User::class, 'usuario_vinculo', 'projeto_id', 'usuario_id')
+            ->withPivot('tipo_vinculo', 'funcao', 'data_inicio', 'data_fim')
+            ->withTimestamps();
+    }
 }

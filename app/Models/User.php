@@ -21,6 +21,22 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+
+        'linkedin_url',
+        'github_url',
+        'figma_url',
+        'foto_url',
+        'curriculo',
+        'area_atuacao',
+        'tecnologias',
+
+        'cpf',
+        'rg',
+        'uf_rg',
+        'orgao_emissor_rg',
+        'conta_bancaria',
+        'agencia',
+        'codigo_banco',
     ];
 
     /**
@@ -44,17 +60,5 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function colaborador()
-    {
-        // Relacionamento 1:1 com Colaborador
-        return $this->hasOne(Colaborador::class, 'id', 'id');
-    }
-
-    public function docente()
-    {
-        // Relacionamento 1:1 com Docente
-        return $this->hasOne(Docente::class, 'id', 'id');
     }
 }

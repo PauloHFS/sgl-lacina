@@ -1,17 +1,31 @@
-import DangerButton from '@/Components/DangerButton';
+import PrimaryButton from '@/Components/PrimaryButton';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
+import { useForm } from '@inertiajs/react';
+import { FormEventHandler } from 'react';
 
-interface Props {
+export default function AvaliacaoInicial({
+    user,
+    status,
+    message,
+}: {
     user: {
         id: number;
         name: string;
         email: string;
     };
-    status: 'success' | 'error';
+    status?: string;
     message?: string;
-}
+}) {
+    const { data, setData, post, processing, errors, reset } = useForm({});
 
-export default function AvaliacaoInicial({ user, status, message }: Props) {
+    const handleOnSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        post(route('colaboradores.store', { preCandidatoUserId: user.id }), {
+            onFinish: () => reset(),
+        });
+    };
+
     return (
         <Authenticated
             header={
@@ -20,27 +34,27 @@ export default function AvaliacaoInicial({ user, status, message }: Props) {
                 </h2>
             }
         >
-            {status === 'success' && (
-                <>
-                    <div>
-                        <h3 className="text-lg font-semibold">
-                            Nome: {user.name}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                            Email: {user.email}
-                        </p>
+            <form onSubmit={handleOnSubmit} className="space-y-6">
+                {status === 'success' && (
+                    <>
+                        <div>
+                            <h3 className="text-lg font-semibold">
+                                Nome: {user.name}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                                Email: {user.email}
+                            </p>
+                        </div>
+                        <PrimaryButton>Aceitar Pré Candidato</PrimaryButton>
+                    </>
+                )}
+                {status === 'error' && (
+                    <div className="text-red-600">
+                        <h3 className="text-lg font-semibold">Erro</h3>
+                        <p className="text-sm">{message}</p>
                     </div>
-                    <DangerButton onClick={() => alert(user.id)}>
-                        Aceitar Pré Candidato
-                    </DangerButton>
-                </>
-            )}
-            {status === 'error' && (
-                <div className="text-red-600">
-                    <h3 className="text-lg font-semibold">Erro</h3>
-                    <p className="text-sm">{message}</p>
-                </div>
-            )}
+                )}
+            </form>
         </Authenticated>
     );
 }

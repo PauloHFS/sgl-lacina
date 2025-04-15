@@ -7,6 +7,8 @@ use App\Models\Colaborador;
 use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use App\Enums\TipoVinculo;
+use App\Events\PreColaboradorAceito;
 
 class ColaboradorController extends Controller
 {
@@ -58,6 +60,47 @@ class ColaboradorController extends Controller
             return Inertia::render('PreCandidato/AvaliacaoInicial', [
                 'status' => 'success',
                 'message' => 'Colaborador encontrado.',
+                'user' => $usuario,
+            ]);
+        }
+
+        return Inertia::render('PreCandidato/AvaliacaoInicial', [
+            'user' => null,
+            'status' => 'error',
+            'message' => 'Colaborador não encontrado.',
+        ]);
+    }
+
+    public function aceitar(Request $request)
+    {
+        $preCandidatoUserId = $request->input('preCandidatoUserId');
+
+        if (!$preCandidatoUserId) {
+            return Inertia::render('PreCandidato/AvaliacaoInicial', [
+                'user' => null,
+                'status' => 'error',
+                'message' => 'ID do colaborador não fornecido.',
+            ]);
+        }
+        $usuario = User::where('id', $preCandidatoUserId)->first();
+
+        if ($usuario) {
+            $colaborador = new Colaborador();
+            $colaborador->id = $usuario->id;
+            $colaborador->save();
+
+            // criar colaborador vinculo
+            $colaborador->vinculo()->create([
+                'tipo' => TipoVinculo::ALUNO_GRADUACAO,
+                'data_inicio' => now(),
+            ]);
+
+            // dispara o evento de colaborador aceito
+            event(new PreColaboradorAceito($usuario->id, $usuario->email));
+
+            return Inertia::render('PreCandidato/AvaliacaoInicial', [
+                'status' => 'success',
+                'message' => 'Colaborador aceito com sucesso.',
                 'user' => $usuario,
             ]);
         }

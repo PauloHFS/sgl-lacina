@@ -22,11 +22,11 @@ class ProjetoFactory extends Factory
             'data_inicio' => $this->faker->date(),
             'data_termino' => $this->faker->date(),
             'cliente' => $this->faker->word(),
-            'link_slack' => $this->faker->url(),
-            'link_discord' => $this->faker->url(),
-            'link_board' => $this->faker->url(),
-            'tipo' => $this->faker->word(),
-            'created_at' => now(),
+            'slack_url' => $this->faker->url(),
+            'discord_url' => $this->faker->url(),
+            'board_url' => $this->faker->url(),
+            'git_url' => $this->faker->url(),
+            'tipo' => $this->faker->randomElement(['PDI', 'TCC', 'MESTRADO', 'DOUTORADO', 'SUPORTE']), //TODO tentar usar o ENUM para arrumar isso aqui
         ];
     }
 }

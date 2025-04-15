@@ -19,7 +19,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/pos-cadastro', function () {
+Route::get('/pos-cadastro/{id}', function () {
     return Inertia::render('PosCadastro');
 })->middleware(['auth', 'verified'])->name('pos-cadastro');
 
@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', 'checkUserRole:docente'])->group(function () {
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
+    Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
     Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 });
 
