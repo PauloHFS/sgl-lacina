@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoProjeto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,6 +29,7 @@ class Projeto extends Model
     protected $casts = [
         'data_inicio' => 'datetime',
         'data_termino' => 'datetime',
+        'tipo' => TipoProjeto::class
     ];
 
     public function usuarios()

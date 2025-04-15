@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusSolicitacaoTrocaProjeto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,9 +13,11 @@ class SolicitacaoTrocaProjeto extends Model
 
     protected $table = 'solicitacao_troca_projeto';
 
+    protected $primaryKey = ['usuario_id', 'projeto_atual_id', 'projeto_novo_id'];
+    public $incrementing = false;
+
     protected $fillable = [
-        'id',
-        'colaborador_id',
+        'usuario_id',
         'projeto_atual_id',
         'projeto_novo_id',
         'motivo',
@@ -25,17 +28,23 @@ class SolicitacaoTrocaProjeto extends Model
     ];
 
     protected $casts = [
+        'status' => StatusSolicitacaoTrocaProjeto::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    public function colaborador()
+    public function usuario()
     {
-        return $this->belongsTo(Colaborador::class, 'colaborador_id');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
-    public function projeto()
+    public function projetoAtual()
     {
-        return $this->belongsTo(Projeto::class, 'projeto_id');
+        return $this->belongsTo(Projeto::class, 'projeto_atual_id');
+    }
+
+    public function projetoNovo()
+    {
+        return $this->belongsTo(Projeto::class, 'projeto_novo_id');
     }
 }

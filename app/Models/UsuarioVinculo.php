@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoVinculo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,6 +14,7 @@ class UsuarioVinculo extends Model
     protected $table = 'usuario_vinculo';
 
     protected $primaryKey = ['projeto_id', 'usuario_id', 'data_fim'];
+    public $incrementing = false;
 
     protected $fillable = [
         'projeto_id',
@@ -24,6 +26,8 @@ class UsuarioVinculo extends Model
     ];
 
     protected $casts = [
+        'tipo_vinculo' => TipoVinculo::class,
+        'funcao' => TipoVinculo::class,
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];

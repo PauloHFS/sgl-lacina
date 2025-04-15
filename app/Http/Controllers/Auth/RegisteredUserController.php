@@ -43,21 +43,6 @@ class RegisteredUserController extends Controller
             ],
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
-            'email_docente' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                'exists:' . User::class . ',email',
-                function ($attribute, $value, $fail) {
-                    $user = User::where('email', $value)->first();
-
-                    if (!$user || !Docente::where('id', $user->id)->exists()) {
-                        $fail('O email informado não pertence a um docente válido.');
-                    }
-                }
-            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 

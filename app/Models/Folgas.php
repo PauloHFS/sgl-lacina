@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StatusFolga;
+use App\Enums\TipoFolga;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +16,7 @@ class Folgas extends Model
 
     protected $fillable = [
         'id',
-        'colaborador_id',
+        'usuario_id',
         'tipo',
         'status',
         'data_inicio',
@@ -25,14 +27,11 @@ class Folgas extends Model
     ];
 
     protected $casts = [
+        'tipo' => TipoFolga::class,
+        'status' => StatusFolga::class,
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
-    public function colaborador()
-    {
-        return $this->belongsTo(Colaborador::class, 'colaborador_id');
-    }
 }

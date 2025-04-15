@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TipoHorario;
+use Carbon\WeekDay;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +16,7 @@ class Horarios extends Model
 
     protected $fillable = [
         'id',
-        'colaborador_id',
+        'usuario_id',
         'dia_semana',
         'horario_inicio',
         'horario_fim',
@@ -24,16 +26,19 @@ class Horarios extends Model
     ];
 
     protected $casts = [
+        'dia_semana' => WeekDay::class,
+        'tipo' => TipoHorario::class,
         'hora_inicio' => 'datetime',
         'hora_fim' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    public function colaborador()
+    public function usuario()
     {
-        return $this->belongsTo(Colaborador::class, 'colaborador_id');
+        return $this->belongsTo(User::class, 'colaborador_id');
     }
+
     public function baias()
     {
         return $this->belongsToMany(Baias::class, 'horario_baia', 'horario_id', 'baia_id');

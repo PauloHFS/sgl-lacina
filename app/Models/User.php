@@ -61,4 +61,32 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function projetos()
+    {
+        return $this->belongsToMany(Projeto::class, 'usuario_vinculo', 'usuario_id', 'projeto_id')
+            ->withPivot('tipo_vinculo', 'funcao', 'data_inicio', 'data_fim')
+            ->withTimestamps();
+    }
+
+    public function solicitacoes()
+    {
+        return $this->hasMany(SolicitacoesProjeto::class, 'usuario_id');
+    }
+
+    public function isCoordenador(Projeto $projeto)
+    {
+        return $this->projetos()
+            ->where('projeto_id', $projeto->id)
+            ->where('tipo_vinculo', 'COORDENADOR')
+            ->exists();
+    }
+
+    public function isColaborador(Projeto $projeto)
+    {
+        return $this->projetos()
+            ->where('projeto_id', $projeto->id)
+            ->where('tipo_vinculo', 'COLABORADOR')
+            ->exists();
+    }
 }

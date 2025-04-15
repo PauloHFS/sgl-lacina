@@ -11,7 +11,6 @@ export default function Register() {
         lab_password: '',
         name: '',
         email: '',
-        email_docente: '',
         password: '',
         password_confirmation: '',
     });
@@ -87,31 +86,6 @@ export default function Register() {
                     />
 
                     <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="email_docente"
-                        value="Email do professor responsável"
-                    />
-
-                    <TextInput
-                        id="email_docente"
-                        type="email"
-                        name="email_docente"
-                        value={data.email_docente}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) =>
-                            setData('email_docente', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.email_docente}
-                        className="mt-2"
-                    />
                 </div>
 
                 <div className="mt-4">
