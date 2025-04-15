@@ -35,7 +35,7 @@ return new class extends Migration
         // >>>>>>
 
         $this->createEnumIfNotExists('tipo_vinculo', ['COORDENADOR', 'COLABORADOR']);
-        $this->createEnumIfNotExists('funcao', ['COODERNADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']);
+        $this->createEnumIfNotExists('funcao', ['COORDENADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']);
 
         Schema::create('usuario_vinculo', function (Blueprint $table) {
             $table->foreignId('projeto_id')->constrained('projetos');

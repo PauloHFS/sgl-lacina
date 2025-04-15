@@ -37,8 +37,28 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function cadastroCompleto(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'linkedin_url' => fake()->url(),
+            'github_url' => fake()->url(),
+            'figma_url' => fake()->url(),
+            'foto_url' => fake()->url(),
+            'curriculo' => fake()->text(),
+            'area_atuacao' => fake()->text(),
+            'tecnologias' => fake()->text(),
+
+            'cpf' => fake()->unique()->numerify('###.###.###-##'),
+            'rg' => fake()->unique()->numerify('##.###.###-#'),
+            'uf_rg' => fake()->stateAbbr(),
+            'orgao_emissor_rg' => fake()->word(),
+            'conta_bancaria' => fake()->numerify('#########'),
+            'agencia' => fake()->numerify('#####')
         ]);
     }
 }

@@ -6,9 +6,12 @@ namespace App\Models;
 
 use App\Enums\StatusParticipacaoProjeto;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SolicitacoesProjeto extends Model
 {
+  /** @use HasFactory<\Database\Factories\SolicitacoesProjetoFactory> */
+  use HasFactory;
 
   protected $table = 'solicitacoes_projeto';
 
