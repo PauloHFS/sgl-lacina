@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $this->createEnumIfNotExists('statusCadastro', ['ACEITO', 'PENDENTE', 'RECUSADO']);
+        $this->createEnumIfNotExists('status_cadastro', ['ACEITO', 'PENDENTE', 'RECUSADO']);
 
         // TODO Traduzir essa tabela
         Schema::create('users', function (Blueprint $table) {
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->rememberToken();
 
             // -- Campos Adicionais --
-            $table->string('statusCadastro')->default('PENDENTE');
+            $table->string('statusCadastro');
 
             $table->string('linkedin_url')->nullable();
             $table->string('github_url')->nullable();
@@ -34,8 +34,8 @@ return new class extends Migration
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
 
-            $table->string('cpf')->unique();
-            $table->string('rg')->unique();
+            $table->string('cpf')->nullable()->unique();
+            $table->string('rg')->nullable()->unique();
             $table->string('uf_rg')->nullable();
             $table->string('orgao_emissor_rg')->nullable();
             $table->string('conta_bancaria')->nullable();
@@ -45,7 +45,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::statement('ALTER TABLE users ALTER COLUMN statusCadastro TYPE statusCadastro USING statusCadastro::statusCadastro');
+        DB::statement('ALTER TABLE users ALTER COLUMN "statusCadastro" TYPE status_cadastro USING "statusCadastro"::status_cadastro');
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

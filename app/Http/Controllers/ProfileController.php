@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusCadastro;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -59,5 +60,24 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function completarCadastro(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        // aqui você vai salvar o cpf, rg, uf_rg, conta_bancaria, agencia, codigo_banco
+
+        $user->cpf = $request->input('cpf');
+        $user->rg = $request->input('rg');
+        $user->uf_rg = $request->input('uf_rg');
+        // $user->orgao_emissor_rg = $request->input('orgao_emissor_rg');
+        $user->conta_bancaria = $request->input('conta_bancaria');
+        $user->agencia = $request->input('agencia');
+        $user->codigo_banco = $request->input('codigo_banco');
+        // $user->statusCadastro = StatusCadastro::PENDENTE;
+        $user->save();
+
+        return Redirect::route('dashboard');
     }
 }

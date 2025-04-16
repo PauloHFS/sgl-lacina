@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\StatusCadastro;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Docente;
@@ -10,6 +11,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -50,16 +52,18 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'statusCadastro' => 'PENDENTE',
         ]);
 
         event(new Registered($user));
 
-        event(new ColaboradorRegistrado($user, $request->email_docente));
+        // event(new ColaboradorRegistrado($user, $request->email_docente));
 
-        // Auth::login($user);
+        Auth::login($user);
 
         // return redirect(route('dashboard', absolute: false));
 
-        return redirect(route('waiting-approval', absolute: false));
+        // return redirect(route('waiting-approval', absolute: false));
+        return redirect('/pos-cadastro');
     }
 }

@@ -46,6 +46,7 @@ class ColaboradorController extends Controller
 
         $status = $request->input('status');
 
+        $usuarios = null;
         if ($status == 'ativos') {
             /*
             Usuários que estão na tabela de vinculo e todos os data_fim são maiores de now()
@@ -74,13 +75,16 @@ class ColaboradorController extends Controller
             $usuarios = User::where('statusCadastro', 'PENDENTE')->paginate(10);
         }
 
-        Log::debug('Busca de colaboradores concluída', [
-            'total' => $usuarios->total(),
-        ]);
+        // Log::debug('Busca de colaboradores concluída', [
+        //     'total' => $usuarios->total(),
+        // ]);
 
-        return Inertia::render('Colaboradores/Index', [
-            'colaboradores' => $usuarios,
-        ]);
+        if ($usuarios) {
+            return Inertia::render('Colaboradores/Index', [
+                'colaboradores' => $usuarios,
+            ]);
+        }
+        return Inertia::render('Colaboradores/Index', []);
     }
 
     /**

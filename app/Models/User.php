@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusCadastro;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -21,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'statusCadastro',
 
         'linkedin_url',
         'github_url',
@@ -59,6 +61,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+
+            'statusCadastro' => StatusCadastro::class,
         ];
     }
 
@@ -98,11 +102,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isCadastroCompleto()
     {
-        return $this->foto_url
-            && $this->curriculo
-            && $this->area_atuacao
-            && $this->tecnologias
-            && $this->cpf
+        return $this->cpf
+            // && $this->curriculo
+            // && $this->area_atuacao
+            // && $this->tecnologias
+            // &&  $this->foto_url
             && $this->rg
             && $this->uf_rg
             && $this->orgao_emissor_rg

@@ -46,13 +46,15 @@ class DatabaseSeeder extends Seeder
         $pauloUser = User::factory()->cadastroCompleto()->create([
             'name' => 'Paulo Hernane Fontes e Silva',
             'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312')
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
         ]);
 
         $maxwellUser = User::factory()->cadastroCompleto()->create([
             'name' => 'Maxwell Guimarães de Oliveira',
             'email' => 'maxwell@computacao.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312')
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
         ]);
 
         $projeto1 = Projeto::factory()->create([
@@ -75,6 +77,7 @@ class DatabaseSeeder extends Seeder
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
             'data_inicio' => now(),
+            'status' => 'APROVADO',
         ]);
 
         UsuarioVinculo::factory()->create([
@@ -83,6 +86,7 @@ class DatabaseSeeder extends Seeder
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
             'data_inicio' => now(),
+            'status' => 'APROVADO',
         ]);
 
         UsuarioVinculo::factory()->create([
@@ -91,6 +95,7 @@ class DatabaseSeeder extends Seeder
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'data_inicio' => now(),
+            'status' => 'APROVADO',
         ]);
     }
 }

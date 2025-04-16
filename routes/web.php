@@ -19,7 +19,8 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/pos-cadastro/{id}', function () {
+// Route::get('/pos-cadastro/{id}', function () {
+Route::get('/pos-cadastro', function () {
     return Inertia::render('PosCadastro');
 })->middleware(['auth', 'verified'])->name('pos-cadastro');
 
@@ -28,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro')->middleware(['auth', 'verified']);
 
 Route::middleware(['auth', 'verified', 'checkUserRole:docente'])->group(function () {
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');

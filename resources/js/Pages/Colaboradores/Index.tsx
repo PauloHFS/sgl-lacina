@@ -19,7 +19,7 @@ interface Colaborador {
 }
 
 interface IndexProps {
-    colaboradores: Paginated<Colaborador>;
+    colaboradores?: Paginated<Colaborador>;
 }
 
 // TODO ARRUMAR O DARK MODE
@@ -178,8 +178,9 @@ export default function Index({ colaboradores }: IndexProps) {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200 bg-white">
-                                            {colaboradores.data.length > 0 ? (
-                                                colaboradores.data.map(
+                                            {colaboradores &&
+                                            colaboradores.data.length > 0 ? (
+                                                colaboradores?.data.map(
                                                     (colaborador) => (
                                                         <tr
                                                             key={colaborador.id}
@@ -330,18 +331,20 @@ export default function Index({ colaboradores }: IndexProps) {
                             )}
 
                             {/* Pagination */}
-                            <Paggination
-                                paginated={colaboradores}
-                                onPageChange={(page) =>
-                                    router.get(
-                                        route('colaboradores.index'),
-                                        { page },
-                                        { preserveState: true },
-                                    )
-                                }
-                                preserveScroll={true}
-                                preserveState={true}
-                            />
+                            {colaboradores && (
+                                <Paggination
+                                    paginated={colaboradores}
+                                    onPageChange={(page) =>
+                                        router.get(
+                                            route('colaboradores.index'),
+                                            { page },
+                                            { preserveState: true },
+                                        )
+                                    }
+                                    preserveScroll={true}
+                                    preserveState={true}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

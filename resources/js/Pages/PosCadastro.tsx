@@ -3,30 +3,28 @@ import React from 'react';
 
 interface ColaboradorData {
     // documentos
+    cpf: string;
     rg: string;
     uf_rg: string;
-    cpf: string;
+    orgao_emissor_rg: string;
 
     // dados bancarios
     conta_bancaria: string;
     agencia: string;
     codigo_banco: string;
 
-    // dados pessoais
-    telefone: string;
-
     // dados profissionais
+    linkedin_url: string;
+    github_url: string;
+    figma_url: string;
     curriculo: string;
-    linkedin: string;
-    github: string;
-    figma: string;
     area_atuacao: string;
     tecnologias: string;
 
-    // dados academicos
-    matricula: string;
-    periodo_entrada: string;
-    periodo_conclusao: string;
+    // // dados academicos
+    // matricula: string;
+    // periodo_entrada: string;
+    // periodo_conclusao: string;
 }
 
 export default function PosCadastro() {
@@ -35,6 +33,7 @@ export default function PosCadastro() {
             // documentos
             rg: '',
             uf_rg: '',
+            orgao_emissor_rg: '',
             cpf: '',
 
             // dados bancarios
@@ -42,26 +41,23 @@ export default function PosCadastro() {
             agencia: '',
             codigo_banco: '',
 
-            // dados pessoais
-            telefone: '',
-
             // dados profissionais
             curriculo: '',
-            linkedin: '',
-            github: '',
-            figma: '',
+            linkedin_url: '',
+            github_url: '',
+            figma_url: '',
             area_atuacao: '',
             tecnologias: '',
 
-            // dados academicos
-            matricula: '',
-            periodo_entrada: '',
-            periodo_conclusao: '',
+            // // dados academicos
+            // matricula: '',
+            // periodo_entrada: '',
+            // periodo_conclusao: '',
         });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/discentes', {
+        post('/profile/update', {
             onSuccess: () => {
                 alert('Cadastro realizado com sucesso!');
             },
@@ -166,31 +162,6 @@ export default function PosCadastro() {
                                     <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
                                         Dados de Contato
                                     </h2>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label
-                                        className="mb-2 block text-sm font-bold text-gray-700"
-                                        htmlFor="telefone"
-                                    >
-                                        Telefone*
-                                    </label>
-                                    <input
-                                        id="telefone"
-                                        type="text"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.telefone ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.telefone}
-                                        onChange={(e) =>
-                                            setData('telefone', e.target.value)
-                                        }
-                                        required
-                                        placeholder="(00) 00000-0000"
-                                    />
-                                    {errors.telefone && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                            {errors.telefone}
-                                        </p>
-                                    )}
                                 </div>
 
                                 {/* Dados Bancários */}
@@ -315,15 +286,18 @@ export default function PosCadastro() {
                                     <input
                                         id="linkedin"
                                         type="url"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.linkedin ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.linkedin}
+                                        className={`w-full rounded-md border px-3 py-2 ${errors.linkedin_url ? 'border-red-500' : 'border-gray-300'}`}
+                                        value={data.linkedin_url}
                                         onChange={(e) =>
-                                            setData('linkedin', e.target.value)
+                                            setData(
+                                                'linkedin_url',
+                                                e.target.value,
+                                            )
                                         }
                                     />
-                                    {errors.linkedin && (
+                                    {errors.linkedin_url && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.linkedin}
+                                            {errors.linkedin_url}
                                         </p>
                                     )}
                                 </div>
@@ -338,15 +312,18 @@ export default function PosCadastro() {
                                     <input
                                         id="github"
                                         type="url"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.github ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.github}
+                                        className={`w-full rounded-md border px-3 py-2 ${errors.github_url ? 'border-red-500' : 'border-gray-300'}`}
+                                        value={data.github_url}
                                         onChange={(e) =>
-                                            setData('github', e.target.value)
+                                            setData(
+                                                'github_url',
+                                                e.target.value,
+                                            )
                                         }
                                     />
-                                    {errors.github && (
+                                    {errors.github_url && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.github}
+                                            {errors.github_url}
                                         </p>
                                     )}
                                 </div>
@@ -361,15 +338,15 @@ export default function PosCadastro() {
                                     <input
                                         id="figma"
                                         type="url"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.figma ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.figma}
+                                        className={`w-full rounded-md border px-3 py-2 ${errors.figma_url ? 'border-red-500' : 'border-gray-300'}`}
+                                        value={data.figma_url}
                                         onChange={(e) =>
-                                            setData('figma', e.target.value)
+                                            setData('figma_url', e.target.value)
                                         }
                                     />
-                                    {errors.figma && (
+                                    {errors.figma_url && (
                                         <p className="mt-1 text-xs text-red-500">
-                                            {errors.figma}
+                                            {errors.figma_url}
                                         </p>
                                     )}
                                 </div>
@@ -428,7 +405,7 @@ export default function PosCadastro() {
                                 </div>
 
                                 {/* Dados Acadêmicos */}
-                                <div className="col-span-2">
+                                {/* <div className="col-span-2">
                                     <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
                                         Dados Acadêmicos
                                     </h2>
@@ -510,7 +487,7 @@ export default function PosCadastro() {
                                             {errors.periodo_conclusao}
                                         </p>
                                     )}
-                                </div>
+                                </div> */}
 
                                 <div className="col-span-2 mt-6">
                                     <button
