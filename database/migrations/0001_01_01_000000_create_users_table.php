@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $this->createEnumIfNotExists('statusCadastro', ['ACEITO', 'PENDENTE', 'RECUSADO']);
+
         // TODO Traduzir essa tabela
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -21,6 +24,8 @@ return new class extends Migration
             $table->rememberToken();
 
             // -- Campos Adicionais --
+            $table->string('statusCadastro')->default('PENDENTE');
+
             $table->string('linkedin_url')->nullable();
             $table->string('github_url')->nullable();
             $table->string('figma_url')->nullable();
@@ -39,6 +44,8 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE users ALTER COLUMN statusCadastro TYPE statusCadastro USING statusCadastro::statusCadastro');
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -64,5 +71,18 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+
+        // Drop the enum type if it exists
+        DB::statement("DROP TYPE IF EXISTS statusCadastro");
+    }
+
+    private function createEnumIfNotExists($name, $values)
+    {
+        $typeExists = DB::select("SELECT 1 FROM pg_type WHERE typname = ?", [$name]);
+
+        if (empty($typeExists)) {
+            $valuesString = implode("', '", $values);
+            DB::statement("CREATE TYPE $name AS ENUM ('$valuesString')");
+        }
     }
 };
