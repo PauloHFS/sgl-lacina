@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum StatusParticipacaoProjeto: string
+enum Funcao: string
 {
   case ACEITO = 'ACEITO';
-  case REJEITADO = 'REJEITADO';
   case PENDENTE = 'PENDENTE';
+  case INATIVO = 'INATIVO';
 }

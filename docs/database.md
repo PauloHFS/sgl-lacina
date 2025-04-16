@@ -3,9 +3,15 @@
 Quando lidando com as migrations e com as tabelas, levem em consideração o seguinte DBML:
 
 ```dbml
+enum StatusCadastro {
+  ACEITO
+  RECUSADO
+}
+
 table usuarios {
   id bigint [pk]
   nome varchar(255)
+  statusCadastro StatusCadastro [not null]
   linkedin_url varchar
   github_url varchar
   figma_url varchar
@@ -19,7 +25,6 @@ table usuarios {
   codigo_banco varchar
   rg varchar
   uf_rg varchar
-  orgao_emissor_rg varchar
   telefone varchar
   email varchar(255)
   email_verified_at timestamp(0)
@@ -29,12 +34,12 @@ table usuarios {
   updated_at timestamp(0)
 }
 
-enum tipo_vinculo {
+enum TipoVinculoProjeto {
   COORDENADOR
   COLABORADOR
 }
 
-enum funcao {
+enum Funcao {
   COORDENADOR
   PESQUISADOR
   DESENVOLVEDOR
@@ -42,12 +47,19 @@ enum funcao {
   ALUNO
 }
 
+enum StatusVinculoProjeto {
+  APROVADO
+  PENDENTE
+  INATIVO
+}
+
 table usuario_vinculo {
   projeto_id bigint [ref: > projetos.id]
   usuario_id bigint [ref: > usuarios.id]
-  tipo_vinculo TipoVinculo [not null]
+  tipo_vinculo TipoVinculoProjeto [not null]
   funcao Funcao [not null]
-  data_inicio datetime [not null]
+  status StatusVinculoProjeto [not null]
+  data_inicio datetime
   data_fim datetime
 
   indexes {
@@ -55,7 +67,7 @@ table usuario_vinculo {
   }
 }
 
-enum tipo_projeto {
+enum TipoProjeto {
   PDI
   TCC
   MESTRADO
@@ -69,32 +81,15 @@ table projetos {
   data_inicio date [not null]
   data_termino date
   cliente varchar [not null]
-  descricao text
-  slack_url varchar
-  discord_url varchar
-  board_url varchar
-  git_url varchar
-  tipo TipoProjeto [not null]
+  link_slack varchar
+  link_discord varchar
+  link_board varchar
+  tipo TipoProjeto [not null] // quais são os possiveis tipos de projetos?
   created_at datetime
   updated_at datetime
 }
 
-enum status_participacao_projeto {
-  APROVADO
-  PENDENTE
-  REJEITADO
-}
-
-table solicitacoes_projeto {
-  id bigint [pk, increment]
-  usuario_id bigint [ref: > usuarios.id]
-  projeto_id bigint [ref: > projetos.id]
-  status StatusParticipacaoProjeto [not null]
-  created_at datetime
-  updated_at datetime
-}
-
-enum status_solicitacao_troca_projeto {
+enum StatusSolicitacaoTrocaProjeto {
   PENDENTE
   APROVADO
   REJEITADO
@@ -115,7 +110,7 @@ table solicitacoes_troca_projeto {
   }
 }
 
-enum dia_da_semana {
+enum WeekDay {
   SEGUNDA
   TERCA
   QUARTA
@@ -125,7 +120,7 @@ enum dia_da_semana {
   DOMINGO
 }
 
-enum tipo_horario {
+enum TipoHorario {
   AULA
   TRABALHO
   AUSENTE

@@ -95,4 +95,19 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('tipo_vinculo', 'COLABORADOR')
             ->exists();
     }
+
+    public function isCadastroCompleto()
+    {
+        return $this->foto_url
+            && $this->curriculo
+            && $this->area_atuacao
+            && $this->tecnologias
+            && $this->cpf
+            && $this->rg
+            && $this->uf_rg
+            && $this->orgao_emissor_rg
+            && $this->conta_bancaria
+            && $this->agencia
+            && $this->codigo_banco;
+    }
 }
