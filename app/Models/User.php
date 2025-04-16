@@ -74,16 +74,22 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SolicitacoesProjeto::class, 'usuario_id');
     }
 
-    public function isCoordenador(Projeto $projeto)
+    public function isCoordenador(?Projeto $projeto = null)
     {
+        if ($projeto === null) {
+            return $this->vinculos()->where('tipo_vinculo', 'COORDENADOR')->exists();
+        }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
             ->where('tipo_vinculo', 'COORDENADOR')
             ->exists();
     }
 
-    public function isColaborador(Projeto $projeto)
+    public function isColaborador(?Projeto $projeto = null)
     {
+        if ($projeto === null) {
+            return $this->vinculos()->where('tipo_vinculo', 'COORDENADOR')->exists();
+        }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
             ->where('tipo_vinculo', 'COLABORADOR')

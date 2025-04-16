@@ -33,13 +33,13 @@ class UsuarioVinculo extends Model
         'data_fim' => 'datetime',
     ];
 
-    public function projeto()
-    {
-        return $this->belongsTo(Projeto::class, 'projeto_id');
-    }
-
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function projeto()
+    {
+        return $this->belongsTo(Projeto::class, 'projeto_id');
     }
 }
