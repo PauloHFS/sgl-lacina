@@ -3,12 +3,15 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\UsuarioVinculo;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UsuarioVinculo>
  */
 class UsuarioVinculoFactory extends Factory
 {
+    protected $model = UsuarioVinculo::class;
+
     /**
      * Define the model's default state.
      *

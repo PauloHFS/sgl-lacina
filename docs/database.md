@@ -35,7 +35,7 @@ enum tipo_vinculo {
 }
 
 enum funcao {
-  COODERNADOR
+  COORDENADOR
   PESQUISADOR
   DESENVOLVEDOR
   TECNICO

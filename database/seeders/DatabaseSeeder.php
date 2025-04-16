@@ -43,13 +43,13 @@ class DatabaseSeeder extends Seeder
         //     'projeto_id' => $projeto->id,
         // ]);
 
-        $pauloUser = User::factory()->create([
+        $pauloUser = User::factory()->cadastroCompleto()->create([
             'name' => 'Paulo Hernane Fontes e Silva',
             'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312')
         ]);
 
-        $maxwellUser = User::factory()->create([
+        $maxwellUser = User::factory()->cadastroCompleto()->create([
             'name' => 'Maxwell Guimarães de Oliveira',
             'email' => 'maxwell@computacao.ufcg.edu.br',
             'password' => Hash::make('Ab@12312')
@@ -77,20 +77,20 @@ class DatabaseSeeder extends Seeder
             'data_inicio' => now(),
         ]);
 
-        UsuarioVinculo::factory()->create([
-            'usuario_id' => $maxwellUser->id,
-            'projeto_id' => $projeto2->id,
-            'tipo_vinculo' => TipoVinculo::COORDENADOR,
-            'funcao' => Funcao::COORDENADOR,
-            'data_inicio' => now(),
-        ]);
+        // UsuarioVinculo::factory()->create([
+        //     'usuario_id' => $maxwellUser->id,
+        //     'projeto_id' => $projeto2->id,
+        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
+        //     'funcao' => Funcao::COORDENADOR,
+        //     'data_inicio' => now(),
+        // ]);
 
-        UsuarioVinculo::factory()->create([
-            'usuario_id' => $pauloUser->id,
-            'projeto_id' => $projeto1->id,
-            'tipo_vinculo' => TipoVinculo::COLABORADOR,
-            'funcao' => Funcao::ALUNO,
-            'data_inicio' => now(),
-        ]);
+        // UsuarioVinculo::factory()->create([
+        //     'usuario_id' => $pauloUser->id,
+        //     'projeto_id' => $projeto1->id,
+        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
+        //     'funcao' => Funcao::ALUNO,
+        //     'data_inicio' => now(),
+        // ]);
     }
 }

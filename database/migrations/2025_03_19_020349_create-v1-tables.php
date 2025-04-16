@@ -44,6 +44,7 @@ return new class extends Migration
             $table->string('funcao'); // Definimos como string primeiro
             $table->dateTime('data_inicio');
             $table->dateTime('data_fim')->nullable();
+            $table->timestamps();
 
             $table->primary(['projeto_id', 'usuario_id', 'data_fim']);
         });
@@ -107,7 +108,7 @@ return new class extends Migration
         });
 
         // Alterar o tipo da coluna usando SQL direto
-        DB::statement('ALTER TABLE horarios ALTER COLUMN dia_semana TYPE week_day USING dia_semana::week_day');
+        DB::statement('ALTER TABLE horarios ALTER COLUMN dia_semana TYPE dia_da_semana USING dia_semana::dia_da_semana');
         DB::statement('ALTER TABLE horarios ALTER COLUMN tipo TYPE tipo_horario USING tipo::tipo_horario');
 
         // >>>>>>
@@ -174,13 +175,15 @@ return new class extends Migration
         Schema::dropIfExists('projetos');
 
         // Drop types enum
-        Schema::dropIfExists('status_folga');
-        Schema::dropIfExists('tipo_folga');
-        Schema::dropIfExists('tipo_horario');
-        Schema::dropIfExists('week_day');
-        Schema::dropIfExists('status_solicitacao_troca_projeto');
-        Schema::dropIfExists('status_participacao_projeto');
-        Schema::dropIfExists('tipo_vinculo');
+        DB::statement('DROP TYPE IF EXISTS tipo_vinculo');
+        DB::statement('DROP TYPE IF EXISTS status_folga');
+        DB::statement('DROP TYPE IF EXISTS tipo_folga');
+        DB::statement('DROP TYPE IF EXISTS tipo_horario');
+        DB::statement('DROP TYPE IF EXISTS dia_da_semana');  // Notice I fixed the name from week_day to dia_da_semana as defined in createEnumIfNotExists
+        DB::statement('DROP TYPE IF EXISTS status_solicitacao_troca_projeto');
+        DB::statement('DROP TYPE IF EXISTS status_participacao_projeto');
+        DB::statement('DROP TYPE IF EXISTS tipo_projeto');  // Added this to match the creation in the up() method
+        DB::statement('DROP TYPE IF EXISTS funcao');  // Added this to match the creation in the up() method
     }
 
     private function createEnumIfNotExists($name, $values)

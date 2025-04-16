@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,8 +27,8 @@ class UsuarioVinculo extends Model
     ];
 
     protected $casts = [
-        'tipo_vinculo' => TipoVinculo::class,
-        'funcao' => TipoVinculo::class,
+        // 'tipo_vinculo' => TipoVinculo::class,
+        // 'funcao' => Funcao::class,
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];
