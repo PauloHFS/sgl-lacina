@@ -27,8 +27,8 @@ class UsuarioVinculo extends Model
     ];
 
     protected $casts = [
-        // 'tipo_vinculo' => TipoVinculo::class,
-        // 'funcao' => Funcao::class,
+        'tipo_vinculo' => TipoVinculo::class,
+        'funcao' => Funcao::class,
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];

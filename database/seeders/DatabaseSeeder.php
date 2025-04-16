@@ -77,20 +77,20 @@ class DatabaseSeeder extends Seeder
             'data_inicio' => now(),
         ]);
 
-        // UsuarioVinculo::factory()->create([
-        //     'usuario_id' => $maxwellUser->id,
-        //     'projeto_id' => $projeto2->id,
-        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
-        //     'funcao' => Funcao::COORDENADOR,
-        //     'data_inicio' => now(),
-        // ]);
+        UsuarioVinculo::factory()->create([
+            'usuario_id' => $maxwellUser->id,
+            'projeto_id' => $projeto2->id,
+            'tipo_vinculo' => TipoVinculo::COORDENADOR,
+            'funcao' => Funcao::COORDENADOR,
+            'data_inicio' => now(),
+        ]);
 
-        // UsuarioVinculo::factory()->create([
-        //     'usuario_id' => $pauloUser->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'data_inicio' => now(),
-        // ]);
+        UsuarioVinculo::factory()->create([
+            'usuario_id' => $pauloUser->id,
+            'projeto_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'data_inicio' => now(),
+        ]);
     }
 }
