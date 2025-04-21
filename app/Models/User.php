@@ -100,18 +100,42 @@ class User extends Authenticatable implements MustVerifyEmail
             ->exists();
     }
 
-    public function isCadastroCompleto()
+    public function hasDocumentos()
     {
         return $this->cpf
-            // && $this->curriculo
-            // && $this->area_atuacao
-            // && $this->tecnologias
-            // &&  $this->foto_url
             && $this->rg
             && $this->uf_rg
-            && $this->orgao_emissor_rg
-            && $this->conta_bancaria
+            && $this->orgao_emissor_rg;
+    }
+
+    public function hasEndereco()
+    {
+        return $this->cep
+            && $this->logradouro
+            && $this->numero
+            // && $this->complemento // complemento opcional
+            && $this->bairro
+            && $this->cidade
+            && $this->estado;
+    }
+
+    public function hasDadosDeContato()
+    {
+        return (bool)$this->telefone;
+    }
+
+    public function hasDadosBancarios()
+    {
+        return $this->conta_bancaria
             && $this->agencia
             && $this->codigo_banco;
     }
+
+    // TODO: Checar com professor se é obrigatório ou não
+    // public function hasDadosProfissionais()
+    // {
+    //     return $this->curriculo
+    //         && $this->area_atuacao
+    //         && $this->tecnologias;
+    // }
 }

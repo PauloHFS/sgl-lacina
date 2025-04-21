@@ -19,7 +19,6 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route::get('/pos-cadastro/{id}', function () {
 Route::get('/pos-cadastro', function () {
     return Inertia::render('PosCadastro');
 })->middleware(['auth', 'verified'])->name('pos-cadastro');
