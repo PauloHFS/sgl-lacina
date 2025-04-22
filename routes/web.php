@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro')->middleware(['auth', 'verified']);
 
-Route::middleware(['auth', 'verified', 'checkUserRole:docente'])->group(function () {
+Route::middleware(['auth', 'verified', 'checkUserRole:coordenador'])->group(function () {
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
     Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
     Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');

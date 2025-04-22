@@ -24,6 +24,28 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'statusCadastro',
 
+        'genero',
+        'data_nascimento',
+
+        'cpf',
+        'rg',
+        'uf_rg',
+        'orgao_emissor_rg',
+
+        'conta_bancaria',
+        'agencia',
+        'codigo_banco',
+
+        'telefone',
+
+        'cep',
+        'logradouro',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'estado',
+
         'linkedin_url',
         'github_url',
         'figma_url',
@@ -31,14 +53,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'curriculo',
         'area_atuacao',
         'tecnologias',
-
-        'cpf',
-        'rg',
-        'uf_rg',
-        'orgao_emissor_rg',
-        'conta_bancaria',
-        'agencia',
-        'codigo_banco',
     ];
 
     /**
@@ -63,7 +77,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
 
             'statusCadastro' => StatusCadastro::class,
+
+            'data_nascimento' => 'datetime',
         ];
+    }
+
+    public function vinculos()
+    {
+        return $this->hasMany(UsuarioVinculo::class, 'usuario_id');
     }
 
     public function projetos()

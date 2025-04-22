@@ -17,6 +17,10 @@ class CheckUserRoleMiddleware
     public function handle(Request $request, Closure $next, $role): Response
     {
 
+        if ($role !== 'colaborador' && $role !== 'coordenador') {
+            abort(403, 'Acesso negado.');
+        }
+
         // Validar se o usuário tá authenticado
         if (!Auth::check()) {
             return redirect()->route('login');
