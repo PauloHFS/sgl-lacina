@@ -58,7 +58,8 @@ class UserFactory extends Factory
             'uf_rg' => fake()->stateAbbr(),
             'orgao_emissor_rg' => fake()->word(),
             'conta_bancaria' => fake()->numerify('#########'),
-            'agencia' => fake()->numerify('#####')
+            'agencia' => fake()->numerify('#####'),
+            'statusCadastro' => 'PENDENTE',
         ]);
     }
 }

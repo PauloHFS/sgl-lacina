@@ -6,6 +6,12 @@ import { IMaskInput } from 'react-imask';
 import Select from 'react-select';
 
 interface ColaboradorData {
+    foto_url: File | null;
+
+    // dados pessoais
+    genero: string;
+    data_nascimento: string;
+
     // documentos
     cpf: string;
     rg: string;
@@ -46,6 +52,11 @@ interface ColaboradorData {
 export default function PosCadastro() {
     const { data, setData, post, processing, errors } =
         useForm<ColaboradorData>({
+            foto_url: null,
+            // dados pessoais
+            genero: '',
+            data_nascimento: '',
+
             // documentos
             rg: '',
             uf_rg: '',
@@ -110,6 +121,7 @@ export default function PosCadastro() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/profile/update', {
+            forceFormData: true,
             onSuccess: () => {
                 alert('Cadastro realizado com sucesso!');
             },
@@ -136,6 +148,106 @@ export default function PosCadastro() {
 
                             <form onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div className="mb-4">
+                                        <label
+                                            className="mb-2 block text-sm font-bold text-gray-700"
+                                            htmlFor="foto_url"
+                                        >
+                                            Foto de Perfil
+                                        </label>
+                                        <input
+                                            id="foto_url"
+                                            type="file"
+                                            accept="image/*"
+                                            className={`w-full rounded-md border px-3 py-2 ${errors.foto_url ? 'border-red-500' : 'border-gray-300'}`}
+                                            onChange={(e) => {
+                                                if (
+                                                    e.target.files &&
+                                                    e.target.files[0]
+                                                ) {
+                                                    setData(
+                                                        'foto_url',
+                                                        e.target.files[0],
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                        {errors.foto_url && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.foto_url}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label
+                                            className="mb-2 block text-sm font-bold text-gray-700"
+                                            htmlFor="genero"
+                                        >
+                                            Gênero
+                                        </label>
+                                        <Select
+                                            id="genero"
+                                            options={[
+                                                {
+                                                    value: 'MASCULINO',
+                                                    label: 'Masculino',
+                                                },
+                                                {
+                                                    value: 'FEMININO',
+                                                    label: 'Feminino',
+                                                },
+                                                {
+                                                    value: 'OUTRO',
+                                                    label: 'Outro',
+                                                },
+                                                {
+                                                    value: 'NAO_INFORMAR',
+                                                    label: 'Prefiro não informar',
+                                                },
+                                            ]}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'genero',
+                                                    e?.value || '',
+                                                )
+                                            }
+                                            placeholder="Selecione o gênero..."
+                                            isSearchable
+                                        />
+                                        {errors.genero && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.genero}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label
+                                            className="mb-2 block text-sm font-bold text-gray-700"
+                                            htmlFor="data_nascimento"
+                                        >
+                                            Data de Nascimento
+                                        </label>
+                                        <input
+                                            id="data_nascimento"
+                                            type="date"
+                                            className={`w-full rounded-md border px-3 py-2 ${errors.data_nascimento ? 'border-red-500' : 'border-gray-300'}`}
+                                            value={data.data_nascimento || ''}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'data_nascimento',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        {errors.data_nascimento && (
+                                            <p className="mt-1 text-xs text-red-500">
+                                                {errors.data_nascimento}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     {/* Documentos */}
                                     <div className="col-span-2">
                                         <h2 className="mb-4 border-b pb-2 text-lg font-semibold">

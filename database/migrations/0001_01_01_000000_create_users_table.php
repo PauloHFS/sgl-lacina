@@ -26,21 +26,36 @@ return new class extends Migration
             // -- Campos Adicionais --
             $table->string('statusCadastro');
 
-            $table->string('linkedin_url')->nullable();
-            $table->string('github_url')->nullable();
-            $table->string('figma_url')->nullable();
             $table->string('foto_url')->nullable();
-            $table->text('curriculo')->nullable();
-            $table->text('area_atuacao')->nullable();
-            $table->text('tecnologias')->nullable();
+
+            $table->string('genero')->nullable();
+            $table->timestamp('data_nascimento')->nullable();
 
             $table->string('cpf')->nullable()->unique();
             $table->string('rg')->nullable()->unique();
             $table->string('uf_rg')->nullable();
             $table->string('orgao_emissor_rg')->nullable();
+
+            $table->string('cep')->nullable();
+            $table->string('logradouro')->nullable();
+            $table->string('numero')->nullable();
+            $table->string('complemento')->nullable();
+            $table->string('bairro')->nullable();
+            $table->string('cidade')->nullable();
+            $table->string('estado')->nullable();
+
+            $table->string('telefone')->nullable();
+
             $table->string('conta_bancaria')->nullable();
             $table->string('agencia')->nullable();
             $table->string('codigo_banco')->nullable();
+
+            $table->string('linkedin_url')->nullable();
+            $table->string('github_url')->nullable();
+            $table->string('figma_url')->nullable();
+            $table->text('curriculo')->nullable();
+            $table->text('area_atuacao')->nullable();
+            $table->text('tecnologias')->nullable();
 
             $table->timestamps();
         });

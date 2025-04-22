@@ -18,45 +18,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // $colaborador = Colaborador::factory()->withUser([
-        //     'name' => 'Paulo Hernane Fontes e Silva',
-        //     'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312')
-        // ])->create();
-
-        // $docente = Docente::factory()->withUser([
-        //     'name' => 'Maxwell Guimarães de Oliveira ',
-        //     'email' => 'maxwell@computacao.ufcg.edu.br'
-        // ])->create();
-
-        // $projeto = Projeto::factory()->create([
-        //     'nome' => 'Projeto 1',
-        //     'descricao' => 'Descrição do projeto 1',
-        //     'data_inicio' => now(),
-        //     'data_termino' => now()->addDays(30),
-        // ]);
-
-        // DocenteProjeto::factory()->create([
-        //     'docente_id' => $docente->id,
-        //     'projeto_id' => $projeto->id,
-        // ]);
-
-        $pauloUser = User::factory()->cadastroCompleto()->create([
-            'name' => 'Paulo Hernane Fontes e Silva',
-            'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'statusCadastro' => 'ACEITO',
-        ]);
-
-        $maxwellUser = User::factory()->cadastroCompleto()->create([
-            'name' => 'Maxwell Guimarães de Oliveira',
-            'email' => 'maxwell@computacao.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'statusCadastro' => 'ACEITO',
-        ]);
-
         $projeto1 = Projeto::factory()->create([
             'nome' => 'Projeto ABC',
             'descricao' => 'Descrição do projeto ABC',
@@ -69,6 +30,14 @@ class DatabaseSeeder extends Seeder
             'descricao' => 'Descrição do projeto DEF',
             'data_inicio' => now(),
             'data_termino' => now()->addYear(),
+        ]);
+
+        // usuario coordenador de um projeto e colaborador de outro
+        $maxwellUser = User::factory()->cadastroCompleto()->create([
+            'name' => 'Maxwell Guimarães de Oliveira',
+            'email' => 'maxwell@computacao.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
         ]);
 
         UsuarioVinculo::factory()->create([
@@ -89,6 +58,14 @@ class DatabaseSeeder extends Seeder
             'status' => 'APROVADO',
         ]);
 
+        // usuario colaborador de um projeto
+        $pauloUser = User::factory()->cadastroCompleto()->create([
+            'name' => 'Paulo Hernane Fontes e Silva',
+            'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
+        ]);
+
         UsuarioVinculo::factory()->create([
             'usuario_id' => $pauloUser->id,
             'projeto_id' => $projeto1->id,
@@ -96,6 +73,22 @@ class DatabaseSeeder extends Seeder
             'funcao' => Funcao::ALUNO,
             'data_inicio' => now(),
             'status' => 'APROVADO',
+        ]);
+
+        // usuario pendente no laboratório
+        $usuarioPendente = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Pendente',
+            'email' => 'usuario_pendente@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'PENDENTE',
+        ]);
+
+        //usuário aceito no laboratório sem vinculo
+        $usuarioAceito = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Aceito',
+            'email' => 'usuario_aceito@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
         ]);
     }
 }

@@ -62,20 +62,87 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
+
+    /**
+     * Completa o cadastro do usuário.
+     * 
+     * Veja a interface do forms em resources/js/Pages/PosCadastro.jsx
+     */
     public function completarCadastro(Request $request): RedirectResponse
     {
         $user = $request->user();
 
-        // aqui você vai salvar o cpf, rg, uf_rg, conta_bancaria, agencia, codigo_banco
+        $request->validate([
+            // Foto
+            'foto_url' => 'nullable|image|max:2048',
+
+            // Dados pessoais
+            'genero' => 'required|string|max:50',
+            'data_nascimento' => 'required|date',
+
+            // Documentos
+            'cpf' => 'required|string|max:14',
+            'rg' => 'required|string|max:12',
+            'uf_rg' => 'required|string|max:2',
+            'orgao_emissor_rg' => 'required|string|max:255',
+
+            // Endereço
+            'cep' => 'required|string|max:9',
+            'logradouro' => 'required|string|max:255',
+            'numero' => 'required|string|max:10',
+            'complemento' => 'nullable|string|max:255',
+            'bairro' => 'required|string|max:255',
+            'cidade' => 'required|string|max:255',
+            'estado' => 'required|string|max:2',
+
+            // Dados de contato
+            'telefone' => 'required|string|max:20',
+
+            // Dados bancários
+            'conta_bancaria' => 'required|string|max:20',
+            'agencia' => 'required|string|max:10',
+            'codigo_banco' => 'required|string|max:10',
+
+            // Dados profissionais
+            'linkedin_url' => 'nullable|url|max:255',
+            'github_url' => 'nullable|url|max:255',
+            'figma_url' => 'nullable|url|max:255',
+            'curriculo' => 'nullable|string|max:255',
+            'area_atuacao' => 'nullable|string|max:255',
+            'tecnologias' => 'nullable|string|max:255',
+        ]);
+
+        $user->statusCadastro = StatusCadastro::PENDENTE;
+
+        if ($request->hasFile('foto_url')) {
+            $path = $request->file('foto_url')->store('fotos', 'public');
+            $user->foto_url = $path;
+        }
 
         $user->cpf = $request->input('cpf');
         $user->rg = $request->input('rg');
         $user->uf_rg = $request->input('uf_rg');
-        // $user->orgao_emissor_rg = $request->input('orgao_emissor_rg');
+        $user->orgao_emissor_rg = $request->input('orgao_emissor_rg');
         $user->conta_bancaria = $request->input('conta_bancaria');
         $user->agencia = $request->input('agencia');
         $user->codigo_banco = $request->input('codigo_banco');
-        // $user->statusCadastro = StatusCadastro::PENDENTE;
+        $user->cep = $request->input('cep');
+        $user->logradouro = $request->input('logradouro');
+        $user->numero = $request->input('numero');
+        $user->complemento = $request->input('complemento');
+        $user->bairro = $request->input('bairro');
+        $user->cidade = $request->input('cidade');
+        $user->estado = $request->input('estado');
+        $user->telefone = $request->input('telefone');
+        $user->genero = $request->input('genero');
+        $user->data_nascimento = $request->input('data_nascimento');
+        $user->linkedin_url = $request->input('linkedin_url');
+        $user->github_url = $request->input('github_url');
+        $user->figma_url = $request->input('figma_url');
+        $user->curriculo = $request->input('curriculo');
+        $user->area_atuacao = $request->input('area_atuacao');
+        $user->tecnologias = $request->input('tecnologias');
+
         $user->save();
 
         return Redirect::route('dashboard');
