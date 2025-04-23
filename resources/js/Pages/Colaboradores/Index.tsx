@@ -22,6 +22,8 @@ interface IndexProps {
     colaboradores?: Paginated<Colaborador>;
 }
 
+type Tabs = 'vinculo_pendente' | 'aprovacao_pendente' | 'ativos' | 'inativos';
+
 // TODO ARRUMAR O DARK MODE
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,11 +37,9 @@ export default function Index({ colaboradores }: IndexProps) {
         );
     };
 
-    const [activeTab, setActiveTab] = useState<
-        'ativos' | 'inativos' | 'pendentes' | null
-    >(null);
+    const [activeTab, setActiveTab] = useState<Tabs | null>(null);
 
-    const handleTabChange = (tab: 'ativos' | 'inativos' | 'pendentes') => {
+    const handleTabChange = (tab: Tabs) => {
         setActiveTab(tab);
         router.get(
             route('colaboradores.index'),
@@ -95,6 +95,34 @@ export default function Index({ colaboradores }: IndexProps) {
                                     type="button"
                                     className={clsx(
                                         'px-4 py-2 text-sm font-medium focus:outline-none',
+                                        activeTab === 'vinculo_pendente'
+                                            ? 'border-b-2 border-indigo-600 text-indigo-600'
+                                            : 'text-gray-500 hover:text-indigo-600',
+                                    )}
+                                    onClick={() =>
+                                        handleTabChange('vinculo_pendente')
+                                    }
+                                >
+                                    Vínculo Pendente
+                                </button>
+                                <button
+                                    type="button"
+                                    className={clsx(
+                                        'px-4 py-2 text-sm font-medium focus:outline-none',
+                                        activeTab === 'aprovacao_pendente'
+                                            ? 'border-b-2 border-indigo-600 text-indigo-600'
+                                            : 'text-gray-500 hover:text-indigo-600',
+                                    )}
+                                    onClick={() =>
+                                        handleTabChange('aprovacao_pendente')
+                                    }
+                                >
+                                    Aprovação Pendente
+                                </button>
+                                <button
+                                    type="button"
+                                    className={clsx(
+                                        'px-4 py-2 text-sm font-medium focus:outline-none',
                                         activeTab === 'ativos'
                                             ? 'border-b-2 border-indigo-600 text-indigo-600'
                                             : 'text-gray-500 hover:text-indigo-600',
@@ -114,18 +142,6 @@ export default function Index({ colaboradores }: IndexProps) {
                                     onClick={() => handleTabChange('inativos')}
                                 >
                                     Inativos
-                                </button>
-                                <button
-                                    type="button"
-                                    className={clsx(
-                                        'px-4 py-2 text-sm font-medium focus:outline-none',
-                                        activeTab === 'pendentes'
-                                            ? 'border-b-2 border-indigo-600 text-indigo-600'
-                                            : 'text-gray-500 hover:text-indigo-600',
-                                    )}
-                                    onClick={() => handleTabChange('pendentes')}
-                                >
-                                    Vínculo Pendente
                                 </button>
                             </div>
 
@@ -189,6 +205,14 @@ export default function Index({ colaboradores }: IndexProps) {
                                                                 {colaborador.foto_url ? (
                                                                     <img
                                                                         src={
+                                                                            colaborador.foto_url
+                                                                        }
+                                                                        alt={`Foto de ${colaborador.name}`}
+                                                                        className="h-15 w-15 rounded-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <img
+                                                                        src={
                                                                             'https://robohash.org/set1/' +
                                                                             colaborador.name +
                                                                             '.png'
@@ -196,16 +220,6 @@ export default function Index({ colaboradores }: IndexProps) {
                                                                         alt={`Foto de ${colaborador.name}`}
                                                                         className="h-15 w-15 rounded-full object-cover"
                                                                     />
-                                                                ) : (
-                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                                                                        <span className="font-medium text-gray-500">
-                                                                            {colaborador.name
-                                                                                .charAt(
-                                                                                    0,
-                                                                                )
-                                                                                .toUpperCase()}
-                                                                        </span>
-                                                                    </div>
                                                                 )}
                                                             </td>
                                                             <td className="whitespace-nowrap px-6 py-4">

@@ -48,7 +48,7 @@ class UserFactory extends Factory
             'linkedin_url' => fake()->url(),
             'github_url' => fake()->url(),
             'figma_url' => fake()->url(),
-            'foto_url' => fake()->url(),
+            'foto_url' => 'https://robohash.org/set1/' . Str::random(16) . '.png',
             'curriculo' => fake()->text(),
             'area_atuacao' => fake()->text(),
             'tecnologias' => fake()->text(),
