@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum Funcao: string
+enum StatusVinculoProjeto: string
 {
   case ACEITO = 'ACEITO';
   case PENDENTE = 'PENDENTE';
