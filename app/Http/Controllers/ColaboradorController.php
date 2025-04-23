@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusCadastro;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Projeto;
 use Inertia\Inertia;
 use App\Enums\TipoVinculo;
 use App\Events\PreColaboradorAceito;
 use App\Enums\StatusVinculoProjeto;
+use App\Models\UsuarioVinculo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ColaboradorController extends Controller
 {
@@ -93,67 +98,167 @@ class ColaboradorController extends Controller
         return Inertia::render('Colaboradores/Index', []);
     }
 
-    /**
-     * Rederiza a view de Validar o pre cadastro do colaborador.
-     * recebe o id na url
-     */
-    public function showValidateUsuario(Request $request, string $preCandidatoUserId)
+    public function show($id)
     {
-        $usuario = User::where('id', $preCandidatoUserId)->first();
+        $colaborador = User::findOrFail($id);
 
-        if ($usuario) {
-            return Inertia::render('PreCandidato/AvaliacaoInicial', [
-                'status' => 'success',
-                'message' => 'Colaborador encontrado.',
-                'user' => $usuario,
-            ]);
+        // Busca vínculos do colaborador
+        $vinculos = DB::table('usuario_vinculo')
+            ->where('usuario_id', $colaborador->id)
+            ->orderByDesc('data_inicio')
+            ->get();
+
+        // Status e projetos
+        $statusCadastro = 'INATIVO';
+        $projetos_atuais = [];
+        $projeto_solicitado = null;
+        $vinculo_id = null;
+
+        Log::debug('Colaborador encontrado', [
+            'colaborador_id' => $colaborador->id,
+            'statusCadastro' => $colaborador->statusCadastro,
+            'vinculos' => $vinculos,
+        ]);
+
+
+        if ($colaborador->statusCadastro === StatusCadastro::PENDENTE) {
+            $statusCadastro = 'VINCULO_PENDENTE';
+        } else if (
+            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            $vinculos->where('status', 'PENDENTE')->count() > 0 // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
+        ) {
+            // Usuário aceito no laboratório, mas com vínculo pendente em projeto
+            $statusCadastro = 'APROVACAO_PENDENTE';
+            $vinculoPendenteProjeto = $vinculos->first(function ($v) {
+                return $v->status === 'PENDENTE'; // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
+            });
+            if ($vinculoPendenteProjeto) {
+                $projeto_solicitado = Projeto::find($vinculoPendenteProjeto->projeto_id);
+            }
+        } else if (
+            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            // $vinculos->where('status', StatusVinculoProjeto::APROVADO) // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
+            $vinculos->where('status', 'APROVADO')
+            // ->where('data_fim', '>', now()) TODO: Verificar essa validação
+            ->count() > 0
+        ) {
+            // Usuário com vínculo aprovado e ativo em algum projeto
+            $statusCadastro = 'ATIVO';
+            $projetos_atuais = Projeto::whereIn(
+                'id',
+                $vinculos->where('status', 'APROVADO')
+                    // ->where('data_fim', '>', now()) TODO: Verificar essa validação
+                    ->pluck('projeto_id')
+            )->get(['id', 'nome']);
+        } else if (
+            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            $vinculos->where('status', StatusVinculoProjeto::INATIVO)
+            ->where('data_fim', '<', now())
+            ->count() > 0
+        ) {
+            // Usuário com vínculo inativo em todos os projetos
+            $statusCadastro = 'INATIVO';
         }
 
-        return Inertia::render('PreCandidato/AvaliacaoInicial', [
-            'user' => null,
-            'status' => 'error',
-            'message' => 'Colaborador não encontrado.',
+        Log::debug('Status do colaborador', [
+            'colaborador_id' => $colaborador->id,
+            'statusCadastro' => $statusCadastro,
+        ]);
+
+        return inertia('Colaboradores/Show', [
+            'colaborador' => [
+                'id' => $colaborador->id,
+                'name' => $colaborador->nome,
+                'email' => $colaborador->email,
+                'linkedin_url' => $colaborador->linkedin_url,
+                'github_url' => $colaborador->github_url,
+                'figma_url' => $colaborador->figma_url,
+                'foto_url' => $colaborador->foto_url,
+                'area_atuacao' => $colaborador->area_atuacao,
+                'tecnologias' => $colaborador->tecnologias,
+                'curriculo' => $colaborador->curriculo,
+                'cpf' => $colaborador->cpf,
+                'conta_bancaria' => $colaborador->conta_bancaria,
+                'agencia' => $colaborador->agencia,
+                'codigo_banco' => $colaborador->codigo_banco,
+                'rg' => $colaborador->rg,
+                'uf_rg' => $colaborador->uf_rg,
+                'telefone' => $colaborador->telefone,
+                'created_at' => $colaborador->created_at,
+                'updated_at' => $colaborador->updated_at,
+                'statusCadastro' => $statusCadastro,
+                'projeto_solicitado' => $projeto_solicitado
+                    ? [
+                        'id' => $projeto_solicitado->id,
+                        'nome' => $projeto_solicitado->nome,
+                    ]
+                    : null,
+                'projetos_atuais' => collect($projetos_atuais)->map(function ($p) {
+                    return [
+                        'id' => $p->id,
+                        'nome' => $p->nome,
+                    ];
+                }),
+            ],
         ]);
     }
 
-    public function aceitar(Request $request)
+    public function aceitar(User $colaborador, Request $request)
     {
-        $preCandidatoUserId = $request->input('preCandidatoUserId');
+        $colaborador->statusCadastro = 'ACEITO';
+        $colaborador->save();
 
-        if (!$preCandidatoUserId) {
-            return Inertia::render('PreCandidato/AvaliacaoInicial', [
-                'user' => null,
-                'status' => 'error',
-                'message' => 'ID do colaborador não fornecido.',
-            ]);
-        }
-        $usuario = User::where('id', $preCandidatoUserId)->first();
+        // Aqui você pode disparar eventos/emails se necessário
 
-        if ($usuario) {
-            // $colaborador = new Colaborador();
-            // $colaborador->id = $usuario->id;
-            // $colaborador->save();
+        return redirect()->back()->with('success', 'Colaborador aceito com sucesso.');
+    }
 
-            // // criar colaborador vinculo
-            // $colaborador->vinculo()->create([
-            //     'tipo' => TipoVinculo::ALUNO_GRADUACAO,
-            //     'data_inicio' => now(),
-            // ]);
+    public function recusar(User $colaborador, Request $request)
+    {
+        $colaborador->statusCadastro = 'RECUSADO';
+        $colaborador->save();
 
-            // dispara o evento de colaborador aceito
-            event(new PreColaboradorAceito($usuario->id, $usuario->email));
+        // Aqui você pode disparar eventos/emails se necessário
 
-            return Inertia::render('PreCandidato/AvaliacaoInicial', [
-                'status' => 'success',
-                'message' => 'Colaborador aceito com sucesso.',
-                'user' => $usuario,
-            ]);
+        return redirect()->back()->with('success', 'Colaborador recusado com sucesso.');
+    }
+
+    public function aceitarVinculo(User $colaborador)
+    {
+
+        $vinculo = UsuarioVinculo::where('usuario_id', $colaborador->id)
+            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+            ->where('status', StatusVinculoProjeto::PENDENTE)
+            ->first();
+
+        if (!$vinculo) {
+            return redirect()->back()->with('error', 'Vínculo não encontrado.');
         }
 
-        return Inertia::render('PreCandidato/AvaliacaoInicial', [
-            'user' => null,
-            'status' => 'error',
-            'message' => 'Colaborador não encontrado.',
-        ]);
+        $vinculo->status = 'APROVADO'; // StatusVinculoProjeto::APROVADO
+        $vinculo->data_inicio = now();
+        $vinculo->data_fim = null; // null para indicar que o vínculo está ativo
+        $vinculo->save();
+        // Aqui você pode disparar eventos/emails se necessário
+
+        return redirect()->back()->with('success', 'Colaborador aceito com sucesso.');
+    }
+
+    public function recusarVinculo(User $colaborador, Request $request)
+    {
+        $vinculo = UsuarioVinculo::where('usuario_id', $colaborador->id)
+            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+            ->where('status', StatusVinculoProjeto::PENDENTE)
+            ->first();
+        if (!$vinculo) {
+            return redirect()->back()->with('error', 'Vínculo não encontrado.');
+        }
+        $vinculo->status = 'INATIVO'; // StatusVinculoProjeto::INATIVO //TODO: criar um enum para recusado no vinculo
+        $vinculo->data_fim = now();
+        $vinculo->save();
+
+        // Aqui você pode disparar eventos/emails se necessário
+
+        return redirect()->back()->with('success', 'Colaborador recusado com sucesso.');
     }
 }

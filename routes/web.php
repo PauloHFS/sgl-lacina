@@ -37,10 +37,20 @@ Route::middleware(['auth', 'verified', 'checkUserRole:coordenador'])->group(func
     Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
     Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
     Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
+    Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+
+    Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
+    Route::post('/colaboradores/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
+
+    Route::post('/vinculos/{colaborador}/aceitar', [ColaboradorController::class, 'aceitarVinculo'])
+        ->name('vinculos.aceitar');
+    Route::post('/vinculos/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])
+        ->name('vinculos.recusar');
 });
 
 Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])
     ->name('projetos.solicitar-vinculo')
     ->middleware(['auth']);
+
 
 require __DIR__ . '/auth.php';

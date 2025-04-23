@@ -171,19 +171,7 @@ export default function Index({ colaboradores }: IndexProps) {
                                                     scope="col"
                                                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                                                 >
-                                                    Área de Atuação
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                                >
-                                                    Tecnologias
-                                                </th>
-                                                <th
-                                                    scope="col"
-                                                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                                >
-                                                    Links
+                                                    Email
                                                 </th>
                                                 <th
                                                     scope="col"
@@ -228,101 +216,23 @@ export default function Index({ colaboradores }: IndexProps) {
                                                                         colaborador.name
                                                                     }
                                                                 </div>
+                                                            </td>
+                                                            <td className="whitespace-nowrap px-6 py-4">
                                                                 <div className="text-sm text-gray-500">
                                                                     {
                                                                         colaborador.email
                                                                     }
                                                                 </div>
                                                             </td>
-                                                            <td className="whitespace-nowrap px-6 py-4">
-                                                                <div className="text-sm text-gray-900">
-                                                                    {colaborador.area_atuacao ||
-                                                                        '-'}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="text-sm text-gray-900">
-                                                                    {colaborador.tecnologias
-                                                                        ? colaborador.tecnologias
-                                                                              .split(
-                                                                                  ',',
-                                                                              )
-                                                                              .map(
-                                                                                  (
-                                                                                      tech,
-                                                                                      index,
-                                                                                  ) => (
-                                                                                      <span
-                                                                                          key={
-                                                                                              index
-                                                                                          }
-                                                                                          className="mb-1 mr-1 inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
-                                                                                      >
-                                                                                          {tech.trim()}
-                                                                                      </span>
-                                                                                  ),
-                                                                              )
-                                                                        : '-'}
-                                                                </div>
-                                                            </td>
-                                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                                                <div className="flex space-x-2">
-                                                                    {colaborador.linkedin_url && (
-                                                                        <a
-                                                                            href={
-                                                                                colaborador.linkedin_url
-                                                                            }
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                                        >
-                                                                            LinkedIn
-                                                                        </a>
-                                                                    )}
-                                                                    {colaborador.github_url && (
-                                                                        <a
-                                                                            href={
-                                                                                colaborador.github_url
-                                                                            }
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                                        >
-                                                                            GitHub
-                                                                        </a>
-                                                                    )}
-                                                                    {colaborador.figma_url && (
-                                                                        <a
-                                                                            href={
-                                                                                colaborador.figma_url
-                                                                            }
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                                        >
-                                                                            Figma
-                                                                        </a>
-                                                                    )}
-                                                                </div>
-                                                            </td>
                                                             <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                                                                 <a
-                                                                    // href={route(
-                                                                    //     'colaboradores.show',
-                                                                    //     colaborador.id,
-                                                                    // )}
+                                                                    href={route(
+                                                                        'colaboradores.show',
+                                                                        colaborador.id,
+                                                                    )}
                                                                     className="mr-3 text-indigo-600 hover:text-indigo-900"
                                                                 >
                                                                     Ver
-                                                                </a>
-                                                                <a
-                                                                    // href={route(
-                                                                    //     'colaboradores.edit',
-                                                                    //     colaborador.id,
-                                                                    // )}
-                                                                    className="text-indigo-600 hover:text-indigo-900"
-                                                                >
-                                                                    Editar
                                                                 </a>
                                                             </td>
                                                         </tr>
@@ -331,7 +241,7 @@ export default function Index({ colaboradores }: IndexProps) {
                                             ) : (
                                                 <tr>
                                                     <td
-                                                        colSpan={7}
+                                                        colSpan={4}
                                                         className="px-6 py-4 text-center text-gray-500"
                                                     >
                                                         Nenhum colaborador
