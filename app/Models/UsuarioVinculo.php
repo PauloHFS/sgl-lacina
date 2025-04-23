@@ -22,6 +22,7 @@ class UsuarioVinculo extends Model
         'usuario_id',
         'tipo_vinculo',
         'funcao',
+        'status',
         'data_inicio',
         'data_fim',
     ];

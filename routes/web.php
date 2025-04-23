@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProjetoVinculoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,9 +17,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::get('/pos-cadastro', function () {
     return Inertia::render('PosCadastro');
@@ -36,5 +38,9 @@ Route::middleware(['auth', 'verified', 'checkUserRole:coordenador'])->group(func
     Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
     Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 });
+
+Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])
+    ->name('projetos.solicitar-vinculo')
+    ->middleware(['auth']);
 
 require __DIR__ . '/auth.php';
