@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum StatusVinculoProjeto: string
 {
-  case ACEITO = 'ACEITO';
+  case APROVADO = 'APROVADO';
   case PENDENTE = 'PENDENTE';
   case INATIVO = 'INATIVO';
 }

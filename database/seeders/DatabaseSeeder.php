@@ -39,7 +39,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Ab@12312'),
             'statusCadastro' => 'ACEITO',
         ]);
-
         UsuarioVinculo::factory()->create([
             'usuario_id' => $maxwellUser->id,
             'projeto_id' => $projeto1->id,
@@ -48,7 +47,6 @@ class DatabaseSeeder extends Seeder
             'data_inicio' => now(),
             'status' => 'APROVADO',
         ]);
-
         UsuarioVinculo::factory()->create([
             'usuario_id' => $maxwellUser->id,
             'projeto_id' => $projeto2->id,
@@ -58,16 +56,15 @@ class DatabaseSeeder extends Seeder
             'status' => 'APROVADO',
         ]);
 
-        // usuario colaborador de um projeto
-        $pauloUser = User::factory()->cadastroCompleto()->create([
-            'name' => 'Paulo Hernane Fontes e Silva',
-            'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
+        // usuario colaborador de um projeto (Ativo)
+        $usuario_ativo = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Ativo',
+            'email' => 'usuario_ativo@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'statusCadastro' => 'ACEITO',
         ]);
-
         UsuarioVinculo::factory()->create([
-            'usuario_id' => $pauloUser->id,
+            'usuario_id' => $usuario_ativo->id,
             'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
@@ -75,20 +72,36 @@ class DatabaseSeeder extends Seeder
             'status' => 'APROVADO',
         ]);
 
-        // usuario pendente no laboratório
-        $usuarioPendente = User::factory()->cadastroCompleto()->create([
+        // usuario pendente no laboratório (vinculo_pendente)
+        $usuario_vinculo_pendente = User::factory()->cadastroCompleto()->create([
             'name' => 'Usuário Pendente',
             'email' => 'usuario_pendente@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'statusCadastro' => 'PENDENTE',
         ]);
 
-        //usuário aceito no laboratório sem vinculo
+        //usuário aceito no laboratório sem vinculo (inativo?)
         $usuarioAceito = User::factory()->cadastroCompleto()->create([
             'name' => 'Usuário Aceito',
             'email' => 'usuario_aceito@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'statusCadastro' => 'ACEITO',
+        ]);
+
+        // usuario aceito no laboratório com solicitação de entrar num projeto (aprovacao_pendente)
+        $usuarioAprovacaoPendente = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Aprovacao Pendente',
+            'email' => 'usuarioaprovacaopendente@gmail.com',
+            'password' => Hash::make('Ab@12312'),
+            'statusCadastro' => 'ACEITO',
+        ]);
+        UsuarioVinculo::factory()->create([
+            'usuario_id' => $usuarioAprovacaoPendente->id,
+            'projeto_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'data_inicio' => now(),
+            'status' => 'PENDENTE',
         ]);
     }
 }

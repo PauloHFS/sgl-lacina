@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Colaborador;
 use App\Models\User;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
 use App\Enums\TipoVinculo;
 use App\Events\PreColaboradorAceito;
-use App\Models\UsuarioVinculo;
+use App\Enums\StatusVinculoProjeto;
 
 class ColaboradorController extends Controller
 {
@@ -47,14 +45,27 @@ class ColaboradorController extends Controller
         $status = $request->input('status');
 
         $usuarios = null;
-        if ($status == 'ativos') {
+
+        if ($status == 'vinculo_pendente') {
+            // Usuários que estão com o status cadastro pendente
+            $usuarios = User::where('statusCadastro', 'PENDENTE')->paginate(10);
+        } else if ($status == 'aprovacao_pendente') {
+            // Usuários que estão na tabela de vinculo e com o status do vinculo pendente
+            $usuarios = User::whereIn('id', function ($query) {
+                $query->select('usuario_id')
+                    ->from('usuario_vinculo')
+                    ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                    ->where('status', StatusVinculoProjeto::PENDENTE);
+            })->paginate(10);
+        } else if ($status == 'ativos') {
             /*
-            Usuários que estão na tabela de vinculo e todos os data_fim são maiores de now()
+            Usuários que estão na tabela de vinculo e todos os data_fim são maiores de now() e o status do vinculo é ativo
             */
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_vinculo')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                    ->where('status', StatusVinculoProjeto::APROVADO)
                     ->where('data_fim', '>', now());
             })->paginate(10);
         } else if ($status == 'inativos') {
@@ -65,14 +76,9 @@ class ColaboradorController extends Controller
                 $query->select('usuario_id')
                     ->from('usuario_vinculo')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                    ->where('status', StatusVinculoProjeto::INATIVO)
                     ->where('data_fim', '<', now());
             })->paginate(10);
-        } else if ($status == 'pendentes') {
-            /*
-            Usuários que estão com o status cadastro pendente
-            */
-
-            $usuarios = User::where('statusCadastro', 'PENDENTE')->paginate(10);
         }
 
         // Log::debug('Busca de colaboradores concluída', [
