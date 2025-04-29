@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('discord_url')->nullable();
             $table->string('board_url')->nullable();
             $table->string('git_url')->nullable();
-            $table->enum('tipo_projeto', array_column(TipoProjeto::cases(), 'value'));
+            $table->enum('tipo', array_column(TipoProjeto::cases(), 'value'));
             $table->timestamps();
             $table->softDeletes();
         });
