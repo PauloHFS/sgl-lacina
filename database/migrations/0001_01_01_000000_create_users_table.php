@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use App\Enums\StatusCadastro;
 
 return new class extends Migration
 {
@@ -12,43 +13,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $this->createEnumIfNotExists('status_cadastro', ['ACEITO', 'PENDENTE', 'RECUSADO']);
+        Schema::create('areas_atuacao', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('nome', 100)->unique();
+        });
+
+        Schema::create('bancos', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->char('codigo', 3)->unique();
+            $table->string('nome', 100);
+            $table->char('ispb', 8)->nullable();
+        });
+
+        Schema::create('tecnologias', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('nome', 100)->unique();
+        });
 
         // TODO Traduzir essa tabela
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
 
-            // -- Campos Adicionais --
-            $table->string('statusCadastro');
-
-            $table->string('foto_url')->nullable();
-
-            $table->string('genero')->nullable();
-            $table->timestamp('data_nascimento')->nullable();
-
-            $table->string('cpf')->nullable()->unique();
-            $table->string('rg')->nullable()->unique();
-            $table->string('uf_rg')->nullable();
-            $table->string('orgao_emissor_rg')->nullable();
-
-            $table->string('cep')->nullable();
-            $table->string('logradouro')->nullable();
-            $table->string('numero')->nullable();
-            $table->string('complemento')->nullable();
-            $table->string('bairro')->nullable();
-            $table->string('cidade')->nullable();
-            $table->string('estado')->nullable();
-
-            $table->string('telefone')->nullable();
-
-            $table->string('conta_bancaria')->nullable();
-            $table->string('agencia')->nullable();
-            $table->string('codigo_banco')->nullable();
+            $table->enum('status_cadastro', array_column(StatusCadastro::cases(), 'value'))->default(StatusCadastro::PENDENTE->value);
 
             $table->string('linkedin_url')->nullable();
             $table->string('github_url')->nullable();
@@ -57,10 +48,38 @@ return new class extends Migration
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
 
-            $table->timestamps();
-        });
+            $table->uuid('area_atuacao_id')->nullable();
 
-        DB::statement('ALTER TABLE users ALTER COLUMN "statusCadastro" TYPE status_cadastro USING "statusCadastro"::status_cadastro');
+            $table->char('cpf', 11)->nullable()->unique();
+            $table->string('rg')->nullable()->unique();
+            $table->char('uf_rg', 2)->nullable();
+            $table->string('orgao_emissor_rg')->nullable();
+
+            $table->string('telefone')->nullable();
+
+            $table->uuid('banco_id')->nullable();
+            $table->string('conta_bancaria')->nullable();
+            $table->string('agencia')->nullable();
+
+            $table->string('foto_url')->nullable();
+
+            $table->string('genero')->nullable();
+            $table->timestamp('data_nascimento')->nullable();
+
+            $table->string('cep', 8)->nullable();
+            $table->string('endereco')->nullable();
+            $table->string('numero')->nullable();
+            $table->string('complemento')->nullable();
+            $table->string('bairro')->nullable();
+            $table->string('cidade')->nullable();
+            $table->string('uf', 2)->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreign('area_atuacao_id')->references('id')->on('areas_atuacao');
+            $table->foreign('banco_id')->references('id')->on('bancos');
+        });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -83,21 +102,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('tecnologias');
+        Schema::dropIfExists('bancos');
+        Schema::dropIfExists('areas_atuacao');
         Schema::dropIfExists('sessions');
-
-        // Drop the enum type if it exists
-        DB::statement("DROP TYPE IF EXISTS statusCadastro");
-    }
-
-    private function createEnumIfNotExists($name, $values)
-    {
-        $typeExists = DB::select("SELECT 1 FROM pg_type WHERE typname = ?", [$name]);
-
-        if (empty($typeExists)) {
-            $valuesString = implode("', '", $values);
-            DB::statement("CREATE TYPE $name AS ENUM ('$valuesString')");
-        }
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('status_cadastro');
     }
 };

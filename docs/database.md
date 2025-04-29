@@ -6,32 +6,7 @@ Quando lidando com as migrations e com as tabelas, levem em consideração o seg
 enum StatusCadastro {
   ACEITO
   RECUSADO
-}
-
-table usuarios {
-  id bigint [pk]
-  nome varchar(255)
-  statusCadastro StatusCadastro [not null]
-  linkedin_url varchar
-  github_url varchar
-  figma_url varchar
-  foto_url varchar
-  curriculo text
-  area_atuacao varchar
-  tecnologias text
-  cpf varchar
-  conta_bancaria varchar
-  agencia varchar
-  codigo_banco varchar
-  rg varchar
-  uf_rg varchar
-  telefone varchar
-  email varchar(255)
-  email_verified_at timestamp(0)
-  password varchar(255)
-  remember_token varchar(100)
-  created_at timestamp(0)
-  updated_at timestamp(0)
+  PENDENTE
 }
 
 enum TipoVinculoProjeto {
@@ -50,21 +25,8 @@ enum Funcao {
 enum StatusVinculoProjeto {
   APROVADO
   PENDENTE
+  REJEITADO
   INATIVO
-}
-
-table usuario_vinculo {
-  projeto_id bigint [ref: > projetos.id]
-  usuario_id bigint [ref: > usuarios.id]
-  tipo_vinculo TipoVinculoProjeto [not null]
-  funcao Funcao [not null]
-  status StatusVinculoProjeto [not null]
-  data_inicio datetime
-  data_fim datetime
-
-  indexes {
-    (projeto_id, usuario_id, data_fim) [pk]
-  }
 }
 
 enum TipoProjeto {
@@ -75,111 +37,118 @@ enum TipoProjeto {
   SUPORTE
 }
 
+// TABELAS NORMALIZADAS
+
+table usuarios {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(255) [not null]
+  email varchar(255) [not null, unique]
+  email_verified_at timestamp(0)
+  password varchar(255) [not null]
+  remember_token varchar(100)
+  status_cadastro StatusCadastro [not null]
+  linkedin_url varchar
+  github_url varchar
+  figma_url varchar
+  foto_url varchar
+  curriculo text
+  area_atuacao_id uuid [ref: > areas_atuacao.id]
+  cpf char(11) [unique, not null]
+  rg varchar
+  uf_rg char(2)
+  orgao_emissor_rg varchar
+  telefone varchar
+  banco_id uuid [ref: > bancos.id]
+  conta_bancaria varchar
+  agencia varchar
+  cep char(8)
+  endereco varchar
+  numero varchar
+  complemento varchar
+  bairro varchar
+  cidade varchar
+  uf char(2)
+  created_at timestamp(0)
+  updated_at timestamp(0)
+  deleted_at timestamp(0)
+}
+
+table areas_atuacao {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nome varchar(100) [not null, unique]
+}
+
+table bancos {
+  id uuid [pk, default: `gen_random_uuid()`]
+  codigo char(3) [not null, unique]
+  nome varchar(100) [not null]
+  ispb char(8)
+}
+
+table tecnologias {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nome varchar(100) [not null, unique]
+}
+
+table usuario_tecnologia {
+  usuario_id uuid [ref: > usuarios.id]
+  tecnologia_id uuid [ref: > tecnologias.id]
+  primary key (usuario_id, tecnologia_id)
+}
+
+// PROJETOS
+
 table projetos {
-  id bigint [pk, increment]
+  id uuid [pk, increment]
   nome varchar [not null]
+  descricao text
   data_inicio date [not null]
   data_termino date
   cliente varchar [not null]
-  link_slack varchar
-  link_discord varchar
-  link_board varchar
-  tipo TipoProjeto [not null] // quais são os possiveis tipos de projetos?
+  slack_url varchar
+  discord_url varchar
+  board_url varchar
+  git_url varchar
+  tipo TipoProjeto [not null]
   created_at datetime
   updated_at datetime
+  deleted_at timestamp(0)
 }
 
-enum StatusSolicitacaoTrocaProjeto {
-  PENDENTE
-  APROVADO
-  REJEITADO
-}
-
-table solicitacoes_troca_projeto {
-  usuario_id bigint [Ref: > usuarios.id]
-  projeto_atual_id bigint [Ref: > projetos.id]
-  projeto_novo_id bigint [Ref: > projetos.id]
-  motivo text [not null]
-  resposta text
-  status StatusSolicitacaoTrocaProjeto [not null]
-  data_solicitacao date [not null]
-  data_resposta date
+table usuario_vinculo {
+  id uuid [pk, default: `gen_random_uuid()`]
+  projeto_id uuid [not null, ref: > projetos.id]
+  usuario_id uuid [not null, ref: > usuarios.id]
+  tipo_vinculo TipoVinculoProjeto [not null]
+  funcao Funcao [not null]
+  status StatusVinculoProjeto [not null]
+  carga_horaria_semanal int [not null]
+  data_inicio datetime [not null]
+  data_fim datetime
+  created_at datetime
+  updated_at datetime
+  deleted_at timestamp(0)
 
   indexes {
-    (usuario_id, projeto_atual_id, projeto_novo_id) [pk]
+    (projeto_id, usuario_id, data_inicio)
+    (usuario_id, status)
   }
 }
 
-enum WeekDay {
-  SEGUNDA
-  TERCA
-  QUARTA
-  QUINTA
-  SEXTA
-  SABADO
-  DOMINGO
-}
-
-enum TipoHorario {
-  AULA
-  TRABALHO
-  AUSENTE
-}
-
-table horarios {
-  id bigint [pk, increment]
-  colaborador_id bigint [ref: > usuarios.id]
-  dia_semana WeekDay [not null]
-  horario_inicio time [not null]
-  horario_termino time [not null]
-  tipo TipoHorario [not null]
-  created_at datetime
-  updated_at datetime
-}
-
-table folgas {
-  id int [pk, increment]
-  usuario_id bigint [ref: > usuarios.id, note: "Colaborador que solicitou a folga"]
-  tipo varchar [not null, note: "Pode ser 'coletiva' ou 'pessoal'"]
-  data_inicio date [not null]
-  data_fim date [not null]
-  justificativa text
-  status varchar [not null, note: "Pode ser 'aprovada', 'pendente' ou 'rejeitada'"]
-  created_at datetime
-  updated_at datetime
-}
-
-table salas {
-  id bigint [pk, increment]
-  nome varchar [not null]
-  senha_porta varchar [not null]
-  created_at datetime
-  updated_at datetime
-}
-
-table baias {
-  id bigint [pk, increment]
-  sala_id bigint [not null, ref: > salas.id]
-  nome varchar [not null]
-  created_at datetime
-  updated_at datetime
-}
-
-table horarios_baia {
-  horario_id bigint [not null, ref: > horarios.id]
-  sala_id bigint [not null, ref: > salas.id]
-  created_at datetime
-  updated_at datetime
-
-  indexes {
-    (horario_id, sala_id) [pk]
-  }
+table historico_usuario_vinculo {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_vinculo_id uuid [ref: > usuario_vinculo.id]
+  status_anterior StatusVinculoProjeto
+  status_novo StatusVinculoProjeto
+  carga_horaria_semanal_anterior int
+  carga_horaria_semanal_nova int
+  data_alteracao timestamp(0)
 }
 
 // >>>>>>>>>>>>>>> Tabelas do LARAVEL
 table sessions {
   id varchar(255) [pk]
-  user_id bigint [ref: > usuarios.id]
+  user_id uuid [ref: > usuarios.id]
   ip_address varchar(45)
   user_agent text
   payload text
