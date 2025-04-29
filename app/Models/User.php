@@ -159,9 +159,4 @@ class User extends Authenticatable implements MustVerifyEmail
     //         && $this->area_atuacao
     //         && $this->tecnologias;
     // }
-
-    public function getNameAttribute()
-    {
-        return $this->nome;
-    }
 }

@@ -1,28 +1,35 @@
-// https://aka.ms/devcontainer.json
 {
-	"name": "Existing Docker Compose (Extend)",
+	"name": "Laravel + Inertia Devcontainer",
 	"dockerComposeFile": [
 		"../docker-compose.yml"
 	],
 	"service": "laravel.test",
 	"workspaceFolder": "/var/www/html",
+	"remoteUser": "sail",
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"bmewburn.vscode-intelephense-client",
+				"xdebug.php-debug",
+				"onecentlin.laravel-blade",
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
 				"formulahendry.auto-complete-tag",
 				"naumovs.color-highlight",
 				"eamodio.gitlens",
-				"xdebug.php-debug",
-				"bmewburn.vscode-intelephense-client",
-				"esbenp.prettier-vscode",
 				"Gruntfuggly.todo-tree"
 			],
-			"settings": {}
+			"settings": {
+				"php.validate.executablePath": "/usr/bin/php",
+				"php.debug.idekey": "VSCODE",
+				"intelephense.environment.phpVersion": "8.2"
+			}
 		}
 	},
-	"remoteUser": "sail",
-	"postCreateCommand": "chown -R 1000:1000 /var/www/html 2>/dev/null || true"
-	// "forwardPorts": [],
-	// "runServices": [],
-	// "shutdownAction": "none",
+	"postCreateCommand": "chown -R 1000:1000 /var/www/html 2>/dev/null || true && composer install && npm install",
+	"forwardPorts": [
+		80,
+		5173
+	],
+	"shutdownAction": "none"
 }

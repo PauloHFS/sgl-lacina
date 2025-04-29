@@ -168,7 +168,7 @@ class ColaboradorController extends Controller
         return inertia('Colaboradores/Show', [
             'colaborador' => [
                 'id' => $colaborador->id,
-                'name' => $colaborador->nome,
+                'name' => $colaborador->name,
                 'email' => $colaborador->email,
                 'linkedin_url' => $colaborador->linkedin_url,
                 'github_url' => $colaborador->github_url,
@@ -235,10 +235,15 @@ class ColaboradorController extends Controller
             return redirect()->back()->with('error', 'Vínculo não encontrado.');
         }
 
-        $vinculo->status = 'APROVADO'; // StatusVinculoProjeto::APROVADO
-        $vinculo->data_inicio = now();
-        $vinculo->data_fim = null; // null para indicar que o vínculo está ativo
-        $vinculo->save();
+        UsuarioVinculo::where('projeto_id', $vinculo->projeto_id)
+            ->where('usuario_id', $vinculo->usuario_id)
+            // ->whereNull('data_fim')
+            ->update([
+                'status' => 'APROVADO',
+                'data_inicio' => now(),
+                'data_fim' => now()->addMonths(6),
+            ]);
+
         // Aqui você pode disparar eventos/emails se necessário
 
         return redirect()->back()->with('success', 'Colaborador aceito com sucesso.');
