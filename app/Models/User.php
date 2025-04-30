@@ -2,16 +2,26 @@
 
 namespace App\Models;
 
+use App\Enums\Genero; // Added Genero enum import
 use App\Enums\StatusCadastro;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasUuids;
+
+    public $incrementing = false;
+
+    public $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -19,40 +29,36 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'password',
-        'statusCadastro',
-
-        'genero',
-        'data_nascimento',
-
-        'cpf',
-        'rg',
-        'uf_rg',
-        'orgao_emissor_rg',
-
-        'conta_bancaria',
-        'agencia',
-        'codigo_banco',
-
-        'telefone',
-
-        'cep',
-        'logradouro',
-        'numero',
-        'complemento',
-        'bairro',
-        'cidade',
-        'estado',
-
+        'status_cadastro',
         'linkedin_url',
         'github_url',
         'figma_url',
         'foto_url',
         'curriculo',
-        'area_atuacao',
-        'tecnologias',
+        'area_atuacao_id',
+        'genero', // Added genero
+        'data_nascimento', // Added data_nascimento
+        'cpf',
+        'rg',
+        'uf_rg',
+        'orgao_emissor_rg',
+        'telefone',
+        'banco_id',
+        'conta_bancaria',
+        'agencia',
+        'cep',
+        'endereco',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'uf',
+        // Removed: area_atuacao, tecnologias (handled by relationships/FKs)
+        // Removed: codigo_banco (handled by banco_id)
     ];
 
     /**
@@ -65,6 +71,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    public function uniqueIds()
+    {
+        return ['id'];
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -73,24 +84,23 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'email_verified_at' => 'datetime', // Added cast
             'password' => 'hashed',
-
-            'statusCadastro' => StatusCadastro::class,
-
-            'data_nascimento' => 'datetime',
+            'status_cadastro' => StatusCadastro::class, // Ensured correct enum
+            'genero' => Genero::class, // Added genero cast
+            'data_nascimento' => 'date', // Added data_nascimento cast
         ];
     }
 
-    public function vinculos()
+    public function vinculos(): HasMany
     {
         return $this->hasMany(UsuarioVinculo::class, 'usuario_id');
     }
 
-    public function projetos()
+    public function projetos(): BelongsToMany
     {
         return $this->belongsToMany(Projeto::class, 'usuario_vinculo', 'usuario_id', 'projeto_id')
-            ->withPivot('tipo_vinculo', 'funcao', 'data_inicio', 'data_fim')
+            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim') // Added status, carga_horaria_semanal
             ->withTimestamps();
     }
 
@@ -129,15 +139,15 @@ class User extends Authenticatable implements MustVerifyEmail
             && $this->orgao_emissor_rg;
     }
 
-    public function hasEndereco()
+    public function hasEndereco(): bool
     {
         return $this->cep
-            && $this->logradouro
+            && $this->endereco // Changed from logradouro
             && $this->numero
             // && $this->complemento // complemento opcional
             && $this->bairro
             && $this->cidade
-            && $this->estado;
+            && $this->uf; // Changed from estado
     }
 
     public function hasDadosDeContato()
@@ -145,11 +155,26 @@ class User extends Authenticatable implements MustVerifyEmail
         return (bool)$this->telefone;
     }
 
-    public function hasDadosBancarios()
+    public function hasDadosBancarios(): bool
     {
         return $this->conta_bancaria
             && $this->agencia
-            && $this->codigo_banco;
+            && $this->banco_id; // Changed from codigo_banco to banco_id FK
+    }
+
+    public function areaAtuacao(): BelongsTo
+    {
+        return $this->belongsTo(AreaAtuacao::class, 'area_atuacao_id');
+    }
+
+    public function banco(): BelongsTo
+    {
+        return $this->belongsTo(Banco::class, 'banco_id');
+    }
+
+    public function tecnologias(): BelongsToMany
+    {
+        return $this->belongsToMany(Tecnologia::class, 'usuario_tecnologia', 'usuario_id', 'tecnologia_id');
     }
 
     // TODO: Checar com professor se é obrigatório ou não

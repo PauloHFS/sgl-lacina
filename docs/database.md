@@ -37,6 +37,12 @@ enum TipoProjeto {
   SUPORTE
 }
 
+enum Genero {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
 // TABELAS NORMALIZADAS
 
 table usuarios {
@@ -53,8 +59,10 @@ table usuarios {
   foto_url varchar
   curriculo text
   area_atuacao_id uuid [ref: > areas_atuacao.id]
-  cpf char(11) [unique, not null]
-  rg varchar
+  genero Genero
+  data_nascimento date
+  cpf char(11) [unique]
+  rg varchar [unique]
   uf_rg char(2)
   orgao_emissor_rg varchar
   telefone varchar

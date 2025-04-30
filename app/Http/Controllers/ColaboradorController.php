@@ -53,7 +53,7 @@ class ColaboradorController extends Controller
 
         if ($status == 'vinculo_pendente') {
             // Usuários que estão com o status cadastro pendente
-            $usuarios = User::where('statusCadastro', 'PENDENTE')->paginate(10);
+            $usuarios = User::where('status_cadastro', 'PENDENTE')->paginate(10);
         } else if ($status == 'aprovacao_pendente') {
             // Usuários que estão na tabela de vinculo e com o status do vinculo pendente
             $usuarios = User::whereIn('id', function ($query) {
@@ -109,26 +109,26 @@ class ColaboradorController extends Controller
             ->get();
 
         // Status e projetos
-        $statusCadastro = 'INATIVO';
+        $status_cadastro = 'INATIVO';
         $projetos_atuais = [];
         $projeto_solicitado = null;
         $vinculo_id = null;
 
         Log::debug('Colaborador encontrado', [
             'colaborador_id' => $colaborador->id,
-            'statusCadastro' => $colaborador->statusCadastro,
+            'status_cadastro' => $colaborador->status_cadastro,
             'vinculos' => $vinculos,
         ]);
 
 
-        if ($colaborador->statusCadastro === StatusCadastro::PENDENTE) {
-            $statusCadastro = 'VINCULO_PENDENTE';
+        if ($colaborador->status_cadastro === StatusCadastro::PENDENTE) {
+            $status_cadastro = 'VINCULO_PENDENTE';
         } else if (
-            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
             $vinculos->where('status', 'PENDENTE')->count() > 0 // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
         ) {
             // Usuário aceito no laboratório, mas com vínculo pendente em projeto
-            $statusCadastro = 'APROVACAO_PENDENTE';
+            $status_cadastro = 'APROVACAO_PENDENTE';
             $vinculoPendenteProjeto = $vinculos->first(function ($v) {
                 return $v->status === 'PENDENTE'; // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
             });
@@ -136,14 +136,14 @@ class ColaboradorController extends Controller
                 $projeto_solicitado = Projeto::find($vinculoPendenteProjeto->projeto_id);
             }
         } else if (
-            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
             // $vinculos->where('status', StatusVinculoProjeto::APROVADO) // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
             $vinculos->where('status', 'APROVADO')
             // ->where('data_fim', '>', now()) TODO: Verificar essa validação
             ->count() > 0
         ) {
             // Usuário com vínculo aprovado e ativo em algum projeto
-            $statusCadastro = 'ATIVO';
+            $status_cadastro = 'ATIVO';
             $projetos_atuais = Projeto::whereIn(
                 'id',
                 $vinculos->where('status', 'APROVADO')
@@ -151,18 +151,18 @@ class ColaboradorController extends Controller
                     ->pluck('projeto_id')
             )->get(['id', 'nome']);
         } else if (
-            $colaborador->statusCadastro === StatusCadastro::ACEITO &&
+            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
             $vinculos->where('status', StatusVinculoProjeto::INATIVO)
             ->where('data_fim', '<', now())
             ->count() > 0
         ) {
             // Usuário com vínculo inativo em todos os projetos
-            $statusCadastro = 'INATIVO';
+            $status_cadastro = 'INATIVO';
         }
 
         Log::debug('Status do colaborador', [
             'colaborador_id' => $colaborador->id,
-            'statusCadastro' => $statusCadastro,
+            'status_cadastro' => $status_cadastro,
         ]);
 
         return inertia('Colaboradores/Show', [
@@ -186,7 +186,7 @@ class ColaboradorController extends Controller
                 'telefone' => $colaborador->telefone,
                 'created_at' => $colaborador->created_at,
                 'updated_at' => $colaborador->updated_at,
-                'statusCadastro' => $statusCadastro,
+                'status_cadastro' => $status_cadastro,
                 'projeto_solicitado' => $projeto_solicitado
                     ? [
                         'id' => $projeto_solicitado->id,
@@ -205,7 +205,7 @@ class ColaboradorController extends Controller
 
     public function aceitar(User $colaborador, Request $request)
     {
-        $colaborador->statusCadastro = 'ACEITO';
+        $colaborador->status_cadastro = 'ACEITO';
         $colaborador->save();
 
         // Aqui você pode disparar eventos/emails se necessário
@@ -215,7 +215,7 @@ class ColaboradorController extends Controller
 
     public function recusar(User $colaborador, Request $request)
     {
-        $colaborador->statusCadastro = 'RECUSADO';
+        $colaborador->status_cadastro = 'RECUSADO';
         $colaborador->save();
 
         // Aqui você pode disparar eventos/emails se necessário

@@ -112,7 +112,7 @@ class ProfileController extends Controller
             'tecnologias' => 'nullable|string|max:255',
         ]);
 
-        $user->statusCadastro = StatusCadastro::PENDENTE;
+        $user->status_cadastro = StatusCadastro::PENDENTE;
 
         if ($request->hasFile('foto_url')) {
             $path = $request->file('foto_url')->store('fotos', 'public');

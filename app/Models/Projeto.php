@@ -5,12 +5,18 @@ namespace App\Models;
 use App\Enums\TipoProjeto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Projeto extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'projetos';
+
+    public $incrementing = false;
+
+    public $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -27,15 +33,20 @@ class Projeto extends Model
     ];
 
     protected $casts = [
-        'data_inicio' => 'datetime',
-        'data_termino' => 'datetime',
+        'data_inicio' => 'date',
+        'data_termino' => 'date',
         'tipo' => TipoProjeto::class
     ];
 
-    public function usuarios()
+    public function uniqueIds(): array
+    {
+        return ['id'];
+    }
+
+    public function usuarios(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_vinculo', 'projeto_id', 'usuario_id')
-            ->withPivot('tipo_vinculo', 'funcao', 'data_inicio', 'data_fim')
+            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }
 }

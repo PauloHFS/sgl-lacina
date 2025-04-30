@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+use App\Enums\TipoProjeto;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Projeto>
@@ -17,16 +19,17 @@ class ProjetoFactory extends Factory
     public function definition(): array
     {
         return [
-            'nome' => $this->faker->word(),
+            'id' => Str::uuid(),
+            'nome' => $this->faker->sentence(3),
             'descricao' => $this->faker->text(),
             'data_inicio' => $this->faker->date(),
-            'data_termino' => $this->faker->date(),
-            'cliente' => $this->faker->word(),
-            'slack_url' => $this->faker->url(),
-            'discord_url' => $this->faker->url(),
-            'board_url' => $this->faker->url(),
-            'git_url' => $this->faker->url(),
-            'tipo' => $this->faker->randomElement(['PDI', 'TCC', 'MESTRADO', 'DOUTORADO', 'SUPORTE']), //TODO tentar usar o ENUM para arrumar isso aqui
+            'data_termino' => $this->faker->optional()->date(),
+            'cliente' => $this->faker->company(),
+            'slack_url' => $this->faker->optional()->url(),
+            'discord_url' => $this->faker->optional()->url(),
+            'board_url' => $this->faker->optional()->url(),
+            'git_url' => $this->faker->optional()->url(),
+            'tipo' => $this->faker->randomElement(TipoProjeto::cases()),
         ];
     }
 }

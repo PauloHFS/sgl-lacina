@@ -26,7 +26,7 @@ interface Colaborador {
     telefone?: string;
     created_at: string;
     updated_at: string;
-    statusCadastro:
+    status_cadastro:
         | 'VINCULO_PENDENTE'
         | 'APROVACAO_PENDENTE'
         | 'ATIVO'
@@ -165,7 +165,7 @@ export default function Show({ colaborador }: ShowProps) {
                         </div>
                         {/* STATUS DO COLABORADOR */}
                         <div className="mb-6">
-                            {colaborador.statusCadastro ===
+                            {colaborador.status_cadastro ===
                                 'VINCULO_PENDENTE' && (
                                 <div className="mb-2 rounded bg-yellow-50 p-4">
                                     <div className="mb-2 font-semibold text-yellow-800">
@@ -201,7 +201,7 @@ export default function Show({ colaborador }: ShowProps) {
                                     </div>
                                 </div>
                             )}
-                            {colaborador.statusCadastro ===
+                            {colaborador.status_cadastro ===
                                 'APROVACAO_PENDENTE' && (
                                 <div className="mb-2 rounded bg-blue-50 p-4">
                                     <div className="mb-2 font-semibold text-blue-800">
@@ -246,7 +246,7 @@ export default function Show({ colaborador }: ShowProps) {
                                     </div>
                                 </div>
                             )}
-                            {colaborador.statusCadastro === 'ATIVO' && (
+                            {colaborador.status_cadastro === 'ATIVO' && (
                                 <div className="mb-2 rounded bg-green-50 p-4">
                                     <div className="mb-2 font-semibold text-green-800">
                                         Ativo
@@ -272,7 +272,7 @@ export default function Show({ colaborador }: ShowProps) {
                                     </div>
                                 </div>
                             )}
-                            {colaborador.statusCadastro === 'INATIVO' && (
+                            {colaborador.status_cadastro === 'INATIVO' && (
                                 <div className="mb-2 rounded bg-gray-100 p-4">
                                     <div className="font-semibold text-gray-700">
                                         Inativo
