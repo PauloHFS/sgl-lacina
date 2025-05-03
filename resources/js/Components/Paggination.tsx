@@ -56,28 +56,71 @@ export default function Pagination<T>({
             aria-label="Pagination"
             className="mt-6 flex items-center justify-between"
         >
-            <div className="text-sm text-gray-700">
+            <div className="text-base-content/70 text-sm">
                 Showing{' '}
                 <span className="font-medium">{paginated.from || 0}</span> to{' '}
                 <span className="font-medium">{paginated.to || 0}</span> of{' '}
                 <span className="font-medium">{paginated.total}</span> results
             </div>
 
-            <ul className="flex space-x-1">
+            <div className="join">
                 {paginated.links.map((link, i) => {
-                    const baseClasses = link.active
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100';
-
-                    const disabledClasses = !link.url
-                        ? 'opacity-50 cursor-not-allowed'
-                        : '';
+                    // Skip the "..." entries
+                    if (
+                        link.label === '&laquo; Previous' ||
+                        link.label === 'Next &raquo;'
+                    ) {
+                        return (
+                            <div key={i}>
+                                {onPageChange ? (
+                                    <button
+                                        className={`btn btn-sm join-item ${
+                                            !link.url ? 'btn-disabled' : ''
+                                        }`}
+                                        onClick={() =>
+                                            handlePageClick(link.url)
+                                        }
+                                        disabled={!link.url}
+                                    >
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
+                                    </button>
+                                ) : link.url ? (
+                                    <Link
+                                        href={link.url}
+                                        className="btn btn-sm join-item"
+                                        preserveScroll={preserveScroll}
+                                        preserveState={preserveState}
+                                    >
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
+                                    </Link>
+                                ) : (
+                                    <span className="btn btn-sm join-item btn-disabled">
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    }
 
                     return (
-                        <li key={i}>
+                        <div key={i}>
                             {onPageChange ? (
                                 <button
-                                    className={`rounded px-4 py-2 text-sm ${baseClasses} ${disabledClasses}`}
+                                    className={`btn btn-sm join-item ${
+                                        link.active ? 'btn-active' : ''
+                                    } ${!link.url ? 'btn-disabled' : ''}`}
                                     onClick={() => handlePageClick(link.url)}
                                     disabled={!link.url}
                                 >
@@ -90,7 +133,9 @@ export default function Pagination<T>({
                             ) : link.url ? (
                                 <Link
                                     href={link.url}
-                                    className={`rounded px-4 py-2 text-sm ${baseClasses}`}
+                                    className={`btn btn-sm join-item ${
+                                        link.active ? 'btn-active' : ''
+                                    }`}
                                     preserveScroll={preserveScroll}
                                     preserveState={preserveState}
                                 >
@@ -102,7 +147,9 @@ export default function Pagination<T>({
                                 </Link>
                             ) : (
                                 <span
-                                    className={`rounded px-4 py-2 text-sm ${baseClasses} ${disabledClasses}`}
+                                    className={`btn btn-sm join-item btn-disabled ${
+                                        link.active ? 'btn-active' : ''
+                                    }`}
                                 >
                                     <span
                                         dangerouslySetInnerHTML={{
@@ -111,10 +158,10 @@ export default function Pagination<T>({
                                     />
                                 </span>
                             )}
-                        </li>
+                        </div>
                     );
                 })}
-            </ul>
+            </div>
         </nav>
     );
 }

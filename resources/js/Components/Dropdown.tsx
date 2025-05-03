@@ -28,7 +28,7 @@ const Dropdown = ({ children }: PropsWithChildren) => {
 
     return (
         <DropDownContext.Provider value={{ open, setOpen, toggleOpen }}>
-            <div className="relative">{children}</div>
+            <div className="dropdown dropdown-end">{children}</div>
         </DropDownContext.Provider>
     );
 };
@@ -38,7 +38,14 @@ const Trigger = ({ children }: PropsWithChildren) => {
 
     return (
         <>
-            <div onClick={toggleOpen}>{children}</div>
+            <div
+                onClick={toggleOpen}
+                role="button"
+                tabIndex={0}
+                className={`${open ? 'dropdown-open' : ''}`}
+            >
+                {children}
+            </div>
 
             {open && (
                 <div
@@ -53,7 +60,7 @@ const Trigger = ({ children }: PropsWithChildren) => {
 const Content = ({
     align = 'right',
     width = '48',
-    contentClasses = 'py-1 bg-white dark:bg-gray-700',
+    contentClasses = '',
     children,
 }: PropsWithChildren<{
     align?: 'left' | 'right';
@@ -62,15 +69,15 @@ const Content = ({
 }>) => {
     const { open, setOpen } = useContext(DropDownContext);
 
-    let alignmentClasses = 'origin-top';
+    let alignmentClasses = '';
 
     if (align === 'left') {
-        alignmentClasses = 'ltr:origin-top-left rtl:origin-top-right start-0';
+        alignmentClasses = 'dropdown-start';
     } else if (align === 'right') {
-        alignmentClasses = 'ltr:origin-top-right rtl:origin-top-left end-0';
+        alignmentClasses = 'dropdown-end';
     }
 
-    let widthClasses = '';
+    let widthClasses = 'w-52';
 
     if (width === '48') {
         widthClasses = 'w-48';
@@ -88,17 +95,10 @@ const Content = ({
                 leaveTo="opacity-0 scale-95"
             >
                 <div
-                    className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                    className={`dropdown-content menu bg-base-200 rounded-box z-50 p-2 shadow ${widthClasses} ${contentClasses}`}
                     onClick={() => setOpen(false)}
                 >
-                    <div
-                        className={
-                            `rounded-md ring-1 ring-black ring-opacity-5 ` +
-                            contentClasses
-                        }
-                    >
-                        {children}
-                    </div>
+                    {children}
                 </div>
             </Transition>
         </>
@@ -113,10 +113,7 @@ const DropdownLink = ({
     return (
         <Link
             {...props}
-            className={
-                'block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800 ' +
-                className
-            }
+            className={`hover:bg-base-300 block rounded-lg px-4 py-2 text-sm ${className}`}
         >
             {children}
         </Link>

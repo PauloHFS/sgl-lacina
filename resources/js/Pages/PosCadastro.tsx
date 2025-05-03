@@ -131,8 +131,8 @@ export default function PosCadastro() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Dashboard
+                <h2 className="text-xl leading-tight font-semibold">
+                    Completar Cadastro
                 </h2>
             }
         >
@@ -140,26 +140,25 @@ export default function PosCadastro() {
                 <Head title="Cadastro de Discente" />
 
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="border-b border-gray-200 bg-white p-6">
-                            <h1 className="mb-6 text-2xl font-bold">
+                    <div className="card bg-base-100 shadow-lg">
+                        <div className="card-body">
+                            <h2 className="card-title mb-6">
                                 Cadastro de Discente
-                            </h1>
+                            </h2>
 
                             <form onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="foto_url"
-                                        >
-                                            Foto de Perfil
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Foto de Perfil
+                                            </span>
                                         </label>
                                         <input
                                             id="foto_url"
                                             type="file"
                                             accept="image/*"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.foto_url ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
                                             onChange={(e) => {
                                                 if (
                                                     e.target.files &&
@@ -173,18 +172,17 @@ export default function PosCadastro() {
                                             }}
                                         />
                                         {errors.foto_url && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.foto_url}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="genero"
-                                        >
-                                            Gênero
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Gênero
+                                            </span>
                                         </label>
                                         <Select
                                             id="genero"
@@ -213,26 +211,30 @@ export default function PosCadastro() {
                                                 )
                                             }
                                             placeholder="Selecione o gênero..."
+                                            className={
+                                                errors.genero
+                                                    ? 'select-error'
+                                                    : ''
+                                            }
                                             isSearchable
                                         />
                                         {errors.genero && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.genero}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="data_nascimento"
-                                        >
-                                            Data de Nascimento
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Data de Nascimento
+                                            </span>
                                         </label>
                                         <input
                                             id="data_nascimento"
                                             type="date"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.data_nascimento ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.data_nascimento ? 'input-error' : ''}`}
                                             value={data.data_nascimento || ''}
                                             onChange={(e) =>
                                                 setData(
@@ -242,30 +244,29 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.data_nascimento && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.data_nascimento}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
                                     {/* Documentos */}
-                                    <div className="col-span-2">
-                                        <h2 className="mb-4 border-b pb-2 text-lg font-semibold">
+                                    <div className="divider col-span-2">
+                                        <h2 className="text-lg font-semibold">
                                             Documentos
                                         </h2>
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="cpf"
-                                        >
-                                            CPF*
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                CPF*
+                                            </span>
                                         </label>
                                         <IMaskInput
                                             id="cpf"
                                             mask="000.000.000-00"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.cpf ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.cpf ? 'input-error' : ''}`}
                                             value={data.cpf}
                                             onAccept={(value: string) =>
                                                 setData('cpf', value)
@@ -273,23 +274,22 @@ export default function PosCadastro() {
                                             required
                                         />
                                         {errors.cpf && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.cpf}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="rg"
-                                        >
-                                            RG*
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                RG*
+                                            </span>
                                         </label>
                                         <input
                                             id="rg"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.rg ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
                                             value={data.rg}
                                             minLength={7}
                                             maxLength={9}
@@ -299,23 +299,22 @@ export default function PosCadastro() {
                                             required
                                         />
                                         {errors.rg && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.rg}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="rg"
-                                        >
-                                            Orgão Emissor*
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Orgão Emissor*
+                                            </span>
                                         </label>
                                         <input
                                             id="orgao_emissor_rg"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.orgao_emissor_rg ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
                                             value={data.orgao_emissor_rg}
                                             onChange={(e) =>
                                                 setData(
@@ -326,18 +325,17 @@ export default function PosCadastro() {
                                             required
                                         />
                                         {errors.orgao_emissor_rg && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.orgao_emissor_rg}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="uf_rg"
-                                        >
-                                            UF do RG*
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                UF do RG*
+                                            </span>
                                         </label>
                                         <Select
                                             id="uf_rg"
@@ -353,30 +351,29 @@ export default function PosCadastro() {
                                             required
                                         />
                                         {errors.uf_rg && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.uf_rg}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
                                     {/* Endereço */}
-                                    <div className="col-span-2">
-                                        <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
+                                    <div className="divider col-span-2">
+                                        <h2 className="text-lg font-semibold">
                                             Endereço
                                         </h2>
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="cep"
-                                        >
-                                            CEP
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                CEP
+                                            </span>
                                         </label>
                                         <IMaskInput
                                             id="cep"
                                             mask="00000-000"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.cep ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.cep ? 'input-error' : ''}`}
                                             value={data.cep}
                                             onAccept={(value: string) =>
                                                 setData('cep', value)
@@ -385,23 +382,22 @@ export default function PosCadastro() {
                                             placeholder="00000-000"
                                         />
                                         {errors.cep && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.cep}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="logradouro"
-                                        >
-                                            Logradouro
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Logradouro
+                                            </span>
                                         </label>
                                         <input
                                             id="logradouro"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.logradouro ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.logradouro ? 'input-error' : ''}`}
                                             value={data.logradouro}
                                             onChange={(e) =>
                                                 setData(
@@ -411,23 +407,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.logradouro && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.logradouro}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="numero"
-                                        >
-                                            Número
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Número
+                                            </span>
                                         </label>
                                         <input
                                             id="numero"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.numero ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.numero ? 'input-error' : ''}`}
                                             value={data.numero}
                                             onChange={(e) =>
                                                 setData(
@@ -437,22 +432,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.numero && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.numero}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="complemento"
-                                        >
-                                            Complemento
+
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Complemento
+                                            </span>
                                         </label>
                                         <input
                                             id="complemento"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.complemento ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.complemento ? 'input-error' : ''}`}
                                             value={data.complemento}
                                             onChange={(e) =>
                                                 setData(
@@ -462,23 +457,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.complemento && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.complemento}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="bairro"
-                                        >
-                                            Bairro
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Bairro
+                                            </span>
                                         </label>
                                         <input
                                             id="bairro"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.bairro ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.bairro ? 'input-error' : ''}`}
                                             value={data.bairro}
                                             onChange={(e) =>
                                                 setData(
@@ -488,17 +482,17 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.bairro && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.bairro}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="estado"
-                                        >
-                                            Estado
+
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Estado
+                                            </span>
                                         </label>
                                         <Select
                                             id="estado"
@@ -517,22 +511,22 @@ export default function PosCadastro() {
                                             required
                                         />
                                         {errors.estado && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.estado}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="cidade"
-                                        >
-                                            Cidade
+
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Cidade
+                                            </span>
                                         </label>
                                         <input
                                             id="cidade"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.cidade ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.cidade ? 'input-error' : ''}`}
                                             value={data.cidade}
                                             onChange={(e) =>
                                                 setData(
@@ -542,30 +536,29 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.cidade && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.cidade}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    {/* Dados Contato */}
-                                    <div className="col-span-2">
-                                        <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
+                                    {/* Dados de Contato */}
+                                    <div className="divider col-span-2">
+                                        <h2 className="text-lg font-semibold">
                                             Dados de Contato
                                         </h2>
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="telefone"
-                                        >
-                                            Telefone
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Telefone
+                                            </span>
                                         </label>
                                         <input
                                             id="telefone"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.telefone ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.telefone ? 'input-error' : ''}`}
                                             value={data.telefone}
                                             onChange={(e) =>
                                                 setData(
@@ -575,22 +568,24 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.telefone && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.telefone}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
                                     {/* Dados Bancários */}
-                                    <div className="col-span-2">
-                                        <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
+                                    <div className="divider col-span-2">
+                                        <h2 className="text-lg font-semibold">
                                             Dados Bancários
                                         </h2>
                                     </div>
 
-                                    <div className="w-full max-w-md">
-                                        <label className="mb-2 block text-sm font-medium text-gray-700">
-                                            Banco
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Banco
+                                            </span>
                                         </label>
                                         <Select
                                             options={BANCOS}
@@ -605,17 +600,16 @@ export default function PosCadastro() {
                                         />
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="conta_bancaria"
-                                        >
-                                            Conta Bancária
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Conta Bancária
+                                            </span>
                                         </label>
                                         <IMaskInput
                                             id="conta_bancaria"
                                             mask="00000-0"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.conta_bancaria ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
                                             value={data.conta_bancaria}
                                             onAccept={(value: string) =>
                                                 setData('conta_bancaria', value)
@@ -623,23 +617,22 @@ export default function PosCadastro() {
                                             placeholder="00000-0"
                                         />
                                         {errors.conta_bancaria && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.conta_bancaria}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="agencia"
-                                        >
-                                            Agência
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Agência
+                                            </span>
                                         </label>
                                         <IMaskInput
                                             id="agencia"
                                             mask="0000-0"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.agencia ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
                                             value={data.agencia}
                                             onAccept={(value: string) =>
                                                 setData('agencia', value)
@@ -647,30 +640,29 @@ export default function PosCadastro() {
                                             placeholder="0000-0"
                                         />
                                         {errors.agencia && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.agencia}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
                                     {/* Dados Profissionais */}
-                                    <div className="col-span-2">
-                                        <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
+                                    <div className="divider col-span-2">
+                                        <h2 className="text-lg font-semibold">
                                             Dados Profissionais
                                         </h2>
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="curriculo"
-                                        >
-                                            Currículo Lattes
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Currículo Lattes
+                                            </span>
                                         </label>
                                         <input
                                             id="curriculo"
                                             type="url"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.curriculo ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.curriculo ? 'input-error' : ''}`}
                                             value={data.curriculo}
                                             onChange={(e) =>
                                                 setData(
@@ -680,23 +672,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.curriculo && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.curriculo}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="linkedin"
-                                        >
-                                            LinkedIn
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                LinkedIn
+                                            </span>
                                         </label>
                                         <input
                                             id="linkedin"
                                             type="url"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.linkedin_url ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.linkedin_url ? 'input-error' : ''}`}
                                             value={data.linkedin_url}
                                             onChange={(e) =>
                                                 setData(
@@ -706,23 +697,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.linkedin_url && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.linkedin_url}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="github"
-                                        >
-                                            GitHub
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                GitHub
+                                            </span>
                                         </label>
                                         <input
                                             id="github"
                                             type="url"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.github_url ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.github_url ? 'input-error' : ''}`}
                                             value={data.github_url}
                                             onChange={(e) =>
                                                 setData(
@@ -732,23 +722,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.github_url && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.github_url}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="figma"
-                                        >
-                                            Figma
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Figma
+                                            </span>
                                         </label>
                                         <input
                                             id="figma"
                                             type="url"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.figma_url ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.figma_url ? 'input-error' : ''}`}
                                             value={data.figma_url}
                                             onChange={(e) =>
                                                 setData(
@@ -758,23 +747,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.figma_url && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.figma_url}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="area_atuacao"
-                                        >
-                                            Área de Atuação
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Área de Atuação
+                                            </span>
                                         </label>
                                         <input
                                             id="area_atuacao"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.area_atuacao ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
                                             value={data.area_atuacao}
                                             onChange={(e) =>
                                                 setData(
@@ -784,23 +772,22 @@ export default function PosCadastro() {
                                             }
                                         />
                                         {errors.area_atuacao && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.area_atuacao}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className="mb-4">
-                                        <label
-                                            className="mb-2 block text-sm font-bold text-gray-700"
-                                            htmlFor="tecnologias"
-                                        >
-                                            Tecnologias
+                                    <div className="form-control mb-4 w-full">
+                                        <label className="label">
+                                            <span className="label-text">
+                                                Tecnologias
+                                            </span>
                                         </label>
                                         <input
                                             id="tecnologias"
                                             type="text"
-                                            className={`w-full rounded-md border px-3 py-2 ${errors.tecnologias ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
                                             value={data.tecnologias}
                                             onChange={(e) =>
                                                 setData(
@@ -811,101 +798,16 @@ export default function PosCadastro() {
                                             placeholder="Separadas por vírgula"
                                         />
                                         {errors.tecnologias && (
-                                            <p className="mt-1 text-xs text-red-500">
+                                            <span className="label-text-alt text-error">
                                                 {errors.tecnologias}
-                                            </p>
+                                            </span>
                                         )}
                                     </div>
-
-                                    {/* Dados Acadêmicos */}
-                                    {/* <div className="col-span-2">
-                                    <h2 className="mb-4 mt-4 border-b pb-2 text-lg font-semibold">
-                                        Dados Acadêmicos
-                                    </h2>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label
-                                        className="mb-2 block text-sm font-bold text-gray-700"
-                                        htmlFor="matricula"
-                                    >
-                                        Matrícula*
-                                    </label>
-                                    <input
-                                        id="matricula"
-                                        type="text"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.matricula ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.matricula}
-                                        onChange={(e) =>
-                                            setData('matricula', e.target.value)
-                                        }
-                                        required
-                                    />
-                                    {errors.matricula && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                            {errors.matricula}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label
-                                        className="mb-2 block text-sm font-bold text-gray-700"
-                                        htmlFor="periodo_entrada"
-                                    >
-                                        Período de Entrada
-                                    </label>
-                                    <input
-                                        id="periodo_entrada"
-                                        type="text"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.periodo_entrada ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.periodo_entrada}
-                                        onChange={(e) =>
-                                            setData(
-                                                'periodo_entrada',
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="Ex: 2023.1"
-                                    />
-                                    {errors.periodo_entrada && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                            {errors.periodo_entrada}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label
-                                        className="mb-2 block text-sm font-bold text-gray-700"
-                                        htmlFor="periodo_conclusao"
-                                    >
-                                        Período de Conclusão (previsto)
-                                    </label>
-                                    <input
-                                        id="periodo_conclusao"
-                                        type="text"
-                                        className={`w-full rounded-md border px-3 py-2 ${errors.periodo_conclusao ? 'border-red-500' : 'border-gray-300'}`}
-                                        value={data.periodo_conclusao}
-                                        onChange={(e) =>
-                                            setData(
-                                                'periodo_conclusao',
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="Ex: 2027.2"
-                                    />
-                                    {errors.periodo_conclusao && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                            {errors.periodo_conclusao}
-                                        </p>
-                                    )}
-                                </div> */}
 
                                     <div className="col-span-2 mt-6">
                                         <button
                                             type="submit"
-                                            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                                            className="btn btn-primary"
                                             disabled={processing}
                                         >
                                             {processing
