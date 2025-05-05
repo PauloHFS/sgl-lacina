@@ -1,65 +1,86 @@
-import { BANCOS, ESTADOS } from '@/constants';
+import { ESTADOS } from '@/constants';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import Select from 'react-select';
 
-interface ColaboradorData {
-    foto_url: File | null;
-    genero: string;
-    data_nascimento: string;
-    cpf: string;
-    rg: string;
-    uf_rg: string;
-    orgao_emissor_rg: string;
-    cep: string;
-    logradouro: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    telefone: string;
-    conta_bancaria: string;
-    agencia: string;
-    codigo_banco: string;
-    linkedin_url: string;
-    github_url: string;
-    figma_url: string;
-    curriculo: string;
-    area_atuacao: string;
-    tecnologias: string;
+interface PosCadastroProps extends Record<string, unknown> {
+    tecnologias: Array<{ id: string; nome: string }>;
+    areasAtuacao: Array<{ id: string; nome: string }>;
+    bancos: Array<{ id: string; nome: string }>;
 }
 
-export default function PosCadastro() {
-    const { data, setData, post, processing, errors } =
-        useForm<ColaboradorData>({
-            foto_url: null,
-            genero: '',
-            data_nascimento: '',
-            rg: '',
-            uf_rg: '',
-            orgao_emissor_rg: '',
-            cpf: '',
-            cep: '',
-            logradouro: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            cidade: '',
-            estado: '',
-            telefone: '',
-            conta_bancaria: '',
-            agencia: '',
-            codigo_banco: '',
-            curriculo: '',
-            linkedin_url: '',
-            github_url: '',
-            figma_url: '',
-            area_atuacao: '',
-            tecnologias: '',
+export default function PosCadastro({
+    tecnologias,
+    bancos,
+    areasAtuacao,
+}: PageProps<PosCadastroProps>) {
+    const { data, setData, post, processing, errors } = useForm<{
+        foto_url: File | null;
+        genero: string;
+        data_nascimento: string;
+        cpf: string;
+        rg: string;
+        uf_rg: string;
+        orgao_emissor_rg: string;
+        cep: string;
+        endereco: string;
+        numero: string;
+        complemento: string;
+        bairro: string;
+        cidade: string;
+        estado: string;
+        telefone: string;
+        conta_bancaria: string;
+        agencia: string;
+        codigo_banco: string;
+        linkedin_url: string;
+        github_url: string;
+        figma_url: string;
+        curriculo: string;
+        area_atuacao: string;
+        tecnologias: string;
+    }>({
+        foto_url: null,
+        genero: '',
+        data_nascimento: '',
+        rg: '',
+        uf_rg: '',
+        orgao_emissor_rg: '',
+        cpf: '',
+        cep: '',
+        endereco: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        telefone: '',
+        conta_bancaria: '',
+        agencia: '',
+        codigo_banco: '',
+        curriculo: '',
+        linkedin_url: '',
+        github_url: '',
+        figma_url: '',
+        area_atuacao: '',
+        tecnologias: '',
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/profile/update', {
+            forceFormData: true,
+            onSuccess: () => {
+                alert('Cadastro realizado com sucesso!');
+            },
+            onError: () => {
+                alert('Erro ao realizar cadastro. Tente novamente.');
+            },
         });
+    };
 
     const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const cep = e.target.value.replace(/\D/g, '');
@@ -70,29 +91,27 @@ export default function PosCadastro() {
                 const response = await fetch(
                     `https://viacep.com.br/ws/${cep}/json/`,
                 );
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar CEP');
+                }
                 const res = await response.json();
                 if (!res.erro) {
-                    setData('logradouro', res.logradouro);
-                    setData('bairro', res.bairro);
-                    setData('cidade', res.localidade);
-                    setData('estado', res.uf);
+                    setData((prevData) => ({
+                        ...prevData,
+                        endereco: res.logradouro,
+                        bairro: res.bairro,
+                        cidade: res.localidade,
+                        estado: res.uf,
+                        complemento: res.complemento,
+                    }));
                 } else {
                     alert('CEP não encontrado');
                 }
             } catch (error) {
                 console.error('Erro ao buscar CEP:', error);
+                alert('Erro ao buscar CEP. Tente novamente mais tarde.');
             }
         }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/profile/update', {
-            forceFormData: true,
-            onSuccess: () => {
-                alert('Cadastro realizado com sucesso!');
-            },
-        });
     };
 
     return (
@@ -368,27 +387,27 @@ export default function PosCadastro() {
                                         </label>
                                     </div>
 
-                                    {/* Logradouro */}
+                                    {/* endereco */}
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Logradouro
+                                                endereco
                                             </span>
                                             <input
-                                                id="logradouro"
+                                                id="endereco"
                                                 type="text"
-                                                className={`input input-bordered w-full ${errors.logradouro ? 'input-error' : ''}`}
-                                                value={data.logradouro}
+                                                className={`input input-bordered w-full ${errors.endereco ? 'input-error' : ''}`}
+                                                value={data.endereco}
                                                 onChange={(e) =>
                                                     setData(
-                                                        'logradouro',
+                                                        'endereco',
                                                         e.target.value,
                                                     )
                                                 }
                                             />
-                                            {errors.logradouro && (
+                                            {errors.endereco && (
                                                 <span className="label-text-alt text-error">
-                                                    {errors.logradouro}
+                                                    {errors.endereco}
                                                 </span>
                                             )}
                                         </label>
@@ -484,12 +503,13 @@ export default function PosCadastro() {
                                                     value: uf.sigla,
                                                     label: uf.nome,
                                                 }))}
-                                                onChange={(e) =>
+                                                onChange={(e) => {
+                                                    console.log(e?.value);
                                                     setData(
                                                         'estado',
                                                         e?.value || '',
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 placeholder="Selecione um estado..."
                                                 isSearchable
                                             />
@@ -574,7 +594,13 @@ export default function PosCadastro() {
                                                 Banco
                                             </span>
                                             <Select
-                                                options={BANCOS}
+                                                id="codigo_banco"
+                                                options={bancos.map(
+                                                    (banco) => ({
+                                                        value: banco.id,
+                                                        label: banco.nome,
+                                                    }),
+                                                )}
                                                 onChange={(e) =>
                                                     setData(
                                                         'codigo_banco',
@@ -584,6 +610,13 @@ export default function PosCadastro() {
                                                 placeholder="Selecione um banco..."
                                                 isSearchable
                                             />
+                                            {errors.codigo_banco && (
+                                                <div className="alert alert-error mt-2">
+                                                    <span>
+                                                        {errors.codigo_banco}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </label>
                                     </div>
 
@@ -755,22 +788,29 @@ export default function PosCadastro() {
                                             <span className="label-text mb-1">
                                                 Área de Atuação
                                             </span>
-                                            <input
+                                            <Select
                                                 id="area_atuacao"
-                                                type="text"
-                                                className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
-                                                value={data.area_atuacao}
+                                                options={areasAtuacao.map(
+                                                    (area) => ({
+                                                        value: area.id,
+                                                        label: area.nome,
+                                                    }),
+                                                )}
                                                 onChange={(e) =>
                                                     setData(
                                                         'area_atuacao',
-                                                        e.target.value,
+                                                        e?.value || '',
                                                     )
                                                 }
+                                                placeholder="Selecione uma área de atuação..."
+                                                isSearchable
                                             />
                                             {errors.area_atuacao && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.area_atuacao}
-                                                </span>
+                                                <div className="alert alert-error mt-2">
+                                                    <span>
+                                                        {errors.area_atuacao}
+                                                    </span>
+                                                </div>
                                             )}
                                         </label>
                                     </div>
@@ -781,23 +821,29 @@ export default function PosCadastro() {
                                             <span className="label-text mb-1">
                                                 Tecnologias
                                             </span>
-                                            <input
+                                            <Select
                                                 id="tecnologias"
-                                                type="text"
-                                                className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
-                                                value={data.tecnologias}
+                                                options={tecnologias.map(
+                                                    (tecnologia) => ({
+                                                        value: tecnologia.id,
+                                                        label: tecnologia.nome,
+                                                    }),
+                                                )}
                                                 onChange={(e) =>
                                                     setData(
                                                         'tecnologias',
-                                                        e.target.value,
+                                                        e?.value || '',
                                                     )
                                                 }
-                                                placeholder="Separadas por vírgula"
+                                                placeholder="Selecione uma tecnologia..."
+                                                isSearchable
                                             />
                                             {errors.tecnologias && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.tecnologias}
-                                                </span>
+                                                <div className="alert alert-error mt-2">
+                                                    <span>
+                                                        {errors.tecnologias}
+                                                    </span>
+                                                </div>
                                             )}
                                         </label>
                                     </div>

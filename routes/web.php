@@ -7,6 +7,9 @@ use App\Http\Controllers\ProjetoVinculoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Tecnologia;
+use App\Models\AreaAtuacao;
+use App\Models\Banco;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -22,7 +25,15 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::get('/pos-cadastro', function () {
-    return Inertia::render('PosCadastro');
+    $tecnologias = Tecnologia::all();
+    $areasAtuacao = AreaAtuacao::all();
+    $bancos = Banco::all();
+
+    return Inertia::render('PosCadastro', [
+        'tecnologias' => $tecnologias,
+        'areasAtuacao' => $areasAtuacao,
+        'bancos' => $bancos,
+    ]);
 })->middleware(['auth', 'verified'])->name('pos-cadastro');
 
 Route::middleware('auth')->group(function () {
