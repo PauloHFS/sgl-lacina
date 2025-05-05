@@ -12,7 +12,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
-use App\Models\UsuarioVinculo;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder

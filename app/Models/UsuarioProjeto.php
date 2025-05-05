@@ -16,7 +16,7 @@ class UsuarioProjeto extends Model
     /** @use HasFactory<\Database\Factories\UsuarioProjetoFactory> */
     use HasFactory, HasUuids;
 
-    protected $table = 'usuario_vinculo';
+    protected $table = 'usuario_projeto';
 
     protected $primaryKey = 'id';
     public $incrementing = false;
