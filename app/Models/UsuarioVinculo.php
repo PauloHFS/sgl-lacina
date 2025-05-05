@@ -2,35 +2,35 @@
 
 namespace App\Models;
 
-use App\Enums\TipoVinculo; // Corrected: Use existing TipoVinculo enum
+use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
-use App\Enums\StatusVinculoProjeto; // Added Status enum
-use Illuminate\Database\Eloquent\Concerns\HasUuids; // Added UUID trait
+use App\Enums\StatusVinculoProjeto;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
-class UsuarioVinculo extends Model
+class UsuarioProjeto extends Model
 {
-    /** @use HasFactory<\Database\Factories\UsuarioVinculoFactory> */
-    use HasFactory, HasUuids; // Added HasUuids
+    /** @use HasFactory<\Database\Factories\UsuarioProjetoFactory> */
+    use HasFactory, HasUuids;
 
     protected $table = 'usuario_vinculo';
 
-    protected $primaryKey = 'id'; // Changed primary key to id
-    public $incrementing = false; // Set incrementing to false for UUID
-    protected $keyType = 'string'; // Set key type to string for UUID
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
 
     protected $fillable = [
-        'id', // Added id
+        'id',
         'projeto_id',
         'usuario_id',
         'tipo_vinculo',
         'funcao',
         'status',
-        'carga_horaria_semanal', // Added carga horaria
+        'carga_horaria_semanal',
         'data_inicio',
         'data_fim',
     ];
@@ -38,8 +38,8 @@ class UsuarioVinculo extends Model
     protected $casts = [
         'tipo_vinculo' => TipoVinculo::class,
         'funcao' => Funcao::class,
-        'status' => StatusVinculoProjeto::class, // Added status cast
-        'carga_horaria_semanal' => 'integer', // Added carga horaria cast
+        'status' => StatusVinculoProjeto::class,
+        'carga_horaria_semanal' => 'integer',
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];

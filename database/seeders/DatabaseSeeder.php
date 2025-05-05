@@ -11,6 +11,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
 use App\Models\UsuarioVinculo;
 use Illuminate\Support\Facades\Hash;
 
@@ -51,7 +52,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO, // Use Enum
         ]);
-        UsuarioVinculo::factory()->create([
+        UsuarioProjeto::factory()->create([
             'usuario_id' => $maxwellUser->id,
             'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
@@ -60,7 +61,7 @@ class DatabaseSeeder extends Seeder
             'data_inicio' => $projeto1->data_inicio,
             'status' => StatusVinculoProjeto::APROVADO, // Use Enum
         ]);
-        UsuarioVinculo::factory()->create([
+        UsuarioProjeto::factory()->create([
             'usuario_id' => $maxwellUser->id,
             'projeto_id' => $projeto2->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
@@ -77,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO, // Use Enum
         ]);
-        UsuarioVinculo::factory()->create([
+        UsuarioProjeto::factory()->create([
             'usuario_id' => $usuario_ativo->id,
             'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
@@ -110,7 +111,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO, // Use Enum
         ]);
-        UsuarioVinculo::factory()->create([
+        UsuarioProjeto::factory()->create([
             'usuario_id' => $usuarioVinculoPendente->id,
             'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,

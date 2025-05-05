@@ -3,14 +3,16 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\UsuarioVinculo;
+use App\Models\UsuarioProjeto;
+use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UsuarioVinculo>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UsuarioProjeto>
  */
-class UsuarioVinculoFactory extends Factory
+class UsuarioProjetoFactory extends Factory
 {
-    protected $model = UsuarioVinculo::class;
+    protected $model = UsuarioProjeto::class;
 
     /**
      * Define the model's default state.
@@ -20,9 +22,8 @@ class UsuarioVinculoFactory extends Factory
     public function definition(): array
     {
         return [
-            // TODO Editar para pegar do enum esses elementos
-            'tipo_vinculo' => $this->faker->randomElement(['COORDENADOR', 'COLABORADOR']),
-            'funcao' => $this->faker->randomElement(['COORDENADOR', 'PESQUISADOR', 'DESENVOLVEDOR', 'TECNICO', 'ALUNO']),
+            'tipo_vinculo' => $this->faker->randomElement([TipoVinculo::COORDENADOR, TipoVinculo::COLABORADOR]),
+            'funcao' => $this->faker->randomElement([Funcao::COORDENADOR, Funcao::PESQUISADOR, Funcao::DESENVOLVEDOR, Funcao::TECNICO, Funcao::ALUNO]),
             'data_inicio' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'data_fim' => $this->faker->dateTimeBetween('now', '+1 year'),
         ];

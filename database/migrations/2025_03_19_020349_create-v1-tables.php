@@ -32,10 +32,10 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('usuario_vinculo', function (Blueprint $table) {
+        Schema::create('usuario_projeto', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('projeto_id');
             $table->uuid('usuario_id');
+            $table->uuid('projeto_id');
             $table->enum('tipo_vinculo', array_column(TipoVinculo::cases(), 'value'));
             $table->enum('funcao', array_column(Funcao::cases(), 'value'));
             $table->enum('status', array_column(StatusVinculoProjeto::cases(), 'value'));
@@ -46,8 +46,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('projeto_id')->references('id')->on('projetos');
             $table->foreign('usuario_id')->references('id')->on('users');
+            $table->foreign('projeto_id')->references('id')->on('projetos');
 
             $table->index(['projeto_id', 'usuario_id', 'data_inicio']);
             $table->index(['usuario_id', 'status']);
