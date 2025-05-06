@@ -4,6 +4,7 @@ export interface User {
     email: string;
     email_verified_at?: string;
 
+    //TODO: Melhorar isso aqui baseada no que tem no banco de dados
     linkedin_url?: string;
     github_url?: string;
     figma_url?: string;

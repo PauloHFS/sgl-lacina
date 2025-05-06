@@ -580,6 +580,7 @@ export default function PosCadastro({
                                     </div>
 
                                     {/* Cidade */}
+                                    {/* TODO: Fazer isso um select, baseado no estado que foi selecionado no select de estado */}
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
