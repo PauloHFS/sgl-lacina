@@ -16,36 +16,40 @@ export default function VerifyEmail({ status }: { status?: string }) {
         <GuestLayout>
             <Head title="Verificação de Email" />
 
-            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Obrigado por se cadastrar! Antes de começar, você poderia
-                verificar seu endereço de email clicando no link que acabamos de
-                enviar para você? Se você não recebeu o email, teremos prazer em
-                enviar outro.
+            <div className="card bg-base-100 shadow-xl">
+                <div className="card-body">
+                    <div className="text-sm">
+                        Obrigado por se cadastrar! Antes de começar, você poderia
+                        verificar seu endereço de email clicando no link que acabamos de
+                        enviar para você? Se você não recebeu o email, teremos prazer em
+                        enviar outro.
+                    </div>
+
+                    {status === 'verification-link-sent' && (
+                        <div className="alert alert-success text-sm">
+                            Um novo link de verificação foi enviado para o endereço de
+                            email que você forneceu durante o registro.
+                        </div>
+                    )}
+
+                    <form onSubmit={submit} className="mt-4">
+                        <div className="flex items-center justify-between">
+                            <PrimaryButton disabled={processing} className="btn btn-primary">
+                                Reenviar Email de Verificação
+                            </PrimaryButton>
+
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                className="btn btn-ghost btn-sm"
+                            >
+                                Log Out
+                            </Link>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
-                    Um novo link de verificação foi enviado para o endereço de
-                    email que você forneceu durante o registro.
-                </div>
-            )}
-
-            <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>
-                        Reenviar Email de Verificação
-                    </PrimaryButton>
-
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                    >
-                        Log Out
-                    </Link>
-                </div>
-            </form>
         </GuestLayout>
     );
 }
