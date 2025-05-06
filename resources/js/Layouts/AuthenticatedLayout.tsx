@@ -31,6 +31,14 @@ export default function Authenticated({
                                     Dashboard
                                 </NavLink>
                             </li>
+                            <li>
+                                <NavLink
+                                    href={route('colaboradores.index')}
+                                    active={route().current('colaboradores.*')}
+                                >
+                                    Colaboradores
+                                </NavLink>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -137,6 +145,18 @@ export default function Authenticated({
                             }
                         >
                             Dashboard
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href={route('colaboradores.index')}
+                            className={
+                                route().current('colaboradores.*')
+                                    ? 'active'
+                                    : ''
+                            }
+                        >
+                            Colaboradores
                         </Link>
                     </li>
                     <div className="divider"></div>
