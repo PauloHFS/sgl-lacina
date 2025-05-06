@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'validarRole' => \App\Http\Middleware\ValidarTipoVinculoMiddleware::class,
+            'validarTipoVinculo' => \App\Http\Middleware\ValidarTipoVinculoMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

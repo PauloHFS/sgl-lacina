@@ -11,6 +11,7 @@ use App\Models\Tecnologia;
 use App\Models\AreaAtuacao;
 use App\Models\Banco;
 
+// Rotas Públicas
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -20,48 +21,49 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// Rotas Autenticadas e Verificadas
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/pos-cadastro', function () {
-    $tecnologias = Tecnologia::all();
-    $areasAtuacao = AreaAtuacao::all();
-    $bancos = Banco::all();
+    Route::get('/pos-cadastro', function () {
+        $tecnologias = Tecnologia::all();
+        $areasAtuacao = AreaAtuacao::all();
+        $bancos = Banco::all();
 
-    return Inertia::render('PosCadastro', [
-        'tecnologias' => $tecnologias,
-        'areasAtuacao' => $areasAtuacao,
-        'bancos' => $bancos,
-    ]);
-})->middleware(['auth', 'verified'])->name('pos-cadastro');
+        return Inertia::render('PosCadastro', [
+            'tecnologias' => $tecnologias,
+            'areasAtuacao' => $areasAtuacao,
+            'bancos' => $bancos,
+        ]);
+    })->name('pos-cadastro');
 
-Route::middleware('auth')->group(function () {
+    // Rotas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
+
+    // Rotas para Solicitação de Vínculo a Projeto
+    Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])
+        ->name('projetos.solicitar-vinculo');
+
+    // Rotas Específicas para Coordenadores
+    Route::middleware('validaTipoVinculo:coordenador')->group(function () {
+        Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
+        // A rota POST /colaboradores original apontava para ColaboradorController::aceitar sem um parâmetro {colaborador}.
+        // O método aceitar requer um User $colaborador. A rota /colaboradores/{colaborador}/aceitar já serve a este propósito.
+        // Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
+        Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
+        Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+
+        Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
+        Route::post('/colaboradores/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
+
+        Route::post('/vinculos/{colaborador}/aceitar', [ColaboradorController::class, 'aceitarVinculo'])
+            ->name('vinculos.aceitar');
+        Route::post('/vinculos/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])
+            ->name('vinculos.recusar');
+    });
 });
-
-Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro')->middleware(['auth', 'verified']);
-
-Route::middleware(['auth', 'verified', 'checkUserRole:coordenador'])->group(function () {
-    Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
-    Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
-    Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
-    Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
-
-    Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
-    Route::post('/colaboradores/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
-
-    Route::post('/vinculos/{colaborador}/aceitar', [ColaboradorController::class, 'aceitarVinculo'])
-        ->name('vinculos.aceitar');
-    Route::post('/vinculos/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])
-        ->name('vinculos.recusar');
-});
-
-Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])
-    ->name('projetos.solicitar-vinculo')
-    ->middleware(['auth']);
-
 
 require __DIR__ . '/auth.php';
