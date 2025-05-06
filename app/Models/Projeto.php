@@ -45,7 +45,7 @@ class Projeto extends Model
 
     public function usuarios(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'usuario_vinculo', 'projeto_id', 'usuario_id')
+        return $this->belongsToMany(User::class, 'usuario_projeto', 'projeto_id', 'usuario_id')
             ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }

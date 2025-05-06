@@ -40,8 +40,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'foto_url',
         'curriculo',
         'area_atuacao_id',
-        'genero', // Added genero
-        'data_nascimento', // Added data_nascimento
+        'genero',
+        'data_nascimento',
         'cpf',
         'rg',
         'uf_rg',
@@ -57,8 +57,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'bairro',
         'cidade',
         'uf',
-        // Removed: area_atuacao, tecnologias (handled by relationships/FKs)
-        // Removed: codigo_banco (handled by banco_id)
     ];
 
     /**
@@ -94,13 +92,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function vinculos(): HasMany
     {
-        return $this->hasMany(UsuarioVinculo::class, 'usuario_id');
+        return $this->hasMany(UsuarioProjeto::class, 'usuario_id');
     }
 
     public function projetos(): BelongsToMany
     {
-        return $this->belongsToMany(Projeto::class, 'usuario_vinculo', 'usuario_id', 'projeto_id')
-            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim') // Added status, carga_horaria_semanal
+        return $this->belongsToMany(Projeto::class, 'usuario_projeto', 'usuario_id', 'projeto_id')
+            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }
 

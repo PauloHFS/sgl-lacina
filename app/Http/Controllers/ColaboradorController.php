@@ -58,7 +58,7 @@ class ColaboradorController extends Controller
             // Usuários que estão na tabela de vinculo e com o status do vinculo pendente
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
-                    ->from('usuario_vinculo')
+                    ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::PENDENTE);
             })->paginate(10);
@@ -68,7 +68,7 @@ class ColaboradorController extends Controller
             */
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
-                    ->from('usuario_vinculo')
+                    ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::APROVADO)
                     ->where('data_fim', '>', now());
@@ -79,7 +79,7 @@ class ColaboradorController extends Controller
             */
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
-                    ->from('usuario_vinculo')
+                    ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::INATIVO)
                     ->where('data_fim', '<', now());
