@@ -48,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projetos.solicitar-vinculo');
 
     // Rotas Específicas para Coordenadores
-    Route::middleware('validaTipoVinculo:coordenador')->group(function () {
+    Route::middleware('validarTipoVinculo:coordenador')->group(function () {
         Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
         // A rota POST /colaboradores original apontava para ColaboradorController::aceitar sem um parâmetro {colaborador}.
         // O método aceitar requer um User $colaborador. A rota /colaboradores/{colaborador}/aceitar já serve a este propósito.
