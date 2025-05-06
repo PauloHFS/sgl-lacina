@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import NavLink from '@/Components/NavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
@@ -11,52 +12,42 @@ export default function Authenticated({
         useState(false);
 
     return (
-        <div className="bg-base-100 min-h-screen">
-            <nav className="navbar border-base-300 bg-base-200 border-b">
+        <div className="bg-base-200 min-h-screen">
+            {/* Navbar */}
+            <div className="navbar bg-base-100">
                 <div className="navbar-start">
-                    <Link href="/" className="flex items-center">
-                        <ApplicationLogo className="h-9 w-auto" />
-                    </Link>
-                </div>
-                <div className="navbar-center hidden sm:flex">
-                    <ul className="menu menu-horizontal px-1">
-                        <li>
-                            <Link
-                                href={route('dashboard')}
-                                className={
-                                    route().current('dashboard') ? 'active' : ''
-                                }
-                            >
-                                Dashboard
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={route('colaboradores.index')}
-                                className={
-                                    route().current('colaboradores.index')
-                                        ? 'active'
-                                        : ''
-                                }
-                            >
-                                Colaboradores
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
-                <div className="navbar-end">
-                    {/* Desktop Dropdown */}
+                    <div className="flex-none">
+                        <Link href="/">
+                            <ApplicationLogo className="h-9 w-auto" />
+                        </Link>
+                    </div>
                     <div className="hidden sm:flex">
+                        <ul className="menu menu-horizontal px-1">
+                            <li>
+                                <NavLink
+                                    href={route('dashboard')}
+                                    active={route().current('dashboard')}
+                                >
+                                    Dashboard
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="navbar-end">
+                    {/* Desktop user menu */}
+                    <div className="hidden sm:block">
                         <div className="dropdown dropdown-end">
                             <div
                                 tabIndex={0}
                                 role="button"
-                                className="btn btn-ghost btn-sm"
+                                className="btn btn-ghost"
                             >
-                                <span>{user.name}</span>
+                                {user.name}
                                 <svg
+                                    className="ml-2 h-4 w-4"
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="ms-2 h-4 w-4"
                                     viewBox="0 0 20 20"
                                     fill="currentColor"
                                 >
@@ -69,120 +60,102 @@ export default function Authenticated({
                             </div>
                             <ul
                                 tabIndex={0}
-                                className="dropdown-content menu menu-sm rounded-box bg-base-200 z-20 mt-2 w-52 shadow"
+                                className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
                             >
                                 <li>
                                     <Link href={route('profile.edit')}>
-                                        Perfil
+                                        Profile
                                     </Link>
                                 </li>
                                 <li>
-                                    <form
+                                    <Link
+                                        href={route('logout')}
                                         method="post"
-                                        action={route('logout')}
+                                        as="button"
                                     >
-                                        <button
-                                            type="submit"
-                                            className="w-full text-left"
-                                        >
-                                            Sair
-                                        </button>
-                                    </form>
+                                        Log Out
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                    {/* Mobile Hamburger */}
+
+                    {/* Mobile menu button */}
                     <div className="sm:hidden">
                         <button
-                            className="btn btn-ghost btn-square"
                             onClick={() =>
-                                setShowingNavigationDropdown((prev) => !prev)
+                                setShowingNavigationDropdown(
+                                    !showingNavigationDropdown,
+                                )
                             }
+                            className="btn btn-square btn-ghost"
                         >
                             <svg
                                 className="h-6 w-6"
-                                fill="none"
                                 stroke="currentColor"
+                                fill="none"
                                 viewBox="0 0 24 24"
                             >
-                                {showingNavigationDropdown ? (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                ) : (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                )}
+                                <path
+                                    className={
+                                        !showingNavigationDropdown
+                                            ? 'inline-flex'
+                                            : 'hidden'
+                                    }
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                                <path
+                                    className={
+                                        showingNavigationDropdown
+                                            ? 'inline-flex'
+                                            : 'hidden'
+                                    }
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
                             </svg>
                         </button>
                     </div>
                 </div>
-            </nav>
+            </div>
 
-            {/* Mobile Dropdown */}
-            {showingNavigationDropdown && (
-                <div className="border-base-300 bg-base-200 border-b sm:hidden">
-                    <ul className="menu menu-vertical px-2 py-2">
-                        <li>
-                            <Link
-                                href={route('dashboard')}
-                                className={
-                                    route().current('dashboard') ? 'active' : ''
-                                }
-                            >
-                                Dashboard
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={route('colaboradores.index')}
-                                className={
-                                    route().current('colaboradores.index')
-                                        ? 'active'
-                                        : ''
-                                }
-                            >
-                                Colaboradores
-                            </Link>
-                        </li>
-                    </ul>
-                    <div className="border-base-300 border-t px-4 py-3">
-                        <div className="font-bold">{user.name}</div>
-                        <div className="text-base-content/70 text-sm">
-                            {user.email}
-                        </div>
-                        <ul className="menu menu-vertical mt-2">
-                            <li>
-                                <Link href={route('profile.edit')}>Perfil</Link>
-                            </li>
-                            <li>
-                                <form method="post" action={route('logout')}>
-                                    <input
-                                        type="hidden"
-                                        name="_token"
-                                        value={usePage().props.csrf_token}
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="w-full text-left"
-                                    >
-                                        Sair
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
+            {/* Mobile navigation dropdown */}
+            <div
+                className={`sm:hidden ${showingNavigationDropdown ? 'block' : 'hidden'}`}
+            >
+                <ul className="menu bg-base-100 rounded-box w-full p-2">
+                    <li>
+                        <Link
+                            href={route('dashboard')}
+                            className={
+                                route().current('dashboard') ? 'active' : ''
+                            }
+                        >
+                            Dashboard
+                        </Link>
+                    </li>
+                    <div className="divider"></div>
+                    <div className="px-4">
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm opacity-75">{user.email}</div>
                     </div>
-                </div>
-            )}
+                    <li>
+                        <Link href={route('profile.edit')}>Profile</Link>
+                    </li>
+                    <li>
+                        <Link href={route('logout')} method="post" as="button">
+                            Log Out
+                        </Link>
+                    </li>
+                </ul>
+            </div>
 
+            {/* Header */}
             {header && (
                 <header className="bg-base-100 shadow">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -191,7 +164,10 @@ export default function Authenticated({
                 </header>
             )}
 
-            <main>{children}</main>
+            {/* Main content */}
+            <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+                {children}
+            </main>
         </div>
     );
 }
