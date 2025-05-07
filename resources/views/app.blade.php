@@ -18,5 +18,8 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+        <div style="position: fixed; bottom: 0; width: 100%; background-color: red; color: white; text-align: center; padding: 5px; z-index: 1000;">
+            Esta é uma versão em alpha
+        </div>
     </body>
 </html>

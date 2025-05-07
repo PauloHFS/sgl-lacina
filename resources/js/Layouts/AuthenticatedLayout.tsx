@@ -21,7 +21,7 @@ export default function Authenticated({
             {/* Navbar */}
             <div className="navbar bg-base-100">
                 <div className="navbar-start">
-                    <div className="flex-none">
+                    <div className="mr-4 flex-none">
                         <Link href="/">
                             <ApplicationLogo className="h-9 w-auto" />
                         </Link>
@@ -32,6 +32,7 @@ export default function Authenticated({
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
+                                    className="btn btn-ghost btn-sm rounded-btn"
                                 >
                                     Dashboard
                                 </NavLink>
@@ -40,6 +41,7 @@ export default function Authenticated({
                                 <NavLink
                                     href={route('projetos.index')}
                                     active={route().current('projetos.*')}
+                                    className="btn btn-ghost btn-sm rounded-btn"
                                 >
                                     Projetos
                                 </NavLink>
@@ -51,6 +53,7 @@ export default function Authenticated({
                                         active={route().current(
                                             'colaboradores.*',
                                         )}
+                                        className="btn btn-ghost btn-sm rounded-btn"
                                     >
                                         Colaboradores
                                     </NavLink>

@@ -1,82 +1,150 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
 import { Head } from '@inertiajs/react';
 
-type DashboardProps = {
-    projetosCount: number;
-    usuariosCount: number;
-    solicitacoesPendentes: number;
-    ultimosProjetos: { id: number; nome: string; cliente: string }[];
-};
-
 export default function Dashboard({
-    projetosCount = 0,
-    usuariosCount = 0,
-    solicitacoesPendentes = 0,
-    ultimosProjetos = [],
-}: DashboardProps) {
+    projetos,
+    projetosCount,
+}: PageProps<{
+    projetos: {
+        id: string;
+        usuario_id: string;
+        projeto_id: string;
+        tipo_vinculo: 'COORDENADOR' | 'COLABORADOR';
+        funcao:
+            | 'COORDENADOR'
+            | 'PESQUISADOR'
+            | 'DESENVOLVEDOR'
+            | 'TECNICO'
+            | 'ALUNO';
+        status: 'APROVADO' | 'PENDENTE' | 'REJEITADO' | 'INATIVO';
+        carga_horaria_semanal: number;
+        data_inicio: string;
+        data_fim: string | null;
+        created_at: string;
+        updated_at: string;
+        deleted_at: string | null;
+        projeto_nome: string;
+        projeto_cliente: string;
+        data_termino: string;
+    }[];
+    projetosCount: number;
+}>) {
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    {/* Key Metrics */}
                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div className="card bg-base-100 shadow">
+                            <div className="card-body items-center text-center">
+                                <span className="text-4xl font-bold">
+                                    {
+                                        projetos.filter(
+                                            (p) => p.status === 'APROVADO',
+                                        ).length
+                                    }
+                                </span>
+                                <span className="text-base-content/70">
+                                    Projetos Ativos
+                                </span>
+                            </div>
+                        </div>
                         <div className="card bg-base-100 shadow">
                             <div className="card-body items-center text-center">
                                 <span className="text-4xl font-bold">
                                     {projetosCount}
                                 </span>
                                 <span className="text-base-content/70">
-                                    Projetos ativos
+                                    Total de Projetos
                                 </span>
                             </div>
                         </div>
                         <div className="card bg-base-100 shadow">
                             <div className="card-body items-center text-center">
                                 <span className="text-4xl font-bold">
-                                    {usuariosCount}
+                                    {
+                                        projetos.filter(
+                                            (p) => p.status === 'INATIVO',
+                                        ).length
+                                    }
                                 </span>
                                 <span className="text-base-content/70">
-                                    Usuários cadastrados
-                                </span>
-                            </div>
-                        </div>
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {solicitacoesPendentes}
-                                </span>
-                                <span className="text-base-content/70">
-                                    Solicitações pendentes
+                                    Projetos Finalizados
                                 </span>
                             </div>
                         </div>
                     </div>
 
+                    {/* Recent Projects */}
                     <div className="card bg-base-100 shadow">
                         <div className="card-body">
                             <h3 className="card-title mb-4">
-                                Últimos projetos cadastrados
+                                Histórico de Projetos
                             </h3>
-                            {ultimosProjetos.length > 0 ? (
-                                <ul className="list">
-                                    {ultimosProjetos.map((projeto) => (
-                                        <li
-                                            key={projeto.id}
-                                            className="list-row flex justify-between"
-                                        >
-                                            <span>{projeto.nome}</span>
-                                            <span className="text-base-content/60">
-                                                {projeto.cliente}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <span className="text-base-content/60">
-                                    Nenhum projeto cadastrado recentemente.
-                                </span>
-                            )}
+                            <div className="overflow-x-auto">
+                                <table className="table-zebra table">
+                                    <thead>
+                                        <tr>
+                                            <th>Projeto</th>
+                                            <th>Cliente</th>
+                                            <th>Tipo</th>
+                                            <th>Período</th>
+                                            <th>Carga Horária</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {projetos.map((p, i) => (
+                                            <tr key={i}>
+                                                <td>{p.projeto_nome}</td>
+                                                <td>{p.projeto_cliente}</td>
+                                                <td>
+                                                    <span className="badge badge-info">
+                                                        {p.tipo_vinculo}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {new Date(
+                                                        p.data_inicio,
+                                                    ).toLocaleDateString()}{' '}
+                                                    -{' '}
+                                                    {p.data_fim
+                                                        ? new Date(
+                                                              p.data_fim,
+                                                          ).toLocaleDateString()
+                                                        : 'Atual'}
+                                                </td>
+                                                <td>
+                                                    <span className="badge badge-outline">
+                                                        {
+                                                            p.carga_horaria_semanal
+                                                        }
+                                                        h/sem
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        className={
+                                                            p.status ===
+                                                            'APROVADO'
+                                                                ? 'badge badge-success'
+                                                                : p.status ===
+                                                                    'INATIVO'
+                                                                  ? 'badge badge-neutral'
+                                                                  : 'badge'
+                                                        }
+                                                    >
+                                                        {p.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
