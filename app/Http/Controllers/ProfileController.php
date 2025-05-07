@@ -82,8 +82,8 @@ class ProfileController extends Controller
             'data_nascimento' => 'required|date',
 
             // Documentos
-            'cpf' => 'required|string|max:14',
-            'rg' => 'required|string|max:12',
+            'cpf' => 'required|string|max:14|unique:users,cpf,' . $user->id,
+            'rg' => 'required|string|max:12|unique:users,rg,' . $user->id,
             'uf_rg' => 'required|string|max:2',
             'orgao_emissor_rg' => 'required|string|max:255',
 
@@ -105,13 +105,17 @@ class ProfileController extends Controller
             'banco_id' => 'required|uuid|exists:bancos,id',
 
             // Dados profissionais
+            'curriculo' => 'required|string|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
             'figma_url' => 'nullable|url|max:255',
-            'curriculo' => 'nullable|string|max:255',
-            'area_atuacao' => 'nullable|string|max:255',
-            'tecnologias' => 'nullable|string|max:255',
         ]);
+
+        // Remover formatação do CPF
+        $request->merge(['cpf' => preg_replace('/\D/', '', $request->input('cpf'))]);
+
+        // Remover formatação do CEP
+        $request->merge(['cep' => preg_replace('/\D/', '', $request->input('cep'))]);
 
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
@@ -120,32 +124,9 @@ class ProfileController extends Controller
             $user->foto_url = $path;
         }
 
-        $user->cpf = $request->input('cpf');
-        $user->rg = $request->input('rg');
-        $user->uf_rg = $request->input('uf_rg');
-        $user->orgao_emissor_rg = $request->input('orgao_emissor_rg');
-        $user->conta_bancaria = $request->input('conta_bancaria');
-        $user->agencia = $request->input('agencia');
-        $user->banco_id = $request->input('banco_id');
-        $user->cep = $request->input('cep');
-        $user->endereco = $request->input('endereco');
-        $user->numero = $request->input('numero');
-        $user->complemento = $request->input('complemento');
-        $user->bairro = $request->input('bairro');
-        $user->cidade = $request->input('cidade');
-        $user->estado = $request->input('estado');
-        $user->telefone = $request->input('telefone');
-        $user->genero = $request->input('genero');
-        $user->data_nascimento = $request->input('data_nascimento');
-        $user->linkedin_url = $request->input('linkedin_url');
-        $user->github_url = $request->input('github_url');
-        $user->figma_url = $request->input('figma_url');
-        $user->curriculo = $request->input('curriculo');
-        $user->area_atuacao = $request->input('area_atuacao');
-        $user->tecnologias = $request->input('tecnologias');
-
+        $user->fill($request->except('foto_url'));
         $user->save();
 
-        return Redirect::route('dashboard');
+        return Redirect::route('profile.edit')->with('status', 'Cadastro atualizado com sucesso!');
     }
 }

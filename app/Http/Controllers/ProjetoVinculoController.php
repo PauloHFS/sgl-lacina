@@ -33,6 +33,7 @@ class ProjetoVinculoController extends Controller
       'tipo_vinculo' => TipoVinculo::COLABORADOR,
       'funcao' => Funcao::ALUNO,
       'status' => StatusVinculoProjeto::PENDENTE,
+      'carga_horaria_semanal' => 20,
       'data_inicio' => now(),
     ]);
 

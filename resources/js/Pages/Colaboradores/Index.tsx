@@ -155,11 +155,7 @@ export default function Index({ colaboradores }: IndexProps) {
                                                                 <div className="avatar">
                                                                     <div className="h-12 w-12 rounded-full">
                                                                         <img
-                                                                            src={
-                                                                                colaborador.foto_url
-                                                                                    ? colaborador.foto_url
-                                                                                    : `https://robohash.org/set1/${colaborador.name}.png`
-                                                                            }
+                                                                            src={`/storage/${colaborador.foto_url}`}
                                                                             alt={`Foto de ${colaborador.name}`}
                                                                         />
                                                                     </div>

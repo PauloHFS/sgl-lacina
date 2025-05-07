@@ -65,7 +65,16 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Remover formatação do CPF e telefone antes de enviar
+        const cleanedData = {
+            ...data,
+            cpf: data.cpf.replace(/\D/g, ''),
+            telefone: data.telefone.replace(/\D/g, ''),
+        };
+
         post('/profile/update', {
+            data: cleanedData,
             forceFormData: true,
             onSuccess: () => {
                 alert('Cadastro realizado com sucesso!');

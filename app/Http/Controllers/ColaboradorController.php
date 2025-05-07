@@ -10,7 +10,7 @@ use Inertia\Inertia;
 use App\Enums\TipoVinculo;
 use App\Events\PreColaboradorAceito;
 use App\Enums\StatusVinculoProjeto;
-use App\Models\UsuarioVinculo;
+use App\Models\UsuarioProjeto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -100,31 +100,28 @@ class ColaboradorController extends Controller
 
     public function show($id)
     {
-        $colaborador = User::findOrFail($id);
+        $usuario = User::findOrFail($id);
 
-        // Busca vínculos do colaborador
-        $vinculos = DB::table('usuario_vinculo')
-            ->where('usuario_id', $colaborador->id)
+        // TODO: refatora isso para usar a classe de UsuarioProjeto
+        $vinculos = DB::table('usuario_projeto')
+            ->where('usuario_id', $usuario->id)
             ->orderByDesc('data_inicio')
             ->get();
 
-        // Status e projetos
         $status_cadastro = 'INATIVO';
         $projetos_atuais = [];
         $projeto_solicitado = null;
         $vinculo_id = null;
 
         Log::debug('Colaborador encontrado', [
-            'colaborador_id' => $colaborador->id,
-            'status_cadastro' => $colaborador->status_cadastro,
-            'vinculos' => $vinculos,
+            'usuario' => $usuario,
         ]);
 
 
-        if ($colaborador->status_cadastro === StatusCadastro::PENDENTE) {
+        if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
             $status_cadastro = 'VINCULO_PENDENTE';
         } else if (
-            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
+            $usuario->status_cadastro === StatusCadastro::ACEITO &&
             $vinculos->where('status', 'PENDENTE')->count() > 0 // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
         ) {
             // Usuário aceito no laboratório, mas com vínculo pendente em projeto
@@ -136,7 +133,7 @@ class ColaboradorController extends Controller
                 $projeto_solicitado = Projeto::find($vinculoPendenteProjeto->projeto_id);
             }
         } else if (
-            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
+            $usuario->status_cadastro === StatusCadastro::ACEITO &&
             // $vinculos->where('status', StatusVinculoProjeto::APROVADO) // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
             $vinculos->where('status', 'APROVADO')
             // ->where('data_fim', '>', now()) TODO: Verificar essa validação
@@ -151,7 +148,7 @@ class ColaboradorController extends Controller
                     ->pluck('projeto_id')
             )->get(['id', 'nome']);
         } else if (
-            $colaborador->status_cadastro === StatusCadastro::ACEITO &&
+            $usuario->status_cadastro === StatusCadastro::ACEITO &&
             $vinculos->where('status', StatusVinculoProjeto::INATIVO)
             ->where('data_fim', '<', now())
             ->count() > 0
@@ -161,31 +158,31 @@ class ColaboradorController extends Controller
         }
 
         Log::debug('Status do colaborador', [
-            'colaborador_id' => $colaborador->id,
+            'colaborador_id' => $usuario->id,
             'status_cadastro' => $status_cadastro,
         ]);
 
         return inertia('Colaboradores/Show', [
             'colaborador' => [
-                'id' => $colaborador->id,
-                'name' => $colaborador->name,
-                'email' => $colaborador->email,
-                'linkedin_url' => $colaborador->linkedin_url,
-                'github_url' => $colaborador->github_url,
-                'figma_url' => $colaborador->figma_url,
-                'foto_url' => $colaborador->foto_url,
-                'area_atuacao' => $colaborador->area_atuacao,
-                'tecnologias' => $colaborador->tecnologias,
-                'curriculo' => $colaborador->curriculo,
-                'cpf' => $colaborador->cpf,
-                'conta_bancaria' => $colaborador->conta_bancaria,
-                'agencia' => $colaborador->agencia,
-                'codigo_banco' => $colaborador->codigo_banco,
-                'rg' => $colaborador->rg,
-                'uf_rg' => $colaborador->uf_rg,
-                'telefone' => $colaborador->telefone,
-                'created_at' => $colaborador->created_at,
-                'updated_at' => $colaborador->updated_at,
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'email' => $usuario->email,
+                'linkedin_url' => $usuario->linkedin_url,
+                'github_url' => $usuario->github_url,
+                'figma_url' => $usuario->figma_url,
+                'foto_url' => $usuario->foto_url,
+                'area_atuacao' => $usuario->area_atuacao,
+                'tecnologias' => $usuario->tecnologias,
+                'curriculo' => $usuario->curriculo,
+                'cpf' => $usuario->cpf,
+                'conta_bancaria' => $usuario->conta_bancaria,
+                'agencia' => $usuario->agencia,
+                'codigo_banco' => $usuario->codigo_banco,
+                'rg' => $usuario->rg,
+                'uf_rg' => $usuario->uf_rg,
+                'telefone' => $usuario->telefone,
+                'created_at' => $usuario->created_at,
+                'updated_at' => $usuario->updated_at,
                 'status_cadastro' => $status_cadastro,
                 'projeto_solicitado' => $projeto_solicitado
                     ? [
@@ -226,7 +223,7 @@ class ColaboradorController extends Controller
     public function aceitarVinculo(User $colaborador)
     {
 
-        $vinculo = UsuarioVinculo::where('usuario_id', $colaborador->id)
+        $vinculo = UsuarioProjeto::where('usuario_id', $colaborador->id)
             ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
             ->where('status', StatusVinculoProjeto::PENDENTE)
             ->first();
@@ -235,7 +232,7 @@ class ColaboradorController extends Controller
             return redirect()->back()->with('error', 'Vínculo não encontrado.');
         }
 
-        UsuarioVinculo::where('projeto_id', $vinculo->projeto_id)
+        UsuarioProjeto::where('projeto_id', $vinculo->projeto_id)
             ->where('usuario_id', $vinculo->usuario_id)
             // ->whereNull('data_fim')
             ->update([
@@ -251,7 +248,7 @@ class ColaboradorController extends Controller
 
     public function recusarVinculo(User $colaborador, Request $request)
     {
-        $vinculo = UsuarioVinculo::where('usuario_id', $colaborador->id)
+        $vinculo = UsuarioProjeto::where('usuario_id', $colaborador->id)
             ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
             ->where('status', StatusVinculoProjeto::PENDENTE)
             ->first();
