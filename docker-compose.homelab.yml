@@ -1,0 +1,43 @@
+services:
+  app:
+    image: sail-8.4/app
+    build:
+      context: ./vendor/laravel/sail/runtimes/8.4
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: '1000'
+    restart: unless-stopped
+    environment:
+      WWWUSER: '1000'
+      LARAVEL_SAIL: 0
+      XDEBUG_MODE: off
+    volumes:
+      - ./:/var/www/html
+      - sail-logs:/var/www/html/storage/logs
+    networks:
+      - traefik
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.laravel.rule=Host(`sgl-lacina.02092000.xyz`)'
+      - 'traefik.http.routers.laravel.entrypoints=websecure'
+      - 'traefik.http.routers.laravel.tls=true'
+      - 'traefik.http.services.laravel.loadbalancer.server.port=80'
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.mailpit.rule=Host(`mailpit.02092000.xyz`)'
+      - 'traefik.http.routers.mailpit.entrypoints=websecure'
+      - 'traefik.http.routers.mailpit.tls=true'
+      - 'traefik.http.services.mailpit.loadbalancer.server.port=8025'
+
+networks:
+  traefik:
+    external: true
+
+volumes:
+  sail-logs:
