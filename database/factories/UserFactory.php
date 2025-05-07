@@ -53,9 +53,10 @@ class UserFactory extends Factory
     public function cadastroCompleto(): static
     {
 
+        $bancoAleatorioDoDB = Banco::inRandomOrder()->firstOrFail();
+
         return $this->state(fn(array $attributes) => [
             'cpf' => fake()->unique()->numerify('###########'),
-            'area_atuacao_id' => AreaAtuacao::factory(),
 
             'linkedin_url' => fake()->optional()->url(),
             'github_url' => fake()->optional()->url(),
@@ -67,7 +68,7 @@ class UserFactory extends Factory
             'uf_rg' => fake()->stateAbbr(),
             'orgao_emissor_rg' => fake()->word(),
             'telefone' => fake()->optional()->phoneNumber(),
-            'banco_id' => Banco::factory(),
+            'banco_id' => $bancoAleatorioDoDB->id,
             'conta_bancaria' => fake()->optional()->numerify('#########'),
             'agencia' => fake()->optional()->numerify('#####'),
             'cep' => fake()->optional()->numerify('########'),

@@ -13,20 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('areas_atuacao', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->string('nome', 100)->unique();
-        });
-
         Schema::create('bancos', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->char('codigo', 3)->unique();
-            $table->string('nome', 100);
-            $table->char('ispb', 8)->nullable();
-        });
-
-        Schema::create('tecnologias', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->char('codigo', 3);
             $table->string('nome', 100)->unique();
         });
 
@@ -47,8 +36,6 @@ return new class extends Migration
             $table->text('curriculo')->nullable();
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
-
-            $table->uuid('area_atuacao_id')->nullable();
 
             $table->char('cpf', 11)->nullable()->unique();
             $table->string('rg')->nullable()->unique();
@@ -77,7 +64,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('area_atuacao_id')->references('id')->on('areas_atuacao');
             $table->foreign('banco_id')->references('id')->on('bancos');
         });
 

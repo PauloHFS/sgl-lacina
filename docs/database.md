@@ -57,9 +57,7 @@ table usuarios {
   github_url varchar
   figma_url varchar
   foto_url varchar
-  curriculo text
-  area_atuacao_id uuid [ref: > areas_atuacao.id]
-  genero Genero
+  curriculo text  genero Genero
   data_nascimento date
   cpf char(11) [unique]
   rg varchar [unique]
@@ -81,27 +79,11 @@ table usuarios {
   deleted_at timestamp(0)
 }
 
-table areas_atuacao {
-  id uuid [pk, default: `gen_random_uuid()`]
-  nome varchar(100) [not null, unique]
-}
-
 table bancos {
   id uuid [pk, default: `gen_random_uuid()`]
   codigo char(3) [not null, unique]
   nome varchar(100) [not null]
   ispb char(8)
-}
-
-table tecnologias {
-  id uuid [pk, default: `gen_random_uuid()`]
-  nome varchar(100) [not null, unique]
-}
-
-table usuario_tecnologia {
-  usuario_id uuid [ref: > usuarios.id]
-  tecnologia_id uuid [ref: > tecnologias.id]
-  primary key (usuario_id, tecnologia_id)
 }
 
 // PROJETOS
