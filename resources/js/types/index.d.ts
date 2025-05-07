@@ -31,6 +31,6 @@ export type PageProps<
     auth: {
         user: User;
         isCoordenador: boolean;
-        isCoolaborador: boolean;
+        isColaborador: boolean;
     };
 };

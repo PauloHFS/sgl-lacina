@@ -7,7 +7,12 @@ export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const user = usePage().props.auth.user;
+    const { user, isCoordenador, isColaborador } = usePage().props.auth;
+    console.log(`${new Date().toISOString()} - [AuthenticatedLayout]`, {
+        user,
+        isCoordenador,
+        isColaborador,
+    });
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -39,14 +44,18 @@ export default function Authenticated({
                                     Projetos
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink
-                                    href={route('colaboradores.index')}
-                                    active={route().current('colaboradores.*')}
-                                >
-                                    Colaboradores
-                                </NavLink>
-                            </li>
+                            {isCoordenador && (
+                                <li>
+                                    <NavLink
+                                        href={route('colaboradores.index')}
+                                        active={route().current(
+                                            'colaboradores.*',
+                                        )}
+                                    >
+                                        Colaboradores
+                                    </NavLink>
+                                </li>
+                            )}
                         </ul>
                     </div>
                 </div>

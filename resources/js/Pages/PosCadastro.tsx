@@ -7,7 +7,7 @@ import React from 'react';
 import { IMaskInput } from 'react-imask';
 
 interface PosCadastroProps extends Record<string, unknown> {
-    bancos: Array<{ id: string; nome: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
+    bancos: Array<{ id: string; nome: string; codigo: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
 
 export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
@@ -29,7 +29,7 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
         telefone: string;
         conta_bancaria: string;
         agencia: string;
-        codigo_banco: string;
+        banco_id: string;
         linkedin_url: string;
         github_url: string;
         figma_url: string;
@@ -54,7 +54,7 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
         telefone: '',
         conta_bancaria: '',
         agencia: '',
-        codigo_banco: '',
+        banco_id: '',
         curriculo: '',
         linkedin_url: '',
         github_url: '',
@@ -615,12 +615,12 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
                                                 Banco
                                             </span>
                                             <select
-                                                id="codigo_banco"
-                                                className={`select select-bordered w-full ${errors.codigo_banco ? 'select-error' : ''}`}
-                                                value={data.codigo_banco || ''}
+                                                id="banco_id"
+                                                className={`select select-bordered w-full ${errors.banco_id ? 'select-error' : ''}`}
+                                                value={data.banco_id || ''}
                                                 onChange={(e) =>
                                                     setData(
-                                                        'codigo_banco',
+                                                        'banco_id',
                                                         e.target.value,
                                                     )
                                                 }
@@ -633,13 +633,14 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
                                                         key={banco.id}
                                                         value={banco.id}
                                                     >
+                                                        {banco.codigo} -{' '}
                                                         {banco.nome}
                                                     </option>
                                                 ))}
                                             </select>
-                                            {errors.codigo_banco && (
+                                            {errors.banco_id && (
                                                 <span className="label-text-alt text-error">
-                                                    {errors.codigo_banco}
+                                                    {errors.banco_id}
                                                 </span>
                                             )}
                                         </label>

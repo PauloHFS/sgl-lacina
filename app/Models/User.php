@@ -102,11 +102,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    public function solicitacoes()
-    {
-        return $this->hasMany(SolicitacoesProjeto::class, 'usuario_id');
-    }
-
     public function isCoordenador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
@@ -160,19 +155,9 @@ class User extends Authenticatable implements MustVerifyEmail
             && $this->banco_id; // Changed from codigo_banco to banco_id FK
     }
 
-    public function areaAtuacao(): BelongsTo
-    {
-        return $this->belongsTo(AreaAtuacao::class, 'area_atuacao_id');
-    }
-
     public function banco(): BelongsTo
     {
         return $this->belongsTo(Banco::class, 'banco_id');
-    }
-
-    public function tecnologias(): BelongsToMany
-    {
-        return $this->belongsToMany(Tecnologia::class, 'usuario_tecnologia', 'usuario_id', 'tecnologia_id');
     }
 
     // TODO: Checar com professor se é obrigatório ou não

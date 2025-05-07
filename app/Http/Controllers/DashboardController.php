@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusCadastro;
 use App\Models\Projeto;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,12 +12,19 @@ class DashboardController extends Controller
 {
   public function index()
   {
-    // Busca todos os projetos cadastrados
-    $projetos = Projeto::all(['id', 'nome', 'cliente', 'tipo']);
+    $projetosCount = Projeto::count();
+    $usuariosCount = User::count();
+    $solicitacoesPendentes = User::where('status_cadastro', StatusCadastro::PENDENTE)->count();
+    $ultimosProjetos = Projeto::orderByDesc('created_at')
+      ->take(5)
+      ->get(['id', 'nome', 'cliente'])
+      ->toArray();
 
-    // Retorna para a página Dashboard passando os projetos
     return Inertia::render('Dashboard', [
-      'projetos' => $projetos,
+      'projetosCount' => $projetosCount,
+      'usuariosCount' => $usuariosCount,
+      'solicitacoesPendentes' => $solicitacoesPendentes,
+      'ultimosProjetos' => $ultimosProjetos,
     ]);
   }
 }

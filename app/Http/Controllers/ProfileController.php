@@ -28,15 +28,16 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit');
     }
@@ -88,7 +89,7 @@ class ProfileController extends Controller
 
             // Endereço
             'cep' => 'required|string|max:9',
-            'logradouro' => 'required|string|max:255',
+            'endereco' => 'required|string|max:255',
             'numero' => 'required|string|max:10',
             'complemento' => 'nullable|string|max:255',
             'bairro' => 'required|string|max:255',
@@ -101,7 +102,7 @@ class ProfileController extends Controller
             // Dados bancários
             'conta_bancaria' => 'required|string|max:20',
             'agencia' => 'required|string|max:10',
-            'codigo_banco' => 'required|string|max:10',
+            'banco_id' => 'required|uuid|exists:bancos,id',
 
             // Dados profissionais
             'linkedin_url' => 'nullable|url|max:255',
@@ -125,9 +126,9 @@ class ProfileController extends Controller
         $user->orgao_emissor_rg = $request->input('orgao_emissor_rg');
         $user->conta_bancaria = $request->input('conta_bancaria');
         $user->agencia = $request->input('agencia');
-        $user->codigo_banco = $request->input('codigo_banco');
+        $user->banco_id = $request->input('banco_id');
         $user->cep = $request->input('cep');
-        $user->logradouro = $request->input('logradouro');
+        $user->endereco = $request->input('endereco');
         $user->numero = $request->input('numero');
         $user->complemento = $request->input('complemento');
         $user->bairro = $request->input('bairro');
