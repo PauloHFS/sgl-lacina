@@ -8,7 +8,7 @@ WORKDIR /var/www/html
 
 COPY . /var/www/html
 
-RUN composer insatll --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader
 
 RUN php artisan optimize
 
