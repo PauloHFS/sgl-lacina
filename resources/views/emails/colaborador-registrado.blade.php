@@ -1,3 +1,4 @@
+{{-- NÃO ESTÀ SENDO USADO, ESTÀ AQUI COMO REFERENCIA --}}
 <x-mail::message>
 
   # Colaborador Registrado
