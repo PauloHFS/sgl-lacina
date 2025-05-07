@@ -18,10 +18,11 @@ services:
       - traefik
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.laravel.rule=Host(`sgl-lacina.02092000.xyz`)'
-      - 'traefik.http.routers.laravel.entrypoints=websecure'
-      - 'traefik.http.routers.laravel.tls=true'
-      - 'traefik.http.services.laravel.loadbalancer.server.port=80'
+      - 'traefik.http.routers.sgl_lacina.rule=Host(`sgl-lacina.02092000.xyz`)'
+      - 'traefik.http.routers.sgl_lacina.entrypoints=websecure'
+      - 'traefik.http.routers.sgl_lacina.tls=true'
+      - 'traefik.http.services.sgl_lacina.loadbalancer.server.port=80'
+      - 'traefik.http.routers.sgl_lacina.tls.certresolver=cloudflare'
 
 networks:
   traefik:
