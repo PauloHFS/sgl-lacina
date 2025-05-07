@@ -1,6 +1,5 @@
 services:
   sgl_lacina:
-    image: sail-8.4/app
     container_name: sgl_lacina
     build:
       context: .
