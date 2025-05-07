@@ -3,12 +3,11 @@ services:
     image: sail-8.4/app
     container_name: sgl_lacina
     build:
-      context: ./vendor/laravel/sail/runtimes/8.4
+      context: .
       dockerfile: Dockerfile
-      args:
-        WWWGROUP: '1000'
     restart: unless-stopped
     environment:
+      WWWGROUP: '1000'
       WWWUSER: '1000'
       LARAVEL_SAIL: 0
       XDEBUG_MODE: off
