@@ -33,6 +33,14 @@ export default function Authenticated({
                             </li>
                             <li>
                                 <NavLink
+                                    href={route('projetos.index')}
+                                    active={route().current('projetos.*')}
+                                >
+                                    Projetos
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
                                     href={route('colaboradores.index')}
                                     active={route().current('colaboradores.*')}
                                 >

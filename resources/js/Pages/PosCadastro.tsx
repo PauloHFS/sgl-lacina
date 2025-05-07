@@ -7,16 +7,10 @@ import React from 'react';
 import { IMaskInput } from 'react-imask';
 
 interface PosCadastroProps extends Record<string, unknown> {
-    tecnologias: Array<{ id: string; nome: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
-    areasAtuacao: Array<{ id: string; nome: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
     bancos: Array<{ id: string; nome: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
 
-export default function PosCadastro({
-    tecnologias,
-    bancos,
-    areasAtuacao,
-}: PageProps<PosCadastroProps>) {
+export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
     const { data, setData, post, processing, errors } = useForm<{
         foto_url: File | null;
         genero: string;
@@ -821,30 +815,19 @@ export default function PosCadastro({
                                             <span className="label-text mb-1">
                                                 Área de Atuação
                                             </span>
-                                            <select
+                                            <input
                                                 id="area_atuacao"
-                                                className={`select select-bordered w-full ${errors.area_atuacao ? 'select-error' : ''}`}
-                                                value={data.area_atuacao || ''}
+                                                type="text"
+                                                className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
+                                                value={data.area_atuacao}
                                                 onChange={(e) =>
                                                     setData(
                                                         'area_atuacao',
                                                         e.target.value,
                                                     )
                                                 }
-                                            >
-                                                <option value="" disabled>
-                                                    Selecione uma área de
-                                                    atuação...
-                                                </option>
-                                                {areasAtuacao.map((area) => (
-                                                    <option
-                                                        key={area.id}
-                                                        value={area.id}
-                                                    >
-                                                        {area.nome}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                placeholder="Digite sua área de atuação..."
+                                            />
                                             {errors.area_atuacao && (
                                                 <span className="label-text-alt text-error">
                                                     {errors.area_atuacao}
@@ -859,33 +842,19 @@ export default function PosCadastro({
                                             <span className="label-text mb-1">
                                                 Tecnologias
                                             </span>
-                                            <select
+                                            <input
                                                 id="tecnologias"
-                                                className={`select select-bordered w-full ${errors.tecnologias ? 'select-error' : ''}`}
-                                                value={data.tecnologias || ''}
+                                                type="text"
+                                                className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
+                                                value={data.tecnologias}
                                                 onChange={(e) =>
                                                     setData(
                                                         'tecnologias',
                                                         e.target.value,
                                                     )
                                                 }
-                                            >
-                                                <option value="" disabled>
-                                                    Selecione uma tecnologia...
-                                                </option>
-                                                {tecnologias.map(
-                                                    (tecnologia) => (
-                                                        <option
-                                                            key={tecnologia.id}
-                                                            value={
-                                                                tecnologia.id
-                                                            }
-                                                        >
-                                                            {tecnologia.nome}
-                                                        </option>
-                                                    ),
-                                                )}
-                                            </select>
+                                                placeholder="Digite as tecnologias que você domina..."
+                                            />
                                             {errors.tecnologias && (
                                                 <span className="label-text-alt text-error">
                                                     {errors.tecnologias}

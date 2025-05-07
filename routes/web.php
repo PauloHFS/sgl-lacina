@@ -7,9 +7,8 @@ use App\Http\Controllers\ProjetoVinculoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Models\Tecnologia;
-use App\Models\AreaAtuacao;
 use App\Models\Banco;
+use App\Http\Controllers\ProjetosController;
 
 // Rotas Públicas
 Route::get('/', function () {
@@ -24,15 +23,12 @@ Route::get('/', function () {
 // Rotas Autenticadas e Verificadas
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/projetos', [ProjetosController::class, 'index'])->name('projetos.index');
 
     Route::get('/pos-cadastro', function () {
-        $tecnologias = Tecnologia::all();
-        $areasAtuacao = AreaAtuacao::all();
         $bancos = Banco::all();
 
         return Inertia::render('PosCadastro', [
-            'tecnologias' => $tecnologias,
-            'areasAtuacao' => $areasAtuacao,
             'bancos' => $bancos,
         ]);
     })->name('pos-cadastro');

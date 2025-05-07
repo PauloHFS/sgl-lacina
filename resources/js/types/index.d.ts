@@ -30,5 +30,7 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        isCoordenador: boolean;
+        isCoolaborador: boolean;
     };
 };
