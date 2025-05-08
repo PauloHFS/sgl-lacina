@@ -24,6 +24,8 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/projetos', [ProjetosController::class, 'index'])->name('projetos.index');
+    Route::get('/projetos/create', [ProjetosController::class, 'create'])->name('projetos.create'); // New route for displaying form
+    Route::post('/projetos', [ProjetosController::class, 'store'])->name('projetos.store'); // New route for storing project
 
     Route::get('/pos-cadastro', function () {
         $bancos = Banco::all();

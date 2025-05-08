@@ -109,7 +109,7 @@ export default function Authenticated({
                             >
                                 <li>
                                     <Link href={route('profile.edit')}>
-                                        Profile
+                                        Perfil
                                     </Link>
                                 </li>
                                 <li>
@@ -118,7 +118,7 @@ export default function Authenticated({
                                         method="post"
                                         as="button"
                                     >
-                                        Log Out
+                                        Sair
                                     </Link>
                                 </li>
                             </ul>
@@ -202,11 +202,11 @@ export default function Authenticated({
                         <div className="text-sm opacity-75">{user.email}</div>
                     </div>
                     <li>
-                        <Link href={route('profile.edit')}>Profile</Link>
+                        <Link href={route('profile.edit')}>Perfil</Link>
                     </li>
                     <li>
                         <Link href={route('logout')} method="post" as="button">
-                            Log Out
+                            Sair
                         </Link>
                     </li>
                 </ul>
