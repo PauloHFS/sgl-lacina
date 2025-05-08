@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Banco;
 
 class ProfileController extends Controller
 {
@@ -19,19 +20,33 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $bancos = Banco::all();
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'bancos' => $bancos,
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(Request $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = Auth::user();
-        $user->fill($request->validated());
+
+        // Remover formatação do CPF e CEP
+        $request->merge([
+            'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
+            'cep' => preg_replace('/\D/', '', $request->input('cep')),
+        ]);
+
+        if ($request->hasFile('foto_url')) {
+            $path = $request->file('foto_url')->store('fotos', 'public');
+            $user->foto_url = $path;
+        }
+
+        $user->fill($request->except('foto_url'));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -39,7 +54,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status', 'Cadastro atualizado com sucesso!');
     }
 
     /**

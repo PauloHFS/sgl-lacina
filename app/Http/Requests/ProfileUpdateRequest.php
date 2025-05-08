@@ -25,6 +25,37 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            // Foto
+            'foto_url' => 'nullable|image|max:2048',
+            // Dados pessoais
+            'genero' => 'required|string|max:50',
+            'data_nascimento' => 'required|date',
+            // Documentos
+            'cpf' => 'required|string|max:14|unique:users,cpf,' . $this->user()->id,
+            'rg' => 'required|string|max:12|unique:users,rg,' . $this->user()->id,
+            'uf_rg' => 'required|string|max:2',
+            'orgao_emissor_rg' => 'required|string|max:255',
+            // Endereço
+            'cep' => 'required|string|max:9',
+            'endereco' => 'required|string|max:255',
+            'numero' => 'required|string|max:10',
+            'complemento' => 'nullable|string|max:255',
+            'bairro' => 'required|string|max:255',
+            'cidade' => 'required|string|max:255',
+            'estado' => 'required|string|max:2',
+            // Dados de contato
+            'telefone' => 'required|string|max:20',
+            // Dados bancários
+            'conta_bancaria' => 'required|string|max:20',
+            'agencia' => 'required|string|max:10',
+            'banco_id' => 'required|uuid|exists:bancos,id',
+            // Dados profissionais
+            'curriculo' => 'required|string|max:255',
+            'linkedin_url' => 'nullable|url|max:255',
+            'github_url' => 'nullable|url|max:255',
+            'figma_url' => 'nullable|url|max:255',
+            'area_atuacao' => 'nullable|string|max:255',
+            'tecnologias' => 'nullable|string|max:255',
         ];
     }
 }
