@@ -73,6 +73,23 @@ export default function Authenticated({
                                 className="btn btn-ghost"
                             >
                                 {user.name}
+                                {user.foto_url ? (
+                                    <div className="avatar">
+                                        <div className="w-12 rounded-full">
+                                            <img src={user.foto_url} />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="avatar avatar-placeholder">
+                                        <div className="bg-neutral text-neutral-content w-12 rounded-full">
+                                            <span className="text">
+                                                {user.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                                 <svg
                                     className="ml-2 h-4 w-4"
                                     xmlns="http://www.w3.org/2000/svg"

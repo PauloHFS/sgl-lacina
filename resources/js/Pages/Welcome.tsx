@@ -1,3 +1,4 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
@@ -16,9 +17,7 @@ export default function Welcome({
                         <div className="navbar bg-base-200 rounded-box mb-8 shadow">
                             <div className="navbar-start" />
                             <div className="navbar-center">
-                                <h2 className="card-title mb-2 text-2xl">
-                                    SRH LACINA UFCG
-                                </h2>
+                                <ApplicationLogo />
                             </div>
                             <div className="navbar-end gap-2">
                                 {auth.user ? (
@@ -50,6 +49,9 @@ export default function Welcome({
                         {/* Main Card */}
                         <div className="card bg-base-200 w-full shadow-xl">
                             <div className="card-body items-center text-center">
+                                <h2 className="card-title mb-2 text-2xl">
+                                    SGL LaCInA UFCG
+                                </h2>
                                 <p>
                                     Sistema de Recursos Humanos para o
                                     Laboratório de Computação Inteligente

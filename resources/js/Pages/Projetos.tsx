@@ -31,7 +31,8 @@ export default function Projetos({ projetos }: DashboardProps) {
         );
     };
 
-    const filteredProjetos = projetos?.filter(
+    // 'projetos' is guaranteed to be an array, so no need for '?.'
+    const filteredProjetos = projetos.filter(
         (projeto) =>
             projeto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
             projeto.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,7 +98,29 @@ export default function Projetos({ projetos }: DashboardProps) {
                                                     </span>{' '}
                                                     {projeto.cliente}
                                                 </p>
-                                                <div className="card-actions mt-3 justify-end">
+                                                <div className="card-actions mt-3 items-center justify-end">
+                                                    <div className="avatar-group my-3 -space-x-5 rtl:space-x-reverse">
+                                                        <div className="avatar">
+                                                            <div className="w-8">
+                                                                <img src="https://img.daisyui.com/images/profile/demo/batperson@192.webp" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="avatar">
+                                                            <div className="w-8">
+                                                                <img src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="avatar">
+                                                            <div className="w-8">
+                                                                <img src="https://img.daisyui.com/images/profile/demo/averagebulk@192.webp" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="avatar">
+                                                            <div className="w-8">
+                                                                <img src="https://img.daisyui.com/images/profile/demo/wonderperson@192.webp" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <button
                                                         className="btn btn-primary btn-sm"
                                                         onClick={() =>

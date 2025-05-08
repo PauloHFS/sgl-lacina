@@ -52,12 +52,12 @@ export default function UpdatePasswordForm({
         <section className={className}>
             <header>
                 <h2 className="card-title text-base-content">
-                    Update Password
+                    Atualizar Senha
                 </h2>
 
                 <p className="text-base-content/70 mt-1 text-sm">
-                    Ensure your account is using a long, random password to stay
-                    secure.
+                    Certifique-se de que sua conta esteja usando uma senha longa
+                    e aleatória para se manter seguro.
                 </p>
             </header>
 
@@ -65,7 +65,7 @@ export default function UpdatePasswordForm({
                 <div>
                     <InputLabel
                         htmlFor="current_password"
-                        value="Current Password"
+                        value="Senha Atual"
                     />
 
                     <TextInput
@@ -87,7 +87,7 @@ export default function UpdatePasswordForm({
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="New Password" />
+                    <InputLabel htmlFor="password" value="Nova Senha" />
 
                     <TextInput
                         id="password"
@@ -105,7 +105,7 @@ export default function UpdatePasswordForm({
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Confirmar Senha"
                     />
 
                     <TextInput
@@ -126,7 +126,7 @@ export default function UpdatePasswordForm({
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                    <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
@@ -135,7 +135,7 @@ export default function UpdatePasswordForm({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-success text-sm">Saved.</p>
+                        <p className="text-success text-sm">Salvo.</p>
                     </Transition>
                 </div>
             </form>

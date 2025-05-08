@@ -1,3 +1,4 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
@@ -19,6 +20,9 @@ export default function Register() {
 
     return (
         <div className="bg-base-200 flex min-h-screen flex-col items-center justify-center">
+            <Link className="mb-8" href="/">
+                <ApplicationLogo className="text-primary h-auto w-50" />
+            </Link>
             <Head title="Register" />
             <div className="card bg-base-100 w-full max-w-md shadow-xl">
                 <div className="card-body">

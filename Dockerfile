@@ -19,6 +19,3 @@ RUN php artisan event:cache
 RUN php artisan route:cache
 
 RUN php artisan view:cache
-
-RUN chown -R www-data:www-data /var/www/html \
-    && a2enmod rewrite
