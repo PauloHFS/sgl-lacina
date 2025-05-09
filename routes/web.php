@@ -20,13 +20,8 @@ Route::get('/', function () {
     ]);
 });
 
-// Rotas Autenticadas e Verificadas
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/projetos', [ProjetosController::class, 'index'])->name('projetos.index');
-    Route::get('/projetos/create', [ProjetosController::class, 'create'])->name('projetos.create'); // New route for displaying form
-    Route::post('/projetos', [ProjetosController::class, 'store'])->name('projetos.store'); // New route for storing project
 
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pos-cadastro', function () {
         $bancos = Banco::all();
 
@@ -34,6 +29,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'bancos' => $bancos,
         ]);
     })->name('pos-cadastro');
+    Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
+});
+
+// Rotas Autenticadas e Verificadas
+Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/projetos', [ProjetosController::class, 'index'])->name('projetos.index');
+    Route::get('/projetos/create', [ProjetosController::class, 'create'])->name('projetos.create'); // New route for displaying form
+    Route::post('/projetos', [ProjetosController::class, 'store'])->name('projetos.store'); // New route for storing project
 
     // Rotas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -41,7 +45,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // TODO: Mergear essas duas rotas
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
 
     // Rotas para Solicitação de Vínculo a Projeto
     Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])

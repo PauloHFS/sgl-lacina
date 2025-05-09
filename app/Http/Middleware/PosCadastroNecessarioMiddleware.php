@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\StatusCadastro;
+use Illuminate\Support\Facades\Log;
 
 class PosCadastroNecessarioMiddleware
 {
@@ -19,8 +21,21 @@ class PosCadastroNecessarioMiddleware
     /** @var \App\Models\User $user */
     $user = Auth::user();
 
-    if (!$user->isPosCadastroCompleto()) {
-      return redirect()->route('pos-cadastro');
+    Log::info('User status_cadastro: ', [
+      'user_id' => $user->id,
+      'status_cadastro' => $user->status_cadastro,
+    ]);
+
+    if ($user->status_cadastro === StatusCadastro::IMCOMPLETO) {
+      if (!$request->routeIs('pos-cadastro')) {
+        return redirect()->route('pos-cadastro');
+      }
+    }
+
+    if ($user->status_cadastro === StatusCadastro::PENDENTE) {
+      if (!$request->routeIs('waiting-approval')) {
+        return redirect()->route('waiting-approval');
+      }
     }
 
     return $next($request);

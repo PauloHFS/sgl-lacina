@@ -126,11 +126,11 @@ class ProfileController extends Controller
             'figma_url' => 'nullable|url|max:255',
         ]);
 
-        // Remover formatação do CPF
-        $request->merge(['cpf' => preg_replace('/\D/', '', $request->input('cpf'))]);
-
-        // Remover formatação do CEP
-        $request->merge(['cep' => preg_replace('/\D/', '', $request->input('cep'))]);
+        // Remover formatação do CPF e CEP
+        $request->merge([
+            'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
+            'cep' => preg_replace('/\D/', '', $request->input('cep')),
+        ]);
 
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
@@ -141,6 +141,14 @@ class ProfileController extends Controller
 
         $user->fill($request->except('foto_url'));
         $user->save();
+
+        // Reautenticar o usuário para garantir que as informações atualizadas sejam refletidas
+        Auth::login($user);
+
+        // Evitar loops de redirecionamento verificando a rota atual
+        if (!$request->routeIs('waiting-approval')) {
+            return Redirect::route('waiting-approval');
+        }
 
         return Redirect::route('profile.edit')->with('status', 'Cadastro atualizado com sucesso!');
     }

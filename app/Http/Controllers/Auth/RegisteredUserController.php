@@ -52,18 +52,13 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'status_cadastro' => 'PENDENTE',
+            'status_cadastro' => StatusCadastro::IMCOMPLETO,
         ]);
 
         event(new Registered($user));
 
-        // event(new ColaboradorRegistrado($user, $request->email_docente));
-
         Auth::login($user);
 
-        // return redirect(route('dashboard', absolute: false));
-
-        // return redirect(route('waiting-approval', absolute: false));
         return redirect('/pos-cadastro');
     }
 }

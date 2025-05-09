@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'validarTipoVinculo' => \App\Http\Middleware\ValidarTipoVinculoMiddleware::class,
+            'posCadastroNecessario' => \App\Http\Middleware\PosCadastroNecessarioMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
