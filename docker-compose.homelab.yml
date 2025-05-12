@@ -1,5 +1,6 @@
 services:
   laravel.test:
+    container_name: lacina-laravel
     build:
       context: './vendor/laravel/sail/runtimes/8.4'
       dockerfile: Dockerfile
@@ -21,6 +22,7 @@ services:
       - '.:/var/www/html'
     networks:
       - sail
+      - traefik
     restart: unless-stopped
     depends_on:
       - pgsql
@@ -36,6 +38,7 @@ services:
       - 'traefik.http.routers.laravel.tls.certresolver=cloudflare'
       - 'traefik.http.services.laravel.loadbalancer.server.port=80'
   pgsql:
+    container_name: lacina-pgsql
     image: 'postgres:17'
     ports:
       - '${FORWARD_DB_PORT:-5432}:5432'
@@ -49,6 +52,7 @@ services:
       - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
     networks:
       - sail
+      - traefik
     restart: unless-stopped
     healthcheck:
       test:
@@ -62,6 +66,7 @@ services:
       retries: 3
       timeout: 5s
   redis:
+    container_name: lacina-redis
     image: 'redis:alpine'
     ports:
       - '${FORWARD_REDIS_PORT:-6379}:6379'
@@ -69,6 +74,7 @@ services:
       - 'sail-redis:/data'
     networks:
       - sail
+      - traefik
     restart: unless-stopped
     healthcheck:
       test:
@@ -78,6 +84,7 @@ services:
       retries: 3
       timeout: 5s
   meilisearch:
+    container_name: lacina-meilisearch
     image: 'getmeili/meilisearch:latest'
     ports:
       - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
@@ -87,6 +94,7 @@ services:
       - 'sail-meilisearch:/meili_data'
     networks:
       - sail
+      - traefik
     restart: unless-stopped
     healthcheck:
       test:
@@ -98,6 +106,7 @@ services:
       retries: 3
       timeout: 5s
   mailpit:
+    container_name: lacina-mailpit
     image: 'axllent/mailpit:latest'
     ports:
       - '${FORWARD_MAILPIT_PORT:-1025}:1025'
@@ -105,6 +114,7 @@ services:
     restart: unless-stopped
     networks:
       - sail
+      - traefik
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.mailpit.rule=Host(`mailpit.02092000.xyz`)'
@@ -113,6 +123,7 @@ services:
       - 'traefik.http.routers.mailpit.tls.certresolver=cloudflare'
       - 'traefik.http.services.mailpit.loadbalancer.server.port=8025'
   selenium:
+    container_name: lacina-selenium
     image: selenium/standalone-chromium
     extra_hosts:
       - 'host.docker.internal:host-gateway'
@@ -121,9 +132,12 @@ services:
     restart: unless-stopped
     networks:
       - sail
+      - traefik
 networks:
   sail:
     driver: bridge
+  traefik:
+    external: true
 volumes:
   sail-pgsql:
     driver: local
