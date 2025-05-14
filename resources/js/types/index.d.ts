@@ -41,3 +41,39 @@ export type PageProps<
         isColaborador: boolean;
     };
 };
+
+// Enums do Laravel
+
+export type StatusCadastro = 'IMCOMPLETO' | 'PENDENTE' | 'ACEITO' | 'RECUSADO';
+
+export type Funcao =
+    | 'COORDENADOR'
+    | 'PESQUISADOR'
+    | 'DESENVOLVEDOR'
+    | 'TECNICO'
+    | 'ALUNO';
+
+export type Genero = 'MASCULINO' | 'FEMININO' | 'OUTRO';
+
+export type TipoVinculo = 'COORDENADOR' | 'COLABORADOR';
+
+export type DiaDaSemana =
+    | 'DOMINGO'
+    | 'SEGUNDA'
+    | 'TERCA'
+    | 'QUARTA'
+    | 'QUINTA'
+    | 'SEXTA'
+    | 'SABADO';
+
+export type StatusFolga = 'PENDENTE' | 'APROVADO' | 'REJEITADO';
+
+export type StatusSolicitacaoTrocaProjeto = 'ACEITO' | 'REJEITADO' | 'PENDENTE';
+
+export type StatusVinculoProjeto = 'APROVADO' | 'PENDENTE' | 'INATIVO';
+
+export type TipoFolga = 'COLETIVA' | 'INDIVIDUAL';
+
+export type TipoHorario = 'AULA' | 'TRABALHO' | 'AUSENTE';
+
+export type TipoProjeto = 'PDI' | 'TCC' | 'MESTRADO' | 'DOUTORADO' | 'SUPORTE';

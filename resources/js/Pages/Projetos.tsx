@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { PageProps, TipoProjeto } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -7,7 +7,13 @@ type Projeto = {
     id: number;
     nome: string;
     cliente: string;
-    tipo: string;
+    tipo: TipoProjeto;
+};
+
+type Toast = {
+    id: number;
+    message: string;
+    type: 'success' | 'error' | 'info';
 };
 
 export default function Projetos({
@@ -19,19 +25,32 @@ export default function Projetos({
     );
     const [searchTerm, setSearchTerm] = useState('');
 
+    const [toasts, setToasts] = useState<Toast[]>([]);
+
+    const addToast = (message: string, type: Toast['type'] = 'info') => {
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 3000);
+    };
+
     const solicitarVinculo = (projetoId: number) => {
         setSolicitando((prev) => ({ ...prev, [projetoId]: true }));
         router.post(
             route('projetos.solicitar-vinculo', { projeto: projetoId }),
             {},
             {
+                onSuccess: () =>
+                    addToast('Solicitação enviada com sucesso!', 'success'),
+                onError: () =>
+                    addToast('Falha ao enviar solicitação.', 'error'),
                 onFinish: () =>
                     setSolicitando((prev) => ({ ...prev, [projetoId]: false })),
             },
         );
     };
 
-    // 'projetos' is guaranteed to be an array, so no need for '?.'
     const filteredProjetos = projetos.filter(
         (projeto) =>
             projeto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,22 +58,28 @@ export default function Projetos({
             projeto.tipo.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    const getBadgeColor = (tipo: string) => {
-        switch (tipo.toLowerCase()) {
-            case 'web':
-                return 'badge-primary';
-            case 'mobile':
-                return 'badge-secondary';
-            case 'desktop':
-                return 'badge-accent';
-            default:
-                return 'badge-info';
-        }
+    const getBadgeColor = (tipo: TipoProjeto) => {
+        const badgeColors: { [key in TipoProjeto]: string } = {
+            PDI: 'badge-primary',
+            TCC: 'badge-secondary',
+            MESTRADO: 'badge-accent',
+            DOUTORADO: 'badge-info',
+            SUPORTE: 'badge-warning',
+        };
+        return badgeColors[tipo] || 'badge-info';
     };
 
     return (
         <AuthenticatedLayout>
             <Head title="Projetos" />
+
+            <div className="toast toast-top toast-end z-[100] flex flex-col gap-2 p-4">
+                {toasts.map((t) => (
+                    <div key={t.id} className={`alert alert-${t.type}`}>
+                        <span>{t.message}</span>
+                    </div>
+                ))}
+            </div>
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
