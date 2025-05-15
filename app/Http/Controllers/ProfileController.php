@@ -134,12 +134,13 @@ class ProfileController extends Controller
 
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
+        $user->fill($request->except('foto_url'));
+
         if ($request->hasFile('foto_url')) {
             $path = $request->file('foto_url')->store('fotos', 'public');
             $user->foto_url = $path;
         }
 
-        $user->fill($request->except('foto_url'));
         $user->save();
 
         // Reautenticar o usuário para garantir que as informações atualizadas sejam refletidas

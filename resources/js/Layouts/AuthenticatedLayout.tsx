@@ -76,7 +76,10 @@ export default function Authenticated({
                                 {user.foto_url ? (
                                     <div className="avatar">
                                         <div className="w-12 rounded-full">
-                                            <img src={user.foto_url} />
+                                            {/* <img src={user.foto_url} /> */}
+                                            <img
+                                                src={`/storage/${user.foto_url}`}
+                                            />
                                         </div>
                                     </div>
                                 ) : (
