@@ -108,7 +108,7 @@ export default function Index({ colaboradores }: IndexProps) {
                                         handleTabChange('vinculo_pendente')
                                     }
                                 >
-                                    Vínculo Pendente
+                                    Cadastro Pendente
                                 </button>
                                 <button
                                     role="tab"
@@ -117,7 +117,7 @@ export default function Index({ colaboradores }: IndexProps) {
                                         handleTabChange('aprovacao_pendente')
                                     }
                                 >
-                                    Aprovação Pendente
+                                    Vinculo Pendente
                                 </button>
                                 <button
                                     role="tab"
