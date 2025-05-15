@@ -7,12 +7,12 @@ export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const { user, isCoordenador, isColaborador } = usePage().props.auth;
-    console.log(`${new Date().toISOString()} - [AuthenticatedLayout]`, {
-        user,
-        isCoordenador,
-        isColaborador,
-    });
+    const { user, isCoordenador } = usePage().props.auth;
+    // console.log(`${new Date().toISOString()} - [AuthenticatedLayout]`, {
+    //     user,
+    //     isCoordenador,
+    //     isColaborador,
+    // });
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -49,7 +49,9 @@ export default function Authenticated({
                             {isCoordenador && (
                                 <li>
                                     <NavLink
-                                        href={route('colaboradores.index')}
+                                        href={route('colaboradores.index', {
+                                            status: 'aprovacao_pendente',
+                                        })}
                                         active={route().current(
                                             'colaboradores.*',
                                         )}
@@ -76,7 +78,6 @@ export default function Authenticated({
                                 {user.foto_url ? (
                                     <div className="avatar">
                                         <div className="w-12 rounded-full">
-                                            {/* <img src={user.foto_url} /> */}
                                             <img
                                                 src={`/storage/${user.foto_url}`}
                                             />

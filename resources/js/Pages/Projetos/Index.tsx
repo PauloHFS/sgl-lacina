@@ -10,46 +10,11 @@ type Projeto = {
     tipo: TipoProjeto;
 };
 
-type Toast = {
-    id: number;
-    message: string;
-    type: 'success' | 'error' | 'info';
-};
-
 export default function Projetos({
     projetos,
     auth,
 }: PageProps<{ projetos: Projeto[] }>) {
-    const [solicitando, setSolicitando] = useState<{ [id: number]: boolean }>(
-        {},
-    );
     const [searchTerm, setSearchTerm] = useState('');
-
-    const [toasts, setToasts] = useState<Toast[]>([]);
-
-    const addToast = (message: string, type: Toast['type'] = 'info') => {
-        const id = Date.now();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, 3000);
-    };
-
-    const solicitarVinculo = (projetoId: number) => {
-        setSolicitando((prev) => ({ ...prev, [projetoId]: true }));
-        router.post(
-            route('projetos.solicitar-vinculo', { projeto: projetoId }),
-            {},
-            {
-                onSuccess: () =>
-                    addToast('Solicitação enviada com sucesso!', 'success'),
-                onError: () =>
-                    addToast('Falha ao enviar solicitação.', 'error'),
-                onFinish: () =>
-                    setSolicitando((prev) => ({ ...prev, [projetoId]: false })),
-            },
-        );
-    };
 
     const filteredProjetos = projetos.filter(
         (projeto) =>
@@ -72,14 +37,6 @@ export default function Projetos({
     return (
         <AuthenticatedLayout>
             <Head title="Projetos" />
-
-            <div className="toast toast-top toast-end z-[100] flex flex-col gap-2 p-4">
-                {toasts.map((t) => (
-                    <div key={t.id} className={`alert alert-${t.type}`}>
-                        <span>{t.message}</span>
-                    </div>
-                ))}
-            </div>
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -108,69 +65,71 @@ export default function Projetos({
                             </div>
 
                             {filteredProjetos && filteredProjetos.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                                     {filteredProjetos.map((projeto) => (
                                         <div
                                             key={projeto.id}
-                                            className="card bg-base-200 transition-all hover:shadow-md"
+                                            className="group card card-bordered bg-base-100 cursor-pointer shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+                                            onClick={() =>
+                                                router.get(
+                                                    route('projetos.show', {
+                                                        projeto: projeto.id,
+                                                    }),
+                                                )
+                                            }
                                         >
-                                            <div className="card-body p-4">
-                                                <div className="flex items-start justify-between">
-                                                    <h4 className="card-title text-lg">
+                                            <figure className="h-48 overflow-hidden">
+                                                <img
+                                                    src={`https://picsum.photos/seed/${projeto.id}/600/400`}
+                                                    alt={projeto.nome}
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            </figure>
+                                            <div className="card-body p-5">
+                                                <div className="mb-2 flex items-start justify-between">
+                                                    <h2 className="card-title group-hover:text-primary text-xl font-bold transition-colors">
                                                         {projeto.nome}
-                                                    </h4>
+                                                    </h2>
                                                     <span
-                                                        className={`badge ${getBadgeColor(projeto.tipo)}`}
+                                                        className={`badge badge-lg ${getBadgeColor(
+                                                            projeto.tipo,
+                                                        )}`}
                                                     >
                                                         {projeto.tipo}
                                                     </span>
                                                 </div>
-                                                <p className="text-base-content/70 mt-1">
-                                                    <span className="font-medium">
+                                                <p className="text-base-content/80 mb-4 text-sm">
+                                                    <span className="font-semibold">
                                                         Cliente:
                                                     </span>{' '}
                                                     {projeto.cliente}
                                                 </p>
-                                                <div className="card-actions mt-3 items-center justify-end">
-                                                    <div className="avatar-group my-3 -space-x-5 rtl:space-x-reverse">
-                                                        <div className="avatar">
-                                                            <div className="w-8">
-                                                                <img src="https://img.daisyui.com/images/profile/demo/batperson@192.webp" />
+                                                <div className="card-actions border-base-300/50 mt-auto items-center justify-start border-t pt-4">
+                                                    <div className="avatar-group -space-x-4 rtl:space-x-reverse">
+                                                        <div className="avatar border-base-100 border-2">
+                                                            <div className="h-10 w-10">
+                                                                <img src="https://picsum.photos/seed/user1/80/80" />
                                                             </div>
                                                         </div>
-                                                        <div className="avatar">
-                                                            <div className="w-8">
-                                                                <img src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp" />
+                                                        <div className="avatar border-base-100 border-2">
+                                                            <div className="h-10 w-10">
+                                                                <img src="https://picsum.photos/seed/user2/80/80" />
                                                             </div>
                                                         </div>
-                                                        <div className="avatar">
-                                                            <div className="w-8">
-                                                                <img src="https://img.daisyui.com/images/profile/demo/averagebulk@192.webp" />
+                                                        <div className="avatar border-base-100 border-2">
+                                                            <div className="h-10 w-10">
+                                                                <img src="https://picsum.photos/seed/user3/80/80" />
                                                             </div>
                                                         </div>
-                                                        <div className="avatar">
-                                                            <div className="w-8">
-                                                                <img src="https://img.daisyui.com/images/profile/demo/wonderperson@192.webp" />
+                                                        <div className="avatar placeholder border-base-100 border-2">
+                                                            <div className="bg-neutral text-neutral-content h-10 w-10">
+                                                                <span>+5</span>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        className="btn btn-primary btn-sm"
-                                                        onClick={() =>
-                                                            solicitarVinculo(
-                                                                projeto.id,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            !!solicitando[
-                                                                projeto.id
-                                                            ]
-                                                        }
-                                                    >
-                                                        {solicitando[projeto.id]
-                                                            ? 'Solicitando...'
-                                                            : 'Solicitar Vínculo'}
-                                                    </button>
+                                                    <span className="text-base-content/60 group-hover:text-primary ml-auto text-xs transition-colors">
+                                                        Ver detalhes &rarr;
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

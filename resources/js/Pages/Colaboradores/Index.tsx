@@ -1,7 +1,7 @@
 import Paggination, { Paginated } from '@/Components/Paggination';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { router } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Colaborador {
     id: number;
@@ -26,6 +26,14 @@ type Tabs = 'vinculo_pendente' | 'aprovacao_pendente' | 'ativos' | 'inativos';
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<Tabs | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status') as Tabs | null;
+        setActiveTab(status);
+        const search = params.get('search') || '';
+        setSearchTerm(search);
+    }, []);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -152,14 +160,28 @@ export default function Index({ colaboradores }: IndexProps) {
                                                             key={colaborador.id}
                                                         >
                                                             <td>
-                                                                <div className="avatar">
-                                                                    <div className="h-12 w-12 rounded-full">
-                                                                        <img
-                                                                            src={`/storage/${colaborador.foto_url}`}
-                                                                            alt={`Foto de ${colaborador.name}`}
-                                                                        />
+                                                                {colaborador.foto_url ? (
+                                                                    <div className="avatar">
+                                                                        <div className="w-12 rounded-full">
+                                                                            <img
+                                                                                src={`/storage/${colaborador.foto_url}`}
+                                                                                alt={`Foto de ${colaborador.name}`}
+                                                                            />
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                ) : (
+                                                                    <div className="avatar avatar-placeholder">
+                                                                        <div className="bg-neutral text-neutral-content w-12 rounded-full">
+                                                                            <span className="text">
+                                                                                {colaborador.name
+                                                                                    .charAt(
+                                                                                        0,
+                                                                                    )
+                                                                                    .toUpperCase()}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </td>
                                                             <td>
                                                                 <span className="text-base-content font-medium">

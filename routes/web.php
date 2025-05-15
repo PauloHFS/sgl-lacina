@@ -35,9 +35,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Rotas Autenticadas e Verificadas
 Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/projetos', [ProjetosController::class, 'index'])->name('projetos.index');
-    Route::get('/projetos/create', [ProjetosController::class, 'create'])->name('projetos.create'); // New route for displaying form
-    Route::post('/projetos', [ProjetosController::class, 'store'])->name('projetos.store'); // New route for storing project
 
     // Rotas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -46,9 +43,18 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // TODO: Mergear essas duas rotas
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+    Route::prefix('/projeto')->group(function () {
+        Route::get('/', [ProjetosController::class, 'index'])->name('projetos.index');
+
+        Route::get('/new', [ProjetosController::class, 'create'])->name('projetos.create');
+        Route::post('/new', [ProjetosController::class, 'store'])->name('projetos.store');
+
+        Route::get('/{projeto}', [ProjetosController::class, 'show'])->name('projetos.show');
+        // Route::get('/{projeto}/edit', [ProjetosController::class, 'edit'])->name('projetos.edit');
+    });
+
     // Rotas para Solicitação de Vínculo a Projeto
-    Route::post('/projetos/{projeto}/solicitar-vinculo', [ProjetoVinculoController::class, 'solicitarVinculo'])
-        ->name('projetos.solicitar-vinculo');
+    Route::post('/vinculo', [ProjetoVinculoController::class, 'create'])->name('vinculo.create');
 
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {

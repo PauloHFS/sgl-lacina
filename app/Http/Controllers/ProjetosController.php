@@ -6,6 +6,8 @@ use App\Models\Projeto;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 
@@ -15,8 +17,19 @@ class ProjetosController extends Controller
   {
     $projetos = Projeto::all(['id', 'nome', 'cliente', 'tipo']);
 
-    return Inertia::render('Projetos', [
+    return Inertia::render('Projetos/Index', [
       'projetos' => $projetos,
+    ]);
+  }
+
+  public function show()
+  {
+    $projeto = Projeto::findOrFail(request()->route('projeto'));
+
+    return Inertia::render('Projetos/Show', [
+      'projeto' => $projeto,
+      'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
+      'funcoes' => array_column(Funcao::cases(), 'value'),
     ]);
   }
 
