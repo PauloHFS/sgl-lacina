@@ -1,5 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps as InertiaPageProps } from '@/types';
+import {
+    Funcao,
+    PageProps as InertiaPageProps,
+    StatusVinculoProjeto,
+    TipoVinculo,
+} from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 
@@ -21,6 +26,15 @@ interface ShowPageProps extends InertiaPageProps {
     projeto: Projeto;
     tiposVinculo: string[];
     funcoes: string[];
+    usuarioVinculo: {
+        usuario_id: string;
+        tipo_vinculo: TipoVinculo;
+        funcao: Funcao;
+        status: StatusVinculoProjeto;
+        carga_horaria_semanal: number;
+        data_inicio: string;
+        data_fim: string | null;
+    } | null;
 }
 
 type Toast = {
@@ -33,6 +47,7 @@ export default function Show({
     projeto,
     tiposVinculo,
     funcoes,
+    usuarioVinculo,
 }: ShowPageProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         projeto_id: projeto.id,
@@ -41,6 +56,16 @@ export default function Show({
         tipo_vinculo: '',
         funcao: '',
     });
+
+    const [toasts, setToasts] = useState<Toast[]>([]);
+
+    const addToast = (message: string, type: Toast['type'] = 'info') => {
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 3000);
+    };
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -55,16 +80,90 @@ export default function Show({
         });
     };
 
-    // TODO migrar isso para o root do REACT e acessar via hooks
-    const [toasts, setToasts] = useState<Toast[]>([]);
+    // Exibe badge de vínculo e status, ou botão para solicitar vínculo
+    function renderVinculoStatus() {
+        if (!usuarioVinculo) {
+            return (
+                <label
+                    htmlFor="solicitar-vinculo-drawer"
+                    className="btn btn-primary btn-lg"
+                >
+                    <svg
+                        className="mr-2 h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"
+                        />
+                    </svg>
+                    Solicitar Vínculo
+                </label>
+            );
+        }
 
-    const addToast = (message: string, type: Toast['type'] = 'info') => {
-        const id = Date.now();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, 3000);
-    };
+        // Badge de status
+        let statusColor = 'badge-info';
+        let statusText = '';
+        switch (usuarioVinculo.status) {
+            case 'APROVADO':
+                statusColor = 'badge-success';
+                statusText = 'Aprovado';
+                break;
+            case 'PENDENTE':
+                statusColor = 'badge-warning';
+                statusText = 'Pendente';
+                break;
+            // case 'REJEITADO':
+            //     statusColor = 'badge-error';
+            //     statusText = 'Rejeitado';
+            //     break;
+            case 'INATIVO':
+                statusColor = 'badge-neutral';
+                statusText = 'Inativo';
+                break;
+            default:
+                statusColor = 'badge-info';
+                statusText = usuarioVinculo.status;
+        }
+
+        return (
+            <div className="flex flex-col items-end gap-2">
+                <span className={`badge ${statusColor} badge-lg`}>
+                    {statusText}
+                </span>
+                <span className="text-base-content/70 text-sm">
+                    Vínculo: <b>{usuarioVinculo.tipo_vinculo}</b>
+                </span>
+                <span className="text-base-content/70 text-sm">
+                    Função: <b>{usuarioVinculo.funcao}</b>
+                </span>
+                <span className="text-base-content/70 text-sm">
+                    Carga Horária:{' '}
+                    <b>{usuarioVinculo.carga_horaria_semanal}h/sem</b>
+                </span>
+                <span className="text-base-content/70 text-sm">
+                    Início:{' '}
+                    <b>
+                        {new Date(
+                            usuarioVinculo.data_inicio,
+                        ).toLocaleDateString()}
+                    </b>
+                </span>
+                {usuarioVinculo.data_fim && (
+                    <span className="text-base-content/70 text-sm">
+                        Fim:{' '}
+                        <b>
+                            {new Date(
+                                usuarioVinculo.data_fim,
+                            ).toLocaleDateString()}
+                        </b>
+                    </span>
+                )}
+            </div>
+        );
+    }
 
     return (
         <AuthenticatedLayout>
@@ -96,26 +195,7 @@ export default function Show({
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col gap-2 text-right">
-                                    <span className="text-base-content/70 text-sm">
-                                        Início:{' '}
-                                        <span className="font-semibold">
-                                            {new Date(
-                                                projeto.data_inicio,
-                                            ).toLocaleDateString()}
-                                        </span>
-                                    </span>
-                                    {projeto.data_termino && (
-                                        <span className="text-base-content/70 text-sm">
-                                            Término:{' '}
-                                            <span className="font-semibold">
-                                                {new Date(
-                                                    projeto.data_termino,
-                                                ).toLocaleDateString()}
-                                            </span>
-                                        </span>
-                                    )}
-                                </div>
+                                {renderVinculoStatus()}
                             </div>
                             {projeto.descricao && (
                                 <div className="mb-6">
@@ -222,175 +302,168 @@ export default function Show({
                                         )}
                                 </div>
                             </div>
-                            <div className="flex justify-end">
-                                <label
-                                    htmlFor="solicitar-vinculo-drawer"
-                                    className="btn btn-primary btn-lg"
-                                >
-                                    <svg
-                                        className="mr-2 h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            fill="currentColor"
-                                            d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"
-                                        />
-                                    </svg>
-                                    Solicitar Vínculo
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <div className="drawer drawer-end">
-                <input
-                    id="solicitar-vinculo-drawer"
-                    type="checkbox"
-                    className="drawer-toggle"
-                />
-                <div className="drawer-content">{/* Page content here */}</div>
-                <div className="drawer-side">
-                    <label
-                        htmlFor="solicitar-vinculo-drawer"
-                        aria-label="close sidebar"
-                        className="drawer-overlay"
-                    ></label>
-                    <div className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
-                        <h3 className="mb-4 text-xl font-bold">
-                            Solicitar Vínculo ao Projeto
-                        </h3>
-                        <form onSubmit={submit}>
-                            <div className="form-control mb-4">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Data de Início
-                                    </span>
-                                </label>
-                                <input
-                                    type="date"
-                                    className="input input-bordered w-full"
-                                    value={data.data_inicio}
-                                    onChange={(e) =>
-                                        setData('data_inicio', e.target.value)
-                                    }
-                                    required
-                                />
-                                {errors.data_inicio && (
-                                    <p className="text-error mt-1 text-xs">
-                                        {errors.data_inicio}
-                                    </p>
-                                )}
-                            </div>
+            {/* Drawer só aparece se não houver vínculo */}
+            {!usuarioVinculo && (
+                <div className="drawer drawer-end">
+                    <input
+                        id="solicitar-vinculo-drawer"
+                        type="checkbox"
+                        className="drawer-toggle"
+                    />
+                    <div className="drawer-content"></div>
+                    <div className="drawer-side">
+                        <label
+                            htmlFor="solicitar-vinculo-drawer"
+                            aria-label="close sidebar"
+                            className="drawer-overlay"
+                        ></label>
+                        <div className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
+                            <h3 className="mb-4 text-xl font-bold">
+                                Solicitar Vínculo ao Projeto
+                            </h3>
+                            <form onSubmit={submit}>
+                                <div className="form-control mb-4">
+                                    <label className="label">
+                                        <span className="label-text">
+                                            Data de Início
+                                        </span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="input input-bordered w-full"
+                                        value={data.data_inicio}
+                                        onChange={(e) =>
+                                            setData(
+                                                'data_inicio',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                    />
+                                    {errors.data_inicio && (
+                                        <p className="text-error mt-1 text-xs">
+                                            {errors.data_inicio}
+                                        </p>
+                                    )}
+                                </div>
 
-                            <div className="form-control mb-4">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Carga Horária Semanal (horas)
-                                    </span>
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="40"
-                                    className="input input-bordered w-full"
-                                    value={data.carga_horaria_semanal}
-                                    onChange={(e) =>
-                                        setData(
-                                            'carga_horaria_semanal',
-                                            e.target.value,
-                                        )
-                                    }
-                                    required
-                                />
-                                {errors.carga_horaria_semanal && (
-                                    <p className="text-error mt-1 text-xs">
-                                        {errors.carga_horaria_semanal}
-                                    </p>
-                                )}
-                            </div>
+                                <div className="form-control mb-4">
+                                    <label className="label">
+                                        <span className="label-text">
+                                            Carga Horária Semanal (horas)
+                                        </span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="40"
+                                        className="input input-bordered w-full"
+                                        value={data.carga_horaria_semanal}
+                                        onChange={(e) =>
+                                            setData(
+                                                'carga_horaria_semanal',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                    />
+                                    {errors.carga_horaria_semanal && (
+                                        <p className="text-error mt-1 text-xs">
+                                            {errors.carga_horaria_semanal}
+                                        </p>
+                                    )}
+                                </div>
 
-                            <div className="form-control mb-4">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Tipo de Vínculo
-                                    </span>
-                                </label>
-                                <select
-                                    className="select select-bordered w-full"
-                                    value={data.tipo_vinculo}
-                                    onChange={(e) =>
-                                        setData('tipo_vinculo', e.target.value)
-                                    }
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        Selecione
-                                    </option>
-                                    {tiposVinculo.map((tipo) => (
-                                        <option key={tipo} value={tipo}>
-                                            {tipo}
+                                <div className="form-control mb-4">
+                                    <label className="label">
+                                        <span className="label-text">
+                                            Tipo de Vínculo
+                                        </span>
+                                    </label>
+                                    <select
+                                        className="select select-bordered w-full"
+                                        value={data.tipo_vinculo}
+                                        onChange={(e) =>
+                                            setData(
+                                                'tipo_vinculo',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                    >
+                                        <option value="" disabled>
+                                            Selecione
                                         </option>
-                                    ))}
-                                </select>
-                                {errors.tipo_vinculo && (
-                                    <p className="text-error mt-1 text-xs">
-                                        {errors.tipo_vinculo}
-                                    </p>
-                                )}
-                            </div>
+                                        {tiposVinculo.map((tipo) => (
+                                            <option key={tipo} value={tipo}>
+                                                {tipo}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.tipo_vinculo && (
+                                        <p className="text-error mt-1 text-xs">
+                                            {errors.tipo_vinculo}
+                                        </p>
+                                    )}
+                                </div>
 
-                            <div className="form-control mb-4">
-                                <label className="label">
-                                    <span className="label-text">Função</span>
-                                </label>
-                                <select
-                                    className="select select-bordered w-full"
-                                    value={data.funcao}
-                                    onChange={(e) =>
-                                        setData('funcao', e.target.value)
-                                    }
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        Selecione
-                                    </option>
-                                    {funcoes.map((funcao) => (
-                                        <option key={funcao} value={funcao}>
-                                            {funcao}
+                                <div className="form-control mb-4">
+                                    <label className="label">
+                                        <span className="label-text">
+                                            Função
+                                        </span>
+                                    </label>
+                                    <select
+                                        className="select select-bordered w-full"
+                                        value={data.funcao}
+                                        onChange={(e) =>
+                                            setData('funcao', e.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="" disabled>
+                                            Selecione
                                         </option>
-                                    ))}
-                                </select>
-                                {errors.funcao && (
-                                    <p className="text-error mt-1 text-xs">
-                                        {errors.funcao}
-                                    </p>
-                                )}
-                            </div>
+                                        {funcoes.map((funcao) => (
+                                            <option key={funcao} value={funcao}>
+                                                {funcao}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.funcao && (
+                                        <p className="text-error mt-1 text-xs">
+                                            {errors.funcao}
+                                        </p>
+                                    )}
+                                </div>
 
-                            <div className="modal-action mt-6">
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    disabled={processing}
-                                >
-                                    {processing
-                                        ? 'Enviando...'
-                                        : 'Enviar Solicitação'}
-                                </button>
-                                <label
-                                    htmlFor="solicitar-vinculo-drawer"
-                                    className="btn"
-                                >
-                                    Cancelar
-                                </label>
-                            </div>
-                        </form>
+                                <div className="modal-action mt-6">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={processing}
+                                    >
+                                        {processing
+                                            ? 'Enviando...'
+                                            : 'Enviar Solicitação'}
+                                    </button>
+                                    <label
+                                        htmlFor="solicitar-vinculo-drawer"
+                                        className="btn"
+                                    >
+                                        Cancelar
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </AuthenticatedLayout>
     );
 }

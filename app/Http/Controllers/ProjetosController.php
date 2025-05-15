@@ -10,6 +10,7 @@ use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class ProjetosController extends Controller
 {
@@ -26,10 +27,17 @@ class ProjetosController extends Controller
   {
     $projeto = Projeto::findOrFail(request()->route('projeto'));
 
+    if (!$projeto) {
+      return Redirect::route('projetos.index')->with('error', 'Projeto não encontrado.');
+    }
+
+    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
+
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
       'funcoes' => array_column(Funcao::cases(), 'value'),
+      'usuarioVinculo' => $usuarioVinculo,
     ]);
   }
 

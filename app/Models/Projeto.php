@@ -49,4 +49,25 @@ class Projeto extends Model
             ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }
+
+    public function getUsuarioVinculo(string $usuarioId)
+    {
+        $vinculo = $this->usuarios()
+            ->where('usuario_id', $usuarioId)
+            ->first();
+
+        if (!$vinculo) {
+            return null;
+        }
+
+        return [
+            'usuario_id' => $vinculo->pivot->usuario_id,
+            'tipo_vinculo' => $vinculo->pivot->tipo_vinculo,
+            'funcao' => $vinculo->pivot->funcao,
+            'status' => $vinculo->pivot->status,
+            'carga_horaria_semanal' => $vinculo->pivot->carga_horaria_semanal,
+            'data_inicio' => $vinculo->pivot->data_inicio,
+            'data_fim' => $vinculo->pivot->data_fim,
+        ];
+    }
 }
