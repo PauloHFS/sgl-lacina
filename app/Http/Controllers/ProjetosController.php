@@ -8,9 +8,12 @@ use Inertia\Inertia;
 use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
+use App\Enums\StatusVinculoProjeto;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProjetosController extends Controller
 {
@@ -63,9 +66,28 @@ class ProjetosController extends Controller
       'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
     ]);
 
-    $projeto = new Projeto($validatedData);
-    $projeto->id = Str::uuid();
-    $projeto->save();
+    try {
+      DB::transaction(function () use ($validatedData) {
+        $projeto = new Projeto($validatedData);
+        $projeto->id = Str::uuid();
+        $projeto->save();
+
+        $projeto->usuarios()->attach(Auth::user()->id, [
+          'id' => Str::uuid(),
+          'tipo_vinculo' => TipoVinculo::COORDENADOR,
+          'funcao' => Funcao::COORDENADOR,
+          'status' => StatusVinculoProjeto::APROVADO,
+          'carga_horaria_semanal' => 0,
+          'data_inicio' => now(),
+        ]);
+      });
+    } catch (\Throwable $th) {
+      Log::error('Erro ao cadastrar projeto:', [
+        'error' => $th->getMessage(),
+        'stack' => $th->getTraceAsString(),
+      ]);
+      return Redirect::route('projetos.index')->with('error', 'Erro ao cadastrar o projeto. Tente novamente mais tarde.');
+    }
 
     return Redirect::route('projetos.index')->with('success', 'Projeto cadastrado com sucesso!');
   }

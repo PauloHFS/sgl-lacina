@@ -8,13 +8,13 @@ use App\Models\UsuarioProjeto;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
+use App\Enums\StatusCadastro;
 use Illuminate\Validation\Rule;
 
 class ProjetoVinculoController extends Controller
 {
   public function create(Request $request)
   {
-    // TODO dá um jeito de user o enum aqui no validate
     $request->validate([
       'projeto_id' => 'required|exists:projetos,id',
       'data_inicio' => 'required|date',
@@ -25,8 +25,8 @@ class ProjetoVinculoController extends Controller
 
     $user = Auth::user();
 
-    if ($user->status_cadastro !== 'ATIVO') {
-      return back()->with('error', 'Seu cadastro não está ativo. Entre em contato com o administrador.');
+    if ($user->status_cadastro !== StatusCadastro::ACEITO) {
+      return back()->with('error', 'Seu cadastro não está aceito. Entre em contato com o administrador.');
     }
 
     $jaSolicitado = UsuarioProjeto::where('usuario_id', $user->id)
