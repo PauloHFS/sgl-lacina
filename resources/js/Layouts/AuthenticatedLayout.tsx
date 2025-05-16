@@ -8,11 +8,7 @@ export default function Authenticated({
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const { user, isCoordenador } = usePage().props.auth;
-    // console.log(`${new Date().toISOString()} - [AuthenticatedLayout]`, {
-    //     user,
-    //     isCoordenador,
-    //     isColaborador,
-    // });
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
