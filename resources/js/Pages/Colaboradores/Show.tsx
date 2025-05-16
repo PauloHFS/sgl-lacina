@@ -1,5 +1,5 @@
 import Authenticated from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 interface Projeto {
     id: number;
@@ -45,37 +45,44 @@ export default function Show({ colaborador }: ShowProps) {
             <Head title={`Colaborador: ${colaborador.name}`} />
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
-                    <div className="card bg-base-100 shadow">
+                    <div className="card card-bordered bg-base-100 shadow-xl">
                         <div className="card-body">
-                            <div className="mb-6 flex items-center space-x-6">
-                                <div className="avatar">
-                                    <div className="ring-primary ring-offset-base-100 h-24 w-24 rounded-full ring ring-offset-2">
-                                        <img
-                                            src={
-                                                colaborador.foto_url ||
-                                                'https://robohash.org/set1/' +
-                                                    colaborador.name +
-                                                    '.png'
-                                            }
-                                            alt={`Foto de ${colaborador.name}`}
-                                            className="object-cover"
-                                        />
+                            {/* Header Section */}
+                            <div className="flex flex-col items-center gap-6 sm:flex-row">
+                                {colaborador.foto_url ? (
+                                    <div className="avatar">
+                                        <div className="ring-primary ring-offset-base-100 w-24 rounded-full ring ring-offset-2">
+                                            <img
+                                                src={`/storage/${colaborador.foto_url}`}
+                                                alt={`Foto de ${colaborador.name}`}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <h2 className="card-title">
+                                ) : (
+                                    <div className="avatar avatar-placeholder">
+                                        <div className="bg-neutral text-neutral-content ring-primary ring-offset-base-100 w-24 rounded-full ring ring-offset-2">
+                                            <span className="text-3xl">
+                                                {colaborador.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="text-center sm:text-left">
+                                    <h2 className="card-title text-2xl">
                                         {colaborador.name}
                                     </h2>
                                     <p className="text-base-content/70">
                                         {colaborador.email}
                                     </p>
-                                    <div className="mt-2 flex space-x-2">
+                                    <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
                                         {colaborador.linkedin_url && (
                                             <a
                                                 href={colaborador.linkedin_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="btn btn-xs btn-outline btn-primary"
+                                                className="btn btn-sm btn-outline btn-primary"
                                             >
                                                 LinkedIn
                                             </a>
@@ -85,7 +92,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                 href={colaborador.github_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="btn btn-xs btn-outline btn-neutral"
+                                                className="btn btn-sm btn-outline btn-neutral"
                                             >
                                                 GitHub
                                             </a>
@@ -95,7 +102,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                 href={colaborador.figma_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="btn btn-xs btn-outline btn-accent"
+                                                className="btn btn-sm btn-outline btn-accent"
                                             >
                                                 Figma
                                             </a>
@@ -103,84 +110,156 @@ export default function Show({ colaborador }: ShowProps) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <span className="font-semibold">
-                                        Área de Atuação:
-                                    </span>{' '}
-                                    {colaborador.area_atuacao || '-'}
+
+                            <div className="divider">Detalhes</div>
+
+                            {/* Details Section */}
+                            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Área de Atuação:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.area_atuacao || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        Tecnologias:
-                                    </span>{' '}
-                                    {colaborador.tecnologias
-                                        ? colaborador.tecnologias
-                                              .split(',')
-                                              .map((tech, idx) => (
-                                                  <span
-                                                      key={idx}
-                                                      className="badge badge-info badge-outline mr-1"
-                                                  >
-                                                      {tech.trim()}
-                                                  </span>
-                                              ))
-                                        : '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Tecnologias:
+                                        </span>
+                                    </label>
+                                    <div className="input input-bordered flex h-auto min-h-10 flex-wrap items-center gap-1 py-2 break-words whitespace-normal">
+                                        {colaborador.tecnologias
+                                            ? colaborador.tecnologias
+                                                  .split(',')
+                                                  .map((tech, idx) => (
+                                                      <span
+                                                          key={idx}
+                                                          className="badge badge-info badge-outline"
+                                                      >
+                                                          {tech.trim()}
+                                                      </span>
+                                                  ))
+                                            : '-'}
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        Telefone:
-                                    </span>{' '}
-                                    {colaborador.telefone || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Telefone:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.telefone || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">CPF:</span>{' '}
-                                    {colaborador.cpf || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            CPF:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.cpf || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">RG:</span>{' '}
-                                    {colaborador.rg || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            RG:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.rg || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        UF RG:
-                                    </span>{' '}
-                                    {colaborador.uf_rg || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            UF RG:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.uf_rg || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        Conta Bancária:
-                                    </span>{' '}
-                                    {colaborador.conta_bancaria || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Conta Bancária:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.conta_bancaria || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        Agência:
-                                    </span>{' '}
-                                    {colaborador.agencia || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Agência:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.agencia || '-'}
+                                    </span>
                                 </div>
-                                <div>
-                                    <span className="font-semibold">
-                                        Código do Banco:
-                                    </span>{' '}
-                                    {colaborador.codigo_banco || '-'}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Código do Banco:
+                                        </span>
+                                    </label>
+                                    <span className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                        {colaborador.codigo_banco || '-'}
+                                    </span>
                                 </div>
-                                <div className="md:col-span-2">
-                                    <span className="font-semibold">
-                                        Currículo:
-                                    </span>{' '}
-                                    {colaborador.curriculo || '-'}
+                                <div className="form-control md:col-span-2">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">
+                                            Currículo:
+                                        </span>
+                                    </label>
+                                    <span className="textarea textarea-bordered flex h-auto min-h-24 py-2 break-words whitespace-normal">
+                                        {colaborador.curriculo || '-'}
+                                    </span>
                                 </div>
                             </div>
+
                             {/* STATUS DO COLABORADOR */}
-                            <div className="mb-6">
+                            <div className="divider">Status</div>
+                            <div className="my-6">
                                 {colaborador.status_cadastro ===
                                     'VINCULO_PENDENTE' && (
-                                    <div className="alert alert-warning flex-col items-start gap-2">
-                                        <span className="text-warning-content font-semibold">
-                                            Vínculo pendente de aprovação.
-                                        </span>
-                                        <div className="flex gap-2">
+                                    <div className="alert alert-warning shadow-lg">
+                                        <div>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-6 w-6 flex-shrink-0 stroke-current"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                                />
+                                            </svg>
+                                            <div>
+                                                <h3 className="font-bold">
+                                                    Vínculo pendente de
+                                                    aprovação.
+                                                </h3>
+                                                <div className="text-xs">
+                                                    Este colaborador aguarda
+                                                    aprovação de cadastro.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex-none">
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -191,7 +270,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                         ),
                                                     )
                                                 }
-                                                className="btn btn-success btn-sm"
+                                                className="btn btn-sm btn-success"
                                             >
                                                 Aceitar
                                             </button>
@@ -205,7 +284,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                         ),
                                                     )
                                                 }
-                                                className="btn btn-error btn-sm"
+                                                className="btn btn-sm btn-error ml-2"
                                             >
                                                 Recusar
                                             </button>
@@ -215,21 +294,37 @@ export default function Show({ colaborador }: ShowProps) {
 
                                 {colaborador.status_cadastro ===
                                     'APROVACAO_PENDENTE' && (
-                                    <div className="alert alert-info flex-col items-start gap-2">
-                                        <span className="text-info-content font-semibold">
-                                            Aprovação pendente de vínculo em
-                                            projeto.
-                                        </span>
+                                    <div className="alert alert-info shadow-lg">
                                         <div>
-                                            <span className="font-semibold">
-                                                Projeto solicitado:
-                                            </span>{' '}
-                                            <span>
-                                                {colaborador.projeto_solicitado
-                                                    ?.nome || '-'}
-                                            </span>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-6 w-6 flex-shrink-0 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                ></path>
+                                            </svg>
+                                            <div>
+                                                <h3 className="font-bold">
+                                                    Aprovação pendente de
+                                                    vínculo em projeto.
+                                                </h3>
+                                                <div className="text-xs">
+                                                    Projeto solicitado:{' '}
+                                                    <span className="font-semibold">
+                                                        {colaborador
+                                                            .projeto_solicitado
+                                                            ?.nome || '-'}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex-none">
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -240,9 +335,9 @@ export default function Show({ colaborador }: ShowProps) {
                                                         ),
                                                     )
                                                 }
-                                                className="btn btn-success btn-sm"
+                                                className="btn btn-sm btn-success"
                                             >
-                                                Aceitar
+                                                Aceitar Vínculo
                                             </button>
                                             <button
                                                 type="button"
@@ -254,62 +349,121 @@ export default function Show({ colaborador }: ShowProps) {
                                                         ),
                                                     )
                                                 }
-                                                className="btn btn-error btn-sm"
+                                                className="btn btn-sm btn-error ml-2"
                                             >
-                                                Recusar
+                                                Recusar Vínculo
                                             </button>
                                         </div>
                                     </div>
                                 )}
 
                                 {colaborador.status_cadastro === 'ATIVO' && (
-                                    <div className="alert alert-success flex-col items-start gap-2">
-                                        <span className="text-success-content font-semibold">
-                                            Colaborador ativo
-                                        </span>
+                                    <div className="alert alert-success shadow-lg">
                                         <div>
-                                            <span className="font-semibold">
-                                                Projeto(s) atual(is):
-                                            </span>{' '}
-                                            {colaborador.projetos_atuais &&
-                                            colaborador.projetos_atuais.length >
-                                                0 ? (
-                                                colaborador.projetos_atuais.map(
-                                                    (proj) => (
-                                                        <span
-                                                            key={proj.id}
-                                                            className="badge badge-success badge-outline mr-1"
-                                                        >
-                                                            {proj.nome}
-                                                        </span>
-                                                    ),
-                                                )
-                                            ) : (
-                                                <span>-</span>
-                                            )}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-6 w-6 flex-shrink-0 stroke-current"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                            <div>
+                                                <h3 className="font-bold">
+                                                    Colaborador ativo
+                                                </h3>
+                                                <div className="flex flex-wrap items-center gap-1 text-xs">
+                                                    <span>
+                                                        Projeto(s) atual(is):
+                                                    </span>
+                                                    {colaborador.projetos_atuais &&
+                                                    colaborador.projetos_atuais
+                                                        .length > 0 ? (
+                                                        colaborador.projetos_atuais.map(
+                                                            (proj) => (
+                                                                <span
+                                                                    key={
+                                                                        proj.id
+                                                                    }
+                                                                    className="badge badge-ghost badge-sm"
+                                                                >
+                                                                    {proj.nome}
+                                                                </span>
+                                                            ),
+                                                        )
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
                                 {colaborador.status_cadastro === 'INATIVO' && (
-                                    <div className="alert alert-outline flex-col items-start gap-2">
-                                        <span className="text-base-content font-semibold">
-                                            Colaborador inativo
-                                        </span>
-                                        <span className="text-base-content/70">
-                                            Este colaborador não possui vínculo
-                                            ativo no momento.
-                                        </span>
+                                    <div className="alert alert-outline shadow-lg">
+                                        <div>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-6 w-6 flex-shrink-0 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                ></path>
+                                            </svg>
+                                            <div>
+                                                <h3 className="font-bold">
+                                                    Colaborador inativo
+                                                </h3>
+                                                <span className="text-xs">
+                                                    Este colaborador não possui
+                                                    vínculo ativo no momento.
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
-                            <div className="mt-6">
-                                <Link
-                                    href={route('colaboradores.index')}
-                                    className="link link-primary"
+                            <div className="card-actions mt-6 justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        window.history.length > 1
+                                            ? window.history.back()
+                                            : router.visit(
+                                                  route('colaboradores.index', {
+                                                      status: 'aprovacao_pendente',
+                                                  }),
+                                              )
+                                    }
+                                    className="btn btn-outline btn-primary"
                                 >
-                                    Voltar para a lista
-                                </Link>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="mr-2 h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
+                                    Voltar
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 export default function WaitingApproval() {
     return (
@@ -71,10 +71,15 @@ export default function WaitingApproval() {
                     </ul>
                 </div>
 
-                <div className="card-actions mt-8">
-                    <a href="/login" className="btn btn-primary btn-block">
-                        Voltar para login
-                    </a>
+                <div className="card-actions mt-8 w-full">
+                    <Link
+                        href={route('logout')}
+                        method="post"
+                        as="button"
+                        className="btn btn-primary btn-block"
+                    >
+                        Sair
+                    </Link>
                 </div>
             </div>
         </GuestLayout>
