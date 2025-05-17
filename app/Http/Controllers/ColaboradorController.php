@@ -102,101 +102,102 @@ class ColaboradorController extends Controller
     {
         $usuario = User::findOrFail($id);
 
-        // TODO: refatora isso para usar a classe de UsuarioProjeto
-        $vinculos = DB::table('usuario_projeto')
+        // Eager load related projects for vinculations to optimize queries
+        $vinculos = UsuarioProjeto::with('projeto')
             ->where('usuario_id', $usuario->id)
             ->orderByDesc('data_inicio')
             ->get();
 
-        $status_cadastro = 'INATIVO';
-        $projetos_atuais = [];
-        $projeto_solicitado = null;
-        $vinculo_id = null;
+        $statusCadastroView = 'INATIVO'; // Default status for the view
+        $projetosAtuais = collect();
+        $vinculoPendente = null;
 
-        Log::debug('Colaborador encontrado', [
-            'usuario' => $usuario,
+        // Ensure status_cadastro is an enum instance for reliable comparison
+        $userSystemStatus = $usuario->status_cadastro instanceof StatusCadastro
+            ? $usuario->status_cadastro
+            : StatusCadastro::tryFrom($usuario->status_cadastro);
+
+        if ($userSystemStatus === StatusCadastro::PENDENTE) {
+            $statusCadastroView = 'VINCULO_PENDENTE';
+        } elseif ($userSystemStatus === StatusCadastro::ACEITO) {
+            // Check for any project vinculation request that is pending approval
+            $vinculoPendente = $vinculos->first(function ($vinculo) {
+                // Ensure vinculo->status is an enum instance or correctly compared to its value
+                $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
+                    ? $vinculo->status
+                    : StatusVinculoProjeto::tryFrom($vinculo->status);
+                return $vinculoStatus === StatusVinculoProjeto::PENDENTE;
+            });
+
+            if ($vinculoPendente) {
+                $statusCadastroView = 'APROVACAO_PENDENTE';
+                // $projetoSolicitado = $vinculoPendente->projeto; // Use eager-loaded project
+            } else {
+                // Check for active project vinculations
+                // The original code had a TODO for data_fim validation.
+                // Add '&& (!$v->data_fim || $v->data_fim->isFuture())' if needed.
+                $vinculosAprovados = $vinculos->filter(function ($vinculo) {
+                    $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
+                        ? $vinculo->status
+                        : StatusVinculoProjeto::tryFrom($vinculo->status);
+                    return $vinculoStatus === StatusVinculoProjeto::APROVADO;
+                });
+
+                if ($vinculosAprovados->isNotEmpty()) {
+                    $statusCadastroView = 'ATIVO';
+                    $projetosAtuais = $vinculosAprovados->map(fn($v) => $v->projeto)
+                        ->filter() // Remove any null projects if a vinculo has an invalid projeto_id
+                        ->unique('id') // Ensure unique projects
+                        ->values();
+                }
+                // If user is ACEITO but has no PENDING or ACTIVE vinculations,
+                // $statusCadastroView remains 'INATIVO'.
+            }
+        }
+        // If $userSystemStatus is RECUSADO, $statusCadastroView will also remain 'INATIVO'.
+
+        Log::debug('Colaborador encontrado', ['usuario_id' => $usuario->id, 'raw_status' => $usuario->status_cadastro]);
+        Log::debug('Status do colaborador para a view', [
+            'colaborador_id' => $usuario->id,
+            'status_calculado' => $statusCadastroView,
         ]);
 
+        // Prepare data for Inertia response
+        $colaboradorData = $usuario->only([
+            'id',
+            'name',
+            'email',
+            'linkedin_url',
+            'github_url',
+            'figma_url',
+            'foto_url',
+            'area_atuacao',
+            'tecnologias',
+            'curriculo',
+            'cpf',
+            'conta_bancaria',
+            'agencia',
+            'codigo_banco', // Assuming 'codigo_banco' is a field on User model or accessor
+            'rg',
+            'uf_rg',
+            'telefone',
+        ]);
 
-        if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
-            $status_cadastro = 'VINCULO_PENDENTE';
-        } else if (
-            $usuario->status_cadastro === StatusCadastro::ACEITO &&
-            $vinculos->where('status', 'PENDENTE')->count() > 0 // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
-        ) {
-            // Usuário aceito no laboratório, mas com vínculo pendente em projeto
-            $status_cadastro = 'APROVACAO_PENDENTE';
-            $vinculoPendenteProjeto = $vinculos->first(function ($v) {
-                return $v->status === 'PENDENTE'; // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
-            });
-            if ($vinculoPendenteProjeto) {
-                $projeto_solicitado = Projeto::find($vinculoPendenteProjeto->projeto_id);
-            }
-        } else if (
-            $usuario->status_cadastro === StatusCadastro::ACEITO &&
-            // $vinculos->where('status', StatusVinculoProjeto::APROVADO) // TODO: verificar pq num funciona com o enum StatusVinculoProjeto
-            $vinculos->where('status', 'APROVADO')
-            // ->where('data_fim', '>', now()) TODO: Verificar essa validação
-            ->count() > 0
-        ) {
-            // Usuário com vínculo aprovado e ativo em algum projeto
-            $status_cadastro = 'ATIVO';
-            $projetos_atuais = Projeto::whereIn(
-                'id',
-                $vinculos->where('status', 'APROVADO')
-                    // ->where('data_fim', '>', now()) TODO: Verificar essa validação
-                    ->pluck('projeto_id')
-            )->get(['id', 'nome']);
-        } else if (
-            $usuario->status_cadastro === StatusCadastro::ACEITO &&
-            $vinculos->where('status', StatusVinculoProjeto::INATIVO)
-            ->where('data_fim', '<', now())
-            ->count() > 0
-        ) {
-            // Usuário com vínculo inativo em todos os projetos
-            $status_cadastro = 'INATIVO';
-        }
+        $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
+        $colaboradorData['updated_at'] = $usuario->updated_at?->toIso8601String();
+        $colaboradorData['status_cadastro'] = $statusCadastroView; // Calculated status for UI logic
+        $colaboradorData['vinculo'] = $vinculoPendente
+            ? $vinculoPendente
+            : null;
+        $colaboradorData['projetos_atuais'] = $projetosAtuais->map(fn($p) => ['id' => $p->id, 'nome' => $p->nome]);
 
-        Log::debug('Status do colaborador', [
+        Log::debug('Dados do colaborador preparados para a view', [
             'colaborador_id' => $usuario->id,
-            'status_cadastro' => $status_cadastro,
+            'dados' => $colaboradorData,
         ]);
 
         return inertia('Colaboradores/Show', [
-            'colaborador' => [
-                'id' => $usuario->id,
-                'name' => $usuario->name,
-                'email' => $usuario->email,
-                'linkedin_url' => $usuario->linkedin_url,
-                'github_url' => $usuario->github_url,
-                'figma_url' => $usuario->figma_url,
-                'foto_url' => $usuario->foto_url,
-                'area_atuacao' => $usuario->area_atuacao,
-                'tecnologias' => $usuario->tecnologias,
-                'curriculo' => $usuario->curriculo,
-                'cpf' => $usuario->cpf,
-                'conta_bancaria' => $usuario->conta_bancaria,
-                'agencia' => $usuario->agencia,
-                'codigo_banco' => $usuario->codigo_banco,
-                'rg' => $usuario->rg,
-                'uf_rg' => $usuario->uf_rg,
-                'telefone' => $usuario->telefone,
-                'created_at' => $usuario->created_at,
-                'updated_at' => $usuario->updated_at,
-                'status_cadastro' => $status_cadastro,
-                'projeto_solicitado' => $projeto_solicitado
-                    ? [
-                        'id' => $projeto_solicitado->id,
-                        'nome' => $projeto_solicitado->nome,
-                    ]
-                    : null,
-                'projetos_atuais' => collect($projetos_atuais)->map(function ($p) {
-                    return [
-                        'id' => $p->id,
-                        'nome' => $p->nome,
-                    ];
-                }),
-            ],
+            'colaborador' => $colaboradorData,
         ]);
     }
 

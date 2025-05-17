@@ -62,8 +62,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         // A rota POST /colaboradores original apontava para ColaboradorController::aceitar sem um parâmetro {colaborador}.
         // O método aceitar requer um User $colaborador. A rota /colaboradores/{colaborador}/aceitar já serve a este propósito.
         // Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
-        Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
         Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+        Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 
         // TODO: Concestrar esse sebozeira aqui mergeando as rotas
         Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
