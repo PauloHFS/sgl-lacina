@@ -74,6 +74,10 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
             ->name('vinculos.aceitar');
         Route::post('/vinculos/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])
             ->name('vinculos.recusar');
+
+        Route::prefix('/vinculos')->group(function () {
+            Route::put('/{id}', [ProjetoVinculoController::class, 'update'])->name('vinculos.update');
+        });
     });
 });
 

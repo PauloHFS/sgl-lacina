@@ -1,11 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Funcao, StatusCadastro, TipoProjeto, TipoVinculo } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { useCallback } from 'react';
+import {
+    Funcao,
+    StatusCadastro,
+    StatusVinculoProjeto,
+    TipoProjeto,
+    TipoVinculo,
+} from '@/types';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useCallback, useMemo, useState } from 'react'; // Added useMemo
 import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
 import { InfoItem } from './Partials/InfoItem';
+
 export interface ShowProps {
     colaborador: {
         id: string;
@@ -86,6 +93,27 @@ export interface ShowProps {
 }
 
 export default function Show({ colaborador }: ShowProps) {
+    const [toast, setToast] = useState<{
+        message: string;
+        type: 'success' | 'error' | 'info';
+        show: boolean;
+    }>({
+        message: '',
+        type: 'info',
+        show: false,
+    });
+
+    const showToast = useCallback(
+        (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+            setToast({ message, type, show: true });
+            setTimeout(() => {
+                setToast({ message: '', type: 'info', show: false });
+            }, 3000); // Hide after 3 seconds
+        },
+        [],
+    );
+
+    // TODO: Concertar essas rotas aqui:
     const handleAceitarCadastro = useCallback(() => {
         router.post(route('colaboradores.aceitar', colaborador.id));
     }, [colaborador.id]);
@@ -94,21 +122,102 @@ export default function Show({ colaborador }: ShowProps) {
         router.post(route('colaboradores.recusar', colaborador.id));
     }, [colaborador.id]);
 
+    const { data, setData, put, processing, errors } = useForm<{
+        status?: StatusVinculoProjeto;
+        funcao?: Funcao;
+        tipo_vinculo?: TipoVinculo;
+        carga_horaria_semanal?: number;
+        data_inicio?: string;
+    }>({
+        funcao: colaborador.vinculo?.funcao,
+        tipo_vinculo: colaborador.vinculo?.tipo_vinculo,
+        carga_horaria_semanal: colaborador.vinculo?.carga_horaria_semanal,
+        data_inicio: colaborador.vinculo?.data_inicio
+            ? colaborador.vinculo.data_inicio.substring(0, 10)
+            : undefined,
+    });
+
+    const handleAtualizarStatusVinculo = useCallback(
+        (newStatus: StatusVinculoProjeto) => {
+            if (!colaborador.vinculo) {
+                showToast('Vínculo não encontrado', 'error');
+                return;
+            }
+            setData('status', newStatus);
+            put(route('vinculos.update', colaborador.vinculo.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    showToast(
+                        `Status do vínculo atualizado para ${newStatus}.`,
+                        'success',
+                    );
+                },
+                onError: (err: Record<string, string>) => {
+                    showToast('Erro ao atualizar status do vínculo.', 'error');
+                    console.error(err);
+                },
+            });
+        },
+        [colaborador.vinculo, setData, put, showToast],
+    );
+
     const handleAceitarVinculo = useCallback(() => {
-        router.post(route('vinculos.aceitar', colaborador.id));
-    }, [colaborador.id]);
+        handleAtualizarStatusVinculo('APROVADO');
+    }, [handleAtualizarStatusVinculo]);
 
     const handleRecusarVinculo = useCallback(() => {
-        router.post(route('vinculos.recusar', colaborador.id));
-    }, [colaborador.id]);
+        handleAtualizarStatusVinculo('INATIVO');
+    }, [handleAtualizarStatusVinculo]);
 
     console.log(`${new Date().toISOString()} - [Colaborador-Show]`, {
         colaborador,
     });
 
+    // Store original vinculo values for comparison and reset
+    const originalVinculoDisplayValues = useMemo(() => {
+        return {
+            funcao: colaborador.vinculo?.funcao,
+            tipo_vinculo: colaborador.vinculo?.tipo_vinculo,
+            carga_horaria_semanal: colaborador.vinculo?.carga_horaria_semanal,
+            data_inicio: colaborador.vinculo?.data_inicio
+                ? colaborador.vinculo.data_inicio.substring(0, 10)
+                : undefined,
+        };
+    }, [colaborador.vinculo]);
+
+    // Check if vinculo fields are dirty
+    const areVinculoFieldsDirty =
+        data.funcao !== originalVinculoDisplayValues.funcao ||
+        data.tipo_vinculo !== originalVinculoDisplayValues.tipo_vinculo ||
+        data.carga_horaria_semanal !==
+            originalVinculoDisplayValues.carga_horaria_semanal ||
+        data.data_inicio !== originalVinculoDisplayValues.data_inicio;
+
+    // Handler to reset vinculo fields
+    const handleResetVinculoFields = useCallback(() => {
+        setData({
+            funcao: originalVinculoDisplayValues.funcao,
+            tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
+            carga_horaria_semanal:
+                originalVinculoDisplayValues.carga_horaria_semanal,
+            data_inicio: originalVinculoDisplayValues.data_inicio,
+        });
+    }, [setData, originalVinculoDisplayValues]);
+
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
+
+            {toast.show && (
+                <div className="toast toast-top toast-end z-50">
+                    <div className={`alert alert-${toast.type} shadow-lg`}>
+                        <div>
+                            <span>{toast.message}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
                     <div className="card card-bordered bg-base-100 shadow-xl">
@@ -117,17 +226,6 @@ export default function Show({ colaborador }: ShowProps) {
 
                             <div className="divider">Detalhes</div>
                             <ColaboradorDetalhes colaborador={colaborador} />
-
-                            <div className="divider">Status</div>
-                            <div className="my-2">
-                                <ColaboradorStatus
-                                    colaborador={colaborador}
-                                    onAceitarCadastro={handleAceitarCadastro}
-                                    onRecusarCadastro={handleRecusarCadastro}
-                                    onAceitarVinculo={handleAceitarVinculo}
-                                    onRecusarVinculo={handleRecusarVinculo}
-                                />
-                            </div>
 
                             <div className="divider">Projeto(s)</div>
                             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
@@ -179,7 +277,23 @@ export default function Show({ colaborador }: ShowProps) {
                                             </label>
                                             <select
                                                 id="funcao"
-                                                className="select"
+                                                className={`select select-bordered w-full ${
+                                                    colaborador.vinculo
+                                                        ?.funcao !==
+                                                        data.funcao &&
+                                                    data.funcao !== undefined
+                                                        ? 'select-warning' // Highlight if changed from original and not undefined
+                                                        : ''
+                                                } ${errors.funcao ? 'select-error' : ''}`}
+                                                value={data.funcao || ''}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'funcao',
+                                                        e.target
+                                                            .value as Funcao,
+                                                    )
+                                                }
+                                                disabled={processing}
                                             >
                                                 {(
                                                     [
@@ -198,6 +312,11 @@ export default function Show({ colaborador }: ShowProps) {
                                                     </option>
                                                 ))}
                                             </select>
+                                            {errors.funcao && (
+                                                <p className="text-error mt-1 text-xs">
+                                                    {errors.funcao}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>
@@ -211,7 +330,24 @@ export default function Show({ colaborador }: ShowProps) {
                                             </label>
                                             <select
                                                 id="tipovinculo"
-                                                className="select"
+                                                className={`select select-bordered w-full ${
+                                                    colaborador.vinculo
+                                                        ?.tipo_vinculo !==
+                                                        data.tipo_vinculo &&
+                                                    data.tipo_vinculo !==
+                                                        undefined
+                                                        ? 'select-warning' // Highlight if changed from original and not undefined
+                                                        : ''
+                                                } ${errors.tipo_vinculo ? 'select-error' : ''}`}
+                                                value={data.tipo_vinculo || ''}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'tipo_vinculo',
+                                                        e.target
+                                                            .value as TipoVinculo,
+                                                    )
+                                                }
+                                                disabled={processing}
                                             >
                                                 {(
                                                     [
@@ -227,6 +363,11 @@ export default function Show({ colaborador }: ShowProps) {
                                                     </option>
                                                 ))}
                                             </select>
+                                            {errors.tipo_vinculo && (
+                                                <p className="text-error mt-1 text-xs">
+                                                    {errors.tipo_vinculo}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>
@@ -242,12 +383,42 @@ export default function Show({ colaborador }: ShowProps) {
                                             <input
                                                 id="cargahoraria"
                                                 type="number"
-                                                className="input input-bordered"
-                                                value={
+                                                className={`input input-bordered w-full ${
                                                     colaborador.vinculo
-                                                        .carga_horaria_semanal
+                                                        ?.carga_horaria_semanal !==
+                                                        data.carga_horaria_semanal &&
+                                                    data.carga_horaria_semanal !==
+                                                        undefined
+                                                        ? 'input-warning' // Highlight if changed from original and not undefined
+                                                        : ''
+                                                } ${errors.carga_horaria_semanal ? 'input-error' : ''}`}
+                                                value={
+                                                    data.carga_horaria_semanal ===
+                                                    undefined
+                                                        ? ''
+                                                        : data.carga_horaria_semanal
                                                 }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'carga_horaria_semanal',
+                                                        e.target.value === ''
+                                                            ? undefined
+                                                            : parseInt(
+                                                                  e.target
+                                                                      .value,
+                                                                  10,
+                                                              ),
+                                                    )
+                                                }
+                                                disabled={processing}
                                             />
+                                            {errors.carga_horaria_semanal && (
+                                                <p className="text-error mt-1 text-xs">
+                                                    {
+                                                        errors.carga_horaria_semanal
+                                                    }
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div>
@@ -262,13 +433,73 @@ export default function Show({ colaborador }: ShowProps) {
                                             <input
                                                 id="datainicio"
                                                 type="date"
-                                                className="input input-bordered"
-                                                value={
-                                                    colaborador.vinculo
-                                                        .data_inicio
+                                                className={`input input-bordered w-full ${
+                                                    colaborador.vinculo?.data_inicio?.substring(
+                                                        0,
+                                                        10,
+                                                    ) !== data.data_inicio &&
+                                                    data.data_inicio !==
+                                                        undefined
+                                                        ? 'input-warning' // Highlight if changed from original and not undefined
+                                                        : ''
+                                                } ${errors.data_inicio ? 'input-error' : ''}`}
+                                                value={data.data_inicio || ''}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'data_inicio',
+                                                        e.target.value,
+                                                    )
                                                 }
+                                                disabled={processing}
                                             />
+                                            {errors.data_inicio && (
+                                                <p className="text-error mt-1 text-xs">
+                                                    {errors.data_inicio}
+                                                </p>
+                                            )}
                                         </div>
+
+                                        <div className="mt-4 flex justify-end space-x-2 md:col-span-2">
+                                            {areVinculoFieldsDirty && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline btn-sm"
+                                                    onClick={
+                                                        handleResetVinculoFields
+                                                    }
+                                                    disabled={processing}
+                                                >
+                                                    Resetar
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* <div className="mt-4 md:col-span-2">
+                                            <button
+                                                className="btn btn-primary w-full"
+                                                onClick={handleSalvarVinculo}
+                                                disabled={processing}
+                                            >
+                                                {processing
+                                                    ? 'Salvando...'
+                                                    : 'Salvar Alterações do Vínculo'}
+                                            </button>
+                                            {Object.keys(errors).length > 0 && (
+                                                <div className="alert alert-error mt-2">
+                                                    <ul>
+                                                        {Object.entries(
+                                                            errors,
+                                                        ).map(
+                                                            ([key, value]) => (
+                                                                <li key={key}>
+                                                                    {value}
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div> */}
                                     </>
                                 ) : (
                                     <p className="text-base-content/70">
@@ -276,6 +507,17 @@ export default function Show({ colaborador }: ShowProps) {
                                         encontrada.
                                     </p>
                                 )}
+                            </div>
+
+                            <div className="divider">Status</div>
+                            <div className="my-2">
+                                <ColaboradorStatus
+                                    colaborador={colaborador}
+                                    onAceitarCadastro={handleAceitarCadastro}
+                                    onRecusarCadastro={handleRecusarCadastro}
+                                    onAceitarVinculo={handleAceitarVinculo}
+                                    onRecusarVinculo={handleRecusarVinculo}
+                                />
                             </div>
                         </div>
                     </div>

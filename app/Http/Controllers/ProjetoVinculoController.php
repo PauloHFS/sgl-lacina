@@ -51,4 +51,23 @@ class ProjetoVinculoController extends Controller
 
     return back()->with('success', 'Solicitação de vínculo enviada com sucesso!');
   }
+
+  public function update(Request $request, $id)
+  {
+    $request->validate([
+      'status' => ['required', Rule::enum(StatusVinculoProjeto::class)],
+    ]);
+
+    $usuarioProjeto = UsuarioProjeto::findOrFail($id);
+
+    // TODO: criar um status para recusado
+    if ($request->status === StatusVinculoProjeto::INATIVO) {
+      $usuarioProjeto->data_fim = now();
+    }
+
+    $usuarioProjeto->status = $request->status;
+    $usuarioProjeto->save();
+
+    return back()->with('success', 'Status atualizado com sucesso!');
+  }
 }

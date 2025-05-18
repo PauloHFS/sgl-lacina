@@ -34,6 +34,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        /** @var \Illuminate\Http\Request $request */
         $user = Auth::user();
 
         // Remover formatação do CPF e CEP
