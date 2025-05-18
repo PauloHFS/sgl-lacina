@@ -1,13 +1,13 @@
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Funcao,
-    StatusCadastro,
     StatusVinculoProjeto,
     TipoProjeto,
     TipoVinculo,
 } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useCallback, useMemo, useState } from 'react'; // Added useMemo
+import { useCallback, useEffect, useMemo } from 'react';
 import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
@@ -49,7 +49,7 @@ export interface ShowProps {
             projeto_id: string;
             tipo_vinculo: TipoVinculo;
             funcao: Funcao;
-            status: StatusCadastro;
+            status: StatusVinculoProjeto;
             carga_horaria_semanal: number;
             data_inicio: string;
             data_fim?: string | null;
@@ -93,25 +93,7 @@ export interface ShowProps {
 }
 
 export default function Show({ colaborador }: ShowProps) {
-    const [toast, setToast] = useState<{
-        message: string;
-        type: 'success' | 'error' | 'info';
-        show: boolean;
-    }>({
-        message: '',
-        type: 'info',
-        show: false,
-    });
-
-    const showToast = useCallback(
-        (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-            setToast({ message, type, show: true });
-            setTimeout(() => {
-                setToast({ message: '', type: 'info', show: false });
-            }, 3000); // Hide after 3 seconds
-        },
-        [],
-    );
+    const { toast } = useToast();
 
     // TODO: Concertar essas rotas aqui:
     const handleAceitarCadastro = useCallback(() => {
@@ -122,13 +104,14 @@ export default function Show({ colaborador }: ShowProps) {
         router.post(route('colaboradores.recusar', colaborador.id));
     }, [colaborador.id]);
 
-    const { data, setData, put, processing, errors } = useForm<{
+    const { data, setData, errors, put, processing } = useForm<{
         status?: StatusVinculoProjeto;
         funcao?: Funcao;
         tipo_vinculo?: TipoVinculo;
         carga_horaria_semanal?: number;
         data_inicio?: string;
     }>({
+        status: colaborador.vinculo?.status,
         funcao: colaborador.vinculo?.funcao,
         tipo_vinculo: colaborador.vinculo?.tipo_vinculo,
         carga_horaria_semanal: colaborador.vinculo?.carga_horaria_semanal,
@@ -137,43 +120,39 @@ export default function Show({ colaborador }: ShowProps) {
             : undefined,
     });
 
-    const handleAtualizarStatusVinculo = useCallback(
-        (newStatus: StatusVinculoProjeto) => {
-            if (!colaborador.vinculo) {
-                showToast('Vínculo não encontrado', 'error');
-                return;
-            }
-            setData('status', newStatus);
-            put(route('vinculos.update', colaborador.vinculo.id), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    showToast(
-                        `Status do vínculo atualizado para ${newStatus}.`,
-                        'success',
-                    );
-                },
-                onError: (err: Record<string, string>) => {
-                    showToast('Erro ao atualizar status do vínculo.', 'error');
-                    console.error(err);
-                },
-            });
-        },
-        [colaborador.vinculo, setData, put, showToast],
-    );
+    const handleAtualizarStatusVinculo = useCallback(() => {
+        if (!colaborador.vinculo) {
+            toast('Vínculo não encontrado', 'error');
+            return;
+        }
+
+        put(route('vinculos.update', colaborador.vinculo.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast(`Status do vínculo atualizado.`, 'success');
+            },
+            onError: (err: Record<string, string>) => {
+                toast('Erro ao atualizar status do vínculo.', 'error');
+                console.error('Erro ao atualizar vínculo:', err);
+            },
+        });
+    }, [colaborador.vinculo, put, toast]);
 
     const handleAceitarVinculo = useCallback(() => {
-        handleAtualizarStatusVinculo('APROVADO');
-    }, [handleAtualizarStatusVinculo]);
+        setData('status', 'APROVADO');
+    }, [setData]);
 
     const handleRecusarVinculo = useCallback(() => {
-        handleAtualizarStatusVinculo('INATIVO');
-    }, [handleAtualizarStatusVinculo]);
+        setData('status', 'RECUSADO');
+    }, [setData]);
 
-    console.log(`${new Date().toISOString()} - [Colaborador-Show]`, {
-        colaborador,
-    });
+    useEffect(() => {
+        if (data.status === 'APROVADO' || data.status === 'RECUSADO') {
+            handleAtualizarStatusVinculo();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.status]);
 
-    // Store original vinculo values for comparison and reset
     const originalVinculoDisplayValues = useMemo(() => {
         return {
             funcao: colaborador.vinculo?.funcao,
@@ -185,7 +164,6 @@ export default function Show({ colaborador }: ShowProps) {
         };
     }, [colaborador.vinculo]);
 
-    // Check if vinculo fields are dirty
     const areVinculoFieldsDirty =
         data.funcao !== originalVinculoDisplayValues.funcao ||
         data.tipo_vinculo !== originalVinculoDisplayValues.tipo_vinculo ||
@@ -193,7 +171,6 @@ export default function Show({ colaborador }: ShowProps) {
             originalVinculoDisplayValues.carga_horaria_semanal ||
         data.data_inicio !== originalVinculoDisplayValues.data_inicio;
 
-    // Handler to reset vinculo fields
     const handleResetVinculoFields = useCallback(() => {
         setData({
             funcao: originalVinculoDisplayValues.funcao,
@@ -202,21 +179,11 @@ export default function Show({ colaborador }: ShowProps) {
                 originalVinculoDisplayValues.carga_horaria_semanal,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
-    }, [setData, originalVinculoDisplayValues]);
+    }, [originalVinculoDisplayValues, setData]);
 
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
-
-            {toast.show && (
-                <div className="toast toast-top toast-end z-50">
-                    <div className={`alert alert-${toast.type} shadow-lg`}>
-                        <div>
-                            <span>{toast.message}</span>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
@@ -255,7 +222,9 @@ export default function Show({ colaborador }: ShowProps) {
                                 )}
                             </div>
 
-                            <div className="divider">Vinculo</div>
+                            <div className="divider">
+                                Solicitação de Vinculo
+                            </div>
                             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
                                 {colaborador.vinculo ? (
                                     <>
@@ -282,7 +251,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                         ?.funcao !==
                                                         data.funcao &&
                                                     data.funcao !== undefined
-                                                        ? 'select-warning' // Highlight if changed from original and not undefined
+                                                        ? 'select-warning'
                                                         : ''
                                                 } ${errors.funcao ? 'select-error' : ''}`}
                                                 value={data.funcao || ''}
@@ -336,7 +305,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                         data.tipo_vinculo &&
                                                     data.tipo_vinculo !==
                                                         undefined
-                                                        ? 'select-warning' // Highlight if changed from original and not undefined
+                                                        ? 'select-warning'
                                                         : ''
                                                 } ${errors.tipo_vinculo ? 'select-error' : ''}`}
                                                 value={data.tipo_vinculo || ''}
@@ -389,7 +358,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                         data.carga_horaria_semanal &&
                                                     data.carga_horaria_semanal !==
                                                         undefined
-                                                        ? 'input-warning' // Highlight if changed from original and not undefined
+                                                        ? 'input-warning'
                                                         : ''
                                                 } ${errors.carga_horaria_semanal ? 'input-error' : ''}`}
                                                 value={
@@ -440,7 +409,7 @@ export default function Show({ colaborador }: ShowProps) {
                                                     ) !== data.data_inicio &&
                                                     data.data_inicio !==
                                                         undefined
-                                                        ? 'input-warning' // Highlight if changed from original and not undefined
+                                                        ? 'input-warning'
                                                         : ''
                                                 } ${errors.data_inicio ? 'input-error' : ''}`}
                                                 value={data.data_inicio || ''}
@@ -473,33 +442,6 @@ export default function Show({ colaborador }: ShowProps) {
                                                 </button>
                                             )}
                                         </div>
-
-                                        {/* <div className="mt-4 md:col-span-2">
-                                            <button
-                                                className="btn btn-primary w-full"
-                                                onClick={handleSalvarVinculo}
-                                                disabled={processing}
-                                            >
-                                                {processing
-                                                    ? 'Salvando...'
-                                                    : 'Salvar Alterações do Vínculo'}
-                                            </button>
-                                            {Object.keys(errors).length > 0 && (
-                                                <div className="alert alert-error mt-2">
-                                                    <ul>
-                                                        {Object.entries(
-                                                            errors,
-                                                        ).map(
-                                                            ([key, value]) => (
-                                                                <li key={key}>
-                                                                    {value}
-                                                                </li>
-                                                            ),
-                                                        )}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div> */}
                                     </>
                                 ) : (
                                     <p className="text-base-content/70">
