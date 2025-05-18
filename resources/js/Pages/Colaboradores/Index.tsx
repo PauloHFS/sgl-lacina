@@ -102,38 +102,62 @@ export default function Index({ colaboradores }: IndexProps) {
 
                             {/* Tabs */}
                             <div role="tablist" className="tabs tabs-box mb-6">
-                                <button
-                                    role="tab"
-                                    className={`tab ${activeTab === 'cadastro_pendente' ? 'tab-active' : ''}`}
-                                    onClick={() =>
-                                        handleTabChange('cadastro_pendente')
-                                    }
+                                <div
+                                    className="tooltip"
+                                    data-tip="Colaboradores com cadastro pendente de aprovação"
                                 >
-                                    Cadastro Pendente
-                                </button>
-                                <button
-                                    role="tab"
-                                    className={`tab ${activeTab === 'vinculo_pendente' ? 'tab-active' : ''}`}
-                                    onClick={() =>
-                                        handleTabChange('vinculo_pendente')
-                                    }
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'cadastro_pendente' ? 'tab-active' : ''}`}
+                                        onClick={() =>
+                                            handleTabChange('cadastro_pendente')
+                                        }
+                                    >
+                                        Cadastro Pendente
+                                    </button>
+                                </div>
+                                <div
+                                    className="tooltip"
+                                    data-tip="Colaboradores com vínculo a projeto pendente de aprovação"
                                 >
-                                    Vinculo Pendente
-                                </button>
-                                <button
-                                    role="tab"
-                                    className={`tab ${activeTab === 'ativos' ? 'tab-active' : ''}`}
-                                    onClick={() => handleTabChange('ativos')}
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'vinculo_pendente' ? 'tab-active' : ''}`}
+                                        onClick={() =>
+                                            handleTabChange('vinculo_pendente')
+                                        }
+                                    >
+                                        Vínculo Pendente
+                                    </button>
+                                </div>
+                                <div
+                                    className="tooltip"
+                                    data-tip="Colaboradores ativos em projetos"
                                 >
-                                    Ativos
-                                </button>
-                                <button
-                                    role="tab"
-                                    className={`tab ${activeTab === 'inativos' ? 'tab-active' : ''}`}
-                                    onClick={() => handleTabChange('inativos')}
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'ativos' ? 'tab-active' : ''}`}
+                                        onClick={() =>
+                                            handleTabChange('ativos')
+                                        }
+                                    >
+                                        Ativos
+                                    </button>
+                                </div>
+                                <div
+                                    className="tooltip"
+                                    data-tip="Colaboradores inativos"
                                 >
-                                    Inativos
-                                </button>
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'inativos' ? 'tab-active' : ''}`}
+                                        onClick={() =>
+                                            handleTabChange('inativos')
+                                        }
+                                    >
+                                        Inativos
+                                    </button>
+                                </div>
                             </div>
 
                             {activeTab === null ? (
