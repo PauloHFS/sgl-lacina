@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { Funcao, PageProps, TipoVinculo } from '@/types';
 import { Head } from '@inertiajs/react';
 
 export default function Dashboard({
@@ -10,13 +10,8 @@ export default function Dashboard({
         id: string;
         usuario_id: string;
         projeto_id: string;
-        tipo_vinculo: 'COORDENADOR' | 'COLABORADOR';
-        funcao:
-            | 'COORDENADOR'
-            | 'PESQUISADOR'
-            | 'DESENVOLVEDOR'
-            | 'TECNICO'
-            | 'ALUNO';
+        tipo_vinculo: TipoVinculo;
+        funcao: Funcao;
         status: 'APROVADO' | 'PENDENTE' | 'REJEITADO' | 'INATIVO';
         carga_horaria_semanal: number;
         data_inicio: string;
@@ -38,42 +33,57 @@ export default function Dashboard({
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Key Metrics */}
                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {
-                                        projetos.filter(
-                                            (p) => p.status === 'APROVADO',
-                                        ).length
-                                    }
-                                </span>
-                                <span className="text-base-content/70">
-                                    Projetos Ativos
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número de projetos em que você está atualmente ativo."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {
+                                            projetos.filter(
+                                                (p) => p.status === 'APROVADO',
+                                            ).length
+                                        }
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Projetos Ativos
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {projetosCount}
-                                </span>
-                                <span className="text-base-content/70">
-                                    Total de Projetos
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número total de projetos em que você já esteve envolvido."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {projetosCount}
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Total de Projetos
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {
-                                        projetos.filter(
-                                            (p) => p.status === 'INATIVO',
-                                        ).length
-                                    }
-                                </span>
-                                <span className="text-base-content/70">
-                                    Projetos Finalizados
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número de projetos que você concluiu ou não está mais ativo."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {
+                                            projetos.filter(
+                                                (p) => p.status === 'INATIVO',
+                                            ).length
+                                        }
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Projetos Finalizados
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

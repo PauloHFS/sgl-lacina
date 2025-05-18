@@ -34,6 +34,17 @@ export default function Projetos({
         return badgeColors[tipo] || 'badge-info';
     };
 
+    const getBarColor = (tipo: TipoProjeto) => {
+        const barColors: { [key in TipoProjeto]: string } = {
+            PDI: 'bg-primary',
+            TCC: 'bg-secondary',
+            MESTRADO: 'bg-accent',
+            DOUTORADO: 'bg-info',
+            SUPORTE: 'bg-warning',
+        };
+        return barColors[tipo] || 'bg-info';
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Projetos" />
@@ -42,7 +53,7 @@ export default function Projetos({
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="card bg-base-100 shadow-xl">
                         <div className="card-body">
-                            <div className="mb-6 flex flex-col items-center justify-between sm:flex-row">
+                            <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
                                 <div className="form-control w-full max-w-xs">
                                     <input
                                         type="text"
@@ -57,7 +68,7 @@ export default function Projetos({
                                 {auth.isCoordenador && (
                                     <a
                                         href={route('projetos.create')}
-                                        className="btn btn-primary"
+                                        className="btn btn-primary w-full sm:w-auto"
                                     >
                                         Cadastrar Novo Projeto
                                     </a>
@@ -78,13 +89,11 @@ export default function Projetos({
                                                 )
                                             }
                                         >
-                                            <figure className="h-48 overflow-hidden">
-                                                <img
-                                                    src={`https://picsum.photos/seed/${projeto.id}/600/400`}
-                                                    alt={projeto.nome}
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                />
-                                            </figure>
+                                            <div
+                                                className={`h-3 w-full ${getBarColor(
+                                                    projeto.tipo,
+                                                )}`}
+                                            ></div>
                                             <div className="card-body p-5">
                                                 <div className="mb-2 flex items-start justify-between">
                                                     <h2 className="card-title group-hover:text-primary text-xl font-bold transition-colors">

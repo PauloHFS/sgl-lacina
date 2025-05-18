@@ -1,6 +1,6 @@
 import Paggination, { Paginated } from '@/Components/Paggination';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
 interface Colaborador {
@@ -55,6 +55,7 @@ export default function Index({ colaboradores }: IndexProps) {
 
     return (
         <Authenticated>
+            <Head title="Colaboradores" />
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="bg-base-100 rounded-lg shadow-sm">

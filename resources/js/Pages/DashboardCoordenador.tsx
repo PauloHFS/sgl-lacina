@@ -21,34 +21,49 @@ export default function Dashboard({
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {projetosCount}
-                                </span>
-                                <span className="text-base-content/70">
-                                    Projetos ativos
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número total de projetos atualmente ativos no sistema."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {projetosCount}
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Projetos ativos
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {usuariosCount}
-                                </span>
-                                <span className="text-base-content/70">
-                                    Usuários cadastrados
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número total de usuários registrados na plataforma."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {usuariosCount}
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Usuários cadastrados
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div className="card bg-base-100 shadow">
-                            <div className="card-body items-center text-center">
-                                <span className="text-4xl font-bold">
-                                    {solicitacoesPendentes}
-                                </span>
-                                <span className="text-base-content/70">
-                                    Solicitações pendentes
-                                </span>
+                        <div
+                            className="tooltip"
+                            data-tip="Número de solicitações de cadastro que aguardam aprovação."
+                        >
+                            <div className="card bg-base-100 shadow">
+                                <div className="card-body items-center text-center">
+                                    <span className="text-4xl font-bold">
+                                        {solicitacoesPendentes}
+                                    </span>
+                                    <span className="text-base-content/70">
+                                        Solicitações pendentes
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
