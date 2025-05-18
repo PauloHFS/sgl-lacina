@@ -6,7 +6,6 @@ import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
 import { InfoItem } from './Partials/InfoItem';
-
 export interface ShowProps {
     colaborador: {
         id: string;
@@ -155,26 +154,108 @@ export default function Show({ colaborador }: ShowProps) {
                                                 colaborador.vinculo.projeto.nome
                                             }
                                         />
-                                        <InfoItem
-                                            label="Função"
-                                            value={colaborador.vinculo.funcao}
-                                        />
-                                        <InfoItem
-                                            label="Tipo de Vínculo"
-                                            value={
-                                                colaborador.vinculo.tipo_vinculo
-                                            }
-                                        />
-                                        <InfoItem
-                                            label="Carga Horária Semanal"
-                                            value={`${colaborador.vinculo.carga_horaria_semanal} horas`}
-                                        />
-                                        <InfoItem
-                                            label="Data de Início"
-                                            value={
-                                                colaborador.vinculo.data_inicio
-                                            }
-                                        />
+
+                                        <div>
+                                            <label
+                                                className="label"
+                                                htmlFor="funcao"
+                                            >
+                                                <span className="label-text font-semibold">
+                                                    Função:
+                                                </span>
+                                            </label>
+                                            <select
+                                                id="funcao"
+                                                className="select"
+                                            >
+                                                {(
+                                                    [
+                                                        'COORDENADOR',
+                                                        'PESQUISADOR',
+                                                        'DESENVOLVEDOR',
+                                                        'TECNICO',
+                                                        'ALUNO',
+                                                    ] as Array<Funcao>
+                                                ).map((funcao) => (
+                                                    <option
+                                                        key={funcao}
+                                                        value={funcao}
+                                                    >
+                                                        {funcao}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                className="label"
+                                                htmlFor="tipovinculo"
+                                            >
+                                                <span className="label-text font-semibold">
+                                                    Tipo de Vínculo:
+                                                </span>
+                                            </label>
+                                            <select
+                                                id="tipovinculo"
+                                                className="select"
+                                            >
+                                                {(
+                                                    [
+                                                        'COLABORADOR',
+                                                        'COORDENADOR',
+                                                    ] as Array<TipoVinculo>
+                                                ).map((tipo) => (
+                                                    <option
+                                                        key={tipo}
+                                                        value={tipo}
+                                                    >
+                                                        {tipo}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                className="label"
+                                                htmlFor="cargahoraria"
+                                            >
+                                                <span className="label-text font-semibold">
+                                                    Carga Horária Semanal
+                                                    (horas):
+                                                </span>
+                                            </label>
+                                            <input
+                                                id="cargahoraria"
+                                                type="number"
+                                                className="input input-bordered"
+                                                value={
+                                                    colaborador.vinculo
+                                                        .carga_horaria_semanal
+                                                }
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                className="label"
+                                                htmlFor="datainicio"
+                                            >
+                                                <span className="label-text font-semibold">
+                                                    Data de Início:
+                                                </span>
+                                            </label>
+                                            <input
+                                                id="datainicio"
+                                                type="date"
+                                                className="input input-bordered"
+                                                value={
+                                                    colaborador.vinculo
+                                                        .data_inicio
+                                                }
+                                            />
+                                        </div>
                                     </>
                                 ) : (
                                     <p className="text-base-content/70">
