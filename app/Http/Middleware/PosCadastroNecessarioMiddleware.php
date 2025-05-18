@@ -21,11 +21,6 @@ class PosCadastroNecessarioMiddleware
     /** @var \App\Models\User $user */
     $user = Auth::user();
 
-    Log::info('User status_cadastro: ', [
-      'user_id' => $user->id,
-      'status_cadastro' => $user->status_cadastro,
-    ]);
-
     if ($user->status_cadastro === StatusCadastro::IMCOMPLETO) {
       if (!$request->routeIs('pos-cadastro')) {
         return redirect()->route('pos-cadastro');

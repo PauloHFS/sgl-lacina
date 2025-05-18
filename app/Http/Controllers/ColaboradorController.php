@@ -43,12 +43,34 @@ class ColaboradorController extends Controller
                     ->where('status', StatusVinculoProjeto::APROVADO);
             })->paginate(10);
         } else if ($status == 'inativos') {
-            $usuarios = User::whereIn('id', function ($query) {
-                $query->select('usuario_id')
-                    ->from('usuario_projeto')
-                    ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                    ->where('status', StatusVinculoProjeto::INATIVO);
-            })->paginate(10);
+            $usuarios = User::query()
+                ->where('status_cadastro', StatusCadastro::ACEITO) // usuários com cadastro aceito
+                ->where(function ($queryBuilder) {
+                    // Condição 1: Usuários que possuem vínculos, e TODOS esses vínculos em 'usuario_projeto' estão com status INATIVO
+                    $queryBuilder->where(function ($qAllInactive) {
+                        // Sub-condição 1.1: O usuário DEVE ter pelo menos um vínculo.
+                        $qAllInactive->whereExists(function ($subQueryExists) {
+                            $subQueryExists->select(DB::raw(1))
+                                ->from('usuario_projeto')
+                                ->whereColumn('usuario_projeto.usuario_id', 'users.id');
+                        });
+                        // Sub-condição 1.2: E NÃO DEVE existir nenhum vínculo para este usuário com status DIFERENTE de INATIVO.
+                        $qAllInactive->whereNotExists(function ($subQueryNotOtherStatus) {
+                            $subQueryNotOtherStatus->select(DB::raw(1))
+                                ->from('usuario_projeto')
+                                ->whereColumn('usuario_projeto.usuario_id', 'users.id')
+                                ->where('status', '!=', StatusVinculoProjeto::INATIVO);
+                        });
+                    });
+
+                    // Condição 2: OU usuários que não possuem nenhum vínculo na tabela 'usuario_projeto'
+                    $queryBuilder->orWhereNotExists(function ($subQuery) {
+                        $subQuery->select(DB::raw(1))
+                            ->from('usuario_projeto')
+                            ->whereColumn('usuario_projeto.usuario_id', 'users.id');
+                    });
+                })
+                ->paginate(10);
         }
 
         if ($usuarios) {
