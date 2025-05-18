@@ -21,7 +21,7 @@ interface IndexProps {
     colaboradores?: Paginated<Colaborador>;
 }
 
-type Tabs = 'vinculo_pendente' | 'aprovacao_pendente' | 'ativos' | 'inativos';
+type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'inativos';
 
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -103,18 +103,18 @@ export default function Index({ colaboradores }: IndexProps) {
                             <div role="tablist" className="tabs tabs-box mb-6">
                                 <button
                                     role="tab"
-                                    className={`tab ${activeTab === 'vinculo_pendente' ? 'tab-active' : ''}`}
+                                    className={`tab ${activeTab === 'cadastro_pendente' ? 'tab-active' : ''}`}
                                     onClick={() =>
-                                        handleTabChange('vinculo_pendente')
+                                        handleTabChange('cadastro_pendente')
                                     }
                                 >
                                     Cadastro Pendente
                                 </button>
                                 <button
                                     role="tab"
-                                    className={`tab ${activeTab === 'aprovacao_pendente' ? 'tab-active' : ''}`}
+                                    className={`tab ${activeTab === 'vinculo_pendente' ? 'tab-active' : ''}`}
                                     onClick={() =>
-                                        handleTabChange('aprovacao_pendente')
+                                        handleTabChange('vinculo_pendente')
                                     }
                                 >
                                     Vinculo Pendente

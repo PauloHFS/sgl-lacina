@@ -46,7 +46,7 @@ export default function Authenticated({
                                 <li>
                                     <NavLink
                                         href={route('colaboradores.index', {
-                                            status: 'aprovacao_pendente',
+                                            status: 'vinculo_pendente',
                                         })}
                                         active={route().current(
                                             'colaboradores.*',

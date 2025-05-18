@@ -120,14 +120,6 @@ class DatabaseSeeder extends Seeder
             'status_cadastro' => StatusCadastro::PENDENTE,
         ]);
 
-        //usuário aceito no laboratório sem vinculo
-        User::factory()->cadastroCompleto()->create([
-            'name' => 'Usuário Aceito Sem Vínculo',
-            'email' => 'usuario_aceito@ccc.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'status_cadastro' => StatusCadastro::ACEITO,
-        ]);
-
         // usuario aceito no laboratório com solicitação de vínculo pendente em um projeto
         $usuarioVinculoPendente = User::factory()->cadastroCompleto()->create([
             'name' => 'Usuário Vínculo Pendente',
@@ -141,8 +133,26 @@ class DatabaseSeeder extends Seeder
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'carga_horaria_semanal' => 10,
-            'data_inicio' => now(), // Request date
+            'data_inicio' => now(),
             'status' => StatusVinculoProjeto::PENDENTE,
+        ]);
+
+        // usuário inativo (inativo no ultimo projeto)
+        $usuario_inativo = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Inativo',
+            'email' => 'usuario_inativo@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => StatusCadastro::ACEITO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_inativo->id,
+            'projeto_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => now()->subMonth(),
+            'data_fim' => now(),
+            'status' => StatusVinculoProjeto::INATIVO,
         ]);
     }
 }

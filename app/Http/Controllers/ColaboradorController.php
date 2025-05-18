@@ -18,15 +18,17 @@ class ColaboradorController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate([
+            'status' => 'required|in:cadastro_pendente,vinculo_pendente,ativos,inativos',
+        ]);
+
         $status = $request->input('status');
 
         $usuarios = null;
 
-        if ($status == 'vinculo_pendente') {
-            // Usuários que estão com o status cadastro pendente
-            $usuarios = User::where('status_cadastro', 'PENDENTE')->paginate(10);
-        } else if ($status == 'aprovacao_pendente') {
-            // Usuários que estão na tabela de vinculo e com o status do vinculo pendente
+        if ($status == 'cadastro_pendente') {
+            $usuarios = User::where('status_cadastro', StatusCadastro::PENDENTE)->paginate(10);
+        } else if ($status == 'vinculo_pendente') {
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_projeto')
@@ -34,32 +36,20 @@ class ColaboradorController extends Controller
                     ->where('status', StatusVinculoProjeto::PENDENTE);
             })->paginate(10);
         } else if ($status == 'ativos') {
-            /*
-            Usuários que estão na tabela de vinculo e todos os data_fim são maiores de now() e o status do vinculo é ativo
-            */
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                    ->where('status', StatusVinculoProjeto::APROVADO)
-                    ->where('data_fim', '>', now());
+                    ->where('status', StatusVinculoProjeto::APROVADO);
             })->paginate(10);
         } else if ($status == 'inativos') {
-            /*
-            Usuários que estão na tabela de vinculo e mas todos os data_fim são menores de now()
-            */
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                    ->where('status', StatusVinculoProjeto::INATIVO)
-                    ->where('data_fim', '<', now());
+                    ->where('status', StatusVinculoProjeto::INATIVO);
             })->paginate(10);
         }
-
-        // Log::debug('Busca de colaboradores concluída', [
-        //     'total' => $usuarios->total(),
-        // ]);
 
         if ($usuarios) {
             return Inertia::render('Colaboradores/Index', [
@@ -175,50 +165,6 @@ class ColaboradorController extends Controller
     {
         $colaborador->status_cadastro = 'RECUSADO';
         $colaborador->save();
-
-        // Aqui você pode disparar eventos/emails se necessário
-
-        return redirect()->back()->with('success', 'Colaborador recusado com sucesso.');
-    }
-
-    public function aceitarVinculo(User $colaborador)
-    {
-
-        $vinculo = UsuarioProjeto::where('usuario_id', $colaborador->id)
-            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-            ->where('status', StatusVinculoProjeto::PENDENTE)
-            ->first();
-
-        if (!$vinculo) {
-            return redirect()->back()->with('error', 'Vínculo não encontrado.');
-        }
-
-        UsuarioProjeto::where('projeto_id', $vinculo->projeto_id)
-            ->where('usuario_id', $vinculo->usuario_id)
-            // ->whereNull('data_fim')
-            ->update([
-                'status' => 'APROVADO',
-                'data_inicio' => now(),
-                'data_fim' => now()->addMonths(6),
-            ]);
-
-        // Aqui você pode disparar eventos/emails se necessário
-
-        return redirect()->back()->with('success', 'Colaborador aceito com sucesso.');
-    }
-
-    public function recusarVinculo(User $colaborador, Request $request)
-    {
-        $vinculo = UsuarioProjeto::where('usuario_id', $colaborador->id)
-            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-            ->where('status', StatusVinculoProjeto::PENDENTE)
-            ->first();
-        if (!$vinculo) {
-            return redirect()->back()->with('error', 'Vínculo não encontrado.');
-        }
-        $vinculo->status = 'INATIVO'; // StatusVinculoProjeto::INATIVO //TODO: criar um enum para recusado no vinculo
-        $vinculo->data_fim = now();
-        $vinculo->save();
 
         // Aqui você pode disparar eventos/emails se necessário
 
