@@ -30,10 +30,10 @@ return new class extends Migration
 
             $table->enum('status_cadastro', array_column(StatusCadastro::cases(), 'value'))->default(StatusCadastro::PENDENTE->value);
 
+            $table->text('curriculo_lattes_url')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->string('github_url')->nullable();
             $table->string('figma_url')->nullable();
-            $table->text('curriculo')->nullable();
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
 

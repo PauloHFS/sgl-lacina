@@ -33,7 +33,7 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
         linkedin_url: string;
         github_url: string;
         figma_url: string;
-        curriculo: string;
+        curriculo_lattes_url: string;
         area_atuacao: string;
         tecnologias: string;
     }>({
@@ -55,7 +55,7 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
         conta_bancaria: '',
         agencia: '',
         banco_id: '',
-        curriculo: '',
+        curriculo_lattes_url: '',
         linkedin_url: '',
         github_url: '',
         figma_url: '',
@@ -721,21 +721,25 @@ export default function PosCadastro({ bancos }: PageProps<PosCadastroProps>) {
                                                 Currículo Lattes
                                             </span>
                                             <input
-                                                id="curriculo"
+                                                id="curriculo_lattes_url"
                                                 type="url"
-                                                className={`input input-bordered w-full ${errors.curriculo ? 'input-error' : ''}`}
-                                                value={data.curriculo}
+                                                className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
+                                                value={
+                                                    data.curriculo_lattes_url
+                                                }
                                                 onChange={(e) =>
                                                     setData(
-                                                        'curriculo',
+                                                        'curriculo_lattes_url',
                                                         e.target.value,
                                                     )
                                                 }
                                                 required
                                             />
-                                            {errors.curriculo && (
+                                            {errors.curriculo_lattes_url && (
                                                 <span className="label-text-alt text-error">
-                                                    {errors.curriculo}
+                                                    {
+                                                        errors.curriculo_lattes_url
+                                                    }
                                                 </span>
                                             )}
                                         </label>

@@ -120,7 +120,7 @@ class ProfileController extends Controller
             'banco_id' => 'required|uuid|exists:bancos,id',
 
             // Dados profissionais
-            'curriculo' => 'required|string|max:255',
+            'curriculo_lattes_url' => 'required|string|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
             'figma_url' => 'nullable|url|max:255',

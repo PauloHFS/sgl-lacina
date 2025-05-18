@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Funcao, StatusCadastro, TipoProjeto, TipoVinculo } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useCallback } from 'react';
 import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
@@ -129,11 +129,16 @@ export default function Show({ colaborador }: ShowProps) {
                                             <InfoItem
                                                 key={projeto.id}
                                                 label="Projeto"
-                                                value={projeto.nome}
                                             >
-                                                <div className="input input-bordered flex h-auto min-h-10 items-center py-2 break-words whitespace-normal">
+                                                <Link
+                                                    href={route(
+                                                        'projetos.show',
+                                                        projeto.id,
+                                                    )}
+                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
+                                                >
                                                     {projeto.nome}
-                                                </div>
+                                                </Link>
                                             </InfoItem>
                                         ),
                                     )
@@ -259,7 +264,8 @@ export default function Show({ colaborador }: ShowProps) {
                                     </>
                                 ) : (
                                     <p className="text-base-content/70">
-                                        Nenhum vínculo atual.
+                                        Nenhuma solicitação de vínculo
+                                        encontrada.
                                     </p>
                                 )}
                             </div>

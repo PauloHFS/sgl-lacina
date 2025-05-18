@@ -57,10 +57,10 @@ class UserFactory extends Factory
             return [
                 'cpf' => fake()->unique()->numerify('###########'),
 
-                'linkedin_url' => 'https://linkedin.com/in/' . fake()->userName(),
-                'github_url' => 'https://github.com/' . fake()->userName(),
-                'figma_url' => fake()->optional()->url(),
-                'curriculo' => fake()->optional()->paragraphs(fake()->numberBetween(2, 4), true),
+                'curriculo_lattes_url' => fake()->numerify('http://lattes.cnpq.br/################'),
+                'linkedin_url' => fake()->optional()->passthrough('https://www.linkedin.com/in/' . fake()->userName()),
+                'github_url' => fake()->optional()->passthrough('https://github.com/' . fake()->userName()),
+                'figma_url' => fake()->optional()->passthrough('https://www.figma.com/@' . fake()->userName()),
 
                 'area_atuacao' => fake()->jobTitle(),
                 'tecnologias' => implode(', ', fake()->randomElements(
@@ -71,17 +71,17 @@ class UserFactory extends Factory
                 'rg' => fake()->numerify('#########'),
                 'uf_rg' => fake()->stateAbbr(),
                 'orgao_emissor_rg' => fake()->randomElement(['SSP', 'DETRAN', 'POLICIA FEDERAL', 'MINISTÉRIO DA DEFESA', 'SECRETARIA DE SEGURANCA PUBLICA']),
-                'telefone' => fake()->optional()->phoneNumber(),
+                'telefone' => fake()->phoneNumber(),
                 'banco_id' => $bancoAleatorioDoDB ? $bancoAleatorioDoDB->id : null,
-                'conta_bancaria' => fake()->optional()->numerify('#########'),
-                'agencia' => fake()->optional()->numerify('#####'),
-                'cep' => fake()->optional()->numerify('########'),
-                'endereco' => fake()->optional()->streetAddress(),
-                'numero' => fake()->optional()->buildingNumber(),
+                'conta_bancaria' => fake()->numerify('#########'),
+                'agencia' => fake()->numerify('#####'),
+                'cep' => fake()->numerify('########'),
+                'endereco' => fake()->streetAddress(),
+                'numero' => fake()->buildingNumber(),
                 'complemento' => fake()->optional()->secondaryAddress(),
-                'bairro' => fake()->optional()->word(),
-                'cidade' => fake()->optional()->city(),
-                'uf' => fake()->optional()->stateAbbr(),
+                'bairro' => fake()->word(),
+                'cidade' => fake()->city(),
+                'uf' => fake()->stateAbbr(),
             ];
         });
     }
