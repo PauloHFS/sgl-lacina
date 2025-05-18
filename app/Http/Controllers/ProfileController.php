@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Banco;
@@ -88,6 +89,15 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
+        // Remover formatação do CPF e CEP
+        $request->merge([
+            'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
+            'cep' => preg_replace('/\D/', '', $request->input('cep')),
+            'telefone' => preg_replace('/\D/', '', $request->input('telefone')),
+            'conta_bancaria' => preg_replace('/\D/', '', $request->input('conta_bancaria')),
+            'agencia' => preg_replace('/\D/', '', $request->input('agencia')),
+        ]);
+
         $request->validate([
             // Foto
             'foto_url' => 'nullable|image|max:2048',
@@ -115,22 +125,17 @@ class ProfileController extends Controller
             'telefone' => 'required|string|max:20',
 
             // Dados bancários
+            'banco_id' => 'required|uuid|exists:bancos,id',
             'conta_bancaria' => 'required|string|max:20',
             'agencia' => 'required|string|max:10',
-            'banco_id' => 'required|uuid|exists:bancos,id',
 
             // Dados profissionais
-            'curriculo_lattes_url' => 'required|string|max:255',
+            'curriculo_lattes_url' => 'required|url|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
             'figma_url' => 'nullable|url|max:255',
         ]);
 
-        // Remover formatação do CPF e CEP
-        $request->merge([
-            'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
-            'cep' => preg_replace('/\D/', '', $request->input('cep')),
-        ]);
 
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
@@ -146,7 +151,6 @@ class ProfileController extends Controller
         // Reautenticar o usuário para garantir que as informações atualizadas sejam refletidas
         Auth::login($user);
 
-        // Evitar loops de redirecionamento verificando a rota atual
         if (!$request->routeIs('waiting-approval')) {
             return Redirect::route('waiting-approval');
         }

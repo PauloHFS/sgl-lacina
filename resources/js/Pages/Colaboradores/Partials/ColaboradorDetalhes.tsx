@@ -14,7 +14,6 @@ interface ColaboradorDetalhesProps {
         | 'banco'
         | 'conta_bancaria'
         | 'agencia'
-        | 'curriculo'
     >;
 }
 
@@ -57,7 +56,6 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> =
                 label="Conta Bancária"
                 value={colaborador.conta_bancaria}
             />
-            <InfoItem label="Currículo" value={colaborador.curriculo} />
         </div>
     ));
 ColaboradorDetalhes.displayName = 'ColaboradorDetalhes';

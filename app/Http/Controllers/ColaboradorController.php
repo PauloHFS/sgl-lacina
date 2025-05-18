@@ -137,7 +137,7 @@ class ColaboradorController extends Controller
             'foto_url',
             'area_atuacao',
             'tecnologias',
-            'curriculo',
+            'curriculo_lattes_url',
             'cpf',
             'banco',
             'conta_bancaria',

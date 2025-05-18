@@ -11,13 +11,13 @@ export interface ShowProps {
         id: string;
         name: string;
         email: string;
+        curriculo_lattes_url?: string | null;
         linkedin_url?: string | null;
         github_url?: string | null;
         figma_url?: string | null;
         foto_url?: string | null;
         area_atuacao?: string | null;
         tecnologias?: string | null;
-        curriculo?: string | null;
         cpf?: string | null;
         banco?: {
             id: string;

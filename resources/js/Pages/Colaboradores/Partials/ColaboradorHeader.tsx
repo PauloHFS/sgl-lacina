@@ -8,6 +8,7 @@ interface ColaboradorHeaderProps {
         | 'name'
         | 'email'
         | 'foto_url'
+        | 'curriculo_lattes_url'
         | 'linkedin_url'
         | 'github_url'
         | 'figma_url'
@@ -39,10 +40,11 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                 <h2 className="card-title text-2xl">{colaborador.name}</h2>
                 <p className="text-base-content/70">{colaborador.email}</p>
                 <SocialLinks
+                    curriculoLattesUrl={colaborador.curriculo_lattes_url}
                     linkedinUrl={colaborador.linkedin_url}
                     githubUrl={colaborador.github_url}
                     figmaUrl={colaborador.figma_url}
-                    colaboradorName={colaborador.name} // Pass the name here
+                    colaboradorName={colaborador.name}
                 />
             </div>
         </div>

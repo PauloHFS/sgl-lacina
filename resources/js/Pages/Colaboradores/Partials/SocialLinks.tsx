@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface SocialLinksProps {
+    curriculoLattesUrl?: string | null;
     linkedinUrl?: string | null;
     githubUrl?: string | null;
     figmaUrl?: string | null;
@@ -8,8 +9,25 @@ interface SocialLinksProps {
 }
 
 export const SocialLinks: React.FC<SocialLinksProps> = React.memo(
-    ({ linkedinUrl, githubUrl, figmaUrl, colaboradorName }) => (
+    ({
+        curriculoLattesUrl,
+        linkedinUrl,
+        githubUrl,
+        figmaUrl,
+        colaboradorName,
+    }) => (
         <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+            {curriculoLattesUrl && (
+                <a
+                    href={curriculoLattesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-outline btn-secondary"
+                    aria-label={`Currículo Lattes de ${colaboradorName}`}
+                >
+                    Currículo Lattes
+                </a>
+            )}
             {linkedinUrl && (
                 <a
                     href={linkedinUrl}
