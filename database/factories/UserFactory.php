@@ -60,7 +60,6 @@ class UserFactory extends Factory
                 'linkedin_url' => 'https://linkedin.com/in/' . fake()->userName(),
                 'github_url' => 'https://github.com/' . fake()->userName(),
                 'figma_url' => fake()->optional()->url(),
-                'foto_url' => fake()->imageUrl(200, 200, 'people', true, 'User'),
                 'curriculo' => fake()->optional()->paragraphs(fake()->numberBetween(2, 4), true),
 
                 'area_atuacao' => fake()->jobTitle(),

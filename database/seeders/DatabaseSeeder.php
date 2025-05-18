@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             'descricao' => 'Descrição do projeto ABC',
             'data_inicio' => now()->subMonth(),
             'data_termino' => now()->addYear(),
-            'cliente' => 'Cliente Exemplo 1',
+            'cliente' => 'Dell',
             'tipo' => TipoProjeto::PDI,
         ]);
 
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
             'descricao' => 'Descrição do projeto DEF',
             'data_inicio' => now(),
             'data_termino' => now()->addMonths(6),
-            'cliente' => 'Cliente Exemplo 2',
+            'cliente' => 'Keepee',
             'tipo' => TipoProjeto::TCC,
         ]);
 
