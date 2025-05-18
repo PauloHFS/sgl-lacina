@@ -1,3 +1,4 @@
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Funcao,
@@ -6,7 +7,7 @@ import {
     TipoVinculo,
 } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React from 'react';
 
 interface Projeto {
     id: string;
@@ -37,12 +38,6 @@ interface ShowPageProps extends InertiaPageProps {
     } | null;
 }
 
-type Toast = {
-    id: number;
-    message: string;
-    type: 'success' | 'error' | 'info';
-};
-
 export default function Show({
     projeto,
     tiposVinculo,
@@ -57,25 +52,17 @@ export default function Show({
         funcao: '',
     });
 
-    const [toasts, setToasts] = useState<Toast[]>([]);
-
-    const addToast = (message: string, type: Toast['type'] = 'info') => {
-        const id = Date.now();
-        setToasts((prev) => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, 3000);
-    };
+    const { toast } = useToast();
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         post(route('vinculo.create'), {
             onSuccess: () => {
                 reset();
-                addToast('Vínculo criado com sucesso!', 'success');
+                toast('Vínculo criado com sucesso!', 'success');
             },
             onError: () => {
-                addToast('Erro ao criar vínculo.', 'error');
+                toast('Erro ao criar vínculo.', 'error');
             },
         });
     };
@@ -168,14 +155,6 @@ export default function Show({
     return (
         <AuthenticatedLayout>
             <Head title={projeto.nome} />
-
-            <div className="toast toast-top toast-end z-[100] flex flex-col gap-2 p-4">
-                {toasts.map((t) => (
-                    <div key={t.id} className={`alert alert-${t.type}`}>
-                        <span>{t.message}</span>
-                    </div>
-                ))}
-            </div>
 
             <section className="py-12">
                 <div className="mx-auto max-w-4xl px-4">

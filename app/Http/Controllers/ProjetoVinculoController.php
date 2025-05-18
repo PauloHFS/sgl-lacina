@@ -10,6 +10,7 @@ use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class ProjetoVinculoController extends Controller
 {
@@ -54,20 +55,54 @@ class ProjetoVinculoController extends Controller
 
   public function update(Request $request, $id)
   {
-    $request->validate([
-      'status' => ['required', Rule::enum(StatusVinculoProjeto::class)],
+    $validatedData = $request->validate([
+      'status' => ['sometimes', 'required', Rule::enum(StatusVinculoProjeto::class)],
+      'carga_horaria_semanal' => 'sometimes|nullable|integer|min:1|max:40',
+      'funcao' => ['sometimes', 'nullable', Rule::enum(Funcao::class)],
+      'tipo_vinculo' => ['sometimes', 'nullable', Rule::enum(TipoVinculo::class)],
+      'data_inicio' => 'sometimes|nullable|date',
+      'data_fim' => 'sometimes|nullable|date|after_or_equal:data_inicio',
     ]);
 
     $usuarioProjeto = UsuarioProjeto::findOrFail($id);
 
-    // TODO: criar um status para recusado
-    if ($request->status === StatusVinculoProjeto::INATIVO) {
-      $usuarioProjeto->data_fim = now();
+    // TODO: Adicionar lógica para registrar histórico de alterações em historico_usuario_vinculo
+
+    if ($request->filled('status')) {
+      $usuarioProjeto->status = $validatedData['status'];
+      if ($validatedData['status'] === StatusVinculoProjeto::INATIVO->value && !$request->filled('data_fim')) {
+        $usuarioProjeto->data_fim = now();
+      } elseif ($validatedData['status'] !== StatusVinculoProjeto::INATIVO->value) {
+        // Se o status não for INATIVO, garantir que data_fim seja null,
+        // a menos que explicitamente fornecido e diferente de INATIVO (cenário incomum).
+        if (!$request->filled('data_fim')) {
+          $usuarioProjeto->data_fim = null;
+        }
+      }
+    };
+
+    if ($request->filled('carga_horaria_semanal')) {
+      $usuarioProjeto->carga_horaria_semanal = $validatedData['carga_horaria_semanal'];
     }
 
-    $usuarioProjeto->status = $request->status;
+    if ($request->filled('funcao')) {
+      $usuarioProjeto->funcao = $validatedData['funcao'];
+    }
+
+    if ($request->filled('tipo_vinculo')) {
+      $usuarioProjeto->tipo_vinculo = $validatedData['tipo_vinculo'];
+    }
+
+    if ($request->filled('data_inicio')) {
+      $usuarioProjeto->data_inicio = $validatedData['data_inicio'];
+    }
+
+    if ($request->filled('data_fim')) {
+      $usuarioProjeto->data_fim = $validatedData['data_fim'];
+    }
+
     $usuarioProjeto->save();
 
-    return back()->with('success', 'Status atualizado com sucesso!');
+    return back()->with('success', 'Vínculo com projeto atualizado com sucesso!');
   }
 }

@@ -68,9 +68,13 @@ export type DiaDaSemana =
 
 export type StatusFolga = 'PENDENTE' | 'APROVADO' | 'REJEITADO';
 
-export type StatusSolicitacaoTrocaProjeto = 'ACEITO' | 'REJEITADO' | 'PENDENTE';
+// export type StatusSolicitacaoTrocaProjeto = 'ACEITO' | 'REJEITADO' | 'PENDENTE';
 
-export type StatusVinculoProjeto = 'APROVADO' | 'PENDENTE' | 'INATIVO';
+export type StatusVinculoProjeto =
+    | 'APROVADO'
+    | 'PENDENTE'
+    | 'INATIVO'
+    | 'RECUSADO';
 
 export type TipoFolga = 'COLETIVA' | 'INDIVIDUAL';
 
