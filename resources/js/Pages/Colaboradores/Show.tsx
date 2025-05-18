@@ -19,9 +19,13 @@ export interface ShowProps {
         tecnologias?: string | null;
         curriculo?: string | null;
         cpf?: string | null;
+        banco?: {
+            id: string;
+            codigo: string;
+            nome: string;
+        } | null;
         conta_bancaria?: string | null;
         agencia?: string | null;
-        codigo_banco?: string | null;
         rg?: string | null;
         uf_rg?: string | null;
         telefone?: string | null;
@@ -98,6 +102,10 @@ export default function Show({ colaborador }: ShowProps) {
         router.post(route('vinculos.recusar', colaborador.id));
     }, [colaborador.id]);
 
+    console.log(`${new Date().toISOString()} - [Colaborador-Show]`, {
+        colaborador,
+    });
+
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
@@ -144,7 +152,7 @@ export default function Show({ colaborador }: ShowProps) {
                                     )
                                 ) : (
                                     <p className="text-base-content/70">
-                                        Nenhum projeto atual.
+                                        Nenhum projeto.
                                     </p>
                                 )}
                             </div>

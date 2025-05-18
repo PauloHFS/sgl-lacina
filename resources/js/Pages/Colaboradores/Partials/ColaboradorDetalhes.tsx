@@ -11,9 +11,9 @@ interface ColaboradorDetalhesProps {
         | 'cpf'
         | 'rg'
         | 'uf_rg'
+        | 'banco'
         | 'conta_bancaria'
         | 'agencia'
-        | 'codigo_banco'
         | 'curriculo'
     >;
 }
@@ -21,6 +21,10 @@ interface ColaboradorDetalhesProps {
 export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> =
     React.memo(({ colaborador }) => (
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+            <InfoItem label="CPF" value={colaborador.cpf} />
+            <InfoItem label="RG" value={colaborador.rg} />
+            <InfoItem label="Telefone" value={colaborador.telefone} />
+            <InfoItem label="UF RG" value={colaborador.uf_rg} />
             <InfoItem
                 label="Área de Atuação"
                 value={colaborador.area_atuacao}
@@ -41,25 +45,19 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> =
                         : '-'}
                 </div>
             </InfoItem>
-            <InfoItem label="Telefone" value={colaborador.telefone} />
-            <InfoItem label="CPF" value={colaborador.cpf} />
-            <InfoItem label="RG" value={colaborador.rg} />
-            <InfoItem label="UF RG" value={colaborador.uf_rg} />
+
+            <InfoItem
+                label="Banco"
+                value={
+                    colaborador.banco?.codigo + ' - ' + colaborador.banco?.nome
+                }
+            />
+            <InfoItem label="Agência" value={colaborador.agencia} />
             <InfoItem
                 label="Conta Bancária"
                 value={colaborador.conta_bancaria}
             />
-            <InfoItem label="Agência" value={colaborador.agencia} />
-            <InfoItem
-                label="Código do Banco"
-                value={colaborador.codigo_banco}
-            />
-            <InfoItem
-                label="Currículo"
-                value={colaborador.curriculo}
-                className="md:col-span-2"
-                isTextArea
-            />
+            <InfoItem label="Currículo" value={colaborador.curriculo} />
         </div>
     ));
 ColaboradorDetalhes.displayName = 'ColaboradorDetalhes';

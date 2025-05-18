@@ -47,7 +47,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'uf_rg',
         'orgao_emissor_rg',
         'telefone',
-        'banco_id',
         'conta_bancaria',
         'agencia',
         'cep',
@@ -82,11 +81,11 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime', // Added cast
+            'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'status_cadastro' => StatusCadastro::class, // Ensured correct enum
-            'genero' => Genero::class, // Added genero cast
-            'data_nascimento' => 'date', // Added data_nascimento cast
+            'status_cadastro' => StatusCadastro::class,
+            'genero' => Genero::class,
+            'data_nascimento' => 'date',
         ];
     }
 
@@ -100,6 +99,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Projeto::class, 'usuario_projeto', 'usuario_id', 'projeto_id')
             ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the bank associated with the user.
+     *
+     * This defines a BelongsTo relationship between the User and Banco models.
+     *
+     * @return BelongsTo
+     */
+    public function banco(): BelongsTo
+    {
+        return $this->belongsTo(Banco::class, 'banco_id');
     }
 
     public function isCoordenador(?Projeto $projeto = null)
@@ -123,48 +134,4 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('tipo_vinculo', 'COLABORADOR')
             ->exists();
     }
-
-    public function hasDocumentos()
-    {
-        return $this->cpf
-            && $this->rg
-            && $this->uf_rg
-            && $this->orgao_emissor_rg;
-    }
-
-    public function hasEndereco(): bool
-    {
-        return $this->cep
-            && $this->endereco // Changed from logradouro
-            && $this->numero
-            // && $this->complemento // complemento opcional
-            && $this->bairro
-            && $this->cidade
-            && $this->uf; // Changed from estado
-    }
-
-    public function hasDadosDeContato()
-    {
-        return (bool)$this->telefone;
-    }
-
-    public function hasDadosBancarios(): bool
-    {
-        return $this->conta_bancaria
-            && $this->agencia
-            && $this->banco_id; // Changed from codigo_banco to banco_id FK
-    }
-
-    public function banco(): BelongsTo
-    {
-        return $this->belongsTo(Banco::class, 'banco_id');
-    }
-
-    // TODO: Checar com professor se é obrigatório ou não
-    // public function hasDadosProfissionais()
-    // {
-    //     return $this->curriculo
-    //         && $this->area_atuacao
-    //         && $this->tecnologias;
-    // }
 }

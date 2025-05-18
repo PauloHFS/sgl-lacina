@@ -71,7 +71,7 @@ class ColaboradorController extends Controller
 
     public function show($id)
     {
-        $usuario = User::findOrFail($id);
+        $usuario = User::with('banco')->findOrFail($id);
 
         // Eager load related projects for vinculations to optimize queries
         $vinculos = UsuarioProjeto::with('projeto')
@@ -127,13 +127,6 @@ class ColaboradorController extends Controller
         }
         // If $userSystemStatus is RECUSADO, $statusCadastroView will also remain 'INATIVO'.
 
-        Log::debug('Colaborador encontrado', ['usuario_id' => $usuario->id, 'raw_status' => $usuario->status_cadastro]);
-        Log::debug('Status do colaborador para a view', [
-            'colaborador_id' => $usuario->id,
-            'status_calculado' => $statusCadastroView,
-        ]);
-
-        // Prepare data for Inertia response
         $colaboradorData = $usuario->only([
             'id',
             'name',
@@ -146,9 +139,10 @@ class ColaboradorController extends Controller
             'tecnologias',
             'curriculo',
             'cpf',
+            'banco',
             'conta_bancaria',
             'agencia',
-            'codigo_banco', // Assuming 'codigo_banco' is a field on User model or accessor
+            'banco_id',
             'rg',
             'uf_rg',
             'telefone',
@@ -161,11 +155,6 @@ class ColaboradorController extends Controller
             ? $vinculoPendente
             : null;
         $colaboradorData['projetos_atuais'] = $projetosAtuais->map(fn($p) => ['id' => $p->id, 'nome' => $p->nome]);
-
-        Log::debug('Dados do colaborador preparados para a view', [
-            'colaborador_id' => $usuario->id,
-            'dados' => $colaboradorData,
-        ]);
 
         return inertia('Colaboradores/Show', [
             'colaborador' => $colaboradorData,
