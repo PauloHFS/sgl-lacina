@@ -39,7 +39,6 @@
         "vite": "^5.0"
     },
     "dependencies": {
-        "react-imask": "^7.6.1",
-        "react-select": "^5.10.1"
+        "react-imask": "^7.6.1"
     }
 }

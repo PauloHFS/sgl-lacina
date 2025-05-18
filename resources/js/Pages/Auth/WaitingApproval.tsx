@@ -6,10 +6,10 @@ export default function WaitingApproval() {
         <GuestLayout>
             <Head title="Aguardando Aprovação" />
             <div className="card-body items-center text-center">
-                <div className="avatar placeholder mb-6">
+                <div className="avatar placeholder mx-auto mb-6 block">
                     <div className="bg-warning/20 text-warning flex h-20 w-20 items-center justify-center rounded-full">
                         <svg
-                            className="h-12 w-12"
+                            className="h-20 w-20"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
