@@ -130,8 +130,8 @@ export default function Projetos({
                                                                 <img src="https://picsum.photos/seed/user3/80/80" />
                                                             </div>
                                                         </div>
-                                                        <div className="avatar placeholder border-base-100 border-2">
-                                                            <div className="bg-neutral text-neutral-content h-10 w-10">
+                                                        <div className="avatar placeholder border-base-100 flex h-10 w-10 items-center justify-center border-2">
+                                                            <div className="bg-neutral text-neutral-content">
                                                                 <span>+5</span>
                                                             </div>
                                                         </div>

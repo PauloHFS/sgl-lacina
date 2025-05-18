@@ -196,10 +196,10 @@ export default function Show({
                                             href={projeto.slack_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-sm btn-info btn-outline"
+                                            className="btn btn-sm btn-secondary btn-ghost"
                                         >
                                             <svg
-                                                className="mr-1 h-4 w-4"
+                                                className="mr-1 h-5 w-5"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                             >
@@ -216,10 +216,10 @@ export default function Show({
                                             href={projeto.discord_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-sm btn-accent btn-outline"
+                                            className="btn btn-sm btn-secondary btn-ghost"
                                         >
                                             <svg
-                                                className="mr-1 h-4 w-4"
+                                                className="mr-1 h-5 w-5"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                             >
@@ -236,10 +236,10 @@ export default function Show({
                                             href={projeto.board_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-sm btn-secondary btn-outline"
+                                            className="btn btn-sm btn-secondary btn-ghost"
                                         >
                                             <svg
-                                                className="mr-1 h-4 w-4"
+                                                className="mr-1 h-5 w-5"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                             >
@@ -256,10 +256,10 @@ export default function Show({
                                             href={projeto.git_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-sm btn-neutral btn-outline"
+                                            className="btn btn-sm btn-secondary btn-ghost"
                                         >
                                             <svg
-                                                className="mr-1 h-4 w-4"
+                                                className="mr-1 h-5 w-5"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                             >
