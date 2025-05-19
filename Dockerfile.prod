@@ -61,7 +61,6 @@ FROM node:lts-alpine AS frontend_builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-# If you use yarn, replace package-lock.json with yarn.lock and npm with yarn commands
 RUN npm install
 
 COPY resources ./resources
