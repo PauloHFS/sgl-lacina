@@ -8,6 +8,41 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { IMaskInput } from 'react-imask';
 
+interface ProfileFormData {
+    name: string;
+    email: string;
+    foto_url: File | null;
+    genero: string;
+    data_nascimento: string;
+    cpf: string;
+    rg: string;
+    uf_rg: string;
+    orgao_emissor_rg: string;
+    cep: string;
+    endereco: string;
+    numero: string;
+    complemento: string;
+    bairro: string;
+    cidade: string;
+    estado: string; // Assuming 'estado' is 'uf' from ESTADOS. If it's different, adjust type.
+    telefone: string;
+    conta_bancaria: string;
+    agencia: string;
+    banco_id: string; // Assuming banco_id is string, adjust if it's number or other type
+    curriculo: string;
+    linkedin_url: string;
+    github_url: string;
+    figma_url: string;
+    area_atuacao: string;
+    tecnologias: string;
+}
+
+interface Banco {
+    id: string;
+    nome: string;
+    codigo: string;
+}
+
 export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
@@ -16,13 +51,13 @@ export default function UpdateProfileInformation({
 }: {
     mustVerifyEmail: boolean;
     status?: string;
-    bancos?: any[];
+    bancos?: Banco[];
     className?: string;
 }) {
     const user = usePage().props.auth.user;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm({
+        useForm<ProfileFormData>({
             name: user.name || '',
             email: user.email || '',
             foto_url: null,
@@ -111,12 +146,13 @@ export default function UpdateProfileInformation({
                         type="file"
                         accept="image/*"
                         className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
-                        onChange={(e) =>
-                            setData(
-                                'foto_url',
-                                e.target.files ? e.target.files[0] : null,
-                            )
-                        }
+                        onChange={(e) => {
+                            const file =
+                                e.target.files && e.target.files[0]
+                                    ? e.target.files[0]
+                                    : null;
+                            setData('foto_url', file);
+                        }}
                     />
                     <InputError className="mt-2" message={errors.foto_url} />
                 </div>
