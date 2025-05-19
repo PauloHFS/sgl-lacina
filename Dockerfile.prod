@@ -1,0 +1,136 @@
+# Stage 1: PHP Base - Installs PHP, extensions, and Composer dependencies
+FROM php:8.4-fpm-alpine AS php_base
+
+WORKDIR /var/www/html
+
+# Install system dependencies for PHP extensions and common tools
+# $PHPIZE_DEPS includes build tools like autoconf, g++, make
+# postgresql-dev is for pdo_pgsql
+# libzip-dev for zip extension
+# icu-dev for intl extension
+# libpng-dev, libjpeg-turbo-dev, freetype-dev, libwebp-dev for gd extension
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  zip \
+  unzip \
+  $PHPIZE_DEPS \
+  postgresql-dev \
+  libzip-dev \
+  icu-dev \
+  libpng-dev \
+  libjpeg-turbo-dev \
+  freetype-dev \
+  libwebp-dev \
+  linux-headers \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+  && docker-php-ext-install -j$(nproc) \
+  bcmath \
+  exif \
+  gd \
+  intl \
+  opcache \
+  pcntl \
+  pdo_pgsql \
+  sockets \
+  zip \
+  && apk del --purge $PHPIZE_DEPS # Remove build tools after use
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql exif pcntl bcmath opcache
+# Install pgsql extension for PostgreSQL support
+RUN apk add --no-cache postgresql-dev && docker-php-ext-install pdo_pgsql pgsql
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy composer files and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-dev --no-scripts --prefer-dist --optimize-autoloader
+
+# Copy the rest of the application code
+COPY . .
+
+# Run composer scripts (e.g., post-autoload-dump)
+# --no-dev ensures dev scripts are not run if they exist
+RUN composer run-script post-autoload-dump --no-dev
+
+# Stage 2: Frontend Asset Builder - Installs Node, NPM dependencies, and builds assets
+FROM node:lts-alpine AS frontend_builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+# If you use yarn, replace package-lock.json with yarn.lock and npm with yarn commands
+RUN npm install
+
+COPY resources ./resources
+COPY vite.config.js .
+COPY tailwind.config.js .
+COPY postcss.config.js .
+COPY tsconfig.json .
+
+RUN npm run build
+
+# Stage 3: Final Production Image - Assembles the application
+FROM php:8.4-fpm-alpine AS production_app
+
+WORKDIR /var/www/html
+
+# Set production environment variables for PHP & Opcache
+ENV APP_ENV=production \
+  PHP_OPCACHE_ENABLE=1 \
+  PHP_OPCACHE_ENABLE_CLI=1 \
+  PHP_OPCACHE_MEMORY_CONSUMPTION=128 \
+  PHP_OPCACHE_INTERNED_STRINGS_BUFFER=8 \
+  PHP_OPCACHE_MAX_ACCELERATED_FILES=10000 \
+  PHP_OPCACHE_REVALIDATE_FREQ=0 \
+  PHP_OPCACHE_VALIDATE_TIMESTAMPS=0
+
+# Install runtime system dependencies for PHP extensions
+RUN apk update && apk add --no-cache \
+  libzip \
+  icu \
+  libpng \
+  libjpeg-turbo \
+  freetype \
+  libwebp \
+  postgresql-libs # Runtime for pdo_pgsql
+
+# Copy installed PHP extensions and their configurations from php_base stage
+COPY --from=php_base /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=php_base /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+
+# You can also copy custom PHP configurations if you have them
+# Example: COPY docker/prod/php/opcache-prod.ini /usr/local/etc/php/conf.d/zz-opcache-prod.ini
+# Example: COPY docker/prod/php/php-fpm-prod.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Copy application code (including vendor directory) from php_base stage
+COPY --from=php_base /var/www/html /var/www/html
+
+# Copy built frontend assets from frontend_builder stage
+COPY --from=frontend_builder /app/public/build ./public/build
+
+# Optimize Laravel for production
+# These commands create cached files for better performance
+RUN php artisan config:cache && \
+  php artisan route:cache && \
+  php artisan view:cache
+# php artisan event:cache # Uncomment if you use event discovery and want to cache events
+
+# Ensure www-data user (default for php-fpm, UID 82 on Alpine) owns storage and cache
+# This is important for Laravel to write logs, cache, sessions, etc.
+# This should come AFTER artisan commands that might create files as root.
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+  chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache && \
+  find /var/www/html/storage -type d -exec chmod g+s {} \; && \
+  find /var/www/html/bootstrap/cache -type d -exec chmod g+s {} \;
+
+# Clean up apk cache
+RUN rm -rf /var/cache/apk/*
+
+# Expose port 9000 for PHP-FPM
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm"]
