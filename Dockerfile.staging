@@ -1,0 +1,51 @@
+# Stage 1: PHP Base - Installs PHP, extensions, and Composer dependencies
+FROM php:8.4-fpm-alpine AS php_base
+
+WORKDIR /var/www/html
+
+# Install system dependencies for PHP extensions and common tools
+RUN apk update && apk add --no-cache \
+  git \
+  curl \
+  zip \
+  unzip \
+  $PHPIZE_DEPS \
+  postgresql-dev \
+  libzip-dev \
+  icu-dev \
+  libpng-dev \
+  libjpeg-turbo-dev \
+  freetype-dev \
+  libwebp-dev \
+  linux-headers \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+  && docker-php-ext-install -j$(nproc) \
+  bcmath \
+  exif \
+  gd \
+  intl \
+  opcache \
+  pcntl \
+  pdo_pgsql \
+  sockets \
+  zip \
+  && apk del --purge $PHPIZE_DEPS
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy composer files and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-dev --no-scripts --prefer-dist --optimize-autoloader
+
+# Copy the rest of the application code
+COPY . .
+
+# Set permissions for storage and cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Expose the application port
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm"]
