@@ -185,22 +185,22 @@ class DatabaseSeeder extends Seeder
             'status' => StatusVinculoProjeto::PENDENTE,
         ]);
 
-        // usuário inativo (inativo no ultimo projeto)
-        $usuario_inativo = User::factory()->cadastroCompleto()->create([
-            'name' => 'Usuário Inativo',
-            'email' => 'usuario_inativo@ccc.ufcg.edu.br',
+        // usuário encerrado (encerrado no ultimo projeto)
+        $usuario_encerrado = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário encerrado',
+            'email' => 'usuario_encerrado@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO,
         ]);
         UsuarioProjeto::factory()->create([
-            'usuario_id' => $usuario_inativo->id,
+            'usuario_id' => $usuario_encerrado->id,
             'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'carga_horaria_semanal' => 10,
             'data_inicio' => now()->subMonth(),
             'data_fim' => now(),
-            'status' => StatusVinculoProjeto::INATIVO,
+            'status' => StatusVinculoProjeto::ENCERRADO,
         ]);
 
         // usuario antigo com varias (5) trocas de projeto
@@ -218,7 +218,7 @@ class DatabaseSeeder extends Seeder
             'carga_horaria_semanal' => 10,
             'data_inicio' => now()->subYears(5),
             'data_fim' => now()->subYears(4),
-            'status' => StatusVinculoProjeto::INATIVO,
+            'status' => StatusVinculoProjeto::ENCERRADO,
         ]);
         UsuarioProjeto::factory()->create([
             'usuario_id' => $usuario_antigo->id,
@@ -228,7 +228,7 @@ class DatabaseSeeder extends Seeder
             'carga_horaria_semanal' => 15,
             'data_inicio' => now()->subYears(4),
             'data_fim' => now()->subYears(3),
-            'status' => StatusVinculoProjeto::INATIVO,
+            'status' => StatusVinculoProjeto::ENCERRADO,
         ]);
         UsuarioProjeto::factory()->create([
             'usuario_id' => $usuario_antigo->id,
@@ -238,7 +238,7 @@ class DatabaseSeeder extends Seeder
             'carga_horaria_semanal' => 20,
             'data_inicio' => now()->subYears(3),
             'data_fim' => now()->subYears(2),
-            'status' => StatusVinculoProjeto::INATIVO,
+            'status' => StatusVinculoProjeto::ENCERRADO,
         ]);
         UsuarioProjeto::factory()->create([
             'usuario_id' => $usuario_antigo->id,
@@ -248,7 +248,7 @@ class DatabaseSeeder extends Seeder
             'carga_horaria_semanal' => 10,
             'data_inicio' => now()->subYears(2),
             'data_fim' => now()->subYear(),
-            'status' => StatusVinculoProjeto::INATIVO,
+            'status' => StatusVinculoProjeto::ENCERRADO,
         ]);
         UsuarioProjeto::factory()->create([
             'usuario_id' => $usuario_antigo->id,

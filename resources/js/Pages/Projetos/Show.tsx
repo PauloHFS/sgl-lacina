@@ -106,9 +106,9 @@ export default function Show({
             //     statusColor = 'badge-error';
             //     statusText = 'Rejeitado';
             //     break;
-            case 'INATIVO':
+            case 'ENCERRADO':
                 statusColor = 'badge-neutral';
-                statusText = 'Inativo';
+                statusText = 'Encerrado';
                 break;
             default:
                 statusColor = 'badge-info';

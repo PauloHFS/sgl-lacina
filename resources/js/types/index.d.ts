@@ -73,7 +73,7 @@ export type StatusFolga = 'PENDENTE' | 'APROVADO' | 'REJEITADO';
 export type StatusVinculoProjeto =
     | 'APROVADO'
     | 'PENDENTE'
-    | 'INATIVO'
+    | 'ENCERRADO'
     | 'RECUSADO';
 
 export type TipoFolga = 'COLETIVA' | 'INDIVIDUAL';

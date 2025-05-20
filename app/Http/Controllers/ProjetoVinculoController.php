@@ -66,15 +66,13 @@ class ProjetoVinculoController extends Controller
 
     $usuarioProjeto = UsuarioProjeto::findOrFail($id);
 
-    // TODO: Adicionar lógica para registrar histórico de alterações em historico_usuario_vinculo
-
     if ($request->filled('status')) {
       $usuarioProjeto->status = $validatedData['status'];
-      if ($validatedData['status'] === StatusVinculoProjeto::INATIVO->value && !$request->filled('data_fim')) {
+      if ($validatedData['status'] === StatusVinculoProjeto::ENCERRADO->value && !$request->filled('data_fim')) {
         $usuarioProjeto->data_fim = now();
-      } elseif ($validatedData['status'] !== StatusVinculoProjeto::INATIVO->value) {
-        // Se o status não for INATIVO, garantir que data_fim seja null,
-        // a menos que explicitamente fornecido e diferente de INATIVO (cenário incomum).
+      } elseif ($validatedData['status'] !== StatusVinculoProjeto::ENCERRADO->value) {
+        // Se o status não for ENCERRADO, garantir que data_fim seja null,
+        // a menos que explicitamente fornecido e diferente de ENCERRADO (cenário incomum).
         if (!$request->filled('data_fim')) {
           $usuarioProjeto->data_fim = null;
         }

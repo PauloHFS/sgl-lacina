@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Funcao, PageProps, TipoVinculo } from '@/types';
+import { Funcao, PageProps, StatusVinculoProjeto, TipoVinculo } from '@/types';
 import { Head } from '@inertiajs/react';
 
 export default function Dashboard({
@@ -12,7 +12,7 @@ export default function Dashboard({
         projeto_id: string;
         tipo_vinculo: TipoVinculo;
         funcao: Funcao;
-        status: 'APROVADO' | 'PENDENTE' | 'REJEITADO' | 'INATIVO';
+        status: StatusVinculoProjeto;
         carga_horaria_semanal: number;
         data_inicio: string;
         data_fim: string | null;
@@ -76,7 +76,7 @@ export default function Dashboard({
                                     <span className="text-4xl font-bold">
                                         {
                                             projetos.filter(
-                                                (p) => p.status === 'INATIVO',
+                                                (p) => p.status === 'ENCERRADO',
                                             ).length
                                         }
                                     </span>
@@ -142,7 +142,7 @@ export default function Dashboard({
                                                             'APROVADO'
                                                                 ? 'badge badge-success'
                                                                 : p.status ===
-                                                                    'INATIVO'
+                                                                    'ENCERRADO'
                                                                   ? 'badge badge-neutral'
                                                                   : 'badge'
                                                         }

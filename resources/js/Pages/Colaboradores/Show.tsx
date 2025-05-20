@@ -38,11 +38,7 @@ export interface ShowProps {
         telefone?: string | null;
         created_at: string;
         updated_at: string;
-        status_cadastro:
-            | 'VINCULO_PENDENTE'
-            | 'APROVACAO_PENDENTE'
-            | 'ATIVO'
-            | 'INATIVO';
+        status_cadastro: StatusVinculoProjeto;
         vinculo?: {
             id: string;
             usuario_id: string;

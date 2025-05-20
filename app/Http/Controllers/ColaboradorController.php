@@ -42,11 +42,11 @@ class ColaboradorController extends Controller
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::APROVADO);
             })->paginate(10);
-        } else if ($status == 'inativos') {
+        } else if ($status == 'encerrados') {
             $usuarios = User::query()
                 ->where('status_cadastro', StatusCadastro::ACEITO) // usuários com cadastro aceito
                 ->where(function ($queryBuilder) {
-                    // Condição 1: Usuários que possuem vínculos, e TODOS esses vínculos em 'usuario_projeto' estão com status INATIVO
+                    // Condição 1: Usuários que possuem vínculos, e TODOS esses vínculos em 'usuario_projeto' estão com status ENCERRADO
                     $queryBuilder->where(function ($qAllInactive) {
                         // Sub-condição 1.1: O usuário DEVE ter pelo menos um vínculo.
                         $qAllInactive->whereExists(function ($subQueryExists) {
@@ -54,12 +54,12 @@ class ColaboradorController extends Controller
                                 ->from('usuario_projeto')
                                 ->whereColumn('usuario_projeto.usuario_id', 'users.id');
                         });
-                        // Sub-condição 1.2: E NÃO DEVE existir nenhum vínculo para este usuário com status DIFERENTE de INATIVO.
+                        // Sub-condição 1.2: E NÃO DEVE existir nenhum vínculo para este usuário com status DIFERENTE de ENCERRADO.
                         $qAllInactive->whereNotExists(function ($subQueryNotOtherStatus) {
                             $subQueryNotOtherStatus->select(DB::raw(1))
                                 ->from('usuario_projeto')
                                 ->whereColumn('usuario_projeto.usuario_id', 'users.id')
-                                ->where('status', '!=', StatusVinculoProjeto::INATIVO);
+                                ->where('status', '!=', StatusVinculoProjeto::ENCERRADO);
                         });
                     });
 
@@ -85,17 +85,15 @@ class ColaboradorController extends Controller
     {
         $usuario = User::with('banco')->findOrFail($id);
 
-        // Eager load related projects for vinculations to optimize queries
         $vinculos = UsuarioProjeto::with('projeto')
             ->where('usuario_id', $usuario->id)
             ->orderByDesc('data_inicio')
             ->get();
 
-        $statusCadastroView = 'INATIVO'; // Default status for the view
+        $statusCadastroView = 'INATIVO';
         $projetosAtuais = collect();
         $vinculoPendente = null;
 
-        // Ensure status_cadastro is an enum instance for reliable comparison
         $userSystemStatus = $usuario->status_cadastro instanceof StatusCadastro
             ? $usuario->status_cadastro
             : StatusCadastro::tryFrom($usuario->status_cadastro);
@@ -103,9 +101,7 @@ class ColaboradorController extends Controller
         if ($userSystemStatus === StatusCadastro::PENDENTE) {
             $statusCadastroView = 'VINCULO_PENDENTE';
         } elseif ($userSystemStatus === StatusCadastro::ACEITO) {
-            // Check for any project vinculation request that is pending approval
             $vinculoPendente = $vinculos->first(function ($vinculo) {
-                // Ensure vinculo->status is an enum instance or correctly compared to its value
                 $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
                     ? $vinculo->status
                     : StatusVinculoProjeto::tryFrom($vinculo->status);
@@ -114,11 +110,7 @@ class ColaboradorController extends Controller
 
             if ($vinculoPendente) {
                 $statusCadastroView = 'APROVACAO_PENDENTE';
-                // $projetoSolicitado = $vinculoPendente->projeto; // Use eager-loaded project
             } else {
-                // Check for active project vinculations
-                // The original code had a TODO for data_fim validation.
-                // Add '&& (!$v->data_fim || $v->data_fim->isFuture())' if needed.
                 $vinculosAprovados = $vinculos->filter(function ($vinculo) {
                     $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
                         ? $vinculo->status
@@ -129,15 +121,12 @@ class ColaboradorController extends Controller
                 if ($vinculosAprovados->isNotEmpty()) {
                     $statusCadastroView = 'ATIVO';
                     $projetosAtuais = $vinculosAprovados->map(fn($v) => $v->projeto)
-                        ->filter() // Remove any null projects if a vinculo has an invalid projeto_id
-                        ->unique('id') // Ensure unique projects
+                        ->filter()
+                        ->unique('id')
                         ->values();
                 }
-                // If user is ACEITO but has no PENDING or ACTIVE vinculations,
-                // $statusCadastroView remains 'INATIVO'.
             }
         }
-        // If $userSystemStatus is RECUSADO, $statusCadastroView will also remain 'INATIVO'.
 
         $colaboradorData = $usuario->only([
             'id',
@@ -162,7 +151,7 @@ class ColaboradorController extends Controller
 
         $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
         $colaboradorData['updated_at'] = $usuario->updated_at?->toIso8601String();
-        $colaboradorData['status_cadastro'] = $statusCadastroView; // Calculated status for UI logic
+        $colaboradorData['status_cadastro'] = $statusCadastroView;
         $colaboradorData['vinculo'] = $vinculoPendente
             ? $vinculoPendente
             : null;

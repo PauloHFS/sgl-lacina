@@ -21,7 +21,7 @@ interface IndexProps {
     colaboradores?: Paginated<Colaborador>;
 }
 
-type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'inativos';
+type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'encerrados';
 
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -146,16 +146,16 @@ export default function Index({ colaboradores }: IndexProps) {
                                 </div>
                                 <div
                                     className="tooltip"
-                                    data-tip="Colaboradores inativos"
+                                    data-tip="Colaboradores com vinculos encerrados"
                                 >
                                     <button
                                         role="tab"
-                                        className={`tab ${activeTab === 'inativos' ? 'tab-active' : ''}`}
+                                        className={`tab ${activeTab === 'encerrados' ? 'tab-active' : ''}`}
                                         onClick={() =>
-                                            handleTabChange('inativos')
+                                            handleTabChange('encerrados')
                                         }
                                     >
-                                        Inativos
+                                        Encerrados
                                     </button>
                                 </div>
                             </div>

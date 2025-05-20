@@ -26,7 +26,7 @@ enum StatusVinculoProjeto {
   APROVADO
   PENDENTE
   REJEITADO
-  INATIVO
+  ENCERRADO
 }
 
 enum TipoProjeto {

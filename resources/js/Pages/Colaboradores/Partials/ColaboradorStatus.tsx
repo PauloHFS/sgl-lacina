@@ -91,12 +91,12 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                         message="Este colaborador está ativo na plataforma."
                     />
                 );
-            case 'INATIVO':
+            case 'ENCERRADO':
                 return (
                     <StatusAlert
                         type="outline"
-                        title="Colaborador inativo."
-                        message="Este colaborador está atualmente inativo."
+                        title="Colaborador encerrado."
+                        message="Este colaborador está atualmente encerrado."
                     />
                 );
             default:
