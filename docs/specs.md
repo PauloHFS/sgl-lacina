@@ -2,7 +2,7 @@
 
 ## 1. Requisitos Funcionais (RF)
 
-### Gestão de Projetos
+### Gestão de Projetos (Feito)
 
 - **RF01:** O docente deve poder cadastrar projetos no Lacina.
 - **RF02:** Cada projeto deve conter as seguintes informações: Nome, data de início, data de término, nome do cliente, links úteis (Slack, Discord, Board/Kanban), tipo do projeto, entre outros.
@@ -10,12 +10,12 @@
 
 ### Gestão de Colaboradores (Discentes, Externos, Docentes)
 
-- **RF04:** Discentes podem realizar seu pré-cadastro na plataforma, informando Nome, Email, Período de Entrada na Graduação, Período de Conclusão da Graduação, Links (LinkedIn, GitHub, Figma), Foto, Currículo, Área de Atuação e Tecnologias.
-- **RF05:** Colaboradores podem solicitar inscrição em projetos informando os dados necessários.
-- **RF06:** O primeiro cadastro deve exigir CPF, Nome, Email, Senha e Email do docente responsável pela avaliação do cadastro.
-- **RF07:** Coordenadores de projeto (docentes) podem validar, editar ou rejeitar os cadastros.
-- **RF08:** O sistema deve permitir a edição do perfil do colaborador com informações bancárias e pessoais (Conta bancária, Agência, Código do Banco, RG, UF do RG, Telefone).
-- **RF09:** Colaboradores podem solicitar adesão a projetos, e os coordenadores de projeto (docentes) podem aceitar ou editar antes de aceitar.
+- **RF04:** Discentes podem realizar seu pré-cadastro na plataforma, informando Nome, Email, Período de Entrada na Graduação, Período de Conclusão da Graduação, Links (LinkedIn, GitHub, Figma), Foto, Currículo, Área de Atuação e Tecnologias. (Feito)
+- **RF05:** Colaboradores podem solicitar inscrição em projetos informando os dados necessários. (Feito)
+- **RF06:** O primeiro cadastro deve exigir CPF, Nome, Email, Senha e Email do docente responsável pela avaliação do cadastro. (Feito)
+- **RF07:** Coordenadores de projeto (docentes) podem validar, editar ou rejeitar os cadastros. (Feito)
+- **RF08:** O sistema deve permitir a edição do perfil do colaborador com informações bancárias e pessoais (Conta bancária, Agência, Código do Banco, RG, UF do RG, Telefone). (Feito)
+- **RF09:** Colaboradores podem solicitar adesão a projetos, e os coordenadores de projeto (docentes) podem aceitar ou editar antes de aceitar. (Feito)
 - **RF10:** Discentes podem solicitar a troca de projeto, informando um motivo.
 - **RF11:** Coordenadores do projeto atual e do novo projeto (docentes) devem aprovar a troca para que ela seja efetivada.
 - **RF12:** Docentes podem remover discentes dos projetos.
