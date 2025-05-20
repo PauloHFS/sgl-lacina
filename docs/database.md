@@ -105,10 +105,10 @@ table projetos {
   deleted_at timestamp(0)
 }
 
-table usuario_vinculo {
+table usuario_projeto {
   id uuid [pk, default: `gen_random_uuid()`]
-  projeto_id uuid [not null, ref: > projetos.id]
   usuario_id uuid [not null, ref: > usuarios.id]
+  projeto_id uuid [not null, ref: > projetos.id]
   tipo_vinculo TipoVinculoProjeto [not null]
   funcao Funcao [not null]
   status StatusVinculoProjeto [not null]

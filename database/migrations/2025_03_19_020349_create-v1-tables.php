@@ -54,6 +54,26 @@ return new class extends Migration
         });
 
         // >>>>>>
+
+        Schema::create('historico_usuario_projeto', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('usuario_id');
+            $table->uuid('projeto_id');
+            $table->enum('tipo_vinculo', array_column(TipoVinculo::cases(), 'value'));
+            $table->enum('funcao', array_column(Funcao::cases(), 'value'));
+            $table->enum('status', array_column(StatusVinculoProjeto::cases(), 'value'));
+            $table->integer('carga_horaria_semanal');
+            $table->dateTime('data_inicio');
+            $table->dateTime('data_fim')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->foreign('usuario_id')->references('id')->on('users');
+            $table->foreign('projeto_id')->references('id')->on('projetos');
+
+            $table->index(['projeto_id', 'usuario_id', 'data_inicio']);
+        });
     }
 
     /**

@@ -55,19 +55,42 @@ class DatabaseSeeder extends Seeder
         $projeto1 = Projeto::factory()->create([
             'nome' => 'Projeto ABC',
             'descricao' => 'Descrição do projeto ABC',
-            'data_inicio' => now()->subMonth(),
+            'data_inicio' => now()->subYear(),
             'data_termino' => now()->addYear(),
             'cliente' => 'Dell',
             'tipo' => TipoProjeto::PDI,
         ]);
-
         $projeto2 = Projeto::factory()->create([
             'nome' => 'Projeto DEF',
             'descricao' => 'Descrição do projeto DEF',
-            'data_inicio' => now(),
-            'data_termino' => now()->addMonths(6),
+            'data_inicio' => now()->subYear(),
+            'data_termino' => now()->addYear(),
             'cliente' => 'Keepee',
-            'tipo' => TipoProjeto::TCC,
+            'tipo' => TipoProjeto::SUPORTE,
+        ]);
+        $projeto3 = Projeto::factory()->create([
+            'nome' => 'Projeto GHI',
+            'descricao' => 'Descrição do projeto GHI',
+            'data_inicio' => now()->subYear(),
+            'data_termino' => now()->addYear(),
+            'cliente' => 'Google',
+            'tipo' => TipoProjeto::SUPORTE,
+        ]);
+        $projeto4 = Projeto::factory()->create([
+            'nome' => 'Projeto JKL',
+            'descricao' => 'Descrição do projeto JKL',
+            'data_inicio' => now()->subYear(),
+            'data_termino' => now()->addYear(),
+            'cliente' => 'Microsoft',
+            'tipo' => TipoProjeto::PDI,
+        ]);
+        $projeto5 = Projeto::factory()->create([
+            'nome' => 'Projeto MNO',
+            'descricao' => 'Descrição do projeto MNO',
+            'data_inicio' => now()->subYear(),
+            'data_termino' => now()->addYear(),
+            'cliente' => 'Apple',
+            'tipo' => TipoProjeto::PDI,
         ]);
 
         $maxwellUser = User::factory()->cadastroCompleto()->create([
@@ -179,5 +202,66 @@ class DatabaseSeeder extends Seeder
             'data_fim' => now(),
             'status' => StatusVinculoProjeto::INATIVO,
         ]);
+
+        // usuario antigo com varias (5) trocas de projeto
+        $usuario_antigo = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Antigo',
+            'email' => 'usuario_antigo@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => StatusCadastro::ACEITO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_antigo->id,
+            'projeto_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => now()->subYears(5),
+            'data_fim' => now()->subYears(4),
+            'status' => StatusVinculoProjeto::INATIVO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_antigo->id,
+            'projeto_id' => $projeto2->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::DESENVOLVEDOR,
+            'carga_horaria_semanal' => 15,
+            'data_inicio' => now()->subYears(4),
+            'data_fim' => now()->subYears(3),
+            'status' => StatusVinculoProjeto::INATIVO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_antigo->id,
+            'projeto_id' => $projeto3->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::PESQUISADOR,
+            'carga_horaria_semanal' => 20,
+            'data_inicio' => now()->subYears(3),
+            'data_fim' => now()->subYears(2),
+            'status' => StatusVinculoProjeto::INATIVO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_antigo->id,
+            'projeto_id' => $projeto4->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::TECNICO,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => now()->subYears(2),
+            'data_fim' => now()->subYear(),
+            'status' => StatusVinculoProjeto::INATIVO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_antigo->id,
+            'projeto_id' => $projeto5->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 12,
+            'data_inicio' => now()->subYear(),
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+
+        User::factory(20)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+        User::factory(5)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::PENDENTE]);
+        User::factory(2)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::RECUSADO]);
     }
 }
