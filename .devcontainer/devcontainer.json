@@ -1,9 +1,9 @@
 {
-	"name": "Laravel + Inertia Devcontainer",
+	"name": "Laravel-Inertia-Devcontainer",
 	"dockerComposeFile": [
 		"../docker-compose.yml"
 	],
-	"service": "laravel.test",
+	"service": "laravel-test",
 	"workspaceFolder": "/var/www/html",
 	"remoteUser": "sail",
 	"customizations": {
