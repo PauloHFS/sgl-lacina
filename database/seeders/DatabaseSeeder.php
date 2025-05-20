@@ -95,6 +95,31 @@ class DatabaseSeeder extends Seeder
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
+        $campeloUser = User::factory()->cadastroCompleto()->create([
+            'name' => 'Campelo',
+            'email' => 'campelo@computacao.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => StatusCadastro::ACEITO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $campeloUser->id,
+            'projeto_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COORDENADOR,
+            'funcao' => Funcao::COORDENADOR,
+            'carga_horaria_semanal' => 20,
+            'data_inicio' => $projeto1->data_inicio,
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $campeloUser->id,
+            'projeto_id' => $projeto2->id,
+            'tipo_vinculo' => TipoVinculo::COORDENADOR,
+            'funcao' => Funcao::COORDENADOR,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => $projeto2->data_inicio,
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+
         // usuario colaborador de um projeto (Ativo)
         $usuario_ativo = User::factory()->cadastroCompleto()->create([
             'name' => 'Usuário Ativo',
