@@ -50,6 +50,7 @@ export default function Show({
         carga_horaria_semanal: '',
         tipo_vinculo: '',
         funcao: '',
+        solicitar_troca: false,
     });
 
     const { toast } = useToast();
@@ -306,6 +307,32 @@ export default function Show({
                                 Solicitar Vínculo ao Projeto
                             </h3>
                             <form onSubmit={submit}>
+                                <div className="form-control mb-4">
+                                    <label className="label cursor-pointer">
+                                        <span className="label-text">
+                                            Solicitar troca para este projeto?
+                                        </span>
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox"
+                                            checked={
+                                                data.solicitar_troca || false
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'solicitar_troca',
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                    </label>
+                                    {errors.solicitar_troca && (
+                                        <p className="text-error mt-1 text-xs">
+                                            {errors.solicitar_troca}
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div className="form-control mb-4">
                                     <label className="label">
                                         <span className="label-text">

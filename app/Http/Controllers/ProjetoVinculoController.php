@@ -22,6 +22,7 @@ class ProjetoVinculoController extends Controller
       'carga_horaria_semanal' => 'required|integer|min:1|max:40',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
+      'solicitar_troca' => 'sometimes|boolean',
     ]);
 
     $user = Auth::user();
@@ -40,15 +41,34 @@ class ProjetoVinculoController extends Controller
       return back()->with('error', 'Você já possui solicitação ou vínculo ativo neste projeto.');
     }
 
-    UsuarioProjeto::create([
-      'usuario_id' => $user->id,
-      'projeto_id' => $request->projeto_id,
-      'tipo_vinculo' => $request->tipo_vinculo,
-      'funcao' => $request->funcao,
-      'status' => StatusVinculoProjeto::PENDENTE,
-      'carga_horaria_semanal' => $request->carga_horaria_semanal,
-      'data_inicio' => $request->data_inicio,
-    ]);
+    if ($request->solicitar_troca) {
+
+      $projetoAntigo = UsuarioProjeto::where('usuario_id', $user->id)
+        ->where('status', 'APROVADO')
+        ->whereNull('data_fim')
+        ->first();
+
+      UsuarioProjeto::create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $request->projeto_id,
+        'tipo_vinculo' => $request->tipo_vinculo,
+        'funcao' => $request->funcao,
+        'status' => StatusVinculoProjeto::PENDENTE,
+        'carga_horaria_semanal' => $request->carga_horaria_semanal,
+        'data_inicio' => $request->data_inicio,
+        'projeto_antigo_id' => $projetoAntigo->projeto_id,
+      ]);
+    } else {
+      UsuarioProjeto::create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $request->projeto_id,
+        'tipo_vinculo' => $request->tipo_vinculo,
+        'funcao' => $request->funcao,
+        'status' => StatusVinculoProjeto::PENDENTE,
+        'carga_horaria_semanal' => $request->carga_horaria_semanal,
+        'data_inicio' => $request->data_inicio,
+      ]);
+    }
 
     return back()->with('success', 'Solicitação de vínculo enviada com sucesso!');
   }
@@ -65,6 +85,20 @@ class ProjetoVinculoController extends Controller
     ]);
 
     $usuarioProjeto = UsuarioProjeto::findOrFail($id);
+
+    if ($usuarioProjeto->projeto_antigo_id) {
+      $vinculoAntigo = UsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
+        ->where('projeto_id', $usuarioProjeto->projeto_antigo_id)
+        ->where('status', StatusVinculoProjeto::APROVADO)
+        ->whereNull('data_fim')
+        ->first();
+      Log::info('Vínculo antigo encontrado: ', ['vinculoAntigo' => $vinculoAntigo, 'projetoAntigoId' => $usuarioProjeto->projeto_antigo_id]);
+      if ($vinculoAntigo) {
+        $vinculoAntigo->status = StatusVinculoProjeto::ENCERRADO;
+        $vinculoAntigo->data_fim = now();
+        $vinculoAntigo->save();
+      }
+    }
 
     if ($request->filled('status')) {
       $usuarioProjeto->status = $validatedData['status'];

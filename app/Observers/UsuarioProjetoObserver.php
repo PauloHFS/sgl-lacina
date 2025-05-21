@@ -57,6 +57,7 @@ class UsuarioProjetoObserver
         HistoricoUsuarioProjeto::create([
             'usuario_id' => $usuarioProjeto->usuario_id,
             'projeto_id' => $usuarioProjeto->projeto_id,
+            'projeto_antigo_id' => $usuarioProjeto->projeto_antigo_id,
             'tipo_vinculo' => $usuarioProjeto->tipo_vinculo,
             'funcao' => $usuarioProjeto->funcao,
             'status' => $customStatus ?? $usuarioProjeto->status,

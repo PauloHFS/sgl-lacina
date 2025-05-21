@@ -19,7 +19,7 @@ class ColaboradorController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'status' => 'required|in:cadastro_pendente,vinculo_pendente,ativos,inativos',
+            'status' => 'required|in:cadastro_pendente,vinculo_pendente,ativos,encerrados',
         ]);
 
         $status = $request->input('status');

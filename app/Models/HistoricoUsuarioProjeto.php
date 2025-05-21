@@ -16,6 +16,7 @@ class HistoricoUsuarioProjeto extends Model
     protected $fillable = [
         'usuario_id',
         'projeto_id',
+        'projeto_antigo_id',
         'tipo_vinculo',
         'funcao',
         'status',
@@ -45,5 +46,10 @@ class HistoricoUsuarioProjeto extends Model
     public function projeto()
     {
         return $this->belongsTo(Projeto::class, 'projeto_id');
+    }
+
+    public function projetoAntigo()
+    {
+        return $this->belongsTo(Projeto::class, 'projeto_antigo_id');
     }
 }

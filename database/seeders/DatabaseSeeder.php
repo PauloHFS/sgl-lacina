@@ -263,5 +263,17 @@ class DatabaseSeeder extends Seeder
         User::factory(20)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::ACEITO]);
         User::factory(5)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::PENDENTE]);
         User::factory(2)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::RECUSADO]);
+
+        // solicitacao de troca do usuario ativo
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_ativo->id,
+            'projeto_id' => $projeto3->id,
+            'projeto_antigo_id' => $projeto1->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => now(),
+            'status' => StatusVinculoProjeto::PENDENTE,
+        ]);
     }
 }
