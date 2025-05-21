@@ -42,6 +42,19 @@ export default function Authenticated({
                                     Projetos
                                 </NavLink>
                             </li>
+                            {!isCoordenador && (
+                                <li>
+                                    <NavLink
+                                        href={route('horarios.meus')}
+                                        active={route().current(
+                                            'horarios.meus',
+                                        )}
+                                        className="btn btn-ghost btn-sm rounded-btn"
+                                    >
+                                        Meus Horários
+                                    </NavLink>
+                                </li>
+                            )}
                             {isCoordenador && (
                                 <li>
                                     <NavLink

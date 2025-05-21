@@ -16,8 +16,8 @@
 - **RF07:** Coordenadores de projeto (docentes) podem validar, editar ou rejeitar os cadastros. (Feito)
 - **RF08:** O sistema deve permitir a edição do perfil do colaborador com informações bancárias e pessoais (Conta bancária, Agência, Código do Banco, RG, UF do RG, Telefone). (Feito)
 - **RF09:** Colaboradores podem solicitar adesão a projetos, e os coordenadores de projeto (docentes) podem aceitar ou editar antes de aceitar. (Feito)
-- **RF10:** Discentes podem solicitar a troca de projeto, informando um motivo.
-- **RF11:** Coordenadores do projeto atual e do novo projeto (docentes) devem aprovar a troca para que ela seja efetivada.
+- **RF10:** Discentes podem solicitar a troca de projeto, informando um motivo. (feito)
+- **RF11:** Coordenadores do projeto atual e do novo projeto (docentes) devem aprovar a troca para que ela seja efetivada. (feito)
 - **RF12:** Docentes podem remover discentes dos projetos.
 - **RF13:** O sistema deve permitir que discentes gerem um relatório de histórico de participação nos projetos do laboratório.
 - **RF14:** O relatório deve conter: nome do discente, projetos em que participou, período de participação em cada projeto e a carga horária total.
