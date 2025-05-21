@@ -54,112 +54,157 @@ export default function Pagination<T>({
     return (
         <nav
             aria-label="Pagination"
-            className="mt-6 flex items-center justify-between"
+            className="mt-6 flex flex-col items-center gap-4"
         >
             <div className="text-base-content/70 text-sm">
-                Showing{' '}
-                <span className="font-medium">{paginated.from || 0}</span> to{' '}
-                <span className="font-medium">{paginated.to || 0}</span> of{' '}
-                <span className="font-medium">{paginated.total}</span> results
+                Mostrando de{' '}
+                <span className="font-medium">{paginated.from || 0}</span> a{' '}
+                <span className="font-medium">{paginated.to || 0}</span> de{' '}
+                <span className="font-medium">{paginated.total}</span>{' '}
+                resultados
             </div>
 
             <div className="join">
                 {paginated.links.map((link, i) => {
-                    // Skip the "..." entries
-                    if (
-                        link.label === '&laquo; Previous' ||
-                        link.label === 'Next &raquo;'
-                    ) {
-                        return (
-                            <div key={i}>
-                                {onPageChange ? (
-                                    <button
-                                        className={`btn btn-sm join-item ${
-                                            !link.url ? 'btn-disabled' : ''
-                                        }`}
-                                        onClick={() =>
-                                            handlePageClick(link.url)
-                                        }
-                                        disabled={!link.url}
-                                    >
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html: link.label,
-                                            }}
-                                        />
-                                    </button>
-                                ) : link.url ? (
-                                    <Link
-                                        href={link.url}
-                                        className="btn btn-sm join-item"
-                                        preserveScroll={preserveScroll}
-                                        preserveState={preserveState}
-                                    >
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html: link.label,
-                                            }}
-                                        />
-                                    </Link>
-                                ) : (
-                                    <span className="btn btn-sm join-item btn-disabled">
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html: link.label,
-                                            }}
-                                        />
-                                    </span>
-                                )}
-                            </div>
-                        );
-                    }
+                    const isDefaultPrevious = link.label === '&laquo; Previous';
+                    const isDefaultNext = link.label === 'Next &raquo;';
+                    const isKeyPrevious = link.label === 'pagination.previous';
+                    const isKeyNext = link.label === 'pagination.next';
+                    const isPortugueseAnterior =
+                        link.label.toLowerCase() === 'anterior';
+                    const isPortugueseProximo =
+                        link.label.toLowerCase() === 'próximo';
 
-                    return (
-                        <div key={i}>
-                            {onPageChange ? (
+                    const isPreviousLink =
+                        isDefaultPrevious ||
+                        isKeyPrevious ||
+                        isPortugueseAnterior;
+                    const isNextLink =
+                        isDefaultNext || isKeyNext || isPortugueseProximo;
+
+                    if (isPreviousLink || isNextLink) {
+                        const icon = isPreviousLink ? (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="h-4 w-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                />
+                            </svg>
+                        ) : (
+                            // isNextLink
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="h-4 w-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                />
+                            </svg>
+                        );
+
+                        const ariaLabel = isPreviousLink
+                            ? 'Página Anterior'
+                            : 'Próxima Página';
+
+                        if (onPageChange) {
+                            return (
                                 <button
-                                    className={`btn btn-sm join-item ${
-                                        link.active ? 'btn-active' : ''
-                                    } ${!link.url ? 'btn-disabled' : ''}`}
+                                    key={link.label + i + '-btn'}
+                                    className={`btn btn-sm btn-square join-item ${!link.url ? 'btn-disabled' : 'btn-ghost'}`}
+                                    onClick={() => handlePageClick(link.url)}
+                                    disabled={!link.url}
+                                    aria-label={ariaLabel}
+                                >
+                                    {icon}
+                                </button>
+                            );
+                        } else if (link.url) {
+                            return (
+                                <Link
+                                    key={link.label + i + '-link'}
+                                    href={link.url}
+                                    className={`btn btn-sm btn-square join-item btn-ghost`}
+                                    preserveScroll={preserveScroll}
+                                    preserveState={preserveState}
+                                    aria-label={ariaLabel}
+                                >
+                                    {icon}
+                                </Link>
+                            );
+                        } else {
+                            // Disabled button
+                            return (
+                                <button
+                                    key={link.label + i + '-dis'}
+                                    className={`btn btn-sm btn-square join-item btn-disabled`}
+                                    disabled
+                                    aria-label={ariaLabel}
+                                >
+                                    {icon}
+                                </button>
+                            );
+                        }
+                    } else if (link.label === '...') {
+                        return (
+                            <button
+                                key={'ellipsis' + i}
+                                className="btn btn-sm join-item btn-disabled"
+                                disabled
+                            >
+                                {link.label}
+                            </button>
+                        );
+                    } else {
+                        // Page numbers
+                        if (onPageChange) {
+                            return (
+                                <button
+                                    key={link.label + i + '-btn-num'}
+                                    className={`btn btn-sm join-item ${link.active ? 'btn-primary' : !link.url ? 'btn-disabled' : 'btn-ghost'}`}
                                     onClick={() => handlePageClick(link.url)}
                                     disabled={!link.url}
                                 >
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
+                                    {link.label}
                                 </button>
-                            ) : link.url ? (
+                            );
+                        } else if (link.url) {
+                            return (
                                 <Link
+                                    key={link.label + i + '-link-num'}
                                     href={link.url}
-                                    className={`btn btn-sm join-item ${
-                                        link.active ? 'btn-active' : ''
-                                    }`}
+                                    className={`btn btn-sm join-item ${link.active ? 'btn-primary' : 'btn-ghost'}`}
                                     preserveScroll={preserveScroll}
                                     preserveState={preserveState}
                                 >
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
+                                    {link.label}
                                 </Link>
-                            ) : (
-                                <span
-                                    className={`btn btn-sm join-item btn-disabled ${
-                                        link.active ? 'btn-active' : ''
-                                    }`}
+                            );
+                        } else {
+                            return (
+                                <button
+                                    key={link.label + i + '-dis-num'}
+                                    className="btn btn-sm join-item btn-disabled"
+                                    disabled
                                 >
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-                                </span>
-                            )}
-                        </div>
-                    );
+                                    {link.label}
+                                </button>
+                            );
+                        }
+                    }
                 })}
             </div>
         </nav>

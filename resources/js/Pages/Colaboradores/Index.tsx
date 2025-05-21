@@ -257,13 +257,27 @@ export default function Index({ colaboradores }: IndexProps) {
                                 <div className="mt-6 flex justify-center">
                                     <Paggination
                                         paginated={colaboradores}
-                                        onPageChange={(page) =>
+                                        onPageChange={(page) => {
+                                            const queryParams: {
+                                                page: number;
+                                                status?: Tabs;
+                                                search?: string;
+                                            } = { page };
+                                            if (activeTab) {
+                                                queryParams.status = activeTab;
+                                            }
+                                            if (searchTerm) {
+                                                queryParams.search = searchTerm;
+                                            }
                                             router.get(
                                                 route('colaboradores.index'),
-                                                { page },
-                                                { preserveState: true },
-                                            )
-                                        }
+                                                queryParams,
+                                                {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
+                                                },
+                                            );
+                                        }}
                                         preserveScroll={true}
                                         preserveState={true}
                                     />
