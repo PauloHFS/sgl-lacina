@@ -1,0 +1,219 @@
+Table "migrations" {
+"id" int4 [pk, not null, increment]
+"migration" varchar(255) [not null]
+"batch" int4 [not null]
+}
+
+Table "bancos" {
+"id" uuid [pk, not null, default: `gen_random_uuid()`]
+"codigo" bpchar(3) [not null]
+"nome" varchar(100) [unique, not null]
+}
+
+Table "users" {
+"id" uuid [pk, not null, default: `gen_random_uuid()`]
+"name" varchar(255) [not null]
+"email" varchar(255) [unique, not null]
+"email_verified_at" timestamp
+"password" varchar(255) [not null]
+"remember_token" varchar(100)
+"status_cadastro" varchar(255) [not null, default: 'PENDENTE']
+"curriculo_lattes_url" text
+"linkedin_url" varchar(255)
+"github_url" varchar(255)
+"figma_url" varchar(255)
+"area_atuacao" text
+"tecnologias" text
+"cpf" bpchar(11) [unique]
+"rg" varchar(255) [unique]
+"uf_rg" bpchar(2)
+"orgao_emissor_rg" varchar(255)
+"telefone" varchar(255)
+"banco_id" uuid
+"conta_bancaria" varchar(255)
+"agencia" varchar(255)
+"foto_url" varchar(255)
+"genero" varchar(255)
+"data_nascimento" timestamp
+"cep" varchar(8)
+"endereco" varchar(255)
+"numero" varchar(255)
+"complemento" varchar(255)
+"bairro" varchar(255)
+"cidade" varchar(255)
+"uf" varchar(2)
+"created_at" timestamp
+"updated_at" timestamp
+"deleted_at" timestamp
+}
+
+Table "password_reset_tokens" {
+"email" varchar(255) [pk, not null]
+"token" varchar(255) [not null]
+"created_at" timestamp
+}
+
+Table "sessions" {
+"id" varchar(255) [pk, not null]
+"user_id" uuid
+"ip_address" varchar(45)
+"user_agent" text
+"payload" text [not null]
+"last_activity" int4 [not null]
+
+Indexes {
+last_activity [type: btree, name: "sessions_last_activity_index"]
+user_id [type: btree, name: "sessions_user_id_index"]
+}
+}
+
+Table "cache" {
+"key" varchar(255) [pk, not null]
+"value" text [not null]
+"expiration" int4 [not null]
+}
+
+Table "cache_locks" {
+"key" varchar(255) [pk, not null]
+"owner" varchar(255) [not null]
+"expiration" int4 [not null]
+}
+
+Table "jobs" {
+"id" int8 [pk, not null, increment]
+"queue" varchar(255) [not null]
+"payload" text [not null]
+"attempts" int2 [not null]
+"reserved_at" int4
+"available_at" int4 [not null]
+"created_at" int4 [not null]
+
+Indexes {
+queue [type: btree, name: "jobs_queue_index"]
+}
+}
+
+Table "job_batches" {
+"id" varchar(255) [pk, not null]
+"name" varchar(255) [not null]
+"total_jobs" int4 [not null]
+"pending_jobs" int4 [not null]
+"failed_jobs" int4 [not null]
+"failed_job_ids" text [not null]
+"options" text
+"cancelled_at" int4
+"created_at" int4 [not null]
+"finished_at" int4
+}
+
+Table "failed_jobs" {
+"id" int8 [pk, not null, increment]
+"uuid" varchar(255) [unique, not null]
+"connection" text [not null]
+"queue" text [not null]
+"payload" text [not null]
+"exception" text [not null]
+"failed_at" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Table "projetos" {
+"id" uuid [pk, not null]
+"nome" varchar(255) [not null]
+"descricao" text
+"data_inicio" date [not null]
+"data_termino" date
+"cliente" varchar(255) [not null]
+"slack_url" varchar(255)
+"discord_url" varchar(255)
+"board_url" varchar(255)
+"git_url" varchar(255)
+"tipo" varchar(255) [not null]
+"created_at" timestamp
+"updated_at" timestamp
+"deleted_at" timestamp
+}
+
+Table "usuario_projeto" {
+"id" uuid [pk, not null]
+"usuario_id" uuid [not null]
+"projeto_id" uuid [not null]
+"projeto_antigo_id" uuid
+"tipo_vinculo" varchar(255) [not null]
+"funcao" varchar(255) [not null]
+"status" varchar(255) [not null]
+"carga_horaria_semanal" int4 [not null]
+"data_inicio" timestamp [not null]
+"data_fim" timestamp
+"created_at" timestamp
+"updated_at" timestamp
+"deleted_at" timestamp
+
+Indexes {
+(projeto_id, usuario_id, data_inicio) [type: btree, name: "usuario_projeto_projeto_id_usuario_id_data_inicio_index"]
+(usuario_id, status) [type: btree, name: "usuario_projeto_usuario_id_status_index"]
+}
+}
+
+Table "historico_usuario_projeto" {
+"id" uuid [pk, not null]
+"usuario_id" uuid [not null]
+"projeto_id" uuid [not null]
+"projeto_antigo_id" uuid
+"tipo_vinculo" varchar(255) [not null]
+"funcao" varchar(255) [not null]
+"status" varchar(255) [not null]
+"carga_horaria_semanal" int4 [not null]
+"data_inicio" timestamp [not null]
+"data_fim" timestamp
+"created_at" timestamp
+"updated_at" timestamp
+"deleted_at" timestamp
+
+Indexes {
+(projeto_id, usuario_id, data_inicio) [type: btree, name: "historico_usuario_projeto_projeto_id_usuario_id_data_inicio_ind"]
+}
+}
+
+Table "telescope_entries" {
+"sequence" int8 [pk, not null, increment]
+"uuid" uuid [unique, not null]
+"batch_id" uuid [not null]
+"family_hash" varchar(255)
+"should_display_on_index" bool [not null, default: true]
+"type" varchar(20) [not null]
+"content" text [not null]
+"created_at" timestamp
+
+Indexes {
+batch_id [type: btree, name: "telescope_entries_batch_id_index"]
+created_at [type: btree, name: "telescope_entries_created_at_index"]
+family_hash [type: btree, name: "telescope_entries_family_hash_index"]
+(type, should_display_on_index) [type: btree, name: "telescope_entries_type_should_display_on_index_index"]
+}
+}
+
+Table "telescope_entries_tags" {
+"entry_uuid" uuid [not null]
+"tag" varchar(255) [not null]
+
+Indexes {
+(entry_uuid, tag) [type: btree, name: "telescope_entries_tags_pkey"]
+tag [type: btree, name: "telescope_entries_tags_tag_index"]
+}
+}
+
+Table "telescope_monitoring" {
+"tag" varchar(255) [pk, not null]
+}
+
+Ref "historico_usuario_projeto_projeto_id_foreign":"projetos"."id" < "historico_usuario_projeto"."projeto_id"
+
+Ref "historico_usuario_projeto_usuario_id_foreign":"users"."id" < "historico_usuario_projeto"."usuario_id"
+
+Ref "telescope_entries_tags_entry_uuid_foreign":"telescope_entries"."uuid" < "telescope_entries_tags"."entry_uuid" [delete: cascade]
+
+Ref "users_banco_id_foreign":"bancos"."id" < "users"."banco_id"
+
+Ref "usuario_projeto_projeto_id_foreign":"projetos"."id" < "usuario_projeto"."projeto_id"
+
+Ref "usuario_projeto_usuario_id_foreign":"users"."id" < "usuario_projeto"."usuario_id"

@@ -27,7 +27,7 @@
 - Utilizar componentes funcionais com hooks.
 - Organizar componentes em pastas por funcionalidade.
 - Utilizar o `useForm` do Inertia.js para manipulação de formulários.
-- Nomear arquivos de componentes com PascalCase (e.g., `UserProfile.jsx`).
+- Nomear arquivos de componentes com PascalCase (e.g., `UserProfile.tsx`).
 
 ### Estilização
 
@@ -74,6 +74,7 @@
 
 ## Observações
 
+- Os importes e namespaces em php usam apenas `\` não `\\`.
 - Evitar o uso de jQuery; preferir soluções nativas ou bibliotecas modernas.
 - Manter dependências atualizadas regularmente.
 - Documentar endpoints da API utilizando comentários no código ou ferramentas apropriadas.
