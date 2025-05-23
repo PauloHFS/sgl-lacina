@@ -6,6 +6,7 @@ import {
     Projeto,
     StatusVinculoProjeto,
     TipoVinculo,
+    User,
     UsuarioProjeto,
 } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -13,15 +14,11 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React from 'react';
 
-interface ParticipanteProjeto {
-    id: string;
-    nome: string;
-    email: string;
-    foto_url: string | null;
+type ParticipanteProjeto = Pick<User, 'id' | 'name' | 'email' | 'foto_url'> & {
     funcao: Funcao;
     tipo_vinculo: TipoVinculo;
     data_inicio: string;
-}
+};
 
 interface ShowPageProps extends PageProps {
     projeto: Projeto;
@@ -397,16 +394,16 @@ export default function Show({
                                                                     <img
                                                                         src={
                                                                             participante.foto_url ||
-                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.nome)}&background=random&color=fff`
+                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
                                                                         }
-                                                                        alt={`Foto de ${participante.nome}`}
+                                                                        alt={`Foto de ${participante.name}`}
                                                                     />
                                                                 </div>
                                                             </div>
                                                             <div className="min-w-0 flex-1">
                                                                 <h4 className="truncate text-sm font-semibold">
                                                                     {
-                                                                        participante.nome
+                                                                        participante.name
                                                                     }
                                                                 </h4>
                                                                 <p className="text-base-content/70 truncate text-xs">

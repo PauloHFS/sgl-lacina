@@ -115,7 +115,7 @@ class ProjetosController extends Controller
         ->map(function ($user) {
           return [
             'id' => $user->id,
-            'nome' => $user->name,
+            'name' => $user->name,
             'email' => $user->email,
             'foto_url' => $user->foto_url,
             'funcao' => $user->pivot->funcao,
@@ -123,7 +123,7 @@ class ProjetosController extends Controller
             'data_inicio' => $user->pivot->data_inicio,
           ];
         })
-        ->sortBy('nome')
+        ->sortBy('name')
         ->values()
         ->all();
     }
