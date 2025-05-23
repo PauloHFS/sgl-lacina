@@ -81,3 +81,38 @@ export type TipoFolga = 'COLETIVA' | 'INDIVIDUAL';
 export type TipoHorario = 'AULA' | 'TRABALHO' | 'AUSENTE';
 
 export type TipoProjeto = 'PDI' | 'TCC' | 'MESTRADO' | 'DOUTORADO' | 'SUPORTE';
+
+// Added Projeto and UsuarioProjeto interfaces
+export interface Projeto {
+    id: string;
+    nome: string;
+    descricao?: string | null;
+    data_inicio: string;
+    data_termino?: string | null;
+    cliente: string;
+    slack_url?: string | null;
+    discord_url?: string | null;
+    board_url?: string | null;
+    git_url?: string | null;
+    tipo: TipoProjeto;
+    created_at?: string;
+    updated_at?: string;
+    deleted_at?: string | null;
+}
+
+export interface UsuarioProjeto {
+    id: string;
+    usuario_id: string;
+    projeto_id: string;
+    projeto_antigo_id?: string | null;
+    tipo_vinculo: TipoVinculo;
+    funcao: Funcao;
+    status: StatusVinculoProjeto;
+    carga_horaria_semanal: number;
+    data_inicio: string;
+    data_fim?: string | null;
+    descricao_atividades?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    deleted_at?: string | null;
+}

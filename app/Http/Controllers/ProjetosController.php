@@ -101,12 +101,39 @@ class ProjetosController extends Controller
     }
 
     $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
+    $participantesProjeto = [];
+
+    if (
+      $usuarioVinculo &&
+      $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
+      $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
+    ) {
+
+      $participantesProjeto = $projeto->usuarios()
+        ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+        ->get()
+        ->map(function ($user) {
+          return [
+            'id' => $user->id,
+            'nome' => $user->name,
+            'email' => $user->email,
+            'foto_url' => $user->foto_url,
+            'funcao' => $user->pivot->funcao,
+            'tipo_vinculo' => $user->pivot->tipo_vinculo,
+            'data_inicio' => $user->pivot->data_inicio,
+          ];
+        })
+        ->sortBy('nome')
+        ->values()
+        ->all();
+    }
 
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
       'funcoes' => array_column(Funcao::cases(), 'value'),
       'usuarioVinculo' => $usuarioVinculo,
+      'participantesProjeto' => $participantesProjeto,
     ]);
   }
 
