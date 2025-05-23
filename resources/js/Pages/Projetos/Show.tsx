@@ -1,3 +1,4 @@
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Funcao,
@@ -11,9 +12,6 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React from 'react';
-
-// Assuming these are your actual component paths
-import { useToast } from '@/Context/ToastProvider';
 
 interface ParticipanteProjeto {
     id: string;
@@ -43,9 +41,10 @@ export default function Show({
     const { toast } = useToast();
     const form = useForm({
         projeto_id: projeto.id,
-        tipo_vinculo: '',
-        funcao: '',
+        tipo_vinculo: '' as TipoVinculo | '',
+        funcao: '' as Funcao | '',
         carga_horaria_semanal: 20,
+        data_inicio: '',
     });
 
     const isCoordenadorDoProjetoAtual =
@@ -58,8 +57,9 @@ export default function Show({
             onSuccess: () => {
                 toast('Solicitação de vínculo enviada com sucesso!', 'success');
             },
-            onError: () => {
+            onError: (e) => {
                 toast('Erro ao solicitar vínculo!', 'error');
+                console.error(e);
             },
         });
     };
@@ -271,46 +271,82 @@ export default function Show({
                                                 </label>
                                             )}
                                         </div>
-                                    </div>
 
-                                    <div className="form-control w-full">
-                                        <label className="label">
-                                            <span className="label-text font-medium">
-                                                Carga Horária Semanal
-                                            </span>
-                                            <span className="label-text-alt">
-                                                (horas)
-                                            </span>
-                                        </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered w-full"
-                                            placeholder="Ex: 20"
-                                            value={
-                                                form.data.carga_horaria_semanal
-                                            }
-                                            onChange={(
-                                                e: React.ChangeEvent<HTMLInputElement>,
-                                            ) =>
-                                                form.setData(
-                                                    'carga_horaria_semanal',
-                                                    parseInt(e.target.value) ||
-                                                        0,
-                                                )
-                                            }
-                                            min="1"
-                                            max="40"
-                                        />
-                                        {form.errors.carga_horaria_semanal && (
+                                        <div className="form-control w-full">
                                             <label className="label">
-                                                <span className="label-text-alt text-error">
-                                                    {
-                                                        form.errors
-                                                            .carga_horaria_semanal
-                                                    }
+                                                <span className="label-text font-medium">
+                                                    Carga Horária Semanal
+                                                </span>
+                                                <span className="label-text-alt">
+                                                    (horas)
                                                 </span>
                                             </label>
-                                        )}
+                                            <input
+                                                type="number"
+                                                className="input input-bordered w-full"
+                                                placeholder="Ex: 20"
+                                                value={
+                                                    form.data
+                                                        .carga_horaria_semanal
+                                                }
+                                                onChange={(
+                                                    e: React.ChangeEvent<HTMLInputElement>,
+                                                ) =>
+                                                    form.setData(
+                                                        'carga_horaria_semanal',
+                                                        parseInt(
+                                                            e.target.value,
+                                                        ) || 0,
+                                                    )
+                                                }
+                                                min="1"
+                                                max="40"
+                                            />
+                                            {form.errors
+                                                .carga_horaria_semanal && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">
+                                                        {
+                                                            form.errors
+                                                                .carga_horaria_semanal
+                                                        }
+                                                    </span>
+                                                </label>
+                                            )}
+                                        </div>
+
+                                        <div className="form-control w-full">
+                                            <label className="label">
+                                                <span className="label-text font-medium">
+                                                    Data de Inicio
+                                                </span>
+                                            </label>
+                                            <input
+                                                type="date"
+                                                className="input input-bordered w-full"
+                                                value={form.data.data_inicio}
+                                                onChange={(
+                                                    e: React.ChangeEvent<HTMLInputElement>,
+                                                ) =>
+                                                    form.setData(
+                                                        'data_inicio',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                min="1"
+                                                max="40"
+                                            />
+                                            {form.errors.data_inicio && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">
+                                                        {
+                                                            form.errors
+                                                                .data_inicio
+                                                        }
+                                                    </span>
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="card-actions justify-end pt-4">
