@@ -1,49 +1,3 @@
-export interface User {
-    id: number | string;
-    name: string;
-    email: string;
-    email_verified_at?: string;
-    foto_url?: string;
-    genero?: string;
-    data_nascimento?: string;
-    cpf?: string;
-    rg?: string;
-    uf_rg?: string;
-    orgao_emissor_rg?: string;
-    cep?: string;
-    endereco?: string;
-    numero?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
-    telefone?: string;
-    conta_bancaria?: string;
-    agencia?: string;
-    banco_id?: string;
-    curriculo?: string;
-    linkedin_url?: string;
-    github_url?: string;
-    figma_url?: string;
-    area_atuacao?: string;
-    tecnologias?: string;
-    status_cadastro?: string;
-    created_at?: string;
-    updated_at?: string;
-}
-
-export type PageProps<
-    T extends Record<string, unknown> = Record<string, unknown>,
-> = T & {
-    auth: {
-        user: User;
-        isCoordenador: boolean;
-        isColaborador: boolean;
-    };
-};
-
-// Enums do Laravel
-
 export type StatusCadastro = 'IMCOMPLETO' | 'PENDENTE' | 'ACEITO' | 'RECUSADO';
 
 export type Funcao =
@@ -68,8 +22,6 @@ export type DiaDaSemana =
 
 export type StatusFolga = 'PENDENTE' | 'APROVADO' | 'REJEITADO';
 
-// export type StatusSolicitacaoTrocaProjeto = 'ACEITO' | 'REJEITADO' | 'PENDENTE';
-
 export type StatusVinculoProjeto =
     | 'APROVADO'
     | 'PENDENTE'
@@ -82,22 +34,74 @@ export type TipoHorario = 'AULA' | 'TRABALHO' | 'AUSENTE';
 
 export type TipoProjeto = 'PDI' | 'TCC' | 'MESTRADO' | 'DOUTORADO' | 'SUPORTE';
 
-// Added Projeto and UsuarioProjeto interfaces
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    email_verified_at?: string | null;
+    password?: string;
+    remember_token?: string | null;
+    status_cadastro: StatusCadastro;
+    curriculo_lattes_url?: string | null;
+    linkedin_url?: string | null;
+    github_url?: string | null;
+    figma_url?: string | null;
+    area_atuacao?: string | null;
+    tecnologias?: string | null;
+    cpf?: string | null;
+    rg?: string | null;
+    uf_rg?: string | null;
+    orgao_emissor_rg?: string | null;
+    telefone?: string | null;
+    banco_id?: string | null;
+    conta_bancaria?: string | null;
+    agencia?: string | null;
+    foto_url?: string | null;
+    genero?: Genero | null;
+    data_nascimento?: string | null;
+    cep?: string | null;
+    endereco?: string | null;
+    numero?: string | null;
+    complemento?: string | null;
+    bairro?: string | null;
+    cidade?: string | null;
+    uf?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    deleted_at?: string | null;
+}
+
+export type PageProps<
+    T extends Record<string, unknown> = Record<string, unknown>,
+> = T & {
+    auth: {
+        user: User;
+        isCoordenador: boolean;
+        isColaborador: boolean;
+    };
+};
+
+export interface Banco {
+    id: string;
+    codigo: string;
+    nome: string;
+}
+
 export interface Projeto {
     id: string;
     nome: string;
     descricao?: string | null;
-    data_inicio: string;
-    data_termino?: string | null;
+    data_inicio: string; // date format: YYYY-MM-DD
+    data_termino?: string | null; // date format: YYYY-MM-DD
     cliente: string;
     slack_url?: string | null;
     discord_url?: string | null;
     board_url?: string | null;
     git_url?: string | null;
     tipo: TipoProjeto;
-    created_at?: string;
-    updated_at?: string;
-    deleted_at?: string | null;
+    created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
 }
 
 export interface UsuarioProjeto {
@@ -109,10 +113,9 @@ export interface UsuarioProjeto {
     funcao: Funcao;
     status: StatusVinculoProjeto;
     carga_horaria_semanal: number;
-    data_inicio: string;
-    data_fim?: string | null;
-    descricao_atividades?: string | null;
-    created_at?: string;
-    updated_at?: string;
-    deleted_at?: string | null;
+    data_inicio: string; // timestamp format: YYYY-MM-DD HH:MM:SS
+    data_fim?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
 }
