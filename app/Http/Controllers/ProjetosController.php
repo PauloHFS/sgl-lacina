@@ -101,7 +101,7 @@ class ProjetosController extends Controller
     }
 
     $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
-    $participantesProjeto = [];
+    $participantesProjeto = null;
     $temVinculosPendentes = false;
 
     if (
@@ -109,24 +109,21 @@ class ProjetosController extends Controller
       $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
       $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
     ) {
-
-      $participantesProjeto = $projeto->usuarios()
+      $participantesQuery = $projeto->usuarios()
         ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
-        ->get()
-        ->map(function ($user) {
-          return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'foto_url' => $user->foto_url,
-            'funcao' => $user->pivot->funcao,
-            'tipo_vinculo' => $user->pivot->tipo_vinculo,
-            'data_inicio' => $user->pivot->data_inicio,
-          ];
-        })
-        ->sortBy('name')
-        ->values()
-        ->all();
+        ->orderBy('name');
+
+      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) {
+        return [
+          'id' => $user->id,
+          'name' => $user->name,
+          'email' => $user->email,
+          'foto_url' => $user->foto_url,
+          'funcao' => $user->pivot->funcao,
+          'tipo_vinculo' => $user->pivot->tipo_vinculo,
+          'data_inicio' => $user->pivot->data_inicio,
+        ];
+      });
 
       $temVinculosPendentes = $projeto->usuarios()
         ->wherePivot('status', StatusVinculoProjeto::PENDENTE->value)

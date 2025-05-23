@@ -1,3 +1,4 @@
+import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -25,7 +26,7 @@ interface ShowPageProps extends PageProps {
     tiposVinculo: TipoVinculo[];
     funcoes: Funcao[];
     usuarioVinculo: UsuarioProjeto | null;
-    participantesProjeto?: ParticipanteProjeto[];
+    participantesProjeto?: Paginated<ParticipanteProjeto>;
     temVinculosPendentes: boolean;
 }
 
@@ -405,70 +406,76 @@ export default function Show({
                     {/* Project Participants List (for coordinators) */}
                     {isCoordenadorDoProjetoAtual &&
                         participantesProjeto &&
-                        participantesProjeto.length > 0 && (
+                        participantesProjeto.data.length > 0 && (
                             <div className="card bg-base-100 shadow-xl">
                                 <div className="card-body">
                                     <h3 className="card-title mb-4 text-xl">
                                         Participantes do Projeto
                                     </h3>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {participantesProjeto.map(
-                                            (
-                                                participante: ParticipanteProjeto,
-                                            ) => (
-                                                <Link
-                                                    key={participante.id}
-                                                    href={route(
-                                                        'colaboradores.show',
-                                                        participante.id,
-                                                    )}
-                                                    className="card bg-base-200 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
-                                                >
-                                                    <div className="card-body p-4">
-                                                        <div className="mb-3 flex items-center gap-3">
-                                                            <div className="avatar">
-                                                                <div className="ring-primary ring-offset-base-100 h-12 w-12 rounded-full ring ring-offset-2">
-                                                                    <img
-                                                                        src={
-                                                                            participante.foto_url ||
-                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
-                                                                        }
-                                                                        alt={`Foto de ${participante.name}`}
-                                                                    />
+                                    <div className="overflow-x-auto">
+                                        <table className="table-zebra table w-full">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nome</th>
+                                                    <th>Email</th>
+                                                    <th>Função</th>
+                                                    <th>Vínculo</th>
+                                                    <th>Início</th>
+                                                    <th>Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {participantesProjeto.data.map(
+                                                    (
+                                                        participante: ParticipanteProjeto,
+                                                    ) => (
+                                                        <tr
+                                                            key={
+                                                                participante.id
+                                                            }
+                                                        >
+                                                            <td>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="avatar">
+                                                                        <div className="mask mask-squircle h-12 w-12">
+                                                                            <img
+                                                                                src={
+                                                                                    participante.foto_url ||
+                                                                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
+                                                                                }
+                                                                                alt={`Foto de ${participante.name}`}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-bold">
+                                                                            {
+                                                                                participante.name
+                                                                            }
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <h4 className="truncate text-sm font-semibold">
-                                                                    {
-                                                                        participante.name
-                                                                    }
-                                                                </h4>
-                                                                <p className="text-base-content/70 truncate text-xs">
-                                                                    {
-                                                                        participante.email
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <div className="flex items-center gap-2">
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    participante.email
+                                                                }
+                                                            </td>
+                                                            <td>
                                                                 <span className="badge badge-primary badge-sm">
                                                                     {
                                                                         participante.funcao
                                                                     }
                                                                 </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
+                                                            </td>
+                                                            <td>
                                                                 <span className="badge badge-outline badge-sm">
                                                                     {
                                                                         participante.tipo_vinculo
                                                                     }
                                                                 </span>
-                                                            </div>
-                                                            <p className="text-base-content/60 mt-2 text-xs">
-                                                                <span className="font-medium">
-                                                                    Início:
-                                                                </span>{' '}
+                                                            </td>
+                                                            <td>
                                                                 {format(
                                                                     new Date(
                                                                         participante.data_inicio,
@@ -478,13 +485,32 @@ export default function Show({
                                                                         locale: ptBR,
                                                                     },
                                                                 )}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </Link>
-                                            ),
-                                        )}
+                                                            </td>
+                                                            <td>
+                                                                <Link
+                                                                    href={route(
+                                                                        'colaboradores.show',
+                                                                        participante.id,
+                                                                    )}
+                                                                    className="btn btn-ghost btn-xs"
+                                                                >
+                                                                    Detalhes
+                                                                </Link>
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
+                                    {/* Pagination */}
+                                    {participantesProjeto &&
+                                        participantesProjeto.data.length >
+                                            0 && (
+                                            <Pagination
+                                                paginated={participantesProjeto}
+                                            />
+                                        )}
                                 </div>
                             </div>
                         )}
