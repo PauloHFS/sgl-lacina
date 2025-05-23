@@ -26,6 +26,7 @@ interface ShowPageProps extends PageProps {
     funcoes: Funcao[];
     usuarioVinculo: UsuarioProjeto | null;
     participantesProjeto?: ParticipanteProjeto[];
+    temVinculosPendentes: boolean;
 }
 
 export default function Show({
@@ -34,6 +35,7 @@ export default function Show({
     funcoes,
     usuarioVinculo,
     participantesProjeto,
+    temVinculosPendentes,
 }: ShowPageProps) {
     const { toast } = useToast();
     const form = useForm({
@@ -42,6 +44,10 @@ export default function Show({
         funcao: '' as Funcao | '',
         carga_horaria_semanal: 20,
         data_inicio: '',
+    });
+
+    console.log(`${new Date().toISOString()} - [Show]`, {
+        temVinculosPendentes,
     });
 
     const isCoordenadorDoProjetoAtual =
@@ -140,6 +146,37 @@ export default function Show({
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                 Cliente: {projeto.cliente}
                             </p>
+
+                            <Link
+                                href={route('colaboradores.index', {
+                                    status: 'vinculo_pendente',
+                                    project_id: projeto.id,
+                                })}
+                            >
+                                <div
+                                    role="alert"
+                                    className="alert alert-warning mt-4 cursor-pointer hover:shadow-lg"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        className="stroke-info h-6 w-6 shrink-0"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        ></path>
+                                    </svg>
+                                    <span>
+                                        Há solicitações de vínculos pendentes!
+                                        Clique para ver.
+                                    </span>
+                                </div>
+                            </Link>
+
                             <div className="mt-4 space-y-2">
                                 <p>
                                     <span className="font-semibold">

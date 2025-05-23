@@ -102,6 +102,7 @@ class ProjetosController extends Controller
 
     $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
     $participantesProjeto = [];
+    $temVinculosPendentes = false;
 
     if (
       $usuarioVinculo &&
@@ -126,6 +127,10 @@ class ProjetosController extends Controller
         ->sortBy('name')
         ->values()
         ->all();
+
+      $temVinculosPendentes = $projeto->usuarios()
+        ->wherePivot('status', StatusVinculoProjeto::PENDENTE->value)
+        ->exists();
     }
 
     return Inertia::render('Projetos/Show', [
@@ -134,6 +139,7 @@ class ProjetosController extends Controller
       'funcoes' => array_column(Funcao::cases(), 'value'),
       'usuarioVinculo' => $usuarioVinculo,
       'participantesProjeto' => $participantesProjeto,
+      'temVinculosPendentes' => $temVinculosPendentes,
     ]);
   }
 

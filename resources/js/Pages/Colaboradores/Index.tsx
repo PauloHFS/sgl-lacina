@@ -23,6 +23,10 @@ interface IndexProps {
 
 type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'encerrados';
 
+// TODO melhorar a tipagem
+// TODO concertar o search
+// TODO permitir filtrar pelo project_id
+
 export default function Index({ colaboradores }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<Tabs | null>(null);
