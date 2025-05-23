@@ -1,28 +1,67 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, TipoProjeto } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
 type Projeto = {
-    id: number;
+    id: string; // Changed from number to string to match controller and database schema
     nome: string;
     cliente: string;
     tipo: TipoProjeto;
 };
 
+type QueryParams = {
+    search?: string;
+    tab: 'todos' | 'colaborador' | 'coordenador';
+};
+
+interface ProjetosPageProps extends PageProps {
+    projetos: Projeto[];
+    queryparams: QueryParams;
+}
+
 export default function Projetos({
     projetos,
     auth,
-}: PageProps<{ projetos: Projeto[] }>) {
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredProjetos = projetos.filter(
-        (projeto) =>
-            projeto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            projeto.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            projeto.tipo.toLowerCase().includes(searchTerm.toLowerCase()),
+    queryparams,
+}: ProjetosPageProps) {
+    const [searchValue, setSearchValue] = useState(queryparams.search || '');
+    const [debouncedSearchValue] = useDebounce(searchValue, 300);
+    const [activeTab, setActiveTab] = useState<QueryParams['tab']>(
+        queryparams.tab || 'todos',
     );
 
+    useEffect(() => {
+        // Only make a request if debouncedSearchValue or activeTab has actually changed
+        // and is different from the initial queryparams.
+        if (
+            debouncedSearchValue !== (queryparams.search || '') ||
+            activeTab !== (queryparams.tab || 'todos')
+        ) {
+            router.get(
+                route('projetos.index'),
+                { search: debouncedSearchValue, tab: activeTab },
+                { preserveState: true, replace: true, preserveScroll: true },
+            );
+        }
+    }, [debouncedSearchValue, activeTab, queryparams.search, queryparams.tab]);
+
+    // Effect to sync local state if queryparams change from external navigation/reload
+    useEffect(() => {
+        setSearchValue(queryparams.search || '');
+        setActiveTab(queryparams.tab || 'todos');
+    }, [queryparams.search, queryparams.tab]);
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchValue(e.target.value);
+    };
+
+    const handleTabChange = (tab: QueryParams['tab']) => {
+        setActiveTab(tab);
+    };
+
+    // filteredProjetos is directly from props, controller handles filtering
     const getBadgeColor = (tipo: TipoProjeto) => {
         const badgeColors: { [key in TipoProjeto]: string } = {
             PDI: 'badge-primary',
@@ -59,10 +98,8 @@ export default function Projetos({
                                         type="text"
                                         placeholder="Buscar projetos..."
                                         className="input input-bordered w-full"
-                                        value={searchTerm}
-                                        onChange={(e) =>
-                                            setSearchTerm(e.target.value)
-                                        }
+                                        value={searchValue}
+                                        onChange={handleSearchChange}
                                     />
                                 </div>
                                 {auth.isCoordenador && (
@@ -75,9 +112,54 @@ export default function Projetos({
                                 )}
                             </div>
 
-                            {filteredProjetos && filteredProjetos.length > 0 ? (
+                            <div
+                                role="tablist"
+                                className="tabs tabs-bordered mb-6"
+                            >
+                                <button
+                                    role="tab"
+                                    className={`tab ${
+                                        activeTab === 'todos'
+                                            ? 'tab-active'
+                                            : ''
+                                    }`}
+                                    onClick={() => handleTabChange('todos')}
+                                >
+                                    Todos
+                                </button>
+                                <button
+                                    role="tab"
+                                    className={`tab ${
+                                        activeTab === 'colaborador'
+                                            ? 'tab-active'
+                                            : ''
+                                    }`}
+                                    onClick={() =>
+                                        handleTabChange('colaborador')
+                                    }
+                                >
+                                    Meus Projetos (Colaborador)
+                                </button>
+                                {auth.isCoordenador && (
+                                    <button
+                                        role="tab"
+                                        className={`tab ${
+                                            activeTab === 'coordenador'
+                                                ? 'tab-active'
+                                                : ''
+                                        }`}
+                                        onClick={() =>
+                                            handleTabChange('coordenador')
+                                        }
+                                    >
+                                        Meus Projetos (Coordenador)
+                                    </button>
+                                )}
+                            </div>
+
+                            {projetos && projetos.length > 0 ? (
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                    {filteredProjetos.map((projeto) => (
+                                    {projetos.map((projeto) => (
                                         <div
                                             key={projeto.id}
                                             className="group card card-bordered bg-base-100 cursor-pointer shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
@@ -114,56 +196,15 @@ export default function Projetos({
                                                     {projeto.cliente}
                                                 </p>
                                                 <div className="card-actions border-base-300/50 mt-auto items-center justify-start border-t pt-4">
-                                                    <div className="avatar-group -space-x-4 rtl:space-x-reverse">
-                                                        <div className="avatar border-base-100 border-2">
-                                                            <div className="h-10 w-10">
-                                                                <img src="https://picsum.photos/seed/user1/80/80" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="avatar border-base-100 border-2">
-                                                            <div className="h-10 w-10">
-                                                                <img src="https://picsum.photos/seed/user2/80/80" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="avatar border-base-100 border-2">
-                                                            <div className="h-10 w-10">
-                                                                <img src="https://picsum.photos/seed/user3/80/80" />
-                                                            </div>
-                                                        </div>
-                                                        <div className="avatar placeholder border-base-100 flex h-10 w-10 items-center justify-center border-2">
-                                                            <div className="bg-neutral text-neutral-content">
-                                                                <span>+5</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-base-content/60 group-hover:text-primary ml-auto text-xs transition-colors">
-                                                        Ver detalhes &rarr;
-                                                    </span>
+                                                    {/* Placeholder for future actions like edit/delete icons if needed */}
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="alert alert-info">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        className="h-6 w-6 shrink-0 stroke-current"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 9 0118 0z"
-                                        ></path>
-                                    </svg>
-                                    <span>
-                                        {searchTerm
-                                            ? 'Nenhum projeto encontrado para essa busca.'
-                                            : 'Nenhum projeto cadastrado.'}
-                                    </span>
+                                <div className="text-center text-gray-500">
+                                    Nenhum projeto encontrado para esta seleção.
                                 </div>
                             )}
                         </div>
