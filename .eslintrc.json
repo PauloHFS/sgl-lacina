@@ -24,5 +24,19 @@
         "react": {
             "version": "detect"
         }
-    }
+    },
+    "overrides": [
+        {
+            "files": [
+                "*.js"
+            ],
+            "parser": "espree",
+            "parserOptions": {
+                "project": null
+            },
+            "rules": {
+                "@typescript-eslint/no-var-requires": "off"
+            }
+        }
+    ]
 }
