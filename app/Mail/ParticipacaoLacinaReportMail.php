@@ -65,7 +65,7 @@ class ParticipacaoLacinaReportMail extends Mailable
     {
         $attachments = [];
         if ($this->pdfContent) {
-            $attachments[] = Attachment::fromData(fn () => $this->pdfContent, $this->pdfFilename)
+            $attachments[] = Attachment::fromData(fn() => $this->pdfContent, $this->pdfFilename)
                 ->withMime('application/pdf');
         }
         return $attachments;

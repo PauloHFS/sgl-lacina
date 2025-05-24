@@ -91,7 +91,7 @@ export default function Dashboard({
                     {/* Recent Projects */}
                     <div className="card bg-base-100 shadow">
                         <div className="card-body">
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="mb-4 flex items-center justify-between">
                                 <h3 className="card-title">
                                     Histórico de Projetos
                                 </h3>
