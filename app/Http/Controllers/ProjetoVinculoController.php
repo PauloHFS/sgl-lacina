@@ -97,25 +97,23 @@ class ProjetoVinculoController extends Controller
 
     $usuarioProjeto = UsuarioProjeto::findOrFail($id);
 
-    if ($usuarioProjeto->projeto_antigo_id) {
-      $vinculoAntigo = UsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
-        ->where('projeto_id', $usuarioProjeto->projeto_antigo_id)
-        ->where('status', StatusVinculoProjeto::APROVADO)
-        ->whereNull('data_fim')
-        ->first();
-      Log::info('Vínculo antigo encontrado: ', ['vinculoAntigo' => $vinculoAntigo, 'projetoAntigoId' => $usuarioProjeto->projeto_antigo_id]);
-      if ($vinculoAntigo) {
-        $vinculoAntigo->status = StatusVinculoProjeto::ENCERRADO;
-        $vinculoAntigo->data_fim = now();
-        $vinculoAntigo->save();
-      }
-    }
-
     if ($request->filled('status')) {
       $usuarioProjeto->status = $validatedData['status'];
-      if ($validatedData['status'] === StatusVinculoProjeto::ENCERRADO->value && !$request->filled('data_fim')) {
+
+      if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+        $vinculoAntigo = UsuarioProjeto::where('trocar', true)->where('usuario_id', $usuarioProjeto->usuario_id)->first();
+        Log::info('Vínculo antigo encontrado: ', ['vinculoAntigo' => $vinculoAntigo, 'projetoAntigoId' => $usuarioProjeto->projeto_antigo_id]);
+        if ($vinculoAntigo) {
+          $vinculoAntigo->trocar = false;
+          $vinculoAntigo->status = StatusVinculoProjeto::ENCERRADO;
+          $vinculoAntigo->data_fim = $usuarioProjeto->data_inicio;
+          $vinculoAntigo->save();
+        }
+      }
+
+      if ($validatedData['status'] === StatusVinculoProjeto::ENCERRADO && !$request->filled('data_fim')) {
         $usuarioProjeto->data_fim = now();
-      } elseif ($validatedData['status'] !== StatusVinculoProjeto::ENCERRADO->value) {
+      } elseif ($validatedData['status'] !== StatusVinculoProjeto::ENCERRADO) {
         // Se o status não for ENCERRADO, garantir que data_fim seja null,
         // a menos que explicitamente fornecido e diferente de ENCERRADO (cenário incomum).
         if (!$request->filled('data_fim')) {
