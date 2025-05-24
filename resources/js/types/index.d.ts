@@ -78,6 +78,7 @@ export type PageProps<
         user: User;
         isCoordenador: boolean;
         isColaborador: boolean;
+        isVinculoProjetoPendente: boolean;
     };
 };
 

@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user() ? $request->user()->toArray() : null,
                 'isCoordenador' => $request->user()?->isCoordenador(),
                 'isColaborador' => $request->user()?->isColaborador(),
+                'isVinculoProjetoPendente' => $request->user()?->isVinculoProjetoPendente(),
             ],
         ];
     }

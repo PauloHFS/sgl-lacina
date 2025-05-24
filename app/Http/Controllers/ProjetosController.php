@@ -135,7 +135,7 @@ class ProjetosController extends Controller
       });
 
       $temVinculosPendentes = $projeto->usuarios()
-        ->wherePivot('status', StatusVinculoProjeto::PENDENTE->value)
+        ->wherePivot('status', StatusVinculoProjeto::PENDENTE)
         ->exists();
     }
 
@@ -147,7 +147,6 @@ class ProjetosController extends Controller
       'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
       'participantesProjeto' => $participantesProjeto,
       'temVinculosPendentes' => $temVinculosPendentes,
-      'jaTemTrocaEmAndamento' => UsuarioProjeto::where('usuario_id', Auth::user()->id)->where('trocar', true)->exists(),
     ]);
   }
 

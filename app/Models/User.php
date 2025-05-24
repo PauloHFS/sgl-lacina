@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\Genero; // Added Genero enum import
 use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -116,22 +118,33 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isCoordenador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
-            return $this->vinculos()->where('tipo_vinculo', 'COORDENADOR')->exists();
+            return $this->vinculos()->where('tipo_vinculo', TipoVinculo::COORDENADOR)->exists();
         }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
-            ->where('tipo_vinculo', 'COORDENADOR')
+            ->where('tipo_vinculo', TipoVinculo::COORDENADOR)
             ->exists();
     }
 
     public function isColaborador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
-            return $this->vinculos()->where('tipo_vinculo', 'COORDENADOR')->exists();
+            return $this->vinculos()->where('tipo_vinculo', TipoVinculo::COLABORADOR)->exists();
         }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
-            ->where('tipo_vinculo', 'COLABORADOR')
+            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+            ->exists();
+    }
+
+    public function isVinculoProjetoPendente(?Projeto $projeto = null)
+    {
+        if ($projeto === null) {
+            return $this->vinculos()->where('status', StatusVinculoProjeto::PENDENTE)->exists();
+        }
+        return $this->projetos()
+            ->where('projeto_id', $projeto->id)
+            ->where('status', StatusVinculoProjeto::PENDENTE)
             ->exists();
     }
 }

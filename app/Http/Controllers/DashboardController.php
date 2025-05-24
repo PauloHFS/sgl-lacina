@@ -15,11 +15,8 @@ class DashboardController extends Controller
 {
   public function index()
   {
-
-
     $user = Auth::user();
 
-    // verifica se o usuário é coordenador
     if ($user->isCoordenador()) {
       return $this->indexCoordenador();
     }
@@ -28,10 +25,6 @@ class DashboardController extends Controller
       ->select('usuario_projeto.*', 'projetos.nome as projeto_nome', 'projetos.cliente as projeto_cliente')
       ->where('usuario_projeto.usuario_id', $user->id)
       ->get();
-
-    Log::debug("User Vinculos: ", [
-      'usuarioVinculos' => $usuarioVinculos,
-    ]);
 
     return Inertia::render('Dashboard', [
       'projetos' => $usuarioVinculos,
