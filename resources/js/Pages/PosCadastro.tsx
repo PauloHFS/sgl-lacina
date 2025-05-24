@@ -1,6 +1,7 @@
 import { ESTADOS } from '@/constants';
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { Banco, PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import React from 'react';
@@ -34,7 +35,7 @@ interface PosCadastroForm {
 }
 
 interface PosCadastroProps extends PageProps {
-    bancos: Array<{ id: string; nome: string; codigo: string }>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
+    bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
 
 export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
@@ -66,6 +67,8 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
             tecnologias: '',
         });
 
+    const { toast } = useToast();
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -80,10 +83,10 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
             data: cleanedData,
             forceFormData: true,
             onSuccess: () => {
-                alert('Cadastro realizado com sucesso!');
+                toast('Cadastro realizado com sucesso!', 'success');
             },
             onError: () => {
-                alert('Erro ao realizar cadastro. Tente novamente.');
+                toast('Erro ao realizar cadastro. Tente novamente.', 'error');
             },
         });
     };
@@ -96,7 +99,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
             .get(`https://viacep.com.br/ws/${cep}/json/`)
             .then((res) => {
                 if (res.data.erro) {
-                    alert('CEP não encontrado');
+                    toast('CEP não encontrado', 'info');
                     return;
                 }
 
@@ -111,7 +114,10 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
             })
             .catch((err) => {
                 console.error('Erro ao buscar CEP:', err);
-                alert('Erro ao buscar CEP. Tente novamente mais tarde.');
+                toast(
+                    'Erro ao buscar CEP. Tente novamente mais tarde.',
+                    'info',
+                );
             });
     };
 
@@ -134,46 +140,82 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                     {/* Foto de Perfil */}
                                     <div>
                                         <label className="form-control w-full">
-                                            <span className="label-text mb-1">
+                                            <span className="label-text mb-2">
                                                 Foto de Perfil
                                             </span>
-                                            <div className="flex flex-col gap-2">
-                                                {data.foto_url && (
-                                                    <div className="avatar">
-                                                        <div className="w-24 rounded">
+                                            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                                                {/* Avatar Preview or Placeholder */}
+                                                <div className="avatar">
+                                                    {data.foto_url ? (
+                                                        <div className="ring-primary ring-offset-base-100 h-24 w-24 rounded-lg ring ring-offset-2">
                                                             <img
                                                                 src={URL.createObjectURL(
                                                                     data.foto_url,
                                                                 )}
-                                                                alt="Preview"
+                                                                alt="Preview da Foto de Perfil"
+                                                                className="h-full w-full rounded-lg object-cover"
                                                             />
                                                         </div>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    id="foto_url"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
-                                                    onChange={(e) => {
-                                                        if (
-                                                            e.target.files &&
-                                                            e.target.files[0]
-                                                        ) {
-                                                            setData(
-                                                                'foto_url',
+                                                    ) : (
+                                                        <div className="bg-base-200 ring-base-300 flex h-24 w-24 items-center justify-center rounded-lg ring-1">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={
+                                                                    1.5
+                                                                }
+                                                                stroke="currentColor"
+                                                                className="text-base-content h-12 w-12 opacity-30"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                                                />
+                                                            </svg>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* File Input and messages */}
+                                                <div className="w-full flex-grow sm:w-auto">
+                                                    <input
+                                                        id="foto_url"
+                                                        type="file"
+                                                        accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
+                                                        className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
+                                                        onChange={(e) => {
+                                                            if (
                                                                 e.target
-                                                                    .files[0],
-                                                            );
-                                                        }
-                                                    }}
-                                                />
+                                                                    .files &&
+                                                                e.target
+                                                                    .files[0]
+                                                            ) {
+                                                                const file =
+                                                                    e.target
+                                                                        .files[0];
+                                                                // TODO: Adicionar validação de tamanho do arquivo no frontend para melhor UX
+                                                                setData(
+                                                                    'foto_url',
+                                                                    file,
+                                                                );
+                                                            }
+                                                        }}
+                                                    />
+                                                    {errors.foto_url ? (
+                                                        <span className="label-text-alt text-error mt-1">
+                                                            {errors.foto_url}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="label-text-alt mt-1">
+                                                            Formatos aceitos:
+                                                            PNG, JPG, GIF, WEBP,
+                                                            HEIC.
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            {errors.foto_url && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.foto_url}
-                                                </span>
-                                            )}
                                         </label>
                                     </div>
 

@@ -29,6 +29,7 @@ class ProjetoVinculoController extends Controller
 
     $user = Auth::user();
 
+
     if ($user->status_cadastro !== StatusCadastro::ACEITO) {
       return back()->with('error', 'Seu cadastro não está aceito. Entre em contato com o administrador.');
     }
@@ -44,6 +45,14 @@ class ProjetoVinculoController extends Controller
     }
 
     if ($request->trocar) {
+
+      // checar se ja nao tem um trocar true para esse usuario
+      $jaTemTrocar = UsuarioProjeto::where('usuario_id', $user->id)->where('trocar', true)->exists();
+
+      if ($jaTemTrocar) {
+        return back()->with('error', 'Você já possui uma troca em andamento.');
+      }
+
       DB::transaction(function () use ($request, $user) {
         UsuarioProjeto::whereId($request->usuario_projeto_trocado_id)
           ->update([
