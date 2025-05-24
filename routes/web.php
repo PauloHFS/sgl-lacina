@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Banco;
 use App\Http\Controllers\ProjetosController;
+use App\Http\Controllers\RelatorioController;
 
 // Rota para a página de horários (mock)
 Route::get('/meus-horarios', function () {
@@ -93,6 +94,11 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
             Route::post('/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])->name('vinculos.recusar');
         });
     });
+});
+
+// Nova rota para disparar a geração e envio do relatório de participação
+Route::middleware('auth')->group(function () {
+    Route::post('/relatorio/participacao', [RelatorioController::class, 'enviarRelatorioParticipacao'])->name('relatorio.participacao.enviar');
 });
 
 require __DIR__ . '/auth.php';
