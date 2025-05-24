@@ -147,6 +147,7 @@ class ProjetosController extends Controller
       'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
       'participantesProjeto' => $participantesProjeto,
       'temVinculosPendentes' => $temVinculosPendentes,
+      'jaTemTrocaEmAndamento' => UsuarioProjeto::where('usuario_id', Auth::user()->id)->where('trocar', true)->exists(),
     ]);
   }
 
