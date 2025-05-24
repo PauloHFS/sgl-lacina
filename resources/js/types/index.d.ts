@@ -108,7 +108,6 @@ export interface UsuarioProjeto {
     id: string;
     usuario_id: string;
     projeto_id: string;
-    projeto_antigo_id?: string | null;
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;

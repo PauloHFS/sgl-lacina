@@ -26,8 +26,8 @@ class UsuarioProjeto extends Model
     protected $fillable = [
         'id',
         'projeto_id',
-        'projeto_antigo_id',
         'usuario_id',
+        'trocar',
         'tipo_vinculo',
         'funcao',
         'status',
@@ -53,10 +53,5 @@ class UsuarioProjeto extends Model
     public function projeto(): BelongsTo
     {
         return $this->belongsTo(Projeto::class, 'projeto_id');
-    }
-
-    public function projetoAntigo(): BelongsTo
-    {
-        return $this->belongsTo(Projeto::class, 'projeto_antigo_id');
     }
 }

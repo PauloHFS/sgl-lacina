@@ -264,16 +264,44 @@ class DatabaseSeeder extends Seeder
         User::factory(5)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::PENDENTE]);
         User::factory(2)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::RECUSADO]);
 
-        // solicitacao de troca do usuario ativo
-        UsuarioProjeto::factory()->create([
-            'usuario_id' => $usuario_ativo->id,
-            'projeto_id' => $projeto3->id,
-            'projeto_antigo_id' => $projeto1->id,
+        $usuario_trocas = User::factory()->cadastroCompleto()->create([
+            'name' => 'Usuário Trocas',
+            'email' => 'usuario_trocas@ccc.ufcg.edu.br',
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => StatusCadastro::ACEITO,
+        ]);
+
+        $vinculoTrocado = UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_trocas->id,
+            'projeto_id' => $projeto1->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'carga_horaria_semanal' => 10,
-            'data_inicio' => now(),
+            'data_inicio' => now()->subYears(5),
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+
+        $vinculoTrocado->update([
+            'trocar' => true,
+            'updated_at' => now()->subYears(4),
+        ]);
+
+        $vinculoNovo = UsuarioProjeto::factory()->create([
+            'usuario_id' => $usuario_trocas->id,
+            'projeto_id' => $projeto2->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 10,
+            'data_inicio' => now()->subYears(4),
             'status' => StatusVinculoProjeto::PENDENTE,
+        ]);
+
+        $vinculoNovo->update([
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+        $vinculoTrocado->update([
+            'status' => StatusVinculoProjeto::ENCERRADO,
+            'data_fim' => now()->subYears(4),
         ]);
     }
 }

@@ -56,7 +56,6 @@ class ProjetoVinculoController extends Controller
         'status' => StatusVinculoProjeto::PENDENTE,
         'carga_horaria_semanal' => $request->carga_horaria_semanal,
         'data_inicio' => $request->data_inicio,
-        'projeto_antigo_id' => $projetoAntigo->projeto_id,
       ]);
     } else {
       UsuarioProjeto::create([

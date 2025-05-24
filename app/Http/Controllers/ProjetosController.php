@@ -187,4 +187,39 @@ class ProjetosController extends Controller
 
     return Redirect::route('projetos.index')->with('success', 'Projeto cadastrado com sucesso!');
   }
+
+  public function update(Request $request, Projeto $projeto)
+  {
+    // Authorization: Check if the authenticated user is a coordinator of this project
+    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
+    if (!$usuarioVinculo || $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value || $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value) {
+      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Você não tem permissão para editar este projeto.');
+    }
+
+    $validatedData = $request->validate([
+      'nome' => 'required|string|max:255',
+      'descricao' => 'nullable|string',
+      'data_inicio' => 'required|date',
+      'data_termino' => 'nullable|date|after_or_equal:data_inicio',
+      'cliente' => 'required|string|max:255',
+      'slack_url' => 'nullable|url|max:255',
+      'discord_url' => 'nullable|url|max:255',
+      'board_url' => 'nullable|url|max:255',
+      'git_url' => 'nullable|url|max:255',
+      'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
+    ]);
+
+    try {
+      $projeto->update($validatedData);
+    } catch (\Throwable $th) {
+      Log::error('Erro ao atualizar projeto:', [
+        'error' => $th->getMessage(),
+        'stack' => $th->getTraceAsString(),
+        'projeto_id' => $projeto->id,
+      ]);
+      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Erro ao atualizar o projeto. Tente novamente mais tarde.');
+    }
+
+    return Redirect::route('projetos.show', $projeto->id)->with('success', 'Projeto atualizado com sucesso!');
+  }
 }

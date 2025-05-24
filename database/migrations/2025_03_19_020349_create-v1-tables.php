@@ -36,7 +36,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('usuario_id');
             $table->uuid('projeto_id');
-            $table->uuid('projeto_antigo_id')->nullable();
+            $table->boolean('trocar')->default(false);
             $table->enum('tipo_vinculo', array_column(TipoVinculo::cases(), 'value'));
             $table->enum('funcao', array_column(Funcao::cases(), 'value'));
             $table->enum('status', array_column(StatusVinculoProjeto::cases(), 'value'));
@@ -60,7 +60,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('usuario_id');
             $table->uuid('projeto_id');
-            $table->uuid('projeto_antigo_id')->nullable();
+            $table->boolean('trocar')->default(false);
             $table->enum('tipo_vinculo', array_column(TipoVinculo::cases(), 'value'));
             $table->enum('funcao', array_column(Funcao::cases(), 'value'));
             $table->enum('status', array_column(StatusVinculoProjeto::cases(), 'value'));

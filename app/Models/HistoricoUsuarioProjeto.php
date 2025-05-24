@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
+use App\Enums\StatusVinculoProjeto;
 
 class HistoricoUsuarioProjeto extends Model
 {
@@ -16,7 +19,7 @@ class HistoricoUsuarioProjeto extends Model
     protected $fillable = [
         'usuario_id',
         'projeto_id',
-        'projeto_antigo_id',
+        'trocar',
         'tipo_vinculo',
         'funcao',
         'status',
@@ -33,9 +36,9 @@ class HistoricoUsuarioProjeto extends Model
     protected $casts = [
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
-        'tipo_vinculo' => \App\Enums\TipoVinculo::class,
-        'funcao' => \App\Enums\Funcao::class,
-        'status' => \App\Enums\StatusVinculoProjeto::class,
+        'tipo_vinculo' => TipoVinculo::class,
+        'funcao' => Funcao::class,
+        'status' => StatusVinculoProjeto::class,
     ];
 
     public function usuario()
@@ -46,10 +49,5 @@ class HistoricoUsuarioProjeto extends Model
     public function projeto()
     {
         return $this->belongsTo(Projeto::class, 'projeto_id');
-    }
-
-    public function projetoAntigo()
-    {
-        return $this->belongsTo(Projeto::class, 'projeto_antigo_id');
     }
 }
