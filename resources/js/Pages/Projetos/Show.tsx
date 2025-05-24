@@ -31,6 +31,7 @@ interface ShowPageProps extends PageProps {
 }
 
 export default function Show({
+    auth,
     projeto,
     tiposVinculo,
     funcoes,
@@ -148,35 +149,37 @@ export default function Show({
                                 Cliente: {projeto.cliente}
                             </p>
 
-                            <Link
-                                href={route('colaboradores.index', {
-                                    status: 'vinculo_pendente',
-                                    project_id: projeto.id,
-                                })}
-                            >
-                                <div
-                                    role="alert"
-                                    className="alert alert-warning mt-4 cursor-pointer hover:shadow-lg"
+                            {auth.isCoordenador && (
+                                <Link
+                                    href={route('colaboradores.index', {
+                                        status: 'vinculo_pendente',
+                                        project_id: projeto.id,
+                                    })}
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        className="stroke-info h-6 w-6 shrink-0"
+                                    <div
+                                        role="alert"
+                                        className="alert alert-warning mt-4 cursor-pointer hover:shadow-lg"
                                     >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        ></path>
-                                    </svg>
-                                    <span>
-                                        Há solicitações de vínculos pendentes!
-                                        Clique para ver.
-                                    </span>
-                                </div>
-                            </Link>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            className="stroke-info h-6 w-6 shrink-0"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            ></path>
+                                        </svg>
+                                        <span>
+                                            Há solicitações de vínculos
+                                            pendentes! Clique para ver.
+                                        </span>
+                                    </div>
+                                </Link>
+                            )}
 
                             <div className="mt-4 space-y-2">
                                 <p>
