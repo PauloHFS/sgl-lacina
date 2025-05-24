@@ -11,6 +11,7 @@ use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ProjetoVinculoController extends Controller
 {
@@ -22,7 +23,8 @@ class ProjetoVinculoController extends Controller
       'carga_horaria_semanal' => 'required|integer|min:1|max:40',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
-      'solicitar_troca' => 'sometimes|boolean',
+      'trocar' => 'sometimes|boolean',
+      'usuario_projeto_trocado_id' => 'sometimes|exists:usuario_projeto,id',
     ]);
 
     $user = Auth::user();
@@ -41,22 +43,23 @@ class ProjetoVinculoController extends Controller
       return back()->with('error', 'Você já possui solicitação ou vínculo ativo neste projeto.');
     }
 
-    if ($request->solicitar_troca) {
+    if ($request->trocar) {
+      DB::transaction(function () use ($request, $user) {
+        UsuarioProjeto::whereId($request->usuario_projeto_trocado_id)
+          ->update([
+            'trocar' => true,
+          ]);
 
-      $projetoAntigo = UsuarioProjeto::where('usuario_id', $user->id)
-        ->where('status', 'APROVADO')
-        ->whereNull('data_fim')
-        ->first();
-
-      UsuarioProjeto::create([
-        'usuario_id' => $user->id,
-        'projeto_id' => $request->projeto_id,
-        'tipo_vinculo' => $request->tipo_vinculo,
-        'funcao' => $request->funcao,
-        'status' => StatusVinculoProjeto::PENDENTE,
-        'carga_horaria_semanal' => $request->carga_horaria_semanal,
-        'data_inicio' => $request->data_inicio,
-      ]);
+        UsuarioProjeto::create([
+          'usuario_id' => $user->id,
+          'projeto_id' => $request->projeto_id,
+          'tipo_vinculo' => $request->tipo_vinculo,
+          'funcao' => $request->funcao,
+          'status' => StatusVinculoProjeto::PENDENTE,
+          'carga_horaria_semanal' => $request->carga_horaria_semanal,
+          'data_inicio' => $request->data_inicio,
+        ]);
+      });
     } else {
       UsuarioProjeto::create([
         'usuario_id' => $user->id,

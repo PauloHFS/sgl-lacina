@@ -107,7 +107,9 @@ export interface Projeto {
 export interface UsuarioProjeto {
     id: string;
     usuario_id: string;
+    usuario?: User;
     projeto_id: string;
+    projeto?: Projeto;
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;

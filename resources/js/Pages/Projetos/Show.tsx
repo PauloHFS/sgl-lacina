@@ -1,3 +1,5 @@
+import Checkbox from '@/Components/Checkbox';
+import InputLabel from '@/Components/InputLabel';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -26,9 +28,20 @@ interface ShowPageProps extends PageProps {
     tiposVinculo: TipoVinculo[];
     funcoes: Funcao[];
     usuarioVinculo: UsuarioProjeto | null;
+    vinculosDoUsuarioLogadoNoProjeto: UsuarioProjeto[];
     participantesProjeto?: Paginated<ParticipanteProjeto>;
     temVinculosPendentes: boolean;
 }
+
+type VinculoCreateForm = {
+    trocar: boolean;
+    usuario_projeto_trocado_id: string | null;
+    projeto_id: string;
+    tipo_vinculo: TipoVinculo | '';
+    funcao: Funcao | '';
+    carga_horaria_semanal: number;
+    data_inicio: string;
+};
 
 export default function Show({
     auth,
@@ -36,20 +49,19 @@ export default function Show({
     tiposVinculo,
     funcoes,
     usuarioVinculo,
+    vinculosDoUsuarioLogadoNoProjeto,
     participantesProjeto,
     temVinculosPendentes,
 }: ShowPageProps) {
     const { toast } = useToast();
-    const form = useForm({
+    const form = useForm<VinculoCreateForm>({
+        trocar: false,
+        usuario_projeto_trocado_id: null,
         projeto_id: projeto.id,
-        tipo_vinculo: '' as TipoVinculo | '',
-        funcao: '' as Funcao | '',
+        tipo_vinculo: '',
+        funcao: '',
         carga_horaria_semanal: 20,
         data_inicio: '',
-    });
-
-    console.log(`${new Date().toISOString()} - [Show]`, {
-        temVinculosPendentes,
     });
 
     const isCoordenadorDoProjetoAtual =
@@ -149,7 +161,7 @@ export default function Show({
                                 Cliente: {projeto.cliente}
                             </p>
 
-                            {auth.isCoordenador && (
+                            {auth.isCoordenador && temVinculosPendentes && (
                                 <Link
                                     href={route('colaboradores.index', {
                                         status: 'vinculo_pendente',
@@ -232,11 +244,69 @@ export default function Show({
                                 <form onSubmit={submit} className="space-y-6">
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         <div className="form-control w-full">
-                                            <label className="label">
-                                                <span className="label-text font-medium">
-                                                    Tipo de Vínculo
-                                                </span>
-                                            </label>
+                                            <InputLabel>
+                                                Trocar de projeto?
+                                            </InputLabel>
+                                            <Checkbox
+                                                checked={form.data.trocar}
+                                                onChange={(e) =>
+                                                    form.setData(
+                                                        'trocar',
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="form-control w-full">
+                                            <InputLabel>
+                                                Projeto a ser trocado
+                                            </InputLabel>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                disabled={!form.data.trocar}
+                                                value={
+                                                    form.data
+                                                        .usuario_projeto_trocado_id ||
+                                                    ''
+                                                }
+                                                onChange={(e) =>
+                                                    form.setData(
+                                                        'usuario_projeto_trocado_id',
+                                                        e.target.value || null,
+                                                    )
+                                                }
+                                            >
+                                                <option value="" disabled>
+                                                    Selecione o vínculo a ser
+                                                    encerrado
+                                                </option>
+                                                {vinculosDoUsuarioLogadoNoProjeto
+                                                    .filter(
+                                                        (vinculo) =>
+                                                            vinculo.status ===
+                                                                'APROVADO' &&
+                                                            !vinculo.data_fim,
+                                                    )
+                                                    .map((vinculo) => (
+                                                        <option
+                                                            key={vinculo.id}
+                                                            value={vinculo.id}
+                                                        >
+                                                            {
+                                                                vinculo.projeto
+                                                                    ?.nome
+                                                            }{' '}
+                                                            ({vinculo.funcao})
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-control w-full">
+                                            <InputLabel>
+                                                Tipo de Vínculo
+                                            </InputLabel>
                                             <select
                                                 className="select select-bordered w-full"
                                                 value={form.data.tipo_vinculo}

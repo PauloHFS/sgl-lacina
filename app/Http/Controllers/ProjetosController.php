@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Enums\TipoProjeto;
@@ -100,7 +101,15 @@ class ProjetosController extends Controller
       return Redirect::route('projetos.index')->with('error', 'Projeto não encontrado.');
     }
 
-    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
+    $usuarioAutenticado = Auth::user();
+    $usuarioVinculo = $projeto->getUsuarioVinculo($usuarioAutenticado->id);
+
+    $vinculosDoUsuarioLogadoNoProjeto = UsuarioProjeto::where('usuario_id', $usuarioAutenticado->id)
+      ->with('projeto') // Eager load project data
+      ->orderBy('data_inicio', 'desc')
+      ->get();
+
+
     $participantesProjeto = null;
     $temVinculosPendentes = false;
 
@@ -135,6 +144,7 @@ class ProjetosController extends Controller
       'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
       'funcoes' => array_column(Funcao::cases(), 'value'),
       'usuarioVinculo' => $usuarioVinculo,
+      'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
       'participantesProjeto' => $participantesProjeto,
       'temVinculosPendentes' => $temVinculosPendentes,
     ]);

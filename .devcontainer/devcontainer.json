@@ -21,8 +21,7 @@
 				"bradlc.vscode-tailwindcss",
 				"amiralizadeh9480.laravel-extra-intellisense",
 				"ryannaddy.laravel-artisan",
-				"laravel.vscode-laravel",
-				"ms-ossdata.vscode-pgsql"
+				"laravel.vscode-laravel"
 			],
 			"settings": {
 				"php.validate.executablePath": "/usr/bin/php",
