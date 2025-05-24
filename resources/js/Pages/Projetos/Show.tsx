@@ -31,16 +31,17 @@ interface ShowPageProps extends PageProps {
     vinculosDoUsuarioLogadoNoProjeto: UsuarioProjeto[];
     participantesProjeto?: Paginated<ParticipanteProjeto>;
     temVinculosPendentes: boolean;
+    jaTemTrocaEmAndamento: boolean;
 }
 
 type VinculoCreateForm = {
-    trocar: boolean;
-    usuario_projeto_trocado_id: string | null;
     projeto_id: string;
     tipo_vinculo: TipoVinculo | '';
     funcao: Funcao | '';
     carga_horaria_semanal: number;
     data_inicio: string;
+    trocar?: boolean;
+    usuario_projeto_trocado_id?: string | null;
 };
 
 export default function Show({
@@ -52,11 +53,10 @@ export default function Show({
     vinculosDoUsuarioLogadoNoProjeto,
     participantesProjeto,
     temVinculosPendentes,
+    jaTemTrocaEmAndamento,
 }: ShowPageProps) {
     const { toast } = useToast();
     const form = useForm<VinculoCreateForm>({
-        trocar: false,
-        usuario_projeto_trocado_id: null,
         projeto_id: projeto.id,
         tipo_vinculo: '',
         funcao: '',
@@ -243,65 +243,126 @@ export default function Show({
                                 </p>
                                 <form onSubmit={submit} className="space-y-6">
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        <div className="form-control w-full">
-                                            <InputLabel>
-                                                Trocar de projeto?
-                                            </InputLabel>
-                                            <Checkbox
-                                                checked={form.data.trocar}
-                                                onChange={(e) =>
-                                                    form.setData(
-                                                        'trocar',
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="form-control w-full">
-                                            <InputLabel>
-                                                Projeto a ser trocado
-                                            </InputLabel>
-                                            <select
-                                                className="select select-bordered w-full"
-                                                disabled={!form.data.trocar}
-                                                value={
-                                                    form.data
-                                                        .usuario_projeto_trocado_id ||
-                                                    ''
-                                                }
-                                                onChange={(e) =>
-                                                    form.setData(
-                                                        'usuario_projeto_trocado_id',
-                                                        e.target.value || null,
-                                                    )
-                                                }
+                                        {jaTemTrocaEmAndamento ? (
+                                            <div
+                                                role="alert"
+                                                className="alert alert-info md:col-span-2"
                                             >
-                                                <option value="" disabled>
-                                                    Selecione o vínculo a ser
-                                                    encerrado
-                                                </option>
-                                                {vinculosDoUsuarioLogadoNoProjeto
-                                                    .filter(
-                                                        (vinculo) =>
-                                                            vinculo.status ===
-                                                                'APROVADO' &&
-                                                            !vinculo.data_fim,
-                                                    )
-                                                    .map((vinculo) => (
-                                                        <option
-                                                            key={vinculo.id}
-                                                            value={vinculo.id}
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    className="h-6 w-6 shrink-0 stroke-current"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    ></path>
+                                                </svg>
+                                                <span>
+                                                    Você já possui uma
+                                                    solicitação de troca de
+                                                    projeto em andamento. No
+                                                    momento, você só pode
+                                                    solicitar novos vínculos
+                                                    (sem marcar a opção "Trocar
+                                                    de projeto?").
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            vinculosDoUsuarioLogadoNoProjeto.length >
+                                                0 && (
+                                                <>
+                                                    <div className="form-control w-full">
+                                                        <InputLabel>
+                                                            Trocar de projeto?
+                                                        </InputLabel>
+                                                        <Checkbox
+                                                            checked={
+                                                                form.data.trocar
+                                                            }
+                                                            onChange={(e) =>
+                                                                form.setData(
+                                                                    'trocar',
+                                                                    e.target
+                                                                        .checked,
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-control w-full">
+                                                        <InputLabel>
+                                                            Projeto a ser
+                                                            trocado
+                                                        </InputLabel>
+                                                        <select
+                                                            className="select select-bordered w-full"
+                                                            disabled={
+                                                                !form.data
+                                                                    .trocar
+                                                            }
+                                                            value={
+                                                                form.data
+                                                                    .usuario_projeto_trocado_id ||
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                form.setData(
+                                                                    'usuario_projeto_trocado_id',
+                                                                    e.target
+                                                                        .value ||
+                                                                        null,
+                                                                )
+                                                            }
                                                         >
-                                                            {
-                                                                vinculo.projeto
-                                                                    ?.nome
-                                                            }{' '}
-                                                            ({vinculo.funcao})
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                        </div>
+                                                            <option
+                                                                value=""
+                                                                disabled
+                                                            >
+                                                                Selecione o
+                                                                vínculo a ser
+                                                                encerrado
+                                                            </option>
+                                                            {vinculosDoUsuarioLogadoNoProjeto
+                                                                .filter(
+                                                                    (vinculo) =>
+                                                                        vinculo.status ===
+                                                                            'APROVADO' &&
+                                                                        !vinculo.data_fim,
+                                                                )
+                                                                .map(
+                                                                    (
+                                                                        vinculo,
+                                                                    ) => (
+                                                                        <option
+                                                                            key={
+                                                                                vinculo.id
+                                                                            }
+                                                                            value={
+                                                                                vinculo.id
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                vinculo
+                                                                                    .projeto
+                                                                                    ?.nome
+                                                                            }{' '}
+                                                                            (
+                                                                            {
+                                                                                vinculo.funcao
+                                                                            }
+                                                                            )
+                                                                        </option>
+                                                                    ),
+                                                                )}
+                                                        </select>
+                                                    </div>
+                                                </>
+                                            )
+                                        )}
 
                                         <div className="form-control w-full">
                                             <InputLabel>
