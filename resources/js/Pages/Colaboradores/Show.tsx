@@ -1,22 +1,15 @@
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Funcao,
+    PageProps,
     StatusVinculoProjeto,
     TipoProjeto,
     TipoVinculo,
 } from '@/types';
-import {
-    Head,
-    PageProps as InertiaBasePageProps,
-    Link,
-    router,
-    useForm,
-} from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-    ColaboradorDetalhes,
-    ColaboradorDetalhesFormData,
-} from './Partials/ColaboradorDetalhes';
+import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
 import { InfoItem } from './Partials/InfoItem';
@@ -99,35 +92,34 @@ export interface ColaboradorData {
     }>;
 }
 
-interface ShowPageSpecificProps {
+interface ShowPageSpecificProps extends PageProps {
     colaborador: ColaboradorData;
     bancos: Array<{ id: string; nome: string; codigo: string }>;
     ufs: Array<string>;
     generos: Array<{ value: string; label: string }>;
     can_update_colaborador: boolean;
 }
-// InertiaBasePageProps already includes 'flash', 'errors', etc.
-export type ShowProps = InertiaBasePageProps & ShowPageSpecificProps;
 
-export default function Show(props: ShowProps) {
-    const { colaborador, bancos, ufs, generos, can_update_colaborador, flash } =
-        props;
+export default function Show(props: ShowPageSpecificProps) {
+    const {
+        colaborador,
+        bancos,
+        ufs,
+        generos,
+        can_update_colaborador,
+        // flash
+    } = props;
 
-    const toast = (message: string, type: 'success' | 'error') => {
-        const flashData =
-            type === 'success' ? { success: message } : { error: message };
-        router.reload({ only: ['flash'], data: { flash: flashData } });
-        console.log(`Toast [${type}]: ${message}`);
-    };
+    const { toast } = useToast();
 
-    useEffect(() => {
-        if (flash?.success) {
-            console.log(`Flash Success: ${flash.success}`);
-        }
-        if (flash?.error) {
-            console.error(`Flash Error: ${flash.error}`);
-        }
-    }, [flash]);
+    // useEffect(() => {
+    //     if (flash?.success) {
+    //         toast(flash.success, 'success');
+    //     }
+    //     if (flash?.error) {
+    //         toast(flash.error, 'error');
+    //     }
+    // }, [flash, toast]);
 
     const [isEditingDetalhes, setIsEditingDetalhes] = useState(false);
 
@@ -138,7 +130,7 @@ export default function Show(props: ShowProps) {
         errors: vinculoErrors,
         put: putVinculo,
         processing: processingVinculo,
-        reset: resetVinculoForm,
+        // reset: resetVinculoForm,
     } = useForm<{
         status?: StatusVinculoProjeto;
         funcao?: Funcao;
@@ -164,9 +156,8 @@ export default function Show(props: ShowProps) {
         processing: processingDetalhes,
         reset: resetDetalhesForm,
         clearErrors: clearDetalhesErrors,
-    } = useForm<ColaboradorDetalhesFormData>({
+    } = useForm({
         name: colaborador.name,
-        email: colaborador.email,
         curriculo_lattes_url: colaborador.curriculo_lattes_url,
         linkedin_url: colaborador.linkedin_url,
         github_url: colaborador.github_url,
@@ -313,7 +304,7 @@ export default function Show(props: ShowProps) {
     };
 
     const handleResetVinculoFields = useCallback(() => {
-        resetVinculoForm({
+        setVinculoData({
             status: colaborador.vinculo?.status,
             funcao: originalVinculoDisplayValues.funcao,
             tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
@@ -321,13 +312,13 @@ export default function Show(props: ShowProps) {
                 originalVinculoDisplayValues.carga_horaria_semanal,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
-    }, [resetVinculoForm, colaborador.vinculo, originalVinculoDisplayValues]);
+    }, [setVinculoData, colaborador.vinculo, originalVinculoDisplayValues]);
 
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
 
-            {/* Toast Messages using daisyUI alert component */}
+            {/* Toast Messages using daisyUI alert component
             {flash?.success && (
                 <div className="toast toast-top toast-center">
                     <div role="alert" className="alert alert-success">
@@ -367,7 +358,7 @@ export default function Show(props: ShowProps) {
                         <span>{flash.error}</span>
                     </div>
                 </div>
-            )}
+            )} */}
 
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
