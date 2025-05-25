@@ -4,72 +4,84 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Banco, PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import React from 'react';
+import React, { FormEventHandler } from 'react';
 import { IMaskInput } from 'react-imask';
 
-interface PosCadastroForm {
-    foto_url: File | null;
-    genero: string;
-    data_nascimento: string;
-    cpf: string;
-    rg: string;
-    uf_rg: string;
-    orgao_emissor_rg: string;
-    cep: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    estado: string;
-    telefone: string;
-    conta_bancaria: string;
-    agencia: string;
-    banco_id: string;
-    linkedin_url: string;
-    github_url: string;
-    figma_url: string;
-    curriculo_lattes_url: string;
-    area_atuacao: string;
-    tecnologias: string;
-}
+// interface PosCadastroForm {
+//     foto_url: File | null;
+//     genero: string;
+//     data_nascimento: string;
+//     cpf: string;
+//     rg: string;
+//     uf_rg: string;
+//     orgao_emissor_rg: string;
+//     cep: string;
+//     endereco: string;
+//     numero: string;
+//     complemento: string;
+//     bairro: string;
+//     cidade: string;
+//     estado: string;
+//     telefone: string;
+//     conta_bancaria: string;
+//     agencia: string;
+//     banco_id: string;
+//     linkedin_url: string;
+//     github_url: string;
+//     figma_url: string;
+//     curriculo_lattes_url: string;
+//     area_atuacao: string;
+//     tecnologias: string;
+// }
 
 interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
 
+const ORGAOS_EMISSORES = [
+    {
+        sigla: 'SSP',
+        nome: 'Secretaria de Segurança Pública',
+    },
+    { sigla: 'DPF', nome: 'Departamento de Polícia Federal' },
+    { sigla: 'MRE', nome: 'Ministério das Relações Exteriores' },
+    { sigla: 'COMAER', nome: 'Comando da Aeronáutica' },
+    { sigla: 'COLOG', nome: 'Comando Logístico do Exército' },
+    { sigla: 'DGePM', nome: 'Diretoria-Geral do Pessoal da Marinha' },
+    { sigla: 'OUTROS', nome: 'Outros/Conselhos Profissionais' },
+];
+
 export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
-    const { data, setData, post, processing, errors } =
-        useForm<PosCadastroForm>(`PosCadastro:${auth.user.id}`, {
-            foto_url: null,
-            genero: '',
-            data_nascimento: '',
-            rg: '',
-            uf_rg: '',
-            orgao_emissor_rg: '',
-            cpf: '',
-            cep: '',
-            endereco: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            cidade: '',
-            estado: '',
-            telefone: '',
-            conta_bancaria: '',
-            agencia: '',
-            banco_id: '',
-            curriculo_lattes_url: '',
-            linkedin_url: '',
-            github_url: '',
-            figma_url: '',
-            area_atuacao: '',
-            tecnologias: '',
-        });
+    const { data, setData, post, errors, processing } = useForm({
+        foto_url: null,
+        genero: '',
+        data_nascimento: '',
+        rg: auth.user.rg || '',
+        uf_rg: auth.user.uf_rg || '',
+        orgao_emissor_rg: auth.user.orgao_emissor_rg || '',
+        cpf: '',
+        cep: '',
+        endereco: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        telefone: '',
+        conta_bancaria: '',
+        agencia: '',
+        banco_id: '',
+        curriculo_lattes_url: '',
+        linkedin_url: '',
+        github_url: '',
+        figma_url: '',
+        area_atuacao: '',
+        tecnologias: '',
+    });
 
     const { toast } = useToast();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
 
         // Remover formatação do CPF e telefone antes de enviar
@@ -79,7 +91,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
             telefone: data.telefone.replace(/\D/g, ''),
         };
 
-        post('/profile/update', {
+        post(route('profile.completarCadastro'), {
             data: cleanedData,
             forceFormData: true,
             onSuccess: () => {
@@ -355,12 +367,12 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                 type="text"
                                                 className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
                                                 value={data.rg}
-                                                minLength={7}
-                                                maxLength={9}
+                                                minLength={6}
+                                                maxLength={15}
                                                 onChange={(e) =>
                                                     setData(
                                                         'rg',
-                                                        e.target.value,
+                                                        e.target.value.toUpperCase(),
                                                     )
                                                 }
                                                 required
@@ -379,11 +391,12 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                             <span className="label-text mb-1">
                                                 Orgão Emissor*
                                             </span>
-                                            <input
+                                            <select
                                                 id="orgao_emissor_rg"
-                                                type="text"
-                                                className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
-                                                value={data.orgao_emissor_rg}
+                                                className={`select select-bordered w-full ${errors.orgao_emissor_rg ? 'select-error' : ''}`}
+                                                value={
+                                                    data.orgao_emissor_rg || ''
+                                                }
                                                 onChange={(e) =>
                                                     setData(
                                                         'orgao_emissor_rg',
@@ -391,7 +404,21 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                     )
                                                 }
                                                 required
-                                            />
+                                            >
+                                                <option value="" disabled>
+                                                    Selecione o órgão emissor...
+                                                </option>
+                                                {ORGAOS_EMISSORES.map(
+                                                    (orgao) => (
+                                                        <option
+                                                            key={orgao.sigla}
+                                                            value={orgao.sigla}
+                                                        >
+                                                            {orgao.nome}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
                                             {errors.orgao_emissor_rg && (
                                                 <span className="label-text-alt text-error">
                                                     {errors.orgao_emissor_rg}
@@ -666,7 +693,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Banco
+                                                Banco*
                                             </span>
                                             <select
                                                 id="banco_id"
@@ -678,6 +705,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                required
                                             >
                                                 <option value="" disabled>
                                                     Selecione um banco...
@@ -700,15 +728,48 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                         </label>
                                     </div>
 
+                                    {/* Agência */}
+                                    <div>
+                                        <label className="form-control w-full">
+                                            <span className="label-text mb-1">
+                                                Agência*
+                                            </span>
+                                            <input
+                                                id="agencia"
+                                                type="text" // Pode ser IMaskInput se houver um padrão específico
+                                                className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
+                                                value={data.agencia}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'agencia',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                required
+                                            />
+                                            {errors.agencia && (
+                                                <span className="label-text-alt text-error">
+                                                    {errors.agencia}
+                                                </span>
+                                            )}
+                                        </label>
+                                    </div>
+
                                     {/* Conta Bancária */}
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Conta Bancária
+                                                Conta Bancária*
                                             </span>
                                             <IMaskInput
                                                 id="conta_bancaria"
-                                                mask="00000-0"
+                                                mask="00000-S"
+                                                definitions={{
+                                                    S: /[0-9xX]/,
+                                                }}
+                                                prepare={(str) =>
+                                                    str.toUpperCase()
+                                                }
                                                 className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
                                                 value={data.conta_bancaria}
                                                 onAccept={(value: string) =>
@@ -717,36 +778,12 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                         value,
                                                     )
                                                 }
-                                                placeholder="00000-0"
+                                                required
+                                                placeholder="00000-X"
                                             />
                                             {errors.conta_bancaria && (
                                                 <span className="label-text-alt text-error">
                                                     {errors.conta_bancaria}
-                                                </span>
-                                            )}
-                                        </label>
-                                    </div>
-
-                                    {/* Agência */}
-                                    <div>
-                                        <label className="form-control w-full">
-                                            <span className="label-text mb-1">
-                                                Agência
-                                            </span>
-                                            <IMaskInput
-                                                id="agencia"
-                                                mask="0000-0"
-                                                className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
-                                                value={data.agencia}
-                                                onAccept={(value: string) =>
-                                                    setData('agencia', value)
-                                                }
-                                                placeholder="0000-0"
-                                                required
-                                            />
-                                            {errors.agencia && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.agencia}
                                                 </span>
                                             )}
                                         </label>
