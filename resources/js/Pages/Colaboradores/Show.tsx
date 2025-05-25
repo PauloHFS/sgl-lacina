@@ -1,4 +1,3 @@
-import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Funcao,
@@ -6,105 +5,163 @@ import {
     TipoProjeto,
     TipoVinculo,
 } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useCallback, useEffect, useMemo } from 'react';
-import { ColaboradorDetalhes } from './Partials/ColaboradorDetalhes';
+import {
+    Head,
+    PageProps as InertiaBasePageProps,
+    Link,
+    router,
+    useForm,
+} from '@inertiajs/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    ColaboradorDetalhes,
+    ColaboradorDetalhesFormData,
+} from './Partials/ColaboradorDetalhes';
 import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
 import { InfoItem } from './Partials/InfoItem';
 
-export interface ShowProps {
-    colaborador: {
+// Define a more specific type for the colaborador within ShowProps
+export interface ColaboradorData {
+    // Added export
+    id: string;
+    name: string;
+    email: string;
+    curriculo_lattes_url?: string | null;
+    linkedin_url?: string | null;
+    github_url?: string | null;
+    figma_url?: string | null;
+    foto_url?: string | null;
+    area_atuacao?: string | null;
+    tecnologias?: string | null;
+    cpf?: string | null;
+    banco_id?: string | null;
+    banco?: {
         id: string;
-        name: string;
-        email: string;
-        curriculo_lattes_url?: string | null;
-        linkedin_url?: string | null;
-        github_url?: string | null;
-        figma_url?: string | null;
-        foto_url?: string | null;
-        area_atuacao?: string | null;
-        tecnologias?: string | null;
-        cpf?: string | null;
-        banco?: {
-            id: string;
-            codigo: string;
-            nome: string;
-        } | null;
-        conta_bancaria?: string | null;
-        agencia?: string | null;
-        rg?: string | null;
-        uf_rg?: string | null;
-        telefone?: string | null;
+        codigo: string;
+        nome: string;
+    } | null;
+    conta_bancaria?: string | null;
+    agencia?: string | null;
+    rg?: string | null;
+    uf_rg?: string | null;
+    orgao_emissor_rg?: string | null;
+    telefone?: string | null;
+    genero?: string | null;
+    data_nascimento?: string | null; // Format YYYY-MM-DD
+    cep?: string | null;
+    endereco?: string | null;
+    numero?: string | null;
+    complemento?: string | null;
+    bairro?: string | null;
+    cidade?: string | null;
+    uf?: string | null;
+    created_at: string;
+    updated_at: string;
+    status_cadastro:
+        | 'VINCULO_PENDENTE'
+        | 'APROVACAO_PENDENTE'
+        | 'ATIVO'
+        | 'ENCERRADO';
+    vinculo?: {
+        id: string;
+        usuario_id: string;
+        projeto_id: string;
+        tipo_vinculo: TipoVinculo;
+        funcao: Funcao;
+        status: StatusVinculoProjeto;
+        carga_horaria_semanal: number;
+        data_inicio: string;
+        data_fim?: string | null;
         created_at: string;
         updated_at: string;
-        status_cadastro:
-            | 'VINCULO_PENDENTE'
-            | 'APROVACAO_PENDENTE'
-            | 'ATIVO'
-            | 'ENCERRADO';
-        vinculo?: {
+        deleted_at: string | null;
+        projeto: {
             id: string;
-            usuario_id: string;
-            projeto_id: string;
-            tipo_vinculo: TipoVinculo;
-            funcao: Funcao;
-            status: StatusVinculoProjeto;
-            carga_horaria_semanal: number;
+            nome: string;
+            descricao: string;
             data_inicio: string;
-            data_fim?: string | null;
+            data_termino: string | null;
+            cliente: string;
+            slack_url: string | null;
+            discord_url: string | null;
+            board_url: string | null;
+            git_url: string | null;
+            tipo: TipoProjeto;
             created_at: string;
             updated_at: string;
             deleted_at: string | null;
-            projeto: {
-                id: string;
-                nome: string;
-                descricao: string;
-                data_inicio: string;
-                data_termino: string | null;
-                cliente: string;
-                slack_url: string | null;
-                discord_url: string | null;
-                board_url: string | null;
-                git_url: string | null;
-                tipo: TipoProjeto;
-                created_at: string;
-                updated_at: string;
-                deleted_at: string | null;
-            };
-        } | null;
-        projetos_atuais: Array<{
-            id: string;
-            nome: string;
-            // descricao: string;
-            // data_inicio: string;
-            // data_termino: string | null;
-            // cliente: string;
-            // slack_url: string | null;
-            // discord_url: string | null;
-            // board_url: string | null;
-            // git_url: string | null;
-            // tipo: TipoProjeto;
-            // created_at: string;
-            // updated_at: string;
-            // deleted_at: string | null;
-        }>;
-    };
+        };
+    } | null;
+    projetos_atuais: Array<{
+        id: string;
+        nome: string;
+    }>;
 }
 
-export default function Show({ colaborador }: ShowProps) {
-    const { toast } = useToast();
+/* REMOVE OLD CustomPageProps and ShowProps definition:
+// Use InertiaBasePageProps for base props like flash
+interface CustomPageProps<T extends InertiaBasePageProps['props'] = InertiaBasePageProps['props']> extends InertiaBasePageProps {
+    props: T & {
+        flash?: {
+            success?: string;
+            error?: string;
+        }
+    }
+}
 
-    // TODO: Concertar essas rotas aqui:
-    const handleAceitarCadastro = useCallback(() => {
-        router.post(route('colaboradores.aceitar', colaborador.id));
-    }, [colaborador.id]);
+// Use the CustomPageProps for ShowProps
+export interface ShowProps extends CustomPageProps<{
+    colaborador: ColaboradorData;
+    bancos: Array<{ id: string; nome: string; codigo: string }>;
+    ufs: Array<string>;
+    generos: Array<{ value: string; label: string }>;
+    can_update_colaborador: boolean;
+}> {}
+*/
 
-    const handleRecusarCadastro = useCallback(() => {
-        router.post(route('colaboradores.recusar', colaborador.id));
-    }, [colaborador.id]);
+// NEW Simplified Props Structure:
+interface ShowPageSpecificProps {
+    colaborador: ColaboradorData;
+    bancos: Array<{ id: string; nome: string; codigo: string }>;
+    ufs: Array<string>;
+    generos: Array<{ value: string; label: string }>;
+    can_update_colaborador: boolean;
+}
+// InertiaBasePageProps already includes 'flash', 'errors', etc.
+export type ShowProps = InertiaBasePageProps & ShowPageSpecificProps;
 
-    const { data, setData, errors, put, processing } = useForm<{
+export default function Show(props: ShowProps) {
+    const { colaborador, bancos, ufs, generos, can_update_colaborador, flash } =
+        props;
+
+    const toast = (message: string, type: 'success' | 'error') => {
+        const flashData =
+            type === 'success' ? { success: message } : { error: message };
+        router.reload({ only: ['flash'], data: { flash: flashData } });
+        console.log(`Toast [${type}]: ${message}`);
+    };
+
+    useEffect(() => {
+        if (flash?.success) {
+            console.log(`Flash Success: ${flash.success}`);
+        }
+        if (flash?.error) {
+            console.error(`Flash Error: ${flash.error}`);
+        }
+    }, [flash]);
+
+    const [isEditingDetalhes, setIsEditingDetalhes] = useState(false);
+
+    // Form for Vinculo (existing)
+    const {
+        data: vinculoData,
+        setData: setVinculoData,
+        errors: vinculoErrors,
+        put: putVinculo,
+        processing: processingVinculo,
+        reset: resetVinculoForm,
+    } = useForm<{
         status?: StatusVinculoProjeto;
         funcao?: Funcao;
         tipo_vinculo?: TipoVinculo;
@@ -120,38 +177,116 @@ export default function Show({ colaborador }: ShowProps) {
             : undefined,
     });
 
+    // Form for ColaboradorDetalhes
+    const {
+        data: detalhesData,
+        setData: setDetalhesData,
+        errors: detalhesErrors,
+        put: putDetalhes,
+        processing: processingDetalhes,
+        reset: resetDetalhesForm,
+        clearErrors: clearDetalhesErrors,
+    } = useForm<ColaboradorDetalhesFormData>({
+        name: colaborador.name,
+        email: colaborador.email,
+        curriculo_lattes_url: colaborador.curriculo_lattes_url,
+        linkedin_url: colaborador.linkedin_url,
+        github_url: colaborador.github_url,
+        figma_url: colaborador.figma_url,
+        area_atuacao: colaborador.area_atuacao,
+        tecnologias: colaborador.tecnologias,
+        cpf: colaborador.cpf,
+        banco_id: colaborador.banco_id,
+        conta_bancaria: colaborador.conta_bancaria,
+        agencia: colaborador.agencia,
+        rg: colaborador.rg,
+        uf_rg: colaborador.uf_rg,
+        orgao_emissor_rg: colaborador.orgao_emissor_rg,
+        telefone: colaborador.telefone,
+        genero: colaborador.genero,
+        data_nascimento: colaborador.data_nascimento
+            ? colaborador.data_nascimento.substring(0, 10)
+            : undefined,
+        cep: colaborador.cep,
+        endereco: colaborador.endereco,
+        numero: colaborador.numero,
+        complemento: colaborador.complemento,
+        bairro: colaborador.bairro,
+        cidade: colaborador.cidade,
+        uf: colaborador.uf,
+    });
+
+    const handleAceitarCadastro = useCallback(() => {
+        router.post(
+            route('colaboradores.aceitar', colaborador.id),
+            {},
+            {
+                onSuccess: () =>
+                    toast('Cadastro aceito com sucesso.', 'success'),
+                onError: () => toast('Erro ao aceitar cadastro.', 'error'),
+            },
+        );
+    }, [colaborador.id, toast]);
+
+    const handleRecusarCadastro = useCallback(() => {
+        router.post(
+            route('colaboradores.recusar', colaborador.id),
+            {},
+            {
+                onSuccess: () =>
+                    toast('Cadastro recusado com sucesso.', 'success'),
+                onError: () => toast('Erro ao recusar cadastro.', 'error'),
+            },
+        );
+    }, [colaborador.id, toast]);
+
     const handleAtualizarStatusVinculo = useCallback(() => {
         if (!colaborador.vinculo) {
             toast('Vínculo não encontrado', 'error');
             return;
         }
+        const dataToUpdate = {
+            status: vinculoData.status,
+            funcao: vinculoData.funcao,
+            tipo_vinculo: vinculoData.tipo_vinculo,
+            carga_horaria_semanal: vinculoData.carga_horaria_semanal,
+            data_inicio: vinculoData.data_inicio,
+        };
 
-        put(route('vinculos.update', colaborador.vinculo.id), {
+        putVinculo(route('vinculos.update', colaborador.vinculo.id), {
+            data: dataToUpdate,
             preserveScroll: true,
             onSuccess: () => {
-                toast(`Status do vínculo atualizado.`, 'success');
+                toast('Status do vínculo atualizado.', 'success');
             },
             onError: (err: Record<string, string>) => {
                 toast('Erro ao atualizar status do vínculo.', 'error');
                 console.error('Erro ao atualizar vínculo:', err);
             },
         });
-    }, [colaborador.vinculo, put, toast]);
+    }, [colaborador.vinculo, putVinculo, vinculoData, toast]);
 
     const handleAceitarVinculo = useCallback(() => {
-        setData('status', 'APROVADO');
-    }, [setData]);
+        setVinculoData('status', 'APROVADO');
+    }, [setVinculoData]);
 
     const handleRecusarVinculo = useCallback(() => {
-        setData('status', 'RECUSADO');
-    }, [setData]);
+        setVinculoData('status', 'RECUSADO');
+    }, [setVinculoData]);
 
     useEffect(() => {
-        if (data.status === 'APROVADO' || data.status === 'RECUSADO') {
-            handleAtualizarStatusVinculo();
+        if (
+            vinculoData.status === 'APROVADO' ||
+            vinculoData.status === 'RECUSADO'
+        ) {
+            if (
+                colaborador.vinculo &&
+                vinculoData.status !== colaborador.vinculo.status
+            ) {
+                handleAtualizarStatusVinculo();
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data.status]);
+    }, [vinculoData.status, colaborador.vinculo, handleAtualizarStatusVinculo]);
 
     const originalVinculoDisplayValues = useMemo(() => {
         return {
@@ -164,26 +299,97 @@ export default function Show({ colaborador }: ShowProps) {
         };
     }, [colaborador.vinculo]);
 
-    const areVinculoFieldsDirty =
-        data.funcao !== originalVinculoDisplayValues.funcao ||
-        data.tipo_vinculo !== originalVinculoDisplayValues.tipo_vinculo ||
-        data.carga_horaria_semanal !==
-            originalVinculoDisplayValues.carga_horaria_semanal ||
-        data.data_inicio !== originalVinculoDisplayValues.data_inicio;
+    const areVinculoFieldsDirty = useMemo(
+        () =>
+            vinculoData.funcao !== originalVinculoDisplayValues.funcao ||
+            vinculoData.tipo_vinculo !==
+                originalVinculoDisplayValues.tipo_vinculo ||
+            vinculoData.carga_horaria_semanal !==
+                originalVinculoDisplayValues.carga_horaria_semanal ||
+            vinculoData.data_inicio !==
+                originalVinculoDisplayValues.data_inicio,
+        [vinculoData, originalVinculoDisplayValues],
+    );
+
+    const handleUpdateDetalhesColaborador = () => {
+        putDetalhes(route('colaboradores.update', colaborador.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast(
+                    'Detalhes do colaborador atualizados com sucesso.',
+                    'success',
+                );
+                setIsEditingDetalhes(false);
+            },
+            onError: (err: Record<string, string>) => {
+                toast('Erro ao atualizar detalhes do colaborador.', 'error');
+                console.error('Erro ao atualizar detalhes:', err);
+            },
+        });
+    };
+
+    const handleCancelEditDetalhes = () => {
+        resetDetalhesForm();
+        clearDetalhesErrors();
+        setIsEditingDetalhes(false);
+    };
 
     const handleResetVinculoFields = useCallback(() => {
-        setData({
+        resetVinculoForm({
+            status: colaborador.vinculo?.status,
             funcao: originalVinculoDisplayValues.funcao,
             tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
             carga_horaria_semanal:
                 originalVinculoDisplayValues.carga_horaria_semanal,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
-    }, [originalVinculoDisplayValues, setData]);
+    }, [resetVinculoForm, colaborador.vinculo, originalVinculoDisplayValues]);
 
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
+
+            {/* Toast Messages using daisyUI alert component */}
+            {flash?.success && (
+                <div className="toast toast-top toast-center">
+                    <div role="alert" className="alert alert-success">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 shrink-0 stroke-current"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                        <span>{flash.success}</span>
+                    </div>
+                </div>
+            )}
+            {flash?.error && (
+                <div className="toast toast-top toast-center">
+                    <div role="alert" className="alert alert-error">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 shrink-0 stroke-current"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                        <span>{flash.error}</span>
+                    </div>
+                </div>
+            )}
 
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
@@ -192,7 +398,36 @@ export default function Show({ colaborador }: ShowProps) {
                             <ColaboradorHeader colaborador={colaborador} />
 
                             <div className="divider">Detalhes</div>
-                            <ColaboradorDetalhes colaborador={colaborador} />
+                            {can_update_colaborador && !isEditingDetalhes && (
+                                <div className="card-actions mb-4 justify-end">
+                                    <button
+                                        className="btn btn-sm btn-outline btn-primary"
+                                        onClick={() =>
+                                            setIsEditingDetalhes(true)
+                                        }
+                                        disabled={
+                                            processingDetalhes ||
+                                            processingVinculo
+                                        }
+                                    >
+                                        Editar Detalhes
+                                    </button>
+                                </div>
+                            )}
+                            <ColaboradorDetalhes
+                                colaborador={colaborador}
+                                isEditing={isEditingDetalhes}
+                                data={detalhesData}
+                                setData={setDetalhesData}
+                                errors={detalhesErrors}
+                                processing={processingDetalhes}
+                                onCancel={handleCancelEditDetalhes}
+                                onSubmit={handleUpdateDetalhesColaborador}
+                                bancos={bancos}
+                                ufs={ufs}
+                                generos={generos}
+                                canEdit={can_update_colaborador}
+                            />
 
                             <div className="divider">Projeto(s)</div>
                             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
@@ -223,244 +458,313 @@ export default function Show({ colaborador }: ShowProps) {
                             </div>
 
                             <div className="divider">
-                                Solicitação de Vinculo
+                                Status do Cadastro e Vínculo
                             </div>
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                {colaborador.vinculo ? (
+                            <ColaboradorStatus
+                                colaborador={colaborador}
+                                onAceitarCadastro={handleAceitarCadastro}
+                                onRecusarCadastro={handleRecusarCadastro}
+                                onAceitarVinculo={handleAceitarVinculo}
+                                onRecusarVinculo={handleRecusarVinculo}
+                                processing={
+                                    processingVinculo || processingDetalhes
+                                }
+                            />
+
+                            {colaborador.vinculo &&
+                                colaborador.status_cadastro === 'ATIVO' && (
                                     <>
-                                        <InfoItem
-                                            label="Projeto"
-                                            value={
-                                                colaborador.vinculo.projeto.nome
-                                            }
-                                        />
-
-                                        <div>
-                                            <label
-                                                className="label"
-                                                htmlFor="funcao"
-                                            >
-                                                <span className="label-text font-semibold">
-                                                    Função:
-                                                </span>
-                                            </label>
-                                            <select
-                                                id="funcao"
-                                                className={`select select-bordered w-full ${
-                                                    colaborador.vinculo
-                                                        ?.funcao !==
-                                                        data.funcao &&
-                                                    data.funcao !== undefined
-                                                        ? 'select-warning'
-                                                        : ''
-                                                } ${errors.funcao ? 'select-error' : ''}`}
-                                                value={data.funcao || ''}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'funcao',
-                                                        e.target
-                                                            .value as Funcao,
-                                                    )
-                                                }
-                                                disabled={processing}
-                                            >
-                                                {(
-                                                    [
-                                                        'COORDENADOR',
-                                                        'PESQUISADOR',
-                                                        'DESENVOLVEDOR',
-                                                        'TECNICO',
-                                                        'ALUNO',
-                                                    ] as Array<Funcao>
-                                                ).map((funcao) => (
-                                                    <option
-                                                        key={funcao}
-                                                        value={funcao}
-                                                    >
-                                                        {funcao}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors.funcao && (
-                                                <p className="text-error mt-1 text-xs">
-                                                    {errors.funcao}
-                                                </p>
-                                            )}
+                                        <div className="divider">
+                                            Detalhes do Vínculo com o Projeto
                                         </div>
-
-                                        <div>
-                                            <label
-                                                className="label"
-                                                htmlFor="tipovinculo"
-                                            >
-                                                <span className="label-text font-semibold">
-                                                    Tipo de Vínculo:
-                                                </span>
-                                            </label>
-                                            <select
-                                                id="tipovinculo"
-                                                className={`select select-bordered w-full ${
-                                                    colaborador.vinculo
-                                                        ?.tipo_vinculo !==
-                                                        data.tipo_vinculo &&
-                                                    data.tipo_vinculo !==
-                                                        undefined
-                                                        ? 'select-warning'
-                                                        : ''
-                                                } ${errors.tipo_vinculo ? 'select-error' : ''}`}
-                                                value={data.tipo_vinculo || ''}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'tipo_vinculo',
-                                                        e.target
-                                                            .value as TipoVinculo,
-                                                    )
-                                                }
-                                                disabled={processing}
-                                            >
-                                                {(
-                                                    [
-                                                        'COLABORADOR',
-                                                        'COORDENADOR',
-                                                    ] as Array<TipoVinculo>
-                                                ).map((tipo) => (
-                                                    <option
-                                                        key={tipo}
-                                                        value={tipo}
-                                                    >
-                                                        {tipo}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors.tipo_vinculo && (
-                                                <p className="text-error mt-1 text-xs">
-                                                    {errors.tipo_vinculo}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label
-                                                className="label"
-                                                htmlFor="cargahoraria"
-                                            >
-                                                <span className="label-text font-semibold">
-                                                    Carga Horária Semanal
-                                                    (horas):
-                                                </span>
-                                            </label>
-                                            <input
-                                                id="cargahoraria"
-                                                type="number"
-                                                className={`input input-bordered w-full ${
-                                                    colaborador.vinculo
-                                                        ?.carga_horaria_semanal !==
-                                                        data.carga_horaria_semanal &&
-                                                    data.carga_horaria_semanal !==
-                                                        undefined
-                                                        ? 'input-warning'
-                                                        : ''
-                                                } ${errors.carga_horaria_semanal ? 'input-error' : ''}`}
+                                        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                                            <InfoItem
+                                                label="Projeto"
                                                 value={
-                                                    data.carga_horaria_semanal ===
-                                                    undefined
-                                                        ? ''
-                                                        : data.carga_horaria_semanal
+                                                    colaborador.vinculo.projeto
+                                                        .nome
                                                 }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'carga_horaria_semanal',
-                                                        e.target.value === ''
-                                                            ? undefined
-                                                            : parseInt(
-                                                                  e.target
-                                                                      .value,
-                                                                  10,
-                                                              ),
-                                                    )
-                                                }
-                                                disabled={processing}
                                             />
-                                            {errors.carga_horaria_semanal && (
-                                                <p className="text-error mt-1 text-xs">
-                                                    {
-                                                        errors.carga_horaria_semanal
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
 
-                                        <div>
-                                            <label
-                                                className="label"
-                                                htmlFor="datainicio"
-                                            >
-                                                <span className="label-text font-semibold">
-                                                    Data de Início:
-                                                </span>
-                                            </label>
-                                            <input
-                                                id="datainicio"
-                                                type="date"
-                                                className={`input input-bordered w-full ${
-                                                    colaborador.vinculo?.data_inicio?.substring(
-                                                        0,
-                                                        10,
-                                                    ) !== data.data_inicio &&
-                                                    data.data_inicio !==
-                                                        undefined
-                                                        ? 'input-warning'
-                                                        : ''
-                                                } ${errors.data_inicio ? 'input-error' : ''}`}
-                                                value={data.data_inicio || ''}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'data_inicio',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                disabled={processing}
-                                            />
-                                            {errors.data_inicio && (
-                                                <p className="text-error mt-1 text-xs">
-                                                    {errors.data_inicio}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="mt-4 flex justify-end space-x-2 md:col-span-2">
-                                            {areVinculoFieldsDirty && (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline btn-sm"
-                                                    onClick={
-                                                        handleResetVinculoFields
-                                                    }
-                                                    disabled={processing}
+                                            <div>
+                                                <label
+                                                    className="label"
+                                                    htmlFor="funcao"
                                                 >
-                                                    Resetar
-                                                </button>
-                                            )}
+                                                    <span className="label-text font-semibold">
+                                                        Função:
+                                                    </span>
+                                                </label>
+                                                <select
+                                                    id="funcao"
+                                                    className={`select select-bordered w-full ${
+                                                        colaborador.vinculo
+                                                            ?.funcao !==
+                                                            vinculoData.funcao &&
+                                                        vinculoData.funcao !==
+                                                            undefined
+                                                            ? 'select-warning'
+                                                            : ''
+                                                    } ${vinculoErrors.funcao ? 'select-error' : ''}`}
+                                                    value={
+                                                        vinculoData.funcao || ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setVinculoData(
+                                                            'funcao',
+                                                            e.target
+                                                                .value as Funcao,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        processingVinculo ||
+                                                        processingDetalhes ||
+                                                        colaborador.vinculo
+                                                            ?.status !==
+                                                            'PENDENTE'
+                                                    }
+                                                >
+                                                    {(
+                                                        [
+                                                            'COORDENADOR',
+                                                            'PESQUISADOR',
+                                                            'DESENVOLVEDOR',
+                                                            'TECNICO',
+                                                            'ALUNO',
+                                                        ] as Array<Funcao>
+                                                    ).map((funcao) => (
+                                                        <option
+                                                            key={funcao}
+                                                            value={funcao}
+                                                        >
+                                                            {funcao}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {vinculoErrors.funcao && (
+                                                    <p className="text-error mt-1 text-xs">
+                                                        {vinculoErrors.funcao}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="label"
+                                                    htmlFor="tipovinculo"
+                                                >
+                                                    <span className="label-text font-semibold">
+                                                        Tipo de Vínculo:
+                                                    </span>
+                                                </label>
+                                                <select
+                                                    id="tipovinculo"
+                                                    className={`select select-bordered w-full ${
+                                                        colaborador.vinculo
+                                                            ?.tipo_vinculo !==
+                                                            vinculoData.tipo_vinculo &&
+                                                        vinculoData.tipo_vinculo !==
+                                                            undefined
+                                                            ? 'select-warning'
+                                                            : ''
+                                                    } ${vinculoErrors.tipo_vinculo ? 'select-error' : ''}`}
+                                                    value={
+                                                        vinculoData.tipo_vinculo ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setVinculoData(
+                                                            'tipo_vinculo',
+                                                            e.target
+                                                                .value as TipoVinculo,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        processingVinculo ||
+                                                        processingDetalhes ||
+                                                        colaborador.vinculo
+                                                            ?.status !==
+                                                            'PENDENTE'
+                                                    }
+                                                >
+                                                    {(
+                                                        [
+                                                            'BOLSISTA_PROJETO',
+                                                            'BOLSISTA_CNPQ',
+                                                            'VOLUNTARIO',
+                                                            'ESTAGIARIO',
+                                                            'FUNCIONARIO_CLT',
+                                                            'PESQUISADOR_COLABORADOR',
+                                                            'PROFESSOR',
+                                                        ] as Array<TipoVinculo>
+                                                    ).map((tipo) => (
+                                                        <option
+                                                            key={tipo}
+                                                            value={tipo}
+                                                        >
+                                                            {tipo
+                                                                .replace(
+                                                                    /_/g,
+                                                                    ' ',
+                                                                )
+                                                                .toLowerCase()
+                                                                .replace(
+                                                                    /\b\w/g,
+                                                                    (char) =>
+                                                                        char.toUpperCase(),
+                                                                )}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {vinculoErrors.tipo_vinculo && (
+                                                    <p className="text-error mt-1 text-xs">
+                                                        {
+                                                            vinculoErrors.tipo_vinculo
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="label"
+                                                    htmlFor="carga_horaria_semanal"
+                                                >
+                                                    <span className="label-text font-semibold">
+                                                        Carga Horária Semanal:
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    id="carga_horaria_semanal"
+                                                    type="number"
+                                                    className={`input input-bordered w-full ${
+                                                        colaborador.vinculo
+                                                            ?.carga_horaria_semanal !==
+                                                            vinculoData.carga_horaria_semanal &&
+                                                        vinculoData.carga_horaria_semanal !==
+                                                            undefined
+                                                            ? 'input-warning'
+                                                            : ''
+                                                    } ${vinculoErrors.carga_horaria_semanal ? 'input-error' : ''}`}
+                                                    value={
+                                                        vinculoData.carga_horaria_semanal ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setVinculoData(
+                                                            'carga_horaria_semanal',
+                                                            parseInt(
+                                                                e.target.value,
+                                                                10,
+                                                            ),
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        processingVinculo ||
+                                                        processingDetalhes ||
+                                                        colaborador.vinculo
+                                                            ?.status !==
+                                                            'PENDENTE'
+                                                    }
+                                                />
+                                                {vinculoErrors.carga_horaria_semanal && (
+                                                    <p className="text-error mt-1 text-xs">
+                                                        {
+                                                            vinculoErrors.carga_horaria_semanal
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="label"
+                                                    htmlFor="data_inicio"
+                                                >
+                                                    <span className="label-text font-semibold">
+                                                        Data de Início:
+                                                    </span>
+                                                </label>
+                                                <input
+                                                    id="data_inicio"
+                                                    type="date"
+                                                    className={`input input-bordered w-full ${
+                                                        colaborador.vinculo?.data_inicio?.substring(
+                                                            0,
+                                                            10,
+                                                        ) !==
+                                                            vinculoData.data_inicio &&
+                                                        vinculoData.data_inicio !==
+                                                            undefined
+                                                            ? 'input-warning'
+                                                            : ''
+                                                    } ${vinculoErrors.data_inicio ? 'input-error' : ''}`}
+                                                    value={
+                                                        vinculoData.data_inicio ||
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setVinculoData(
+                                                            'data_inicio',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        processingVinculo ||
+                                                        processingDetalhes ||
+                                                        colaborador.vinculo
+                                                            ?.status !==
+                                                            'PENDENTE'
+                                                    }
+                                                />
+                                                {vinculoErrors.data_inicio && (
+                                                    <p className="text-error mt-1 text-xs">
+                                                        {
+                                                            vinculoErrors.data_inicio
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {colaborador.vinculo?.status ===
+                                                'PENDENTE' &&
+                                                areVinculoFieldsDirty && (
+                                                    <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                handleResetVinculoFields
+                                                            }
+                                                            className="btn btn-ghost"
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes
+                                                            }
+                                                        >
+                                                            Restaurar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                handleAtualizarStatusVinculo
+                                                            }
+                                                            className="btn btn-primary"
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes
+                                                            }
+                                                        >
+                                                            {processingVinculo ? (
+                                                                <span className="loading loading-spinner loading-sm"></span>
+                                                            ) : (
+                                                                'Salvar Alterações no Vínculo'
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                )}
                                         </div>
                                     </>
-                                ) : (
-                                    <p className="text-base-content/70">
-                                        Nenhuma solicitação de vínculo
-                                        encontrada.
-                                    </p>
                                 )}
-                            </div>
-
-                            <div className="divider">Status</div>
-                            <div className="my-2">
-                                <ColaboradorStatus
-                                    colaborador={colaborador}
-                                    onAceitarCadastro={handleAceitarCadastro}
-                                    onRecusarCadastro={handleRecusarCadastro}
-                                    onAceitarVinculo={handleAceitarVinculo}
-                                    onRecusarVinculo={handleRecusarVinculo}
-                                />
-                            </div>
                         </div>
                     </div>
                 </div>

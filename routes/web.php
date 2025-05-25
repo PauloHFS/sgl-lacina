@@ -99,6 +99,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 // Nova rota para disparar a geração e envio do relatório de participação
 Route::middleware('auth')->group(function () {
     Route::post('/relatorio/participacao', [RelatorioController::class, 'enviarRelatorioParticipacao'])->name('relatorio.participacao.enviar');
+    Route::get('/colaboradores/{colaborador}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+    Route::put('/colaboradores/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
 });
 
 require __DIR__ . '/auth.php';

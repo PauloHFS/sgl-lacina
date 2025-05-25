@@ -1,13 +1,14 @@
 import React from 'react';
-import { ShowProps } from '../Show';
+import { ColaboradorData } from '../Show'; // Import ColaboradorData
 import { StatusAlert } from './StatusAlert';
 
 interface ColaboradorStatusProps {
-    colaborador: ShowProps['colaborador'];
+    colaborador: ColaboradorData; // Use ColaboradorData directly
     onAceitarCadastro: () => void;
     onRecusarCadastro: () => void;
     onAceitarVinculo: () => void;
     onRecusarVinculo: () => void;
+    processing: boolean; // Added processing prop
 }
 
 export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
@@ -17,6 +18,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
         onRecusarCadastro,
         onAceitarVinculo,
         onRecusarVinculo,
+        processing, // Destructure processing prop
     }) => {
         switch (colaborador.status_cadastro) {
             case 'VINCULO_PENDENTE':
@@ -32,6 +34,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     onClick={onAceitarCadastro}
                                     className="btn btn-sm btn-success"
                                     aria-label="Aceitar cadastro do colaborador"
+                                    disabled={processing} // Disable button when processing
                                 >
                                     Aceitar
                                 </button>
@@ -40,6 +43,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     onClick={onRecusarCadastro}
                                     className="btn btn-sm btn-error ml-2"
                                     aria-label="Recusar cadastro do colaborador"
+                                    disabled={processing} // Disable button when processing
                                 >
                                     Recusar
                                 </button>
@@ -68,6 +72,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     onClick={onAceitarVinculo}
                                     className="btn btn-sm btn-success"
                                     aria-label="Aceitar vínculo do colaborador ao projeto"
+                                    disabled={processing} // Disable button when processing
                                 >
                                     Aceitar Vínculo
                                 </button>
@@ -76,6 +81,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     onClick={onRecusarVinculo}
                                     className="btn btn-sm btn-error ml-2"
                                     aria-label="Recusar vínculo do colaborador ao projeto"
+                                    disabled={processing} // Disable button when processing
                                 >
                                     Recusar Vínculo
                                 </button>

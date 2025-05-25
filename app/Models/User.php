@@ -118,29 +118,38 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isCoordenador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
-            return $this->vinculos()->where('tipo_vinculo', TipoVinculo::COORDENADOR)->exists();
+            return $this->vinculos()
+                ->where('tipo_vinculo', TipoVinculo::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
         }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
             ->where('tipo_vinculo', TipoVinculo::COORDENADOR)
+            ->where('status', StatusVinculoProjeto::APROVADO)
             ->exists();
     }
 
     public function isColaborador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
-            return $this->vinculos()->where('tipo_vinculo', TipoVinculo::COLABORADOR)->exists();
+            return $this->vinculos()
+                ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
         }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
             ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+            ->where('status', StatusVinculoProjeto::APROVADO)
             ->exists();
     }
 
     public function isVinculoProjetoPendente(?Projeto $projeto = null)
     {
         if ($projeto === null) {
-            return $this->vinculos()->where('status', StatusVinculoProjeto::PENDENTE)->exists();
+            return $this->vinculos()
+                ->where('status', StatusVinculoProjeto::PENDENTE)->exists();
         }
         return $this->projetos()
             ->where('projeto_id', $projeto->id)

@@ -1,18 +1,17 @@
 import React from 'react';
-import { ShowProps } from '../Show';
+import { ColaboradorData } from '../Show'; // Import ColaboradorData
 import { SocialLinks } from './SocialLinks';
 
 interface ColaboradorHeaderProps {
     colaborador: Pick<
-        ShowProps['colaborador'],
+        ColaboradorData, // Use ColaboradorData directly
         | 'name'
         | 'email'
-        | 'foto_url'
         | 'curriculo_lattes_url'
         | 'linkedin_url'
         | 'github_url'
         | 'figma_url'
-    >;
+    > & { foto_url?: string | null }; // Ensure foto_url is optional
 }
 
 export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
