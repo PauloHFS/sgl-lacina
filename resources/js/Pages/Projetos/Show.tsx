@@ -567,7 +567,7 @@ export default function Show({
                                                     <th>Nome</th>
                                                     <th>Email</th>
                                                     <th>Função</th>
-                                                    <th>Vínculo</th>
+                                                    {/* <th>Vínculo</th> */}
                                                     <th>Início</th>
                                                     <th>Ações</th>
                                                 </tr>
@@ -616,13 +616,13 @@ export default function Show({
                                                                     }
                                                                 </span>
                                                             </td>
-                                                            <td>
+                                                            {/* <td>
                                                                 <span className="badge badge-outline badge-sm">
                                                                     {
                                                                         participante.tipo_vinculo
                                                                     }
                                                                 </span>
-                                                            </td>
+                                                            </td> */}
                                                             <td>
                                                                 {format(
                                                                     new Date(

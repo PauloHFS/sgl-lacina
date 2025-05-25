@@ -99,28 +99,6 @@ export interface ColaboradorData {
     }>;
 }
 
-/* REMOVE OLD CustomPageProps and ShowProps definition:
-// Use InertiaBasePageProps for base props like flash
-interface CustomPageProps<T extends InertiaBasePageProps['props'] = InertiaBasePageProps['props']> extends InertiaBasePageProps {
-    props: T & {
-        flash?: {
-            success?: string;
-            error?: string;
-        }
-    }
-}
-
-// Use the CustomPageProps for ShowProps
-export interface ShowProps extends CustomPageProps<{
-    colaborador: ColaboradorData;
-    bancos: Array<{ id: string; nome: string; codigo: string }>;
-    ufs: Array<string>;
-    generos: Array<{ value: string; label: string }>;
-    can_update_colaborador: boolean;
-}> {}
-*/
-
-// NEW Simplified Props Structure:
 interface ShowPageSpecificProps {
     colaborador: ColaboradorData;
     bancos: Array<{ id: string; nome: string; codigo: string }>;
@@ -589,13 +567,8 @@ export default function Show(props: ShowProps) {
                                                 >
                                                     {(
                                                         [
-                                                            'BOLSISTA_PROJETO',
-                                                            'BOLSISTA_CNPQ',
-                                                            'VOLUNTARIO',
-                                                            'ESTAGIARIO',
-                                                            'FUNCIONARIO_CLT',
-                                                            'PESQUISADOR_COLABORADOR',
-                                                            'PROFESSOR',
+                                                            'COLABORADOR',
+                                                            'COORDENADOR',
                                                         ] as Array<TipoVinculo>
                                                     ).map((tipo) => (
                                                         <option
