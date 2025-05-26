@@ -109,6 +109,12 @@ class ProjetosController extends Controller
       ->orderBy('data_inicio', 'desc')
       ->get();
 
+    $coordenadoresDoProjeto = $projeto->usuarios()
+      ->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR->value)
+      ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+      ->orderBy('name')
+      ->get(['users.id', 'users.name']);
+
 
     $participantesProjeto = null;
     $temVinculosPendentes = false;
@@ -147,6 +153,7 @@ class ProjetosController extends Controller
       'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
       'participantesProjeto' => $participantesProjeto,
       'temVinculosPendentes' => $temVinculosPendentes,
+      'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
     ]);
   }
 

@@ -105,6 +105,11 @@ export interface Projeto {
     deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
 }
 
+export interface Coordenador {
+    id: string;
+    name: string;
+}
+
 export interface UsuarioProjeto {
     id: string;
     usuario_id: string;
@@ -120,4 +125,22 @@ export interface UsuarioProjeto {
     created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+}
+
+export interface ShowPageProps extends PageProps {
+    projeto: Projeto;
+    tiposVinculo: TipoVinculo[];
+    funcoes: Funcao[];
+    usuarioVinculo: UsuarioProjeto | null;
+    vinculosDoUsuarioLogadoNoProjeto: UsuarioProjeto[];
+    participantesProjeto: {
+        data: ParticipanteProjeto[];
+        // Add other pagination properties if needed
+    } | null;
+    temVinculosPendentes: boolean;
+    coordenadoresDoProjeto: Coordenador[];
+}
+
+export interface VinculoCreateForm {
+    // ...existing fields...
 }
