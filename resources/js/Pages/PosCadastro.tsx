@@ -7,33 +7,6 @@ import axios from 'axios';
 import React, { FormEventHandler } from 'react';
 import { IMaskInput } from 'react-imask';
 
-// interface PosCadastroForm {
-//     foto_url: File | null;
-//     genero: string;
-//     data_nascimento: string;
-//     cpf: string;
-//     rg: string;
-//     uf_rg: string;
-//     orgao_emissor_rg: string;
-//     cep: string;
-//     endereco: string;
-//     numero: string;
-//     complemento: string;
-//     bairro: string;
-//     cidade: string;
-//     estado: string;
-//     telefone: string;
-//     conta_bancaria: string;
-//     agencia: string;
-//     banco_id: string;
-//     linkedin_url: string;
-//     github_url: string;
-//     figma_url: string;
-//     curriculo_lattes_url: string;
-//     area_atuacao: string;
-//     tecnologias: string;
-// }
-
 interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
@@ -52,7 +25,32 @@ const ORGAOS_EMISSORES = [
 ];
 
 export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
-    const { data, setData, post, errors, processing } = useForm({
+    const { data, setData, post, errors, processing } = useForm<{
+        foto_url: File | null;
+        genero: string;
+        data_nascimento: string;
+        rg: string;
+        uf_rg: string;
+        orgao_emissor_rg: string;
+        cpf: string;
+        cep: string;
+        endereco: string;
+        numero: string;
+        complemento: string;
+        bairro: string;
+        cidade: string;
+        estado: string;
+        telefone: string;
+        conta_bancaria: string;
+        agencia: string;
+        banco_id: string;
+        curriculo_lattes_url: string;
+        linkedin_url: string;
+        github_url: string;
+        figma_url: string;
+        area_atuacao: string;
+        tecnologias: string;
+    }>({
         foto_url: null,
         genero: '',
         data_nascimento: '',
