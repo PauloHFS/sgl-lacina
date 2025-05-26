@@ -1,9 +1,9 @@
 import React from 'react';
-import { ColaboradorDetalhesFormData, ShowProps } from '../Show'; // Import ColaboradorDetalhesFormData
+import { ColaboradorData, ShowPageProps } from '../Show';
 import { InfoItem } from './InfoItem';
 
 // Define types for setData and errors more generically, aligned with Inertia's useForm
-interface CustomSetData<TForm extends Record<string, unknown>> {
+interface CustomSetData<TForm extends object> { // Changed Record<string, unknown> to object
     (data: TForm): void;
     (data: (previousData: TForm) => TForm): void;
     <K extends keyof TForm>(key: K, value: TForm[K]): void;
@@ -12,18 +12,17 @@ type FormErrors<TForm> = Partial<Record<keyof TForm, string>>;
 
 
 interface ColaboradorDetalhesProps {
-    colaborador: ShowProps['colaborador']; // Use the full colaborador type for display
+    colaborador: ColaboradorData; // Use ColaboradorData
     isEditing: boolean;
-    data: ColaboradorDetalhesFormData;
-    // setData: UseFormSetData<ColaboradorDetalhesFormData>; // Changed
-    setData: CustomSetData<ColaboradorDetalhesFormData>; // Changed
-    errors: FormErrors<ColaboradorDetalhesFormData>; // Changed
+    data: ColaboradorData; // Use ColaboradorData
+    setData: CustomSetData<ColaboradorData>; // Use ColaboradorData
+    errors: FormErrors<ColaboradorData>; // Use ColaboradorData
     processing: boolean;
     onCancel: () => void;
     onSubmit: () => void;
-    bancos: ShowProps['bancos'];
-    ufs: ShowProps['ufs'];
-    generos: ShowProps['generos'];
+    bancos: ShowPageProps['bancos']; // Use ShowPageProps
+    ufs: ShowPageProps['ufs']; // Use ShowPageProps
+    generos: ShowPageProps['generos']; // Use ShowPageProps
     canEdit: boolean;
 }
 
@@ -125,7 +124,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         {colaborador.tecnologias
                             ? colaborador.tecnologias
                                   .split(',')
-                                  .map((tech, idx) => (
+                                  .map((tech: string, idx: number) => (
                                       <span
                                           key={idx}
                                           className="badge badge-info badge-outline"
@@ -243,7 +242,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {ufs.map((uf) => (
+                    {ufs.map((uf: string) => (
                         <option key={uf} value={uf}>{uf}</option>
                     ))}
                 </select>
@@ -280,7 +279,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {generos.map((g) => (
+                    {generos.map((g: { value: string; label: string }) => (
                         <option key={g.value} value={g.value}>{g.label}</option>
                     ))}
                 </select>
@@ -317,7 +316,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione um banco</option>
-                    {bancos.map((banco) => (
+                    {bancos.map((banco: { id: string; codigo: string; nome: string }) => (
                         <option key={banco.id} value={banco.id}>
                             {banco.codigo} - {banco.nome}
                         </option>
@@ -468,7 +467,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {ufs.map((uf) => (
+                    {ufs.map((uf: string) => (
                         <option key={uf} value={uf}>{uf}</option>
                     ))}
                 </select>

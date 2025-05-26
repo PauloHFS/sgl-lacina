@@ -24,12 +24,12 @@ interface ProfileFormData {
     complemento: string;
     bairro: string;
     cidade: string;
-    estado: string; // Assuming 'estado' is 'uf' from ESTADOS. If it's different, adjust type.
+    uf: string;
     telefone: string;
     conta_bancaria: string;
     agencia: string;
-    banco_id: string; // Assuming banco_id is string, adjust if it's number or other type
-    curriculo: string;
+    banco_id: string;
+    curriculo_lattes_url: string;
     linkedin_url: string;
     github_url: string;
     figma_url: string;
@@ -73,12 +73,12 @@ export default function UpdateProfileInformation({
             complemento: user.complemento ?? '',
             bairro: user.bairro ?? '',
             cidade: user.cidade ?? '',
-            estado: user.estado ?? '',
+            uf: user.uf ?? '',
             telefone: user.telefone ?? '',
             conta_bancaria: user.conta_bancaria ?? '',
             agencia: user.agencia ?? '',
             banco_id: user.banco_id ?? '',
-            curriculo: user.curriculo ?? '',
+            curriculo_lattes_url: user.curriculo_lattes_url ?? '',
             linkedin_url: user.linkedin_url ?? '',
             github_url: user.github_url ?? '',
             figma_url: user.figma_url ?? '',
@@ -335,24 +335,24 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.bairro} />
                 </div>
                 <div>
-                    <InputLabel htmlFor="estado" value="Estado" />
+                    <InputLabel htmlFor="uf" value="Estado" />
                     <select
-                        id="estado"
-                        className={`select select-bordered w-full ${errors.estado ? 'select-error' : ''}`}
-                        value={data.estado || ''}
-                        onChange={(e) => setData('estado', e.target.value)}
+                        id="uf"
+                        className={`select select-bordered w-full ${errors.uf ? 'select-error' : ''}`}
+                        value={data.uf || ''}
+                        onChange={(e) => setData('uf', e.target.value)}
                         required
                     >
                         <option value="" disabled>
                             Selecione um estado...
                         </option>
-                        {ESTADOS.map((uf) => (
-                            <option key={uf.sigla} value={uf.sigla}>
-                                {uf.nome}
+                        {ESTADOS.map((uf_item) => (
+                            <option key={uf_item.sigla} value={uf_item.sigla}>
+                                {uf_item.nome}
                             </option>
                         ))}
                     </select>
-                    <InputError className="mt-2" message={errors.estado} />
+                    <InputError className="mt-2" message={errors.uf} />
                 </div>
                 <div>
                     <InputLabel htmlFor="cidade" value="Cidade" />
@@ -420,16 +420,16 @@ export default function UpdateProfileInformation({
                 {/* Dados Profissionais */}
                 <div className="divider">Dados Profissionais</div>
                 <div>
-                    <InputLabel htmlFor="curriculo" value="Currículo Lattes" />
+                    <InputLabel htmlFor="curriculo_lattes_url" value="Currículo Lattes" />
                     <TextInput
-                        id="curriculo"
+                        id="curriculo_lattes_url"
                         type="url"
-                        className={`input input-bordered w-full ${errors.curriculo ? 'input-error' : ''}`}
-                        value={data.curriculo}
-                        onChange={(e) => setData('curriculo', e.target.value)}
+                        className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
+                        value={data.curriculo_lattes_url}
+                        onChange={(e) => setData('curriculo_lattes_url', e.target.value)}
                         required
                     />
-                    <InputError className="mt-2" message={errors.curriculo} />
+                    <InputError className="mt-2" message={errors.curriculo_lattes_url} />
                 </div>
                 <div>
                     <InputLabel htmlFor="linkedin_url" value="LinkedIn" />

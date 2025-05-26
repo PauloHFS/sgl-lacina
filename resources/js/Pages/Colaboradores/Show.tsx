@@ -16,7 +16,6 @@ import { InfoItem } from './Partials/InfoItem';
 
 // Define a more specific type for the colaborador within ShowProps
 export interface ColaboradorData {
-    // Added export
     id: string;
     name: string;
     email: string;
@@ -92,15 +91,15 @@ export interface ColaboradorData {
     }>;
 }
 
-interface ShowPageSpecificProps extends PageProps {
+export interface ShowPageProps extends PageProps { // Renamed to ShowPageProps for clarity
     colaborador: ColaboradorData;
-    bancos: Array<{ id: string; nome: string; codigo: string }>;
+    bancos: Array<{ id: string; nome: string; codigo: string }> ;
     ufs: Array<string>;
     generos: Array<{ value: string; label: string }>;
     can_update_colaborador: boolean;
 }
 
-export default function Show(props: ShowPageSpecificProps) {
+export default function Show(props: ShowPageProps) { // Updated to use renamed type
     const {
         colaborador,
         bancos,
@@ -156,7 +155,13 @@ export default function Show(props: ShowPageSpecificProps) {
         processing: processingDetalhes,
         reset: resetDetalhesForm,
         clearErrors: clearDetalhesErrors,
-    } = useForm({
+    } = useForm<ColaboradorData>({
+        id: colaborador.id, // Added
+        email: colaborador.email, // Added
+        status_cadastro: colaborador.status_cadastro, // Added
+        projetos_atuais: colaborador.projetos_atuais || [], // Added
+        created_at: colaborador.created_at, // Added
+        updated_at: colaborador.updated_at, // Added
         name: colaborador.name,
         curriculo_lattes_url: colaborador.curriculo_lattes_url,
         linkedin_url: colaborador.linkedin_url,
@@ -358,7 +363,7 @@ export default function Show(props: ShowPageSpecificProps) {
                         <span>{flash.error}</span>
                     </div>
                 </div>
-            )} */}
+            ) */}
 
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
