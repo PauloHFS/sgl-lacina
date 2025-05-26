@@ -42,7 +42,7 @@ export default function Authenticated({
                                     Projetos
                                 </NavLink>
                             </li>
-                            {!isCoordenador && (
+                            {/* {!isCoordenador && (
                                 <li>
                                     <NavLink
                                         href={route('horarios.meus')}
@@ -54,7 +54,7 @@ export default function Authenticated({
                                         Meus Horários
                                     </NavLink>
                                 </li>
-                            )}
+                            )} */}
                             {isCoordenador && (
                                 <li>
                                     <NavLink

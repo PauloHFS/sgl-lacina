@@ -4,6 +4,7 @@ import Pagination, { Paginated } from '@/Components/Paggination'; // Updated imp
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
+    Coordenador,
     Funcao,
     PageProps,
     Projeto,
@@ -11,7 +12,6 @@ import {
     TipoVinculo,
     User,
     UsuarioProjeto,
-    Coordenador, // Added Coordenador import
 } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
@@ -235,16 +235,16 @@ export default function Show({
 
                     {!usuarioVinculo && (
                         <>
-                            <div className="card bg-base-100 shadow-xl mb-6">
+                            <div className="card bg-base-100 mb-6 shadow-xl">
                                 <div className="card-body">
                                     <h3 className="card-title text-xl">
                                         Coordenadores do Projeto
                                     </h3>
                                     {coordenadoresDoProjeto &&
                                     coordenadoresDoProjeto.length > 0 ? (
-                                        <ul className="list-disc pl-5 mt-2">
+                                        <ul className="mt-2 list-disc pl-5">
                                             {coordenadoresDoProjeto.map(
-                                                (coordenador: Coordenador) => ( // Explicitly type coordenador
+                                                (coordenador: Coordenador) => (
                                                     <li
                                                         key={coordenador.id}
                                                         className="text-sm text-gray-700 dark:text-gray-300"
@@ -255,7 +255,7 @@ export default function Show({
                                             )}
                                         </ul>
                                     ) : (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                                             Nenhum coordenador encontrado para
                                             este projeto.
                                         </p>
@@ -269,10 +269,13 @@ export default function Show({
                                         Solicitar Vínculo ao Projeto
                                     </h3>
                                     <p className="text-base-content/70 mb-6">
-                                        Preencha os dados abaixo para solicitar sua
-                                        participação neste projeto.
+                                        Preencha os dados abaixo para solicitar
+                                        sua participação neste projeto.
                                     </p>
-                                    <form onSubmit={submit} className="space-y-6">
+                                    <form
+                                        onSubmit={submit}
+                                        className="space-y-6"
+                                    >
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             {auth.isVinculoProjetoPendente ? (
                                                 <div
@@ -293,10 +296,11 @@ export default function Show({
                                                         ></path>
                                                     </svg>
                                                     <span>
-                                                        Você já possui um vinculo
-                                                        pendente, entre em contato
-                                                        com um Coordenador para
-                                                        avaliar seu vinculo.
+                                                        Você já possui um
+                                                        vinculo pendente, entre
+                                                        em contato com um
+                                                        Coordenador para avaliar
+                                                        seu vinculo.
                                                     </span>
                                                 </div>
                                             ) : (
@@ -321,12 +325,14 @@ export default function Show({
 
                                                     <div className="form-control w-full">
                                                         <InputLabel>
-                                                            Projeto a ser trocado
+                                                            Projeto a ser
+                                                            trocado
                                                         </InputLabel>
                                                         <select
                                                             className="select select-bordered w-full"
                                                             disabled={
-                                                                !form.data.trocar
+                                                                !form.data
+                                                                    .trocar
                                                             }
                                                             value={
                                                                 form.data
@@ -346,8 +352,9 @@ export default function Show({
                                                                 value=""
                                                                 disabled
                                                             >
-                                                                Selecione o vínculo
-                                                                a ser encerrado
+                                                                Selecione o
+                                                                vínculo a ser
+                                                                encerrado
                                                             </option>
                                                             {vinculosDoUsuarioLogadoNoProjeto
                                                                 .filter(
@@ -356,27 +363,31 @@ export default function Show({
                                                                             'APROVADO' &&
                                                                         !vinculo.data_fim,
                                                                 )
-                                                                .map((vinculo) => (
-                                                                    <option
-                                                                        key={
-                                                                            vinculo.id
-                                                                        }
-                                                                        value={
-                                                                            vinculo.id
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            vinculo
-                                                                                .projeto
-                                                                                ?.nome
-                                                                        }{' '}
-                                                                        (
-                                                                        {
-                                                                            vinculo.funcao
-                                                                        }
-                                                                        )
-                                                                    </option>
-                                                                ))}
+                                                                .map(
+                                                                    (
+                                                                        vinculo,
+                                                                    ) => (
+                                                                        <option
+                                                                            key={
+                                                                                vinculo.id
+                                                                            }
+                                                                            value={
+                                                                                vinculo.id
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                vinculo
+                                                                                    .projeto
+                                                                                    ?.nome
+                                                                            }{' '}
+                                                                            (
+                                                                            {
+                                                                                vinculo.funcao
+                                                                            }
+                                                                            )
+                                                                        </option>
+                                                                    ),
+                                                                )}
                                                         </select>
                                                     </div>
 
@@ -402,14 +413,18 @@ export default function Show({
                                                                 value=""
                                                                 disabled
                                                             >
-                                                                Selecione o tipo de
-                                                                vínculo
+                                                                Selecione o tipo
+                                                                de vínculo
                                                             </option>
                                                             {tiposVinculo.map(
                                                                 (tipo) => (
                                                                     <option
-                                                                        key={tipo}
-                                                                        value={tipo}
+                                                                        key={
+                                                                            tipo
+                                                                        }
+                                                                        value={
+                                                                            tipo
+                                                                        }
                                                                     >
                                                                         {tipo}
                                                                     </option>
@@ -421,7 +436,8 @@ export default function Show({
                                                             <label className="label">
                                                                 <span className="label-text-alt text-error">
                                                                     {
-                                                                        form.errors
+                                                                        form
+                                                                            .errors
                                                                             .tipo_vinculo
                                                                     }
                                                                 </span>
@@ -437,7 +453,9 @@ export default function Show({
                                                         </label>
                                                         <select
                                                             className="select select-bordered w-full"
-                                                            value={form.data.funcao}
+                                                            value={
+                                                                form.data.funcao
+                                                            }
                                                             onChange={(e) =>
                                                                 form.setData(
                                                                     'funcao',
@@ -450,12 +468,15 @@ export default function Show({
                                                                 value=""
                                                                 disabled
                                                             >
-                                                                Selecione a função
+                                                                Selecione a
+                                                                função
                                                             </option>
                                                             {funcoes.map(
                                                                 (funcao) => (
                                                                     <option
-                                                                        key={funcao}
+                                                                        key={
+                                                                            funcao
+                                                                        }
                                                                         value={
                                                                             funcao
                                                                         }
@@ -469,7 +490,8 @@ export default function Show({
                                                             <label className="label">
                                                                 <span className="label-text-alt text-error">
                                                                     {
-                                                                        form.errors
+                                                                        form
+                                                                            .errors
                                                                             .funcao
                                                                     }
                                                                 </span>
@@ -514,7 +536,8 @@ export default function Show({
                                                             <label className="label">
                                                                 <span className="label-text-alt text-error">
                                                                     {
-                                                                        form.errors
+                                                                        form
+                                                                            .errors
                                                                             .carga_horaria_semanal
                                                                     }
                                                                 </span>
@@ -540,7 +563,8 @@ export default function Show({
                                                             ) =>
                                                                 form.setData(
                                                                     'data_inicio',
-                                                                    e.target.value,
+                                                                    e.target
+                                                                        .value,
                                                                 )
                                                             }
                                                             min="1"
@@ -551,7 +575,8 @@ export default function Show({
                                                             <label className="label">
                                                                 <span className="label-text-alt text-error">
                                                                     {
-                                                                        form.errors
+                                                                        form
+                                                                            .errors
                                                                             .data_inicio
                                                                     }
                                                                 </span>
