@@ -85,8 +85,9 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
         // Remover formatação do CPF e telefone antes de enviar
         const cleanedData = {
             ...data,
-            cpf: data.cpf.replace(/\D/g, ''),
-            telefone: data.telefone.replace(/\D/g, ''),
+            cpf: data.cpf.replace(/\\D/g, ''),
+            telefone: data.telefone.replace(/\\D/g, ''),
+            rg: data.rg.replace(/\\D/g, ''),
         };
 
         post(route('profile.completarCadastro'), {
@@ -366,7 +367,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                 className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
                                                 value={data.rg}
                                                 minLength={6}
-                                                maxLength={15}
+                                                maxLength={16} // Alterado de 15 para 16
                                                 onChange={(e) =>
                                                     setData(
                                                         'rg',

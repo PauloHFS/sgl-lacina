@@ -109,7 +109,7 @@ class ProfileController extends Controller
 
             // Documentos
             'cpf' => 'required|string|max:14|unique:users,cpf,' . $user->id,
-            'rg' => 'required|string|max:12|unique:users,rg,' . $user->id,
+            'rg' => 'required|string|max:16|unique:users,rg,' . $user->id, // Alterado de max:12 para max:16
             'uf_rg' => 'required|string|max:2',
             'orgao_emissor_rg' => 'required|string|max:255',
 
