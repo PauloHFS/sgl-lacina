@@ -95,7 +95,6 @@ class ProfileController extends Controller
             'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
             'cep' => preg_replace('/\D/', '', $request->input('cep')),
             'telefone' => preg_replace('/\D/', '', $request->input('telefone')),
-            'conta_bancaria' => preg_replace('/\D/', '', $request->input('conta_bancaria')),
             'agencia' => preg_replace('/\D/', '', $request->input('agencia')),
         ]);
 
@@ -127,7 +126,7 @@ class ProfileController extends Controller
 
             // Dados bancários
             'banco_id' => 'required|uuid|exists:bancos,id',
-            'conta_bancaria' => 'required|string|max:20',
+            'conta_bancaria' => ['required', 'string', 'max:20', 'regex:/^[0-9A-Za-z-]+$/'],
             'agencia' => 'required|string|max:10',
 
             // Dados profissionais
@@ -140,7 +139,11 @@ class ProfileController extends Controller
 
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
-        $user->fill($request->except('foto_url'));
+        $fillData = $request->except(['foto_url', 'estado']);
+        if ($request->has('estado') && $request->filled('estado')) {
+            $fillData['uf'] = $request->input('estado');
+        }
+        $user->fill($fillData);
 
         if ($request->hasFile('foto_url')) {
             $path = $request->file('foto_url')->store('fotos', 'public');

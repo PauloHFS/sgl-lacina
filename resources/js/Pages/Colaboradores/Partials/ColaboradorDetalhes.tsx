@@ -1,4 +1,5 @@
 import React from 'react';
+import { IMaskInput } from 'react-imask';
 import { ColaboradorData, ShowPageProps } from '../Show';
 import { InfoItem } from './InfoItem';
 
@@ -415,13 +416,30 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         Conta Bancária:
                     </span>
                 </label>
-                <input
+                <IMaskInput
                     id="conta_bancaria"
-                    type="text"
+                    mask={[
+                        { mask: '0-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '00-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '0000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '00000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '0000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '00000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '000000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '0000000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '00000000000-S', definitions: { S: /[0-9xX]/ } },
+                        { mask: '000000000000-S', definitions: { S: /[0-9xX]/ } },
+                    ]}
+                    prepare={(str) => str.toUpperCase()}
                     className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
                     value={data.conta_bancaria || ''}
-                    onChange={(e) => setData('conta_bancaria', e.target.value)}
+                    onAccept={(value: string) =>
+                        setData('conta_bancaria', value)
+                    }
                     disabled={processing || !canEdit}
+                    placeholder="Ex: 12345-X ou 1234567-0"
                 />
                 {errors.conta_bancaria && (
                     <p className="text-error mt-1 text-xs">

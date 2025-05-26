@@ -762,10 +762,80 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                             </span>
                                             <IMaskInput
                                                 id="conta_bancaria"
-                                                mask="00000-S"
-                                                definitions={{
-                                                    S: /[0-9xX]/,
-                                                }}
+                                                mask={[
+                                                    {
+                                                        mask: '0-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '00-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '0000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '00000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '0000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '00000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '000000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '0000000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '00000000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                    {
+                                                        mask: '000000000000-S',
+                                                        definitions: {
+                                                            S: /[0-9xX]/,
+                                                        },
+                                                    },
+                                                ]}
                                                 prepare={(str) =>
                                                     str.toUpperCase()
                                                 }
@@ -778,7 +848,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                     )
                                                 }
                                                 required
-                                                placeholder="00000-X"
+                                                placeholder="Ex: 12345-X ou 1234567-0" // Atualizado para refletir flexibilidade
                                             />
                                             {errors.conta_bancaria && (
                                                 <span className="label-text-alt text-error">
