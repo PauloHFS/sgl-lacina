@@ -420,16 +420,24 @@ export default function UpdateProfileInformation({
                 {/* Dados Profissionais */}
                 <div className="divider">Dados Profissionais</div>
                 <div>
-                    <InputLabel htmlFor="curriculo_lattes_url" value="Currículo Lattes" />
+                    <InputLabel
+                        htmlFor="curriculo_lattes_url"
+                        value="Currículo Lattes"
+                    />
                     <TextInput
                         id="curriculo_lattes_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
                         value={data.curriculo_lattes_url}
-                        onChange={(e) => setData('curriculo_lattes_url', e.target.value)}
+                        onChange={(e) =>
+                            setData('curriculo_lattes_url', e.target.value)
+                        }
                         required
                     />
-                    <InputError className="mt-2" message={errors.curriculo_lattes_url} />
+                    <InputError
+                        className="mt-2"
+                        message={errors.curriculo_lattes_url}
+                    />
                 </div>
                 <div>
                     <InputLabel htmlFor="linkedin_url" value="LinkedIn" />

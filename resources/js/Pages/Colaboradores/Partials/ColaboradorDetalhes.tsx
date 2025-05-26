@@ -3,13 +3,13 @@ import { ColaboradorData, ShowPageProps } from '../Show';
 import { InfoItem } from './InfoItem';
 
 // Define types for setData and errors more generically, aligned with Inertia's useForm
-interface CustomSetData<TForm extends object> { // Changed Record<string, unknown> to object
+interface CustomSetData<TForm extends object> {
+    // Changed Record<string, unknown> to object
     (data: TForm): void;
     (data: (previousData: TForm) => TForm): void;
     <K extends keyof TForm>(key: K, value: TForm[K]): void;
 }
 type FormErrors<TForm> = Partial<Record<keyof TForm, string>>;
-
 
 interface ColaboradorDetalhesProps {
     colaborador: ColaboradorData; // Use ColaboradorData
@@ -47,7 +47,10 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 <InfoItem label="Email" value={colaborador.email} />
                 <InfoItem label="CPF" value={colaborador.cpf} />
                 <InfoItem label="RG" value={colaborador.rg} />
-                <InfoItem label="Órgão Emissor RG" value={colaborador.orgao_emissor_rg} />
+                <InfoItem
+                    label="Órgão Emissor RG"
+                    value={colaborador.orgao_emissor_rg}
+                />
                 <InfoItem label="UF RG" value={colaborador.uf_rg} />
                 <InfoItem label="Telefone" value={colaborador.telefone} />
                 <InfoItem label="Gênero" value={colaborador.genero} />
@@ -55,7 +58,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     label="Data de Nascimento"
                     value={
                         colaborador.data_nascimento
-                            ? new Date(colaborador.data_nascimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                            ? new Date(
+                                  colaborador.data_nascimento,
+                              ).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
                             : '-'
                     }
                 />
@@ -85,7 +90,12 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 />
                 {colaborador.curriculo_lattes_url ? (
                     <InfoItem label="Currículo Lattes">
-                        <a href={colaborador.curriculo_lattes_url} target="_blank" rel="noopener noreferrer" className="link link-primary break-all">
+                        <a
+                            href={colaborador.curriculo_lattes_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary break-all"
+                        >
                             {colaborador.curriculo_lattes_url}
                         </a>
                     </InfoItem>
@@ -94,7 +104,12 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 )}
                 {colaborador.linkedin_url ? (
                     <InfoItem label="LinkedIn">
-                        <a href={colaborador.linkedin_url} target="_blank" rel="noopener noreferrer" className="link link-primary break-all">
+                        <a
+                            href={colaborador.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary break-all"
+                        >
                             {colaborador.linkedin_url}
                         </a>
                     </InfoItem>
@@ -103,7 +118,12 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 )}
                 {colaborador.github_url ? (
                     <InfoItem label="GitHub">
-                        <a href={colaborador.github_url} target="_blank" rel="noopener noreferrer" className="link link-primary break-all">
+                        <a
+                            href={colaborador.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary break-all"
+                        >
                             {colaborador.github_url}
                         </a>
                     </InfoItem>
@@ -112,7 +132,12 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 )}
                 {colaborador.figma_url ? (
                     <InfoItem label="Figma">
-                        <a href={colaborador.figma_url} target="_blank" rel="noopener noreferrer" className="link link-primary break-all">
+                        <a
+                            href={colaborador.figma_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link link-primary break-all"
+                        >
                             {colaborador.figma_url}
                         </a>
                     </InfoItem>
@@ -150,7 +175,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
             {/* Nome */}
             <div>
                 <label className="label" htmlFor="name">
-                    <span className="label-text font-semibold">Nome Completo:</span>
+                    <span className="label-text font-semibold">
+                        Nome Completo:
+                    </span>
                 </label>
                 <input
                     id="name"
@@ -160,7 +187,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('name', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.name && <p className="text-error mt-1 text-xs">{errors.name}</p>}
+                {errors.name && (
+                    <p className="text-error mt-1 text-xs">{errors.name}</p>
+                )}
             </div>
 
             {/* Email */}
@@ -176,7 +205,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('email', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.email && <p className="text-error mt-1 text-xs">{errors.email}</p>}
+                {errors.email && (
+                    <p className="text-error mt-1 text-xs">{errors.email}</p>
+                )}
             </div>
 
             {/* CPF */}
@@ -193,7 +224,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                     // TODO: Add mask if desired
                 />
-                {errors.cpf && <p className="text-error mt-1 text-xs">{errors.cpf}</p>}
+                {errors.cpf && (
+                    <p className="text-error mt-1 text-xs">{errors.cpf}</p>
+                )}
             </div>
 
             {/* RG */}
@@ -209,25 +242,34 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('rg', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.rg && <p className="text-error mt-1 text-xs">{errors.rg}</p>}
+                {errors.rg && (
+                    <p className="text-error mt-1 text-xs">{errors.rg}</p>
+                )}
             </div>
 
             {/* Órgão Emissor RG */}
             <div>
                 <label className="label" htmlFor="orgao_emissor_rg">
-                    <span className="label-text font-semibold">Órgão Emissor RG:</span>
+                    <span className="label-text font-semibold">
+                        Órgão Emissor RG:
+                    </span>
                 </label>
                 <input
                     id="orgao_emissor_rg"
                     type="text"
                     className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
                     value={data.orgao_emissor_rg || ''}
-                    onChange={(e) => setData('orgao_emissor_rg', e.target.value)}
+                    onChange={(e) =>
+                        setData('orgao_emissor_rg', e.target.value)
+                    }
                     disabled={processing || !canEdit}
                 />
-                {errors.orgao_emissor_rg && <p className="text-error mt-1 text-xs">{errors.orgao_emissor_rg}</p>}
+                {errors.orgao_emissor_rg && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.orgao_emissor_rg}
+                    </p>
+                )}
             </div>
-
 
             {/* UF RG */}
             <div>
@@ -243,10 +285,14 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 >
                     <option value="">Selecione</option>
                     {ufs.map((uf: string) => (
-                        <option key={uf} value={uf}>{uf}</option>
+                        <option key={uf} value={uf}>
+                            {uf}
+                        </option>
                     ))}
                 </select>
-                {errors.uf_rg && <p className="text-error mt-1 text-xs">{errors.uf_rg}</p>}
+                {errors.uf_rg && (
+                    <p className="text-error mt-1 text-xs">{errors.uf_rg}</p>
+                )}
             </div>
 
             {/* Telefone */}
@@ -261,9 +307,11 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     value={data.telefone || ''}
                     onChange={(e) => setData('telefone', e.target.value)}
                     disabled={processing || !canEdit}
-                     // TODO: Add mask if desired
+                    // TODO: Add mask if desired
                 />
-                {errors.telefone && <p className="text-error mt-1 text-xs">{errors.telefone}</p>}
+                {errors.telefone && (
+                    <p className="text-error mt-1 text-xs">{errors.telefone}</p>
+                )}
             </div>
 
             {/* Gênero */}
@@ -280,16 +328,22 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 >
                     <option value="">Selecione</option>
                     {generos.map((g: { value: string; label: string }) => (
-                        <option key={g.value} value={g.value}>{g.label}</option>
+                        <option key={g.value} value={g.value}>
+                            {g.label}
+                        </option>
                     ))}
                 </select>
-                {errors.genero && <p className="text-error mt-1 text-xs">{errors.genero}</p>}
+                {errors.genero && (
+                    <p className="text-error mt-1 text-xs">{errors.genero}</p>
+                )}
             </div>
 
             {/* Data de Nascimento */}
             <div>
                 <label className="label" htmlFor="data_nascimento">
-                    <span className="label-text font-semibold">Data de Nascimento:</span>
+                    <span className="label-text font-semibold">
+                        Data de Nascimento:
+                    </span>
                 </label>
                 <input
                     id="data_nascimento"
@@ -299,9 +353,12 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('data_nascimento', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.data_nascimento && <p className="text-error mt-1 text-xs">{errors.data_nascimento}</p>}
+                {errors.data_nascimento && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.data_nascimento}
+                    </p>
+                )}
             </div>
-
 
             {/* Banco */}
             <div>
@@ -316,13 +373,21 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione um banco</option>
-                    {bancos.map((banco: { id: string; codigo: string; nome: string }) => (
-                        <option key={banco.id} value={banco.id}>
-                            {banco.codigo} - {banco.nome}
-                        </option>
-                    ))}
+                    {bancos.map(
+                        (banco: {
+                            id: string;
+                            codigo: string;
+                            nome: string;
+                        }) => (
+                            <option key={banco.id} value={banco.id}>
+                                {banco.codigo} - {banco.nome}
+                            </option>
+                        ),
+                    )}
                 </select>
-                {errors.banco_id && <p className="text-error mt-1 text-xs">{errors.banco_id}</p>}
+                {errors.banco_id && (
+                    <p className="text-error mt-1 text-xs">{errors.banco_id}</p>
+                )}
             </div>
 
             {/* Agência */}
@@ -338,13 +403,17 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('agencia', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.agencia && <p className="text-error mt-1 text-xs">{errors.agencia}</p>}
+                {errors.agencia && (
+                    <p className="text-error mt-1 text-xs">{errors.agencia}</p>
+                )}
             </div>
 
             {/* Conta Bancária */}
             <div>
                 <label className="label" htmlFor="conta_bancaria">
-                    <span className="label-text font-semibold">Conta Bancária:</span>
+                    <span className="label-text font-semibold">
+                        Conta Bancária:
+                    </span>
                 </label>
                 <input
                     id="conta_bancaria"
@@ -354,7 +423,11 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('conta_bancaria', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.conta_bancaria && <p className="text-error mt-1 text-xs">{errors.conta_bancaria}</p>}
+                {errors.conta_bancaria && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.conta_bancaria}
+                    </p>
+                )}
             </div>
 
             {/* CEP */}
@@ -371,7 +444,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                     // TODO: Add mask and auto-fill address if desired
                 />
-                {errors.cep && <p className="text-error mt-1 text-xs">{errors.cep}</p>}
+                {errors.cep && (
+                    <p className="text-error mt-1 text-xs">{errors.cep}</p>
+                )}
             </div>
 
             {/* Endereço */}
@@ -387,7 +462,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('endereco', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.endereco && <p className="text-error mt-1 text-xs">{errors.endereco}</p>}
+                {errors.endereco && (
+                    <p className="text-error mt-1 text-xs">{errors.endereco}</p>
+                )}
             </div>
 
             {/* Número */}
@@ -403,13 +480,17 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('numero', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.numero && <p className="text-error mt-1 text-xs">{errors.numero}</p>}
+                {errors.numero && (
+                    <p className="text-error mt-1 text-xs">{errors.numero}</p>
+                )}
             </div>
 
             {/* Complemento */}
             <div>
                 <label className="label" htmlFor="complemento">
-                    <span className="label-text font-semibold">Complemento:</span>
+                    <span className="label-text font-semibold">
+                        Complemento:
+                    </span>
                 </label>
                 <input
                     id="complemento"
@@ -419,7 +500,11 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('complemento', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.complemento && <p className="text-error mt-1 text-xs">{errors.complemento}</p>}
+                {errors.complemento && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.complemento}
+                    </p>
+                )}
             </div>
 
             {/* Bairro */}
@@ -435,7 +520,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('bairro', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.bairro && <p className="text-error mt-1 text-xs">{errors.bairro}</p>}
+                {errors.bairro && (
+                    <p className="text-error mt-1 text-xs">{errors.bairro}</p>
+                )}
             </div>
 
             {/* Cidade */}
@@ -451,13 +538,17 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('cidade', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.cidade && <p className="text-error mt-1 text-xs">{errors.cidade}</p>}
+                {errors.cidade && (
+                    <p className="text-error mt-1 text-xs">{errors.cidade}</p>
+                )}
             </div>
 
             {/* UF (Endereço) */}
             <div>
                 <label className="label" htmlFor="uf_endereco">
-                    <span className="label-text font-semibold">UF (Endereço):</span>
+                    <span className="label-text font-semibold">
+                        UF (Endereço):
+                    </span>
                 </label>
                 <select
                     id="uf_endereco" // Changed id to avoid conflict
@@ -468,17 +559,22 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 >
                     <option value="">Selecione</option>
                     {ufs.map((uf: string) => (
-                        <option key={uf} value={uf}>{uf}</option>
+                        <option key={uf} value={uf}>
+                            {uf}
+                        </option>
                     ))}
                 </select>
-                {errors.uf && <p className="text-error mt-1 text-xs">{errors.uf}</p>}
+                {errors.uf && (
+                    <p className="text-error mt-1 text-xs">{errors.uf}</p>
+                )}
             </div>
-
 
             {/* Área de Atuação */}
             <div className="md:col-span-2">
                 <label className="label" htmlFor="area_atuacao">
-                    <span className="label-text font-semibold">Área de Atuação:</span>
+                    <span className="label-text font-semibold">
+                        Área de Atuação:
+                    </span>
                 </label>
                 <textarea
                     id="area_atuacao"
@@ -488,13 +584,19 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                     rows={3}
                 />
-                {errors.area_atuacao && <p className="text-error mt-1 text-xs">{errors.area_atuacao}</p>}
+                {errors.area_atuacao && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.area_atuacao}
+                    </p>
+                )}
             </div>
 
             {/* Tecnologias */}
             <div className="md:col-span-2">
                 <label className="label" htmlFor="tecnologias">
-                    <span className="label-text font-semibold">Tecnologias (separadas por vírgula):</span>
+                    <span className="label-text font-semibold">
+                        Tecnologias (separadas por vírgula):
+                    </span>
                 </label>
                 <input
                     id="tecnologias"
@@ -504,45 +606,66 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     onChange={(e) => setData('tecnologias', e.target.value)}
                     disabled={processing || !canEdit}
                 />
-                {errors.tecnologias && <p className="text-error mt-1 text-xs">{errors.tecnologias}</p>}
+                {errors.tecnologias && (
+                    <p className="text-error mt-1 text-xs">
+                        {errors.tecnologias}
+                    </p>
+                )}
             </div>
 
-
             {/* Links */}
-            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:col-span-2 md:grid-cols-2">
                 <div>
                     <label className="label" htmlFor="curriculo_lattes_url">
-                        <span className="label-text font-semibold">Currículo Lattes URL:</span>
+                        <span className="label-text font-semibold">
+                            Currículo Lattes URL:
+                        </span>
                     </label>
                     <input
                         id="curriculo_lattes_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
                         value={data.curriculo_lattes_url || ''}
-                        onChange={(e) => setData('curriculo_lattes_url', e.target.value)}
+                        onChange={(e) =>
+                            setData('curriculo_lattes_url', e.target.value)
+                        }
                         disabled={processing || !canEdit}
                         placeholder="https://..."
                     />
-                    {errors.curriculo_lattes_url && <p className="text-error mt-1 text-xs">{errors.curriculo_lattes_url}</p>}
+                    {errors.curriculo_lattes_url && (
+                        <p className="text-error mt-1 text-xs">
+                            {errors.curriculo_lattes_url}
+                        </p>
+                    )}
                 </div>
                 <div>
                     <label className="label" htmlFor="linkedin_url">
-                        <span className="label-text font-semibold">LinkedIn URL:</span>
+                        <span className="label-text font-semibold">
+                            LinkedIn URL:
+                        </span>
                     </label>
                     <input
                         id="linkedin_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.linkedin_url ? 'input-error' : ''}`}
                         value={data.linkedin_url || ''}
-                        onChange={(e) => setData('linkedin_url', e.target.value)}
+                        onChange={(e) =>
+                            setData('linkedin_url', e.target.value)
+                        }
                         disabled={processing || !canEdit}
                         placeholder="https://linkedin.com/in/..."
                     />
-                    {errors.linkedin_url && <p className="text-error mt-1 text-xs">{errors.linkedin_url}</p>}
+                    {errors.linkedin_url && (
+                        <p className="text-error mt-1 text-xs">
+                            {errors.linkedin_url}
+                        </p>
+                    )}
                 </div>
                 <div>
                     <label className="label" htmlFor="github_url">
-                        <span className="label-text font-semibold">GitHub URL:</span>
+                        <span className="label-text font-semibold">
+                            GitHub URL:
+                        </span>
                     </label>
                     <input
                         id="github_url"
@@ -553,11 +676,17 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         disabled={processing || !canEdit}
                         placeholder="https://github.com/..."
                     />
-                    {errors.github_url && <p className="text-error mt-1 text-xs">{errors.github_url}</p>}
+                    {errors.github_url && (
+                        <p className="text-error mt-1 text-xs">
+                            {errors.github_url}
+                        </p>
+                    )}
                 </div>
                 <div>
                     <label className="label" htmlFor="figma_url">
-                        <span className="label-text font-semibold">Figma URL:</span>
+                        <span className="label-text font-semibold">
+                            Figma URL:
+                        </span>
                     </label>
                     <input
                         id="figma_url"
@@ -568,14 +697,17 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         disabled={processing || !canEdit}
                         placeholder="https://figma.com/..."
                     />
-                    {errors.figma_url && <p className="text-error mt-1 text-xs">{errors.figma_url}</p>}
+                    {errors.figma_url && (
+                        <p className="text-error mt-1 text-xs">
+                            {errors.figma_url}
+                        </p>
+                    )}
                 </div>
             </div>
 
-
             {/* Actions */}
             {canEdit && (
-                 <div className="md:col-span-2 mt-6 flex justify-end space-x-3">
+                <div className="mt-6 flex justify-end space-x-3 md:col-span-2">
                     <button
                         type="button"
                         onClick={onCancel}
