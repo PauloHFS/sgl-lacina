@@ -72,6 +72,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // Rotas para Solicitação de Vínculo a Projeto
     Route::post('/vinculo', [ProjetoVinculoController::class, 'create'])->name('vinculo.create');
 
+    Route::post('/relatorio/participacao', [RelatorioController::class, 'enviarRelatorioParticipacao'])->name('relatorio.participacao.enviar');
+
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {
         Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
@@ -79,6 +81,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         // O método aceitar requer um User $colaborador. A rota /colaboradores/{colaborador}/aceitar já serve a este propósito.
         // Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
         Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+        Route::put('/colaboradores/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
+
         Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
 
         // TODO: Concestrar esse sebozeira aqui mergeando as rotas
@@ -94,13 +98,6 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
             Route::post('/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])->name('vinculos.recusar');
         });
     });
-});
-
-// Nova rota para disparar a geração e envio do relatório de participação
-Route::middleware('auth')->group(function () {
-    Route::post('/relatorio/participacao', [RelatorioController::class, 'enviarRelatorioParticipacao'])->name('relatorio.participacao.enviar');
-    Route::get('/colaboradores/{colaborador}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
-    Route::put('/colaboradores/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
 });
 
 require __DIR__ . '/auth.php';
