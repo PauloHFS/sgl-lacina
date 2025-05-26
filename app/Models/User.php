@@ -36,12 +36,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'status_cadastro',
+        'curriculo_lattes_url',
         'linkedin_url',
         'github_url',
         'figma_url',
         'foto_url',
-        'curriculo',
-        'area_atuacao_id',
+        'area_atuacao', // Corrigido de area_atuacao_id e para corresponder ao formulário/tabela
+        'tecnologias', // Adicionado
         'genero',
         'data_nascimento',
         'cpf',
@@ -49,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'uf_rg',
         'orgao_emissor_rg',
         'telefone',
+        'banco_id', // Adicionado
         'conta_bancaria',
         'agencia',
         'cep',

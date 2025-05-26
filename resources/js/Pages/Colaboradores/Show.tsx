@@ -91,15 +91,17 @@ export interface ColaboradorData {
     }>;
 }
 
-export interface ShowPageProps extends PageProps { // Renamed to ShowPageProps for clarity
+export interface ShowPageProps extends PageProps {
+    // Renamed to ShowPageProps for clarity
     colaborador: ColaboradorData;
-    bancos: Array<{ id: string; nome: string; codigo: string }> ;
+    bancos: Array<{ id: string; nome: string; codigo: string }>;
     ufs: Array<string>;
     generos: Array<{ value: string; label: string }>;
     can_update_colaborador: boolean;
 }
 
-export default function Show(props: ShowPageProps) { // Updated to use renamed type
+export default function Show(props: ShowPageProps) {
+    // Updated to use renamed type
     const {
         colaborador,
         bancos,
@@ -108,6 +110,10 @@ export default function Show(props: ShowPageProps) { // Updated to use renamed t
         can_update_colaborador,
         // flash
     } = props;
+
+    console.log(`${new Date().toISOString()} - [Colaboradores/show]`, {
+        props,
+    });
 
     const { toast } = useToast();
 
