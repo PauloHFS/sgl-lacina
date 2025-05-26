@@ -1,5 +1,3 @@
-import Checkbox from '@/Components/Checkbox';
-import InputLabel from '@/Components/InputLabel';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -304,290 +302,433 @@ export default function Show({
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <>
-                                                    <div className="form-control w-full">
-                                                        <InputLabel>
-                                                            Trocar de projeto?
-                                                        </InputLabel>
-                                                        <Checkbox
-                                                            checked={
-                                                                form.data.trocar
-                                                            }
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'trocar',
-                                                                    e.target
-                                                                        .checked,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
+                                                <div className="md:col-span-2">
+                                                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                                                        {vinculosDoUsuarioLogadoNoProjeto &&
+                                                            vinculosDoUsuarioLogadoNoProjeto.length >
+                                                                0 && (
+                                                                <>
+                                                                    {/* Checkbox for trocar */}
+                                                                    <div className="form-control">
+                                                                        <label className="label cursor-pointer justify-start gap-4">
+                                                                            <span className="label-text font-medium">
+                                                                                Trocar
+                                                                                de
+                                                                                projeto?
+                                                                            </span>
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                className="toggle toggle-primary"
+                                                                                checked={
+                                                                                    form
+                                                                                        .data
+                                                                                        .trocar ||
+                                                                                    false
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) =>
+                                                                                    form.setData(
+                                                                                        'trocar',
+                                                                                        e
+                                                                                            .target
+                                                                                            .checked,
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        </label>
+                                                                        <div className="label pt-0">
+                                                                            <span className="label-text-alt text-base-content/70">
+                                                                                Marque
+                                                                                se
+                                                                                deseja
+                                                                                trocar
+                                                                                de
+                                                                                um
+                                                                                projeto
+                                                                                atual
+                                                                            </span>
+                                                                        </div>
+                                                                        {form
+                                                                            .errors
+                                                                            .trocar && (
+                                                                            <div className="label">
+                                                                                <span className="label-text-alt text-error">
+                                                                                    {
+                                                                                        form
+                                                                                            .errors
+                                                                                            .trocar
+                                                                                    }
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
 
-                                                    <div className="form-control w-full">
-                                                        <InputLabel>
-                                                            Projeto a ser
-                                                            trocado
-                                                        </InputLabel>
-                                                        <select
-                                                            className="select select-bordered w-full"
-                                                            disabled={
-                                                                !form.data
-                                                                    .trocar
-                                                            }
-                                                            value={
-                                                                form.data
-                                                                    .usuario_projeto_trocado_id ||
-                                                                ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'usuario_projeto_trocado_id',
-                                                                    e.target
-                                                                        .value ||
-                                                                        null,
-                                                                )
-                                                            }
-                                                        >
-                                                            <option
-                                                                value=""
-                                                                disabled
-                                                            >
-                                                                Selecione o
-                                                                vínculo a ser
-                                                                encerrado
-                                                            </option>
-                                                            {vinculosDoUsuarioLogadoNoProjeto
-                                                                .filter(
-                                                                    (vinculo) =>
-                                                                        vinculo.status ===
-                                                                            'APROVADO' &&
-                                                                        !vinculo.data_fim,
-                                                                )
-                                                                .map(
-                                                                    (
-                                                                        vinculo,
-                                                                    ) => (
-                                                                        <option
-                                                                            key={
-                                                                                vinculo.id
+                                                                    {/* Projeto a ser trocado */}
+                                                                    <div className="form-control">
+                                                                        <label className="label">
+                                                                            <span className="label-text font-medium">
+                                                                                Projeto
+                                                                                a
+                                                                                ser
+                                                                                trocado
+                                                                            </span>
+                                                                        </label>
+                                                                        <select
+                                                                            className={`select select-bordered w-full ${
+                                                                                !form
+                                                                                    .data
+                                                                                    .trocar
+                                                                                    ? 'select-disabled'
+                                                                                    : ''
+                                                                            } ${form.errors.usuario_projeto_trocado_id ? 'select-error' : ''}`}
+                                                                            disabled={
+                                                                                !form
+                                                                                    .data
+                                                                                    .trocar
                                                                             }
                                                                             value={
-                                                                                vinculo.id
+                                                                                form
+                                                                                    .data
+                                                                                    .usuario_projeto_trocado_id ||
+                                                                                ''
+                                                                            }
+                                                                            onChange={(
+                                                                                e,
+                                                                            ) =>
+                                                                                form.setData(
+                                                                                    'usuario_projeto_trocado_id',
+                                                                                    e
+                                                                                        .target
+                                                                                        .value ||
+                                                                                        null,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <option
+                                                                                value=""
+                                                                                disabled
+                                                                            >
+                                                                                Selecione
+                                                                                o
+                                                                                vínculo
+                                                                                a
+                                                                                ser
+                                                                                encerrado
+                                                                            </option>
+                                                                            {vinculosDoUsuarioLogadoNoProjeto
+                                                                                .filter(
+                                                                                    (
+                                                                                        vinculo,
+                                                                                    ) =>
+                                                                                        vinculo.status ===
+                                                                                            'APROVADO' &&
+                                                                                        !vinculo.data_fim,
+                                                                                )
+                                                                                .map(
+                                                                                    (
+                                                                                        vinculo,
+                                                                                    ) => (
+                                                                                        <option
+                                                                                            key={
+                                                                                                vinculo.id
+                                                                                            }
+                                                                                            value={
+                                                                                                vinculo.id
+                                                                                            }
+                                                                                        >
+                                                                                            {
+                                                                                                vinculo
+                                                                                                    .projeto
+                                                                                                    ?.nome
+                                                                                            }{' '}
+                                                                                            (
+                                                                                            {
+                                                                                                vinculo.funcao
+                                                                                            }
+
+                                                                                            )
+                                                                                        </option>
+                                                                                    ),
+                                                                                )}
+                                                                        </select>
+                                                                        <div className="label">
+                                                                            {!form
+                                                                                .data
+                                                                                .trocar && (
+                                                                                <span className="label-text-alt text-base-content/70">
+                                                                                    Disponível
+                                                                                    apenas
+                                                                                    ao
+                                                                                    trocar
+                                                                                    de
+                                                                                    projeto
+                                                                                </span>
+                                                                            )}
+                                                                            {form
+                                                                                .errors
+                                                                                .usuario_projeto_trocado_id && (
+                                                                                <span className="label-text-alt text-error">
+                                                                                    {
+                                                                                        form
+                                                                                            .errors
+                                                                                            .usuario_projeto_trocado_id
+                                                                                    }
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+
+                                                        {/* Tipo de Vínculo */}
+                                                        <div className="form-control">
+                                                            <label className="label">
+                                                                <span className="label-text font-medium">
+                                                                    Tipo de
+                                                                    Vínculo
+                                                                    <span className="text-error ml-1">
+                                                                        *
+                                                                    </span>
+                                                                </span>
+                                                            </label>
+                                                            <select
+                                                                className={`select select-bordered w-full ${
+                                                                    form.errors
+                                                                        .tipo_vinculo
+                                                                        ? 'select-error'
+                                                                        : ''
+                                                                }`}
+                                                                value={
+                                                                    form.data
+                                                                        .tipo_vinculo
+                                                                }
+                                                                onChange={(e) =>
+                                                                    form.setData(
+                                                                        'tipo_vinculo',
+                                                                        e.target
+                                                                            .value as TipoVinculo,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <option
+                                                                    value=""
+                                                                    disabled
+                                                                >
+                                                                    Selecione o
+                                                                    tipo de
+                                                                    vínculo
+                                                                </option>
+                                                                {tiposVinculo.map(
+                                                                    (tipo) => (
+                                                                        <option
+                                                                            key={
+                                                                                tipo
+                                                                            }
+                                                                            value={
+                                                                                tipo
                                                                             }
                                                                         >
                                                                             {
-                                                                                vinculo
-                                                                                    .projeto
-                                                                                    ?.nome
-                                                                            }{' '}
-                                                                            (
-                                                                            {
-                                                                                vinculo.funcao
+                                                                                tipo
                                                                             }
-                                                                            )
                                                                         </option>
                                                                     ),
                                                                 )}
-                                                        </select>
-                                                    </div>
-
-                                                    <div className="form-control w-full">
-                                                        <InputLabel>
-                                                            Tipo de Vínculo
-                                                        </InputLabel>
-                                                        <select
-                                                            className="select select-bordered w-full"
-                                                            value={
-                                                                form.data
-                                                                    .tipo_vinculo
-                                                            }
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'tipo_vinculo',
-                                                                    e.target
-                                                                        .value as TipoVinculo,
-                                                                )
-                                                            }
-                                                        >
-                                                            <option
-                                                                value=""
-                                                                disabled
-                                                            >
-                                                                Selecione o tipo
-                                                                de vínculo
-                                                            </option>
-                                                            {tiposVinculo.map(
-                                                                (tipo) => (
-                                                                    <option
-                                                                        key={
-                                                                            tipo
+                                                            </select>
+                                                            {form.errors
+                                                                .tipo_vinculo && (
+                                                                <div className="label">
+                                                                    <span className="label-text-alt text-error">
+                                                                        {
+                                                                            form
+                                                                                .errors
+                                                                                .tipo_vinculo
                                                                         }
-                                                                        value={
-                                                                            tipo
-                                                                        }
-                                                                    >
-                                                                        {tipo}
-                                                                    </option>
-                                                                ),
+                                                                    </span>
+                                                                </div>
                                                             )}
-                                                        </select>
-                                                        {form.errors
-                                                            .tipo_vinculo && (
+                                                        </div>
+
+                                                        {/* Função */}
+                                                        <div className="form-control">
                                                             <label className="label">
-                                                                <span className="label-text-alt text-error">
-                                                                    {
-                                                                        form
-                                                                            .errors
-                                                                            .tipo_vinculo
-                                                                    }
+                                                                <span className="label-text font-medium">
+                                                                    Função
+                                                                    <span className="text-error ml-1">
+                                                                        *
+                                                                    </span>
                                                                 </span>
                                                             </label>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="form-control w-full">
-                                                        <label className="label">
-                                                            <span className="label-text font-medium">
-                                                                Função
-                                                            </span>
-                                                        </label>
-                                                        <select
-                                                            className="select select-bordered w-full"
-                                                            value={
-                                                                form.data.funcao
-                                                            }
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'funcao',
-                                                                    e.target
-                                                                        .value as Funcao,
-                                                                )
-                                                            }
-                                                        >
-                                                            <option
-                                                                value=""
-                                                                disabled
+                                                            <select
+                                                                className={`select select-bordered w-full ${
+                                                                    form.errors
+                                                                        .funcao
+                                                                        ? 'select-error'
+                                                                        : ''
+                                                                }`}
+                                                                value={
+                                                                    form.data
+                                                                        .funcao
+                                                                }
+                                                                onChange={(e) =>
+                                                                    form.setData(
+                                                                        'funcao',
+                                                                        e.target
+                                                                            .value as Funcao,
+                                                                    )
+                                                                }
                                                             >
-                                                                Selecione a
-                                                                função
-                                                            </option>
-                                                            {funcoes.map(
-                                                                (funcao) => (
-                                                                    <option
-                                                                        key={
-                                                                            funcao
+                                                                <option
+                                                                    value=""
+                                                                    disabled
+                                                                >
+                                                                    Selecione a
+                                                                    função
+                                                                </option>
+                                                                {funcoes.map(
+                                                                    (
+                                                                        funcao,
+                                                                    ) => (
+                                                                        <option
+                                                                            key={
+                                                                                funcao
+                                                                            }
+                                                                            value={
+                                                                                funcao
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                funcao
+                                                                            }
+                                                                        </option>
+                                                                    ),
+                                                                )}
+                                                            </select>
+                                                            {form.errors
+                                                                .funcao && (
+                                                                <div className="label">
+                                                                    <span className="label-text-alt text-error">
+                                                                        {
+                                                                            form
+                                                                                .errors
+                                                                                .funcao
                                                                         }
-                                                                        value={
-                                                                            funcao
-                                                                        }
-                                                                    >
-                                                                        {funcao}
-                                                                    </option>
-                                                                ),
+                                                                    </span>
+                                                                </div>
                                                             )}
-                                                        </select>
-                                                        {form.errors.funcao && (
+                                                        </div>
+
+                                                        {/* Carga Horária */}
+                                                        <div className="form-control">
                                                             <label className="label">
-                                                                <span className="label-text-alt text-error">
-                                                                    {
-                                                                        form
-                                                                            .errors
-                                                                            .funcao
-                                                                    }
+                                                                <span className="label-text font-medium">
+                                                                    Carga
+                                                                    Horária
+                                                                    Semanal
+                                                                    <span className="text-error ml-1">
+                                                                        *
+                                                                    </span>
+                                                                </span>
+                                                                <span className="label-text-alt">
+                                                                    horas
                                                                 </span>
                                                             </label>
-                                                        )}
-                                                    </div>
+                                                            <input
+                                                                type="number"
+                                                                className={`input input-bordered w-full ${
+                                                                    form.errors
+                                                                        .carga_horaria_semanal
+                                                                        ? 'input-error'
+                                                                        : ''
+                                                                }`}
+                                                                placeholder="Ex: 20"
+                                                                value={
+                                                                    form.data
+                                                                        .carga_horaria_semanal
+                                                                }
+                                                                onChange={(
+                                                                    e: React.ChangeEvent<HTMLInputElement>,
+                                                                ) =>
+                                                                    form.setData(
+                                                                        'carga_horaria_semanal',
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ) || 0,
+                                                                    )
+                                                                }
+                                                                min="1"
+                                                                max="40"
+                                                            />
+                                                            {form.errors
+                                                                .carga_horaria_semanal && (
+                                                                <div className="label">
+                                                                    <span className="label-text-alt text-error">
+                                                                        {
+                                                                            form
+                                                                                .errors
+                                                                                .carga_horaria_semanal
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
 
-                                                    <div className="form-control w-full">
-                                                        <label className="label">
-                                                            <span className="label-text font-medium">
-                                                                Carga Horária
-                                                                Semanal
-                                                            </span>
-                                                            <span className="label-text-alt">
-                                                                (horas)
-                                                            </span>
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            className="input input-bordered w-full"
-                                                            placeholder="Ex: 20"
-                                                            value={
-                                                                form.data
-                                                                    .carga_horaria_semanal
-                                                            }
-                                                            onChange={(
-                                                                e: React.ChangeEvent<HTMLInputElement>,
-                                                            ) =>
-                                                                form.setData(
-                                                                    'carga_horaria_semanal',
-                                                                    parseInt(
+                                                        {/* Data de Inicio */}
+                                                        <div className="form-control">
+                                                            <label className="label">
+                                                                <span className="label-text font-medium">
+                                                                    Data de
+                                                                    Início
+                                                                    <span className="text-error ml-1">
+                                                                        *
+                                                                    </span>
+                                                                </span>
+                                                            </label>
+                                                            <input
+                                                                type="date"
+                                                                className={`input input-bordered w-full ${
+                                                                    form.errors
+                                                                        .data_inicio
+                                                                        ? 'input-error'
+                                                                        : ''
+                                                                }`}
+                                                                value={
+                                                                    form.data
+                                                                        .data_inicio
+                                                                }
+                                                                onChange={(
+                                                                    e: React.ChangeEvent<HTMLInputElement>,
+                                                                ) =>
+                                                                    form.setData(
+                                                                        'data_inicio',
                                                                         e.target
                                                                             .value,
-                                                                    ) || 0,
-                                                                )
-                                                            }
-                                                            min="1"
-                                                            max="40"
-                                                        />
-                                                        {form.errors
-                                                            .carga_horaria_semanal && (
-                                                            <label className="label">
-                                                                <span className="label-text-alt text-error">
-                                                                    {
-                                                                        form
-                                                                            .errors
-                                                                            .carga_horaria_semanal
-                                                                    }
-                                                                </span>
-                                                            </label>
-                                                        )}
+                                                                    )
+                                                                }
+                                                            />
+                                                            {form.errors
+                                                                .data_inicio && (
+                                                                <div className="label">
+                                                                    <span className="label-text-alt text-error">
+                                                                        {
+                                                                            form
+                                                                                .errors
+                                                                                .data_inicio
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
 
-                                                    <div className="form-control w-full">
-                                                        <label className="label">
-                                                            <span className="label-text font-medium">
-                                                                Data de Inicio
-                                                            </span>
-                                                        </label>
-                                                        <input
-                                                            type="date"
-                                                            className="input input-bordered w-full"
-                                                            value={
-                                                                form.data
-                                                                    .data_inicio
-                                                            }
-                                                            onChange={(
-                                                                e: React.ChangeEvent<HTMLInputElement>,
-                                                            ) =>
-                                                                form.setData(
-                                                                    'data_inicio',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            min="1"
-                                                            max="40"
-                                                        />
-                                                        {form.errors
-                                                            .data_inicio && (
-                                                            <label className="label">
-                                                                <span className="label-text-alt text-error">
-                                                                    {
-                                                                        form
-                                                                            .errors
-                                                                            .data_inicio
-                                                                    }
-                                                                </span>
-                                                            </label>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="card-actions justify-end pt-4">
+                                                    {/* Submit Button */}
+                                                    <div className="card-actions justify-end pt-6">
                                                         <button
                                                             type="submit"
-                                                            className="btn btn-primary"
+                                                            className="btn btn-primary btn-wide"
                                                             disabled={
                                                                 form.processing
                                                             }
@@ -600,7 +741,7 @@ export default function Show({
                                                                 : 'Solicitar Vínculo'}
                                                         </button>
                                                     </div>
-                                                </>
+                                                </div>
                                             )}
                                         </div>
                                     </form>
