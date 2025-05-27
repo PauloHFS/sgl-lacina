@@ -24,7 +24,7 @@ const ORGAOS_EMISSORES = [
     { sigla: 'OUTROS', nome: 'Outros/Conselhos Profissionais' },
 ];
 
-export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
+export default function PosCadastro({ bancos }: PosCadastroProps) {
     const { data, setData, post, errors, processing } = useForm<{
         foto_url: File | null;
         genero: string;
@@ -54,9 +54,9 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
         foto_url: null,
         genero: '',
         data_nascimento: '',
-        rg: auth.user.rg || '',
-        uf_rg: auth.user.uf_rg || '',
-        orgao_emissor_rg: auth.user.orgao_emissor_rg || '',
+        rg: '',
+        uf_rg: '',
+        orgao_emissor_rg: '',
         cpf: '',
         cep: '',
         endereco: '',
@@ -206,11 +206,34 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                                                 const file =
                                                                     e.target
                                                                         .files[0];
-                                                                // TODO: Adicionar validação de tamanho do arquivo no frontend para melhor UX
+                                                                if (
+                                                                    file.size >
+                                                                    2048 * 1024
+                                                                ) {
+                                                                    // 2MB
+                                                                    toast(
+                                                                        'A foto não pode ser maior que 2MB.',
+                                                                        'error',
+                                                                    );
+                                                                    setData(
+                                                                        'foto_url',
+                                                                        null,
+                                                                    );
+                                                                    e.target.value =
+                                                                        ''; // Limpa o campo de input
+                                                                } else {
+                                                                    setData(
+                                                                        'foto_url',
+                                                                        file,
+                                                                    );
+                                                                }
+                                                            } else {
                                                                 setData(
                                                                     'foto_url',
-                                                                    file,
-                                                                );
+                                                                    null,
+                                                                ); // Limpa se nenhum arquivo for selecionado
+                                                                e.target.value =
+                                                                    '';
                                                             }
                                                         }}
                                                     />
@@ -869,7 +892,7 @@ export default function PosCadastro({ bancos, auth }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Currículo Lattes
+                                                Currículo Lattes*
                                             </span>
                                             <input
                                                 id="curriculo_lattes_url"
