@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 
-class ColaboradorRegistrado extends Mailable
+class VinculoAceito extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -30,7 +30,7 @@ class ColaboradorRegistrado extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Colaborador Registrado - Pendente de Aprovação',
+            subject: 'Vinculo Aceito',
         );
     }
 
@@ -40,7 +40,7 @@ class ColaboradorRegistrado extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.colaborador-registrado',
+            view: 'emails.vinculo-aceito',
         );
     }
 

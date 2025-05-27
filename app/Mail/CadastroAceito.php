@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 
-class ColaboradorAceito extends Mailable
+class CadastroAceito extends Mailable
 {
   use Queueable, SerializesModels;
 
@@ -18,7 +18,7 @@ class ColaboradorAceito extends Mailable
    * Create a new message instance.
    */
   public function __construct(
-    public string $email,
+    public User $colaborador,
     public string $url
   ) {
     //
@@ -30,7 +30,7 @@ class ColaboradorAceito extends Mailable
   public function envelope(): Envelope
   {
     return new Envelope(
-      subject: 'Colaborador Registrado - Pendente de Aprovação',
+      subject: 'Cadastro Aceito',
     );
   }
 
@@ -40,7 +40,7 @@ class ColaboradorAceito extends Mailable
   public function content(): Content
   {
     return new Content(
-      markdown: 'emails.colaborador-aceito',
+      markdown: 'emails.cadastro-aceito',
     );
   }
 
