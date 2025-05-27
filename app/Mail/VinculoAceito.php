@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\User;
+use App\Models\Projeto;
 
 class VinculoAceito extends Mailable
 {
@@ -19,6 +20,7 @@ class VinculoAceito extends Mailable
      */
     public function __construct(
         public User $colaborador,
+        public Projeto $projeto,
         public string $url
     ) {
         //
@@ -30,7 +32,7 @@ class VinculoAceito extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vinculo Aceito',
+            subject: 'Vínculo ao Projeto Aceito',
         );
     }
 
@@ -41,13 +43,18 @@ class VinculoAceito extends Mailable
     {
         return new Content(
             view: 'emails.vinculo-aceito',
+            with: [
+                'colaborador' => $this->colaborador,
+                'projeto' => $this->projeto,
+                'url' => $this->url,
+            ],
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, \\Illuminate\\Mail\\Mailables\\Attachment>
      */
     public function attachments(): array
     {

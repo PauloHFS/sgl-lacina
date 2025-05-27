@@ -12,6 +12,7 @@ use App\Enums\StatusCadastro;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Events\VinculoAceito;
 
 class ProjetoVinculoController extends Controller
 {
@@ -143,6 +144,10 @@ class ProjetoVinculoController extends Controller
     }
 
     $usuarioProjeto->save();
+
+    if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+      event(new VinculoAceito(Auth::user(), $usuarioProjeto->projeto));
+    }
 
     return back()->with('success', 'Vínculo com projeto atualizado com sucesso!');
   }
