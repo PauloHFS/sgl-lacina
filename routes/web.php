@@ -11,21 +11,6 @@ use App\Models\Banco;
 use App\Http\Controllers\ProjetosController;
 use App\Http\Controllers\RelatorioController;
 
-// Rota para a página de horários (mock)
-Route::get('/meus-horarios', function () {
-    // Mock de dados de autenticação, substitua pelo real quando integrado
-    $mockAuthUser = new class {
-        public $user;
-        public function __construct()
-        {
-            $this->user = (object)['name' => 'Usuário Mock', 'email' => 'mock@example.com']; // Simula um usuário logado
-        }
-    };
-    return Inertia::render('Horarios/MeuHorario', [
-        'auth' => $mockAuthUser, // Passa o mock de autenticação para o componente
-    ]);
-})->middleware(['auth', 'verified'])->name('horarios.meus');
-
 // Rotas Públicas
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -55,6 +40,22 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // Rotas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Rota para a página de horários (mock)
+    Route::get('/meus-horarios', function () {
+        // Mock de dados de autenticação, substitua pelo real quando integrado
+        $mockAuthUser = new class {
+            public $user;
+            public function __construct()
+            {
+                $this->user = (object)['name' => 'Usuário Mock', 'email' => 'mock@example.com']; // Simula um usuário logado
+            }
+        };
+        return Inertia::render('Horarios/MeuHorario', [
+            'auth' => $mockAuthUser, // Passa o mock de autenticação para o componente
+        ]);
+    })->name('horarios.meus');
+
 
     // TODO: Mergear essas duas rotas
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

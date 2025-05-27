@@ -89,12 +89,11 @@ class ColaboradorController extends Controller
         return Inertia::render('Colaboradores/Index', []);
     }
 
-    public function show(Request $request, $id) // Added Request $request
+    public function show(Request $request, $id)
     {
         $usuario = User::with('banco')->findOrFail($id);
 
-        // Authorization check
-        $this->authorize('view', $usuario); // Changed to use 'view' ability from UserPolicy
+        $this->authorize('view', $usuario);
         $can_update_colaborador = $request->user()->can('update', $usuario);
 
         $vinculos = UsuarioProjeto::with('projeto')

@@ -162,12 +162,12 @@ export default function Show(props: ShowPageProps) {
         reset: resetDetalhesForm,
         clearErrors: clearDetalhesErrors,
     } = useForm<ColaboradorData>({
-        id: colaborador.id, // Added
-        email: colaborador.email, // Added
-        status_cadastro: colaborador.status_cadastro, // Added
-        projetos_atuais: colaborador.projetos_atuais || [], // Added
-        created_at: colaborador.created_at, // Added
-        updated_at: colaborador.updated_at, // Added
+        id: colaborador.id,
+        email: colaborador.email,
+        status_cadastro: colaborador.status_cadastro,
+        projetos_atuais: colaborador.projetos_atuais || [],
+        created_at: colaborador.created_at,
+        updated_at: colaborador.updated_at,
         name: colaborador.name,
         curriculo_lattes_url: colaborador.curriculo_lattes_url,
         linkedin_url: colaborador.linkedin_url,
@@ -328,48 +328,6 @@ export default function Show(props: ShowPageProps) {
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
             <Head title={`Colaborador: ${colaborador.name}`} />
-
-            {/* Toast Messages using daisyUI alert component
-            {flash?.success && (
-                <div className="toast toast-top toast-center">
-                    <div role="alert" className="alert alert-success">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 shrink-0 stroke-current"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        <span>{flash.success}</span>
-                    </div>
-                </div>
-            )}
-            {flash?.error && (
-                <div className="toast toast-top toast-center">
-                    <div role="alert" className="alert alert-error">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 shrink-0 stroke-current"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        <span>{flash.error}</span>
-                    </div>
-                </div>
-            ) */}
 
             <div className="py-12">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
