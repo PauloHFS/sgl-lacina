@@ -30,9 +30,27 @@ export default function Register() {
                     <form onSubmit={submit} className="space-y-4">
                         <div>
                             <label className="label" htmlFor="lab_password">
-                                <span className="label-text">
-                                    Senha do Laboratório
-                                </span>
+                                <div
+                                    className="tooltip tooltip-right"
+                                    data-tip="Senha fornecida pelo laboratório para permitir o cadastro na plataforma."
+                                >
+                                    <span className="label-text flex items-center">
+                                        Senha do Laboratório
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            className="ml-1 inline-block h-4 w-4 stroke-current"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            ></path>
+                                        </svg>
+                                    </span>
+                                </div>
                             </label>
                             <input
                                 id="lab_password"
