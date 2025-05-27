@@ -8,8 +8,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CadastroAceito as CadastroAceitoMail;
 
-class SendCadastroAceitoNotification
+class SendCadastroAceitoNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     /**
      * Create the event listener.
      */
@@ -23,8 +25,9 @@ class SendCadastroAceitoNotification
      */
     public function handle(CadastroAceito $event): void
     {
-        Mail::to($event->user_email)->send(new CadastroAceitoMail(
-            $event->user_email,
+        // $event->user is already an instance of App\Models\User due to the CadastroAceito event definition
+        Mail::to($event->user->email)->send(new CadastroAceitoMail(
+            $event->user,
             config('app.url') . '/dashboard'
         ));
     }

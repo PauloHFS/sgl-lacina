@@ -6,23 +6,23 @@ use App\Enums\StatusCadastro;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Projeto;
-use App\Models\Banco; // Import Banco model
+use App\Models\Banco;
 use Inertia\Inertia;
 use App\Enums\TipoVinculo;
-use App\Events\PreColaboradorAceito;
+use App\Events\CadastroAceito;
 use App\Enums\StatusVinculoProjeto;
 use App\Models\UsuarioProjeto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Gate; // Import Gate facade
-use App\Enums\Genero; // Assuming you have a Genero enum
-use Illuminate\Support\Facades\Validator; // Import Validator
-use Illuminate\Validation\Rule; // Import Rule
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Add this line
+use Illuminate\Support\Facades\Gate;
+use App\Enums\Genero;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ColaboradorController extends Controller
 {
-    use AuthorizesRequests; // Add this line
+    use AuthorizesRequests;
 
     public function index(Request $request)
     {
@@ -240,7 +240,6 @@ class ColaboradorController extends Controller
             'bairro' => 'nullable|string|max:255',
             'cidade' => 'nullable|string|max:255',
             'uf' => 'nullable|string|size:2',
-            // 'foto_url' is handled separately if it involves file uploads
         ])->validate();
 
         // Handle date conversion for data_nascimento if it's present
@@ -262,16 +261,28 @@ class ColaboradorController extends Controller
 
     public function aceitar(User $colaborador, Request $request)
     {
-        $colaborador->status_cadastro = 'ACEITO';
-        $colaborador->save();
+        $this->authorize('update', $colaborador);
 
-        // Aqui você pode disparar eventos/emails se necessário
+        if ($colaborador->status_cadastro === StatusCadastro::PENDENTE) {
+            $colaborador->status_cadastro = StatusCadastro::ACEITO;
+            $colaborador->save();
 
-        return redirect()->back()->with('success', 'Colaborador aceito com sucesso.');
+            event(new CadastroAceito($colaborador));
+
+            return redirect()->back()->with('success', 'Cadastro do colaborador aceito com sucesso.');
+        }
+
+        return redirect()->back()->with('error', 'Este colaborador não está com cadastro pendente.');
     }
 
     public function recusar(User $colaborador, Request $request)
     {
+        $this->authorize('update', $colaborador);
+
+        if ($colaborador->status_cadastro !== StatusCadastro::PENDENTE) {
+            return redirect()->back()->with('error', 'Este colaborador não está com cadastro pendente.');
+        }
+
         $colaborador->status_cadastro = 'RECUSADO';
         $colaborador->save();
 
