@@ -4,14 +4,13 @@ namespace App\Listeners;
 
 use App\Events\CadastroAceito;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+// use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CadastroAceito as CadastroAceitoMail;
 
 class SendCadastroAceitoNotification implements ShouldQueue
 {
-    use InteractsWithQueue;
-
+    // use InteractsWithQueue;
     /**
      * Create the event listener.
      */

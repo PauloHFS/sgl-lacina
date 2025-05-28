@@ -4,12 +4,13 @@ namespace App\Listeners;
 
 use App\Events\VinculoAceito as VinculoAceitoEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+// use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VinculoAceito as VinculoAceitoMail;
 
 class SendVinculoAceitoNotification
 {
+    // use InteractsWithQueue;
     /**
      * Create the event listener.
      */
