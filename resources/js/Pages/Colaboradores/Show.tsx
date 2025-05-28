@@ -98,14 +98,6 @@ export default function Show({
     status_colaborador,
     ultimo_vinculo,
 }: ShowPageProps) {
-    console.log(`${new Date().toISOString()} - [Colaboradores/show]`, {
-        colaborador,
-        bancos,
-        can_update_colaborador,
-        status_colaborador,
-        ultimo_vinculo,
-    });
-
     const { toast } = useToast();
 
     const [isEditingDetalhes, setIsEditingDetalhes] = useState(false);
@@ -132,7 +124,6 @@ export default function Show({
             : undefined,
     });
 
-    // Form for ColaboradorDetalhes
     const {
         data: detalhesData,
         setData: setDetalhesData,
@@ -650,25 +641,32 @@ export default function Show({
                                 canEdit={can_update_colaborador}
                             />
 
-                            <div className="divider">Projeto(s)</div>
+                            <div className="divider">Projeto(s) Ativos</div>
                             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                {colaborador.projetos.length > 0 ? (
-                                    colaborador.projetos.map((projeto) => (
-                                        <InfoItem
-                                            key={projeto.id}
-                                            label="Projeto"
-                                        >
-                                            <Link
-                                                href={route(
-                                                    'projetos.show',
-                                                    projeto.id,
-                                                )}
-                                                className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
+                                {colaborador.projetos.filter(
+                                    (p) => p.vinculo.status === 'APROVADO',
+                                ).length > 0 ? (
+                                    colaborador.projetos
+                                        .filter(
+                                            (p) =>
+                                                p.vinculo.status === 'APROVADO',
+                                        )
+                                        .map((projeto) => (
+                                            <InfoItem
+                                                key={projeto.id}
+                                                label="Projeto"
                                             >
-                                                {projeto.nome}
-                                            </Link>
-                                        </InfoItem>
-                                    ))
+                                                <Link
+                                                    href={route(
+                                                        'projetos.show',
+                                                        projeto.id,
+                                                    )}
+                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
+                                                >
+                                                    {projeto.nome}
+                                                </Link>
+                                            </InfoItem>
+                                        ))
                                 ) : (
                                     <p className="text-base-content/70">
                                         Nenhum projeto.

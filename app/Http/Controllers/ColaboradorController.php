@@ -97,7 +97,7 @@ class ColaboradorController extends Controller
         $can_update_colaborador = $request->user()->can('update', $usuario);
 
         $ultimoVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
-            ->orderBy('created_at', 'desc') // Consider ordering to get the truly last one if multiple exist
+            ->orderBy('created_at', 'desc')
             ->first();
 
         if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
