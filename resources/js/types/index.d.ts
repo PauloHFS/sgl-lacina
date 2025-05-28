@@ -113,9 +113,9 @@ export interface Coordenador {
 export interface UsuarioProjeto {
     id: string;
     usuario_id: string;
-    usuario?: User;
+    usuario?: User; // must be load eagerly
     projeto_id: string;
-    projeto?: Projeto;
+    projeto?: Projeto; // must be load eagerly
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;
@@ -125,22 +125,4 @@ export interface UsuarioProjeto {
     created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-}
-
-export interface ShowPageProps extends PageProps {
-    projeto: Projeto;
-    tiposVinculo: TipoVinculo[];
-    funcoes: Funcao[];
-    usuarioVinculo: UsuarioProjeto | null;
-    vinculosDoUsuarioLogadoNoProjeto: UsuarioProjeto[];
-    participantesProjeto: {
-        data: ParticipanteProjeto[];
-        // Add other pagination properties if needed
-    } | null;
-    temVinculosPendentes: boolean;
-    coordenadoresDoProjeto: Coordenador[];
-}
-
-export interface VinculoCreateForm {
-    // ...existing fields...
 }

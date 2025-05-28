@@ -1,3 +1,4 @@
+import { ESTADOS, GENEROS } from '@/constants';
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { ColaboradorData, ShowPageProps } from '../Show';
@@ -22,8 +23,6 @@ interface ColaboradorDetalhesProps {
     onCancel: () => void;
     onSubmit: () => void;
     bancos: ShowPageProps['bancos']; // Use ShowPageProps
-    ufs: ShowPageProps['ufs']; // Use ShowPageProps
-    generos: ShowPageProps['generos']; // Use ShowPageProps
     canEdit: boolean;
 }
 
@@ -37,8 +36,6 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
     onCancel,
     onSubmit,
     bancos,
-    ufs,
-    generos,
     canEdit,
 }) => {
     if (!isEditing) {
@@ -285,9 +282,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {ufs.map((uf: string) => (
-                        <option key={uf} value={uf}>
-                            {uf}
+                    {ESTADOS.map((uf) => (
+                        <option key={uf.sigla} value={uf.sigla}>
+                            {uf.nome}
                         </option>
                     ))}
                 </select>
@@ -328,7 +325,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {generos.map((g: { value: string; label: string }) => (
+                    {GENEROS.map((g: { value: string; label: string }) => (
                         <option key={g.value} value={g.value}>
                             {g.label}
                         </option>
@@ -429,8 +426,14 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         { mask: '00000000-S', definitions: { S: /[0-9xX]/ } },
                         { mask: '000000000-S', definitions: { S: /[0-9xX]/ } },
                         { mask: '0000000000-S', definitions: { S: /[0-9xX]/ } },
-                        { mask: '00000000000-S', definitions: { S: /[0-9xX]/ } },
-                        { mask: '000000000000-S', definitions: { S: /[0-9xX]/ } },
+                        {
+                            mask: '00000000000-S',
+                            definitions: { S: /[0-9xX]/ },
+                        },
+                        {
+                            mask: '000000000000-S',
+                            definitions: { S: /[0-9xX]/ },
+                        },
                     ]}
                     prepare={(str) => str.toUpperCase()}
                     className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
@@ -576,9 +579,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     disabled={processing || !canEdit}
                 >
                     <option value="">Selecione</option>
-                    {ufs.map((uf: string) => (
-                        <option key={uf} value={uf}>
-                            {uf}
+                    {ESTADOS.map((uf) => (
+                        <option key={uf.sigla} value={uf.sigla}>
+                            {uf.nome}
                         </option>
                     ))}
                 </select>

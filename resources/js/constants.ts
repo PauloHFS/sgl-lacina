@@ -1,3 +1,14 @@
+import { Genero } from "./types";
+
+export const GENEROS: Array<{
+  value: Genero,
+  label: string
+}> = [
+    { value: 'MASCULINO', label: 'Masculino' },
+    { value: 'FEMININO', label: 'Feminino' },
+    { value: 'OUTRO', label: 'Outro' },
+  ]
+
 export const ESTADOS = [
   { sigla: 'AC', nome: 'Acre' },
   { sigla: 'AL', nome: 'Alagoas' },

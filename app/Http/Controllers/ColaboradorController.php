@@ -139,37 +139,12 @@ class ColaboradorController extends Controller
             }
         }
 
-        $colaboradorData = $usuario->only([
-            'id',
-            'name',
-            'email',
-            'linkedin_url',
-            'github_url',
-            'figma_url',
-            'foto_url',
-            'area_atuacao',
-            'tecnologias',
-            'curriculo_lattes_url',
-            'cpf',
-            'banco', // Already included if loaded with ->with('banco')
-            'conta_bancaria',
-            'agencia',
-            'banco_id',
-            'rg',
-            'uf_rg',
-            'orgao_emissor_rg', // Added orgao_emissor_rg
-            'telefone',
-            'genero', // Added genero
-            'data_nascimento', // Added data_nascimento
-            'cep', // Added cep
-            'endereco', // Added endereco
-            'numero', // Added numero
-            'complemento', // Added complemento
-            'bairro', // Added bairro
-            'cidade', // Added cidade
-            'uf' // Added uf
-        ]);
-
+        $colaboradorData = collect($usuario->toArray())->except([
+            'email_verified_at',
+            'password',
+            'remember_token',
+            'deleted_at',
+        ])->all();
         $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
         $colaboradorData['updated_at'] = $usuario->updated_at?->toIso8601String();
         $colaboradorData['status_cadastro'] = $statusCadastroView;
@@ -179,16 +154,10 @@ class ColaboradorController extends Controller
         $colaboradorData['projetos_atuais'] = $projetosAtuais->map(fn($p) => ['id' => $p->id, 'nome' => $p->nome]);
 
         $bancos = Banco::orderBy('nome')->get(['id', 'nome', 'codigo']);
-        $ufs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
-        // Assuming Genero enum has a method to get values for frontend
-        $generos = collect(Genero::cases())->map(fn($g) => ['value' => $g->value, 'label' => $g->getLabel()])->all(); // Changed to use getLabel()
-
 
         return inertia('Colaboradores/Show', [
             'colaborador' => $colaboradorData,
             'bancos' => $bancos,
-            'ufs' => $ufs,
-            'generos' => $generos,
             'can_update_colaborador' => $can_update_colaborador,
         ]);
     }

@@ -1,8 +1,10 @@
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
+    Banco,
     Funcao,
     PageProps,
+    StatusCadastro,
     StatusVinculoProjeto,
     TipoProjeto,
     TipoVinculo,
@@ -28,11 +30,7 @@ export interface ColaboradorData {
     tecnologias?: string | null;
     cpf?: string | null;
     banco_id?: string | null;
-    banco?: {
-        id: string;
-        codigo: string;
-        nome: string;
-    } | null;
+    banco?: Banco | null;
     conta_bancaria?: string | null;
     agencia?: string | null;
     rg?: string | null;
@@ -50,11 +48,7 @@ export interface ColaboradorData {
     uf?: string | null;
     created_at: string;
     updated_at: string;
-    status_cadastro:
-        | 'VINCULO_PENDENTE'
-        | 'APROVACAO_PENDENTE'
-        | 'ATIVO'
-        | 'ENCERRADO';
+    status_cadastro: StatusCadastro;
     vinculo?: {
         id: string;
         usuario_id: string;
@@ -92,19 +86,20 @@ export interface ColaboradorData {
 }
 
 export interface ShowPageProps extends PageProps {
-    // Renamed to ShowPageProps for clarity
     colaborador: ColaboradorData;
     bancos: Array<{ id: string; nome: string; codigo: string }>;
-    ufs: Array<string>;
-    generos: Array<{ value: string; label: string }>;
     can_update_colaborador: boolean;
 }
 
-export default function Show(props: ShowPageProps) {
-    const { colaborador, bancos, ufs, generos, can_update_colaborador } = props;
-
+export default function Show({
+    colaborador,
+    bancos,
+    can_update_colaborador,
+}: ShowPageProps) {
     console.log(`${new Date().toISOString()} - [Colaboradores/show]`, {
-        props,
+        colaborador,
+        bancos,
+        can_update_colaborador,
     });
 
     const { toast } = useToast();
@@ -647,8 +642,6 @@ export default function Show(props: ShowPageProps) {
                                 onCancel={handleCancelEditDetalhes}
                                 onSubmit={handleUpdateDetalhesColaborador}
                                 bancos={bancos}
-                                ufs={ufs}
-                                generos={generos}
                                 canEdit={can_update_colaborador}
                             />
 
