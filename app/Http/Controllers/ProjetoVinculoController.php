@@ -96,7 +96,7 @@ class ProjetoVinculoController extends Controller
       'data_fim' => 'sometimes|nullable|date|after_or_equal:data_inicio',
     ]);
 
-    $usuarioProjeto = UsuarioProjeto::findOrFail($id);
+    $usuarioProjeto = UsuarioProjeto::with('usuario')->findOrFail($id);
 
     if ($request->filled('status')) {
       $usuarioProjeto->status = $validatedData['status'];
@@ -146,7 +146,7 @@ class ProjetoVinculoController extends Controller
     $usuarioProjeto->save();
 
     if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
-      event(new VinculoAceito(Auth::user(), $usuarioProjeto->projeto));
+      event(new VinculoAceito($usuarioProjeto->usuario, $usuarioProjeto->projeto));
     }
 
     return back()->with('success', 'Vínculo com projeto atualizado com sucesso!');
