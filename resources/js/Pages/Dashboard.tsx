@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Funcao, PageProps, StatusVinculoProjeto, TipoVinculo } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 export default function Dashboard({
     projetos,
@@ -95,7 +95,7 @@ export default function Dashboard({
                                 <h3 className="card-title">
                                     Histórico de Projetos
                                 </h3>
-                                {/* <form
+                                <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
                                         router.post(
@@ -111,7 +111,7 @@ export default function Dashboard({
                                     >
                                         Gerar Relatório por Email
                                     </button>
-                                </form> */}
+                                </form>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="table-zebra table">
