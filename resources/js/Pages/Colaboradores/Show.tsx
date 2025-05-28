@@ -101,15 +101,7 @@ export interface ShowPageProps extends PageProps {
 }
 
 export default function Show(props: ShowPageProps) {
-    // Updated to use renamed type
-    const {
-        colaborador,
-        bancos,
-        ufs,
-        generos,
-        can_update_colaborador,
-        // flash
-    } = props;
+    const { colaborador, bancos, ufs, generos, can_update_colaborador } = props;
 
     console.log(`${new Date().toISOString()} - [Colaboradores/show]`, {
         props,
@@ -117,25 +109,14 @@ export default function Show(props: ShowPageProps) {
 
     const { toast } = useToast();
 
-    // useEffect(() => {
-    //     if (flash?.success) {
-    //         toast(flash.success, 'success');
-    //     }
-    //     if (flash?.error) {
-    //         toast(flash.error, 'error');
-    //     }
-    // }, [flash, toast]);
-
     const [isEditingDetalhes, setIsEditingDetalhes] = useState(false);
 
-    // Form for Vinculo (existing)
     const {
         data: vinculoData,
         setData: setVinculoData,
         errors: vinculoErrors,
         put: putVinculo,
         processing: processingVinculo,
-        // reset: resetVinculoForm,
     } = useForm<{
         status?: StatusVinculoProjeto;
         funcao?: Funcao;
@@ -335,66 +316,6 @@ export default function Show(props: ShowPageProps) {
                         <div className="card-body">
                             <ColaboradorHeader colaborador={colaborador} />
 
-                            <div className="divider">Detalhes</div>
-                            {can_update_colaborador && !isEditingDetalhes && (
-                                <div className="card-actions mb-4 justify-end">
-                                    <button
-                                        className="btn btn-sm btn-outline btn-primary"
-                                        onClick={() =>
-                                            setIsEditingDetalhes(true)
-                                        }
-                                        disabled={
-                                            processingDetalhes ||
-                                            processingVinculo
-                                        }
-                                    >
-                                        Editar Detalhes
-                                    </button>
-                                </div>
-                            )}
-                            <ColaboradorDetalhes
-                                colaborador={colaborador}
-                                isEditing={isEditingDetalhes}
-                                data={detalhesData}
-                                setData={setDetalhesData}
-                                errors={detalhesErrors}
-                                processing={processingDetalhes}
-                                onCancel={handleCancelEditDetalhes}
-                                onSubmit={handleUpdateDetalhesColaborador}
-                                bancos={bancos}
-                                ufs={ufs}
-                                generos={generos}
-                                canEdit={can_update_colaborador}
-                            />
-
-                            <div className="divider">Projeto(s)</div>
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                {colaborador.projetos_atuais.length > 0 ? (
-                                    colaborador.projetos_atuais.map(
-                                        (projeto) => (
-                                            <InfoItem
-                                                key={projeto.id}
-                                                label="Projeto"
-                                            >
-                                                <Link
-                                                    href={route(
-                                                        'projetos.show',
-                                                        projeto.id,
-                                                    )}
-                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
-                                                >
-                                                    {projeto.nome}
-                                                </Link>
-                                            </InfoItem>
-                                        ),
-                                    )
-                                ) : (
-                                    <p className="text-base-content/70">
-                                        Nenhum projeto.
-                                    </p>
-                                )}
-                            </div>
-
                             <div className="divider">
                                 Status do Cadastro e Vínculo
                             </div>
@@ -410,7 +331,7 @@ export default function Show(props: ShowPageProps) {
                             />
 
                             {colaborador.vinculo &&
-                                colaborador.status_cadastro === 'ATIVO' && (
+                                colaborador.vinculo?.status === 'PENDENTE' && (
                                     <>
                                         <div className="divider">
                                             Detalhes do Vínculo com o Projeto
@@ -698,6 +619,66 @@ export default function Show(props: ShowPageProps) {
                                         </div>
                                     </>
                                 )}
+
+                            <div className="divider">Dados Pessoais</div>
+                            {can_update_colaborador && !isEditingDetalhes && (
+                                <div className="card-actions mb-4 justify-end">
+                                    <button
+                                        className="btn btn-sm btn-outline btn-primary"
+                                        onClick={() =>
+                                            setIsEditingDetalhes(true)
+                                        }
+                                        disabled={
+                                            processingDetalhes ||
+                                            processingVinculo
+                                        }
+                                    >
+                                        Editar Detalhes
+                                    </button>
+                                </div>
+                            )}
+                            <ColaboradorDetalhes
+                                colaborador={colaborador}
+                                isEditing={isEditingDetalhes}
+                                data={detalhesData}
+                                setData={setDetalhesData}
+                                errors={detalhesErrors}
+                                processing={processingDetalhes}
+                                onCancel={handleCancelEditDetalhes}
+                                onSubmit={handleUpdateDetalhesColaborador}
+                                bancos={bancos}
+                                ufs={ufs}
+                                generos={generos}
+                                canEdit={can_update_colaborador}
+                            />
+
+                            <div className="divider">Projeto(s)</div>
+                            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                                {colaborador.projetos_atuais.length > 0 ? (
+                                    colaborador.projetos_atuais.map(
+                                        (projeto) => (
+                                            <InfoItem
+                                                key={projeto.id}
+                                                label="Projeto"
+                                            >
+                                                <Link
+                                                    href={route(
+                                                        'projetos.show',
+                                                        projeto.id,
+                                                    )}
+                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
+                                                >
+                                                    {projeto.nome}
+                                                </Link>
+                                            </InfoItem>
+                                        ),
+                                    )
+                                ) : (
+                                    <p className="text-base-content/70">
+                                        Nenhum projeto.
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
