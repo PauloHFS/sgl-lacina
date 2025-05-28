@@ -103,7 +103,6 @@ class ProjetoVinculoController extends Controller
 
       if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
         $vinculoAntigo = UsuarioProjeto::where('trocar', true)->where('usuario_id', $usuarioProjeto->usuario_id)->first();
-        Log::info('Vínculo antigo encontrado: ', ['vinculoAntigo' => $vinculoAntigo, 'projetoAntigoId' => $usuarioProjeto->projeto_antigo_id]);
         if ($vinculoAntigo) {
           $vinculoAntigo->trocar = false;
           $vinculoAntigo->status = StatusVinculoProjeto::ENCERRADO;
