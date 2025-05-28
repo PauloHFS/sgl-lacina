@@ -90,7 +90,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
         Route::post('/colaboradores/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
 
-
+        // TODO : Concestrar esse sebozeira aqui mergeando as rotas
+        Route::patch('/vinculo/{id}', [ProjetoVinculoController::class, 'update'])->name('vinculo.update');
         Route::prefix('/vinculos')->group(function () {
             Route::put('/{id}', [ProjetoVinculoController::class, 'update'])->name('vinculos.update');
 

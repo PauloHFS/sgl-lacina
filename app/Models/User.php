@@ -102,7 +102,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Projeto::class, 'usuario_projeto', 'usuario_id', 'projeto_id')
             ->as('vinculo')
-            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
+            ->withPivot('id', 'tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim') // Added 'id' to withPivot
             ->withTimestamps();
     }
 

@@ -1,3 +1,9 @@
+import DangerButton from '@/Components/DangerButton';
+import InputError from '@/Components/InputError';
+import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
+import TextInput from '@/Components/TextInput';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -65,6 +71,7 @@ export interface ColaboradorData {
         updated_at: string;
         deleted_at?: string | null;
         vinculo: {
+            id: string; // Added this line
             usuario_id: string;
             projeto_id: string;
             tipo_vinculo: TipoVinculo;
@@ -89,6 +96,13 @@ export interface ShowPageProps extends PageProps {
         | 'ATIVO'
         | 'ENCERRADO';
     ultimo_vinculo: UsuarioProjeto | null;
+}
+
+interface VinculoEditFormData {
+    funcao: Funcao | '';
+    carga_horaria_semanal: number | string;
+    data_inicio: string | null | undefined;
+    data_fim: string | null | undefined;
 }
 
 export default function Show({
@@ -166,6 +180,57 @@ export default function Show({
         cidade: colaborador.cidade,
         uf: colaborador.uf,
     });
+
+    const [editingVinculo, setEditingVinculo] = useState<UsuarioProjeto | null>(
+        null,
+    );
+
+    const vinculoEditForm = useForm<VinculoEditFormData>({
+        funcao: '',
+        carga_horaria_semanal: '',
+        data_inicio: null,
+        data_fim: null,
+    });
+
+    const handleEditVinculoClick = (vinculo: UsuarioProjeto) => {
+        setEditingVinculo(vinculo);
+        vinculoEditForm.setData({
+            funcao: vinculo.funcao,
+            carga_horaria_semanal: vinculo.carga_horaria_semanal,
+            data_inicio: vinculo.data_inicio
+                ? new Date(vinculo.data_inicio).toISOString().split('T')[0]
+                : null,
+            data_fim: vinculo.data_fim
+                ? new Date(vinculo.data_fim).toISOString().split('T')[0]
+                : null,
+        });
+    };
+
+    const handleCancelEditVinculo = () => {
+        setEditingVinculo(null);
+        vinculoEditForm.reset();
+        vinculoEditForm.clearErrors();
+    };
+
+    const handleSubmitEditVinculo = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingVinculo) return;
+
+        vinculoEditForm.patch(route('vinculo.update', editingVinculo.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast('Sucesso! Vínculo com projeto atualizado.');
+                handleCancelEditVinculo();
+            },
+            onError: (errors) => {
+                console.error(errors);
+                toast(
+                    'Erro! Não foi possível atualizar o vínculo com o projeto.',
+                    'error',
+                );
+            },
+        });
+    };
 
     const handleAceitarCadastro = useCallback(() => {
         router.post(
@@ -652,24 +717,42 @@ export default function Show({
                                                 p.vinculo.status === 'APROVADO',
                                         )
                                         .map((projeto) => (
-                                            <InfoItem
+                                            <div
                                                 key={projeto.id}
-                                                label="Projeto"
+                                                className="flex items-center justify-between"
                                             >
-                                                <Link
-                                                    href={route(
-                                                        'projetos.show',
-                                                        projeto.id,
-                                                    )}
-                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
+                                                <InfoItem
+                                                    label="Projeto"
+                                                    className="flex-grow"
                                                 >
-                                                    {projeto.nome}
-                                                </Link>
-                                            </InfoItem>
+                                                    <Link
+                                                        href={route(
+                                                            'projetos.show',
+                                                            projeto.id,
+                                                        )}
+                                                        className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 w-full items-center py-2 break-words whitespace-normal"
+                                                    >
+                                                        {projeto.nome}
+                                                    </Link>
+                                                </InfoItem>
+                                                {can_update_colaborador && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleEditVinculoClick(
+                                                                projeto.vinculo,
+                                                            )
+                                                        }
+                                                        className="btn btn-ghost btn-sm ml-2"
+                                                        aria-label="Editar Vínculo"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                )}
+                                            </div>
                                         ))
                                 ) : (
                                     <p className="text-base-content/70">
-                                        Nenhum projeto.
+                                        Nenhum projeto com vínculo aprovado.
                                     </p>
                                 )}
                             </div>
@@ -677,6 +760,152 @@ export default function Show({
                     </div>
                 </div>
             </div>
+
+            {editingVinculo && (
+                <Modal
+                    show={!!editingVinculo}
+                    onClose={handleCancelEditVinculo}
+                >
+                    <form onSubmit={handleSubmitEditVinculo} className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            Editar Vínculo com Projeto
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Altere os detalhes do vínculo do colaborador com o
+                            projeto.
+                        </p>
+
+                        <div className="mt-6">
+                            <label htmlFor="funcao_modal" className="label">
+                                <span className="label-text">Função</span>
+                            </label>
+                            <select
+                                id="funcao_modal"
+                                name="funcao"
+                                className="select select-bordered mt-1 block w-full"
+                                value={vinculoEditForm.data.funcao}
+                                onChange={(e) =>
+                                    vinculoEditForm.setData(
+                                        'funcao',
+                                        e.target.value as Funcao,
+                                    )
+                                }
+                                required
+                            >
+                                <option value="" disabled>
+                                    Selecione uma função
+                                </option>
+                                {(
+                                    [
+                                        'ALUNO',
+                                        'COORDENADOR',
+                                        'DESENVOLVEDOR',
+                                        'PESQUISADOR',
+                                        'TECNICO',
+                                    ] as Array<Funcao>
+                                ).map((funcao) => (
+                                    <option key={funcao} value={funcao}>
+                                        {funcao
+                                            .replace('_', ' ')
+                                            .toLocaleLowerCase()
+                                            .replace(/\b\w/g, (char) =>
+                                                char.toUpperCase(),
+                                            )}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError
+                                message={vinculoEditForm.errors.funcao}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="mt-4">
+                            <label
+                                htmlFor="carga_horaria_semanal"
+                                className="label"
+                            >
+                                <span className="label-text">
+                                    Carga Horária Semanal
+                                </span>
+                            </label>
+                            <TextInput
+                                id="carga_horaria_semanal"
+                                name="carga_horaria_semanal"
+                                type="number"
+                                className="mt-1 block w-full"
+                                value={
+                                    vinculoEditForm.data.carga_horaria_semanal
+                                }
+                                onChange={(e) =>
+                                    vinculoEditForm.setData(
+                                        'carga_horaria_semanal',
+                                        parseInt(e.target.value) || '',
+                                    )
+                                }
+                                min="1"
+                                max="40"
+                                required
+                            />
+                            <InputError
+                                message={
+                                    vinculoEditForm.errors.carga_horaria_semanal
+                                }
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="mt-4">
+                            <label htmlFor="data_inicio" className="label">
+                                <span className="label-text">
+                                    Data de Inicio
+                                </span>
+                            </label>
+                            <TextInput
+                                id="data_inicio"
+                                name="data_inicio"
+                                type="date"
+                                className="mt-1 block w-full"
+                                value={vinculoEditForm.data.data_inicio || ''}
+                                onChange={(e) =>
+                                    vinculoEditForm.setData(
+                                        'data_inicio',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <InputError
+                                message={vinculoEditForm.errors.data_inicio}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <DangerButton
+                                type="button"
+                                // onClick={handleEncerrarVinculo}
+                                // disabled={vinculoEditForm.processing}
+                                className="mr-3"
+                                disabled
+                            >
+                                Encerrar Vinculo
+                            </DangerButton>
+                            <SecondaryButton
+                                type="button"
+                                onClick={handleCancelEditVinculo}
+                            >
+                                Cancelar
+                            </SecondaryButton>
+                            <PrimaryButton
+                                className="ml-3"
+                                disabled={vinculoEditForm.processing}
+                            >
+                                Salvar Alterações
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </Modal>
+            )}
         </AuthenticatedLayout>
     );
 }

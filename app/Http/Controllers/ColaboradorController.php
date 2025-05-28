@@ -91,7 +91,7 @@ class ColaboradorController extends Controller
 
     public function show(Request $request, $id)
     {
-        $usuario = User::with('banco')->with('projetos')->findOrFail($id);
+        $usuario = User::with(['banco', 'projetos'])->findOrFail($id);
 
         $this->authorize('view', $usuario);
         $can_update_colaborador = $request->user()->can('update', $usuario);
@@ -110,14 +110,84 @@ class ColaboradorController extends Controller
             $status_colaborador = 'ENCERRADO';
         }
 
+        // Prepare base colaborador data, excluding the original 'projetos' to avoid issues with serialization
         $colaboradorData = collect($usuario->toArray())->except([
             'email_verified_at',
             'password',
             'remember_token',
             'deleted_at',
+            'projetos' // Exclude original projetos to rebuild with correct vinculo.id
         ])->all();
+
         $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
         $colaboradorData['updated_at'] = $usuario->updated_at?->toIso8601String();
+
+        // Ensure projetos and their vinculos (pivot data) are correctly formatted
+        $colaboradorData['projetos'] = $usuario->projetos->map(function ($projeto) use ($usuario) {
+            $vinculoData = null;
+            if ($projeto->vinculo) { // $projeto->vinculo is the pivot model instance
+                $vinculoData = $projeto->vinculo->toArray(); // This includes the pivot 'id'
+
+                // Format dates safely
+                if (isset($vinculoData['data_inicio']) && $projeto->vinculo->data_inicio) {
+                    try {
+                        $vinculoData['data_inicio'] = ($projeto->vinculo->data_inicio instanceof \Carbon\Carbon)
+                            ? $projeto->vinculo->data_inicio->toIso8601String()
+                            : \Carbon\Carbon::parse((string)$projeto->vinculo->data_inicio)->toIso8601String();
+                    } catch (\Exception $e) {
+                        Log::error("Error parsing vinculo data_inicio for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
+                        $vinculoData['data_inicio'] = is_string($projeto->vinculo->data_inicio) ? (string)$projeto->vinculo->data_inicio : null;
+                    }
+                } else {
+                    $vinculoData['data_inicio'] = null;
+                }
+
+                if (isset($vinculoData['data_fim']) && $projeto->vinculo->data_fim) {
+                    try {
+                        $vinculoData['data_fim'] = ($projeto->vinculo->data_fim instanceof \Carbon\Carbon)
+                            ? $projeto->vinculo->data_fim->toIso8601String()
+                            : \Carbon\Carbon::parse((string)$projeto->vinculo->data_fim)->toIso8601String();
+                    } catch (\Exception $e) {
+                        Log::error("Error parsing vinculo data_fim for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
+                        $vinculoData['data_fim'] = is_string($projeto->vinculo->data_fim) ? (string)$projeto->vinculo->data_fim : null;
+                    }
+                } else {
+                    $vinculoData['data_fim'] = null;
+                }
+
+                if (isset($vinculoData['created_at']) && $projeto->vinculo->created_at) {
+                    try {
+                        $vinculoData['created_at'] = ($projeto->vinculo->created_at instanceof \Carbon\Carbon)
+                            ? $projeto->vinculo->created_at->toIso8601String()
+                            : \Carbon\Carbon::parse((string)$projeto->vinculo->created_at)->toIso8601String();
+                    } catch (\Exception $e) {
+                        Log::error("Error parsing vinculo created_at for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
+                        $vinculoData['created_at'] = is_string($projeto->vinculo->created_at) ? (string)$projeto->vinculo->created_at : null;
+                    }
+                } else {
+                    $vinculoData['created_at'] = null;
+                }
+
+                if (isset($vinculoData['updated_at']) && $projeto->vinculo->updated_at) {
+                    try {
+                        $vinculoData['updated_at'] = ($projeto->vinculo->updated_at instanceof \Carbon\Carbon)
+                            ? $projeto->vinculo->updated_at->toIso8601String()
+                            : \Carbon\Carbon::parse((string)$projeto->vinculo->updated_at)->toIso8601String();
+                    } catch (\Exception $e) {
+                        Log::error("Error parsing vinculo updated_at for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
+                        $vinculoData['updated_at'] = is_string($projeto->vinculo->updated_at) ? (string)$projeto->vinculo->updated_at : null;
+                    }
+                } else {
+                    $vinculoData['updated_at'] = null;
+                }
+            }
+
+            $projectDetails = collect($projeto->toArray())->except(['pivot', 'vinculo'])->all();
+            return array_merge(
+                $projectDetails,
+                ['vinculo' => $vinculoData]
+            );
+        })->all();
 
         $bancos = Banco::orderBy('nome')->get(['id', 'nome', 'codigo']);
 
