@@ -91,52 +91,23 @@ class ColaboradorController extends Controller
 
     public function show(Request $request, $id)
     {
-        $usuario = User::with('banco')->findOrFail($id);
+        $usuario = User::with('banco')->with('projetos')->findOrFail($id);
 
         $this->authorize('view', $usuario);
         $can_update_colaborador = $request->user()->can('update', $usuario);
 
-        $vinculos = UsuarioProjeto::with('projeto')
-            ->where('usuario_id', $usuario->id)
-            ->orderByDesc('data_inicio')
-            ->get();
+        $ultimoVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
+            ->orderBy('created_at', 'desc') // Consider ordering to get the truly last one if multiple exist
+            ->first();
 
-        $statusCadastroView = 'INATIVO';
-        $projetosAtuais = collect();
-        $vinculoPendente = null;
-
-        $userSystemStatus = $usuario->status_cadastro instanceof StatusCadastro
-            ? $usuario->status_cadastro
-            : StatusCadastro::tryFrom($usuario->status_cadastro);
-
-        if ($userSystemStatus === StatusCadastro::PENDENTE) {
-            $statusCadastroView = 'VINCULO_PENDENTE';
-        } elseif ($userSystemStatus === StatusCadastro::ACEITO) {
-            $vinculoPendente = $vinculos->first(function ($vinculo) {
-                $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
-                    ? $vinculo->status
-                    : StatusVinculoProjeto::tryFrom($vinculo->status);
-                return $vinculoStatus === StatusVinculoProjeto::PENDENTE;
-            });
-
-            if ($vinculoPendente) {
-                $statusCadastroView = 'APROVACAO_PENDENTE';
-            } else {
-                $vinculosAprovados = $vinculos->filter(function ($vinculo) {
-                    $vinculoStatus = $vinculo->status instanceof StatusVinculoProjeto
-                        ? $vinculo->status
-                        : StatusVinculoProjeto::tryFrom($vinculo->status);
-                    return $vinculoStatus === StatusVinculoProjeto::APROVADO;
-                });
-
-                if ($vinculosAprovados->isNotEmpty()) {
-                    $statusCadastroView = 'ATIVO';
-                    $projetosAtuais = $vinculosAprovados->map(fn($v) => $v->projeto)
-                        ->filter()
-                        ->unique('id')
-                        ->values();
-                }
-            }
+        if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
+            $status_colaborador = 'APROVACAO_PENDENTE';
+        } elseif ($usuario->projetos->contains(fn($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::PENDENTE->value)) {
+            $status_colaborador = 'VINCULO_PENDENTE';
+        } elseif ($usuario->projetos->contains(fn($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::APROVADO->value)) {
+            $status_colaborador = 'ATIVO';
+        } else {
+            $status_colaborador = 'ENCERRADO';
         }
 
         $colaboradorData = collect($usuario->toArray())->except([
@@ -147,11 +118,6 @@ class ColaboradorController extends Controller
         ])->all();
         $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
         $colaboradorData['updated_at'] = $usuario->updated_at?->toIso8601String();
-        $colaboradorData['status_cadastro'] = $statusCadastroView;
-        $colaboradorData['vinculo'] = $vinculoPendente
-            ? $vinculoPendente->toArray() // Convert to array if it's a model
-            : null;
-        $colaboradorData['projetos_atuais'] = $projetosAtuais->map(fn($p) => ['id' => $p->id, 'nome' => $p->nome]);
 
         $bancos = Banco::orderBy('nome')->get(['id', 'nome', 'codigo']);
 
@@ -159,6 +125,8 @@ class ColaboradorController extends Controller
             'colaborador' => $colaboradorData,
             'bancos' => $bancos,
             'can_update_colaborador' => $can_update_colaborador,
+            'status_colaborador' => $status_colaborador,
+            'ultimo_vinculo' => $ultimoVinculo,
         ]);
     }
 

@@ -8,6 +8,7 @@ import {
     StatusVinculoProjeto,
     TipoProjeto,
     TipoVinculo,
+    UsuarioProjeto,
 } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,29 +17,28 @@ import { ColaboradorHeader } from './Partials/ColaboradorHeader';
 import { ColaboradorStatus } from './Partials/ColaboradorStatus';
 import { InfoItem } from './Partials/InfoItem';
 
-// Define a more specific type for the colaborador within ShowProps
 export interface ColaboradorData {
     id: string;
     name: string;
     email: string;
+    status_cadastro: StatusCadastro;
     curriculo_lattes_url?: string | null;
     linkedin_url?: string | null;
     github_url?: string | null;
     figma_url?: string | null;
-    foto_url?: string | null;
     area_atuacao?: string | null;
     tecnologias?: string | null;
     cpf?: string | null;
-    banco_id?: string | null;
-    banco?: Banco | null;
-    conta_bancaria?: string | null;
-    agencia?: string | null;
     rg?: string | null;
     uf_rg?: string | null;
     orgao_emissor_rg?: string | null;
     telefone?: string | null;
+    banco_id?: string | null;
+    conta_bancaria?: string | null;
+    agencia?: string | null;
+    foto_url?: string | null;
     genero?: string | null;
-    data_nascimento?: string | null; // Format YYYY-MM-DD
+    data_nascimento?: string | null;
     cep?: string | null;
     endereco?: string | null;
     numero?: string | null;
@@ -48,40 +48,34 @@ export interface ColaboradorData {
     uf?: string | null;
     created_at: string;
     updated_at: string;
-    status_cadastro: StatusCadastro;
-    vinculo?: {
-        id: string;
-        usuario_id: string;
-        projeto_id: string;
-        tipo_vinculo: TipoVinculo;
-        funcao: Funcao;
-        status: StatusVinculoProjeto;
-        carga_horaria_semanal: number;
-        data_inicio: string;
-        data_fim?: string | null;
-        created_at: string;
-        updated_at: string;
-        deleted_at: string | null;
-        projeto: {
-            id: string;
-            nome: string;
-            descricao: string;
-            data_inicio: string;
-            data_termino: string | null;
-            cliente: string;
-            slack_url: string | null;
-            discord_url: string | null;
-            board_url: string | null;
-            git_url: string | null;
-            tipo: TipoProjeto;
-            created_at: string;
-            updated_at: string;
-            deleted_at: string | null;
-        };
-    } | null;
-    projetos_atuais: Array<{
+    banco?: Banco | null;
+    projetos: Array<{
         id: string;
         nome: string;
+        descricao: string;
+        data_inicio: string;
+        data_termino: string | null;
+        cliente: string;
+        slack_url?: string | null;
+        discord_url?: string | null;
+        board_url?: string | null;
+        git_url?: string | null;
+        tipo: TipoProjeto;
+        created_at: string;
+        updated_at: string;
+        deleted_at?: string | null;
+        vinculo: {
+            usuario_id: string;
+            projeto_id: string;
+            tipo_vinculo: TipoVinculo;
+            funcao: Funcao;
+            status: StatusVinculoProjeto;
+            carga_horaria_semanal: number;
+            data_inicio: string;
+            data_fim?: string | null;
+            created_at: string;
+            updated_at: string;
+        };
     }>;
 }
 
@@ -89,17 +83,27 @@ export interface ShowPageProps extends PageProps {
     colaborador: ColaboradorData;
     bancos: Array<{ id: string; nome: string; codigo: string }>;
     can_update_colaborador: boolean;
+    status_colaborador:
+        | 'VINCULO_PENDENTE'
+        | 'APROVACAO_PENDENTE'
+        | 'ATIVO'
+        | 'ENCERRADO';
+    ultimo_vinculo: UsuarioProjeto | null;
 }
 
 export default function Show({
     colaborador,
     bancos,
     can_update_colaborador,
+    status_colaborador,
+    ultimo_vinculo,
 }: ShowPageProps) {
     console.log(`${new Date().toISOString()} - [Colaboradores/show]`, {
         colaborador,
         bancos,
         can_update_colaborador,
+        status_colaborador,
+        ultimo_vinculo,
     });
 
     const { toast } = useToast();
@@ -119,12 +123,12 @@ export default function Show({
         carga_horaria_semanal?: number;
         data_inicio?: string;
     }>({
-        status: colaborador.vinculo?.status,
-        funcao: colaborador.vinculo?.funcao,
-        tipo_vinculo: colaborador.vinculo?.tipo_vinculo,
-        carga_horaria_semanal: colaborador.vinculo?.carga_horaria_semanal,
-        data_inicio: colaborador.vinculo?.data_inicio
-            ? colaborador.vinculo.data_inicio.substring(0, 10)
+        status: ultimo_vinculo?.status,
+        funcao: ultimo_vinculo?.funcao,
+        tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
+        carga_horaria_semanal: ultimo_vinculo?.carga_horaria_semanal,
+        data_inicio: ultimo_vinculo?.data_inicio
+            ? ultimo_vinculo.data_inicio.substring(0, 10)
             : undefined,
     });
 
@@ -141,7 +145,7 @@ export default function Show({
         id: colaborador.id,
         email: colaborador.email,
         status_cadastro: colaborador.status_cadastro,
-        projetos_atuais: colaborador.projetos_atuais || [],
+        projetos: colaborador.projetos || [],
         created_at: colaborador.created_at,
         updated_at: colaborador.updated_at,
         name: colaborador.name,
@@ -197,7 +201,7 @@ export default function Show({
     }, [colaborador.id, toast]);
 
     const handleAtualizarStatusVinculo = useCallback(() => {
-        if (!colaborador.vinculo) {
+        if (!ultimo_vinculo) {
             toast('Vínculo não encontrado', 'error');
             return;
         }
@@ -209,7 +213,7 @@ export default function Show({
             data_inicio: vinculoData.data_inicio,
         };
 
-        putVinculo(route('vinculos.update', colaborador.vinculo.id), {
+        putVinculo(route('vinculos.update', ultimo_vinculo.id), {
             data: dataToUpdate,
             preserveScroll: true,
             onSuccess: () => {
@@ -220,7 +224,16 @@ export default function Show({
                 console.error('Erro ao atualizar vínculo:', err);
             },
         });
-    }, [colaborador.vinculo, putVinculo, vinculoData, toast]);
+    }, [
+        ultimo_vinculo,
+        vinculoData.status,
+        vinculoData.funcao,
+        vinculoData.tipo_vinculo,
+        vinculoData.carga_horaria_semanal,
+        vinculoData.data_inicio,
+        putVinculo,
+        toast,
+    ]);
 
     const handleAceitarVinculo = useCallback(() => {
         setVinculoData('status', 'APROVADO');
@@ -236,24 +249,24 @@ export default function Show({
             vinculoData.status === 'RECUSADO'
         ) {
             if (
-                colaborador.vinculo &&
-                vinculoData.status !== colaborador.vinculo.status
+                ultimo_vinculo &&
+                vinculoData.status !== ultimo_vinculo.status
             ) {
                 handleAtualizarStatusVinculo();
             }
         }
-    }, [vinculoData.status, colaborador.vinculo, handleAtualizarStatusVinculo]);
+    }, [vinculoData.status, ultimo_vinculo, handleAtualizarStatusVinculo]);
 
     const originalVinculoDisplayValues = useMemo(() => {
         return {
-            funcao: colaborador.vinculo?.funcao,
-            tipo_vinculo: colaborador.vinculo?.tipo_vinculo,
-            carga_horaria_semanal: colaborador.vinculo?.carga_horaria_semanal,
-            data_inicio: colaborador.vinculo?.data_inicio
-                ? colaborador.vinculo.data_inicio.substring(0, 10)
+            funcao: ultimo_vinculo?.funcao,
+            tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
+            carga_horaria_semanal: ultimo_vinculo?.carga_horaria_semanal,
+            data_inicio: ultimo_vinculo?.data_inicio
+                ? ultimo_vinculo.data_inicio.substring(0, 10)
                 : undefined,
         };
-    }, [colaborador.vinculo]);
+    }, [ultimo_vinculo]);
 
     const areVinculoFieldsDirty = useMemo(
         () =>
@@ -292,14 +305,14 @@ export default function Show({
 
     const handleResetVinculoFields = useCallback(() => {
         setVinculoData({
-            status: colaborador.vinculo?.status,
+            status: ultimo_vinculo?.status,
             funcao: originalVinculoDisplayValues.funcao,
             tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
             carga_horaria_semanal:
                 originalVinculoDisplayValues.carga_horaria_semanal,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
-    }, [setVinculoData, colaborador.vinculo, originalVinculoDisplayValues]);
+    }, [setVinculoData, ultimo_vinculo, originalVinculoDisplayValues]);
 
     return (
         <AuthenticatedLayout header="Detalhes do Colaborador">
@@ -315,7 +328,6 @@ export default function Show({
                                 Status do Cadastro e Vínculo
                             </div>
                             <ColaboradorStatus
-                                colaborador={colaborador}
                                 onAceitarCadastro={handleAceitarCadastro}
                                 onRecusarCadastro={handleRecusarCadastro}
                                 onAceitarVinculo={handleAceitarVinculo}
@@ -323,10 +335,11 @@ export default function Show({
                                 processing={
                                     processingVinculo || processingDetalhes
                                 }
+                                status_colaborador={status_colaborador}
                             />
 
-                            {colaborador.vinculo &&
-                                colaborador.vinculo?.status === 'PENDENTE' && (
+                            {ultimo_vinculo &&
+                                ultimo_vinculo?.status === 'PENDENTE' && (
                                     <>
                                         <div className="divider">
                                             Detalhes do Vínculo com o Projeto
@@ -335,8 +348,7 @@ export default function Show({
                                             <InfoItem
                                                 label="Projeto"
                                                 value={
-                                                    colaborador.vinculo.projeto
-                                                        .nome
+                                                    'ultimo_vinculo.projeto.nome'
                                                 }
                                             />
 
@@ -352,8 +364,7 @@ export default function Show({
                                                 <select
                                                     id="funcao"
                                                     className={`select select-bordered w-full ${
-                                                        colaborador.vinculo
-                                                            ?.funcao !==
+                                                        ultimo_vinculo?.funcao !==
                                                             vinculoData.funcao &&
                                                         vinculoData.funcao !==
                                                             undefined
@@ -373,8 +384,7 @@ export default function Show({
                                                     disabled={
                                                         processingVinculo ||
                                                         processingDetalhes ||
-                                                        colaborador.vinculo
-                                                            ?.status !==
+                                                        ultimo_vinculo?.status !==
                                                             'PENDENTE'
                                                     }
                                                 >
@@ -414,8 +424,7 @@ export default function Show({
                                                 <select
                                                     id="tipovinculo"
                                                     className={`select select-bordered w-full ${
-                                                        colaborador.vinculo
-                                                            ?.tipo_vinculo !==
+                                                        ultimo_vinculo?.tipo_vinculo !==
                                                             vinculoData.tipo_vinculo &&
                                                         vinculoData.tipo_vinculo !==
                                                             undefined
@@ -436,8 +445,7 @@ export default function Show({
                                                     disabled={
                                                         processingVinculo ||
                                                         processingDetalhes ||
-                                                        colaborador.vinculo
-                                                            ?.status !==
+                                                        ultimo_vinculo?.status !==
                                                             'PENDENTE'
                                                     }
                                                 >
@@ -487,8 +495,7 @@ export default function Show({
                                                     id="carga_horaria_semanal"
                                                     type="number"
                                                     className={`input input-bordered w-full ${
-                                                        colaborador.vinculo
-                                                            ?.carga_horaria_semanal !==
+                                                        ultimo_vinculo?.carga_horaria_semanal !==
                                                             vinculoData.carga_horaria_semanal &&
                                                         vinculoData.carga_horaria_semanal !==
                                                             undefined
@@ -511,8 +518,7 @@ export default function Show({
                                                     disabled={
                                                         processingVinculo ||
                                                         processingDetalhes ||
-                                                        colaborador.vinculo
-                                                            ?.status !==
+                                                        ultimo_vinculo?.status !==
                                                             'PENDENTE'
                                                     }
                                                 />
@@ -538,7 +544,7 @@ export default function Show({
                                                     id="data_inicio"
                                                     type="date"
                                                     className={`input input-bordered w-full ${
-                                                        colaborador.vinculo?.data_inicio?.substring(
+                                                        ultimo_vinculo?.data_inicio?.substring(
                                                             0,
                                                             10,
                                                         ) !==
@@ -561,8 +567,7 @@ export default function Show({
                                                     disabled={
                                                         processingVinculo ||
                                                         processingDetalhes ||
-                                                        colaborador.vinculo
-                                                            ?.status !==
+                                                        ultimo_vinculo?.status !==
                                                             'PENDENTE'
                                                     }
                                                 />
@@ -575,7 +580,7 @@ export default function Show({
                                                 )}
                                             </div>
 
-                                            {colaborador.vinculo?.status ===
+                                            {ultimo_vinculo?.status ===
                                                 'PENDENTE' &&
                                                 areVinculoFieldsDirty && (
                                                     <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
@@ -647,25 +652,23 @@ export default function Show({
 
                             <div className="divider">Projeto(s)</div>
                             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                {colaborador.projetos_atuais.length > 0 ? (
-                                    colaborador.projetos_atuais.map(
-                                        (projeto) => (
-                                            <InfoItem
-                                                key={projeto.id}
-                                                label="Projeto"
+                                {colaborador.projetos.length > 0 ? (
+                                    colaborador.projetos.map((projeto) => (
+                                        <InfoItem
+                                            key={projeto.id}
+                                            label="Projeto"
+                                        >
+                                            <Link
+                                                href={route(
+                                                    'projetos.show',
+                                                    projeto.id,
+                                                )}
+                                                className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
                                             >
-                                                <Link
-                                                    href={route(
-                                                        'projetos.show',
-                                                        projeto.id,
-                                                    )}
-                                                    className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 items-center py-2 break-words whitespace-normal"
-                                                >
-                                                    {projeto.nome}
-                                                </Link>
-                                            </InfoItem>
-                                        ),
-                                    )
+                                                {projeto.nome}
+                                            </Link>
+                                        </InfoItem>
+                                    ))
                                 ) : (
                                     <p className="text-base-content/70">
                                         Nenhum projeto.

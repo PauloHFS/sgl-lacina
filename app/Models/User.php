@@ -101,6 +101,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function projetos(): BelongsToMany
     {
         return $this->belongsToMany(Projeto::class, 'usuario_projeto', 'usuario_id', 'projeto_id')
+            ->as('vinculo')
             ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria_semanal', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }

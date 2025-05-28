@@ -116,6 +116,7 @@ export interface UsuarioProjeto {
     usuario?: User; // must be load eagerly
     projeto_id: string;
     projeto?: Projeto; // must be load eagerly
+    trocar?: boolean;
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;

@@ -1,40 +1,43 @@
 import React from 'react';
-import { ColaboradorData } from '../Show'; // Import ColaboradorData
 import { StatusAlert } from './StatusAlert';
 
 interface ColaboradorStatusProps {
-    colaborador: ColaboradorData; // Use ColaboradorData directly
     onAceitarCadastro: () => void;
     onRecusarCadastro: () => void;
     onAceitarVinculo: () => void;
     onRecusarVinculo: () => void;
-    processing: boolean; // Added processing prop
+    processing: boolean;
+    status_colaborador:
+        | 'VINCULO_PENDENTE'
+        | 'APROVACAO_PENDENTE'
+        | 'ATIVO'
+        | 'ENCERRADO';
 }
 
 export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
     ({
-        colaborador,
         onAceitarCadastro,
         onRecusarCadastro,
         onAceitarVinculo,
         onRecusarVinculo,
-        processing, // Destructure processing prop
+        processing,
+        status_colaborador,
     }) => {
-        switch (colaborador.status_cadastro) {
+        switch (status_colaborador) {
             case 'VINCULO_PENDENTE':
                 return (
                     <StatusAlert
                         type="warning"
                         title="Vínculo pendente de aprovação."
-                        message="Este colaborador aguarda aprovação de cadastro."
+                        message="Este Vinculo aguarda aprovação de cadastro."
                         actions={
                             <>
                                 <button
                                     type="button"
                                     onClick={onAceitarCadastro}
                                     className="btn btn-sm btn-success"
-                                    aria-label="Aceitar cadastro do colaborador"
-                                    disabled={processing} // Disable button when processing
+                                    aria-label="Aceitar cadastro do Vinculo"
+                                    disabled={processing}
                                 >
                                     Aceitar
                                 </button>
@@ -42,8 +45,8 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     type="button"
                                     onClick={onRecusarCadastro}
                                     className="btn btn-sm btn-error ml-2"
-                                    aria-label="Recusar cadastro do colaborador"
-                                    disabled={processing} // Disable button when processing
+                                    aria-label="Recusar cadastro do Vinculo"
+                                    disabled={processing}
                                 >
                                     Recusar
                                 </button>
@@ -56,23 +59,14 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                     <StatusAlert
                         type="info"
                         title="Aprovação pendente de vínculo em projeto."
-                        message={
-                            <>
-                                Projeto solicitado:{' '}
-                                <span className="font-semibold">
-                                    {colaborador.vinculo?.projeto.nome ||
-                                        'Não especificado'}
-                                </span>
-                            </>
-                        }
                         actions={
                             <>
                                 <button
                                     type="button"
                                     onClick={onAceitarVinculo}
                                     className="btn btn-sm btn-success"
-                                    aria-label="Aceitar vínculo do colaborador ao projeto"
-                                    disabled={processing} // Disable button when processing
+                                    aria-label="Aceitar vínculo do Colaborador ao projeto"
+                                    disabled={processing}
                                 >
                                     Aceitar Vínculo
                                 </button>
@@ -80,8 +74,8 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                     type="button"
                                     onClick={onRecusarVinculo}
                                     className="btn btn-sm btn-error ml-2"
-                                    aria-label="Recusar vínculo do colaborador ao projeto"
-                                    disabled={processing} // Disable button when processing
+                                    aria-label="Recusar vínculo do Colaborador ao projeto"
+                                    disabled={processing}
                                 >
                                     Recusar Vínculo
                                 </button>
@@ -94,20 +88,19 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                     <StatusAlert
                         type="success"
                         title="Colaborador ativo."
-                        message="Este colaborador está ativo na plataforma."
+                        message="Este Colaborador está com vínculo ativo na plataforma."
                     />
                 );
             case 'ENCERRADO':
                 return (
                     <StatusAlert
                         type="outline"
-                        title="Colaborador encerrado."
-                        message="Este colaborador está atualmente encerrado."
+                        title="Vinculo encerrado."
+                        message="Este Vinculo está atualmente encerrado."
                     />
                 );
             default:
                 // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unused-vars
-                const _exhaustiveCheck: never = colaborador.status_cadastro;
                 return null;
         }
     },
