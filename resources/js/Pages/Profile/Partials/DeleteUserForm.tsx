@@ -81,13 +81,13 @@ export default function DeleteUserForm({
 
                     <div className="mt-6">
                         <InputLabel
-                            htmlFor="password"
+                            htmlFor="delete_password"
                             value="Senha"
                             className="sr-only"
                         />
 
                         <TextInput
-                            id="password"
+                            id="delete_password"
                             type="password"
                             name="password"
                             ref={passwordInput}

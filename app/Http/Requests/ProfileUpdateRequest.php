@@ -43,7 +43,7 @@ class ProfileUpdateRequest extends FormRequest
             'complemento' => 'nullable|string|max:255',
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
-            'estado' => 'required|string|max:2',
+            'uf' => 'required|string|max:2',
             // Dados de contato
             'telefone' => 'required|string|max:20',
             // Dados bancários
@@ -51,7 +51,7 @@ class ProfileUpdateRequest extends FormRequest
             'agencia' => 'required|string|max:10',
             'banco_id' => 'required|uuid|exists:bancos,id',
             // Dados profissionais
-            'curriculo' => 'required|string|max:255',
+            'curriculo_lattes_url' => 'required|string|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
             'website_url' => 'nullable|url|max:255',

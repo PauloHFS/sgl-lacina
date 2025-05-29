@@ -87,10 +87,10 @@ export default function UpdatePasswordForm({
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="Nova Senha" />
+                    <InputLabel htmlFor="new_password" value="Nova Senha" />
 
                     <TextInput
-                        id="password"
+                        id="new_password"
                         ref={passwordInput}
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}

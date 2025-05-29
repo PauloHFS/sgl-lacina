@@ -3,45 +3,11 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { ESTADOS } from '@/constants';
+import { Banco, Genero } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { IMaskInput } from 'react-imask';
-
-interface ProfileFormData {
-    name: string;
-    email: string;
-    foto_url: File | null;
-    genero: string;
-    data_nascimento: string;
-    cpf: string;
-    rg: string;
-    uf_rg: string;
-    orgao_emissor_rg: string;
-    cep: string;
-    endereco: string;
-    numero: string;
-    complemento: string;
-    bairro: string;
-    cidade: string;
-    uf: string;
-    telefone: string;
-    conta_bancaria: string;
-    agencia: string;
-    banco_id: string;
-    curriculo_lattes_url: string;
-    linkedin_url: string;
-    github_url: string;
-    figma_url: string;
-    area_atuacao: string;
-    tecnologias: string;
-}
-
-interface Banco {
-    id: string;
-    nome: string;
-    codigo: string;
-}
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
@@ -55,50 +21,18 @@ export default function UpdateProfileInformation({
     className?: string;
 }) {
     const user = usePage().props.auth.user;
-
     const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm<ProfileFormData>({
-            name: user.name || '',
-            email: user.email || '',
-            foto_url: null,
-            genero: user.genero ?? '',
-            data_nascimento: user.data_nascimento ?? '',
-            cpf: user.cpf ?? '',
-            rg: user.rg ?? '',
-            uf_rg: user.uf_rg ?? '',
-            orgao_emissor_rg: user.orgao_emissor_rg ?? '',
-            cep: user.cep ?? '',
-            endereco: user.endereco ?? '',
-            numero: user.numero ?? '',
-            complemento: user.complemento ?? '',
-            bairro: user.bairro ?? '',
-            cidade: user.cidade ?? '',
-            uf: user.uf ?? '',
-            telefone: user.telefone ?? '',
-            conta_bancaria: user.conta_bancaria ?? '',
-            agencia: user.agencia ?? '',
-            banco_id: user.banco_id ?? '',
-            curriculo_lattes_url: user.curriculo_lattes_url ?? '',
-            linkedin_url: user.linkedin_url ?? '',
-            github_url: user.github_url ?? '',
-            figma_url: user.figma_url ?? '',
-            area_atuacao: user.area_atuacao ?? '',
-            tecnologias: user.tecnologias ?? '',
-        });
+        useForm(user);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        // Remove null/undefined, converte tudo para string
         const cleanedData = Object.fromEntries(
             Object.entries(data).map(([k, v]) => [
                 k,
                 v === null || v === undefined ? '' : v,
             ]),
         );
-        patch(route('profile.update'), {
-            data: cleanedData,
-            forceFormData: true,
-        });
+        patch(route('profile.update'), cleanedData);
     };
 
     return (
@@ -139,7 +73,7 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.email} />
                 </div>
                 {/* Foto de Perfil */}
-                <div>
+                {/* <div>
                     <InputLabel htmlFor="foto_url" value="Foto de Perfil" />
                     <input
                         id="foto_url"
@@ -155,7 +89,7 @@ export default function UpdateProfileInformation({
                         }}
                     />
                     <InputError className="mt-2" message={errors.foto_url} />
-                </div>
+                </div> */}
                 {/* Gênero */}
                 <div>
                     <InputLabel htmlFor="genero" value="Gênero" />
@@ -163,7 +97,9 @@ export default function UpdateProfileInformation({
                         id="genero"
                         className={`select select-bordered w-full ${errors.genero ? 'select-error' : ''}`}
                         value={data.genero || ''}
-                        onChange={(e) => setData('genero', e.target.value)}
+                        onChange={(e) =>
+                            setData('genero', e.target.value as Genero)
+                        }
                     >
                         <option value="" disabled>
                             Selecione o gênero...
@@ -187,7 +123,13 @@ export default function UpdateProfileInformation({
                         id="data_nascimento"
                         type="date"
                         className={`input input-bordered w-full ${errors.data_nascimento ? 'input-error' : ''}`}
-                        value={data.data_nascimento || ''}
+                        value={
+                            data.data_nascimento
+                                ? new Date(data.data_nascimento)
+                                      .toISOString()
+                                      .split('T')[0]
+                                : ''
+                        }
                         onChange={(e) =>
                             setData('data_nascimento', e.target.value)
                         }
@@ -204,7 +146,7 @@ export default function UpdateProfileInformation({
                         id="telefone"
                         mask="+55 (00) 00000-0000"
                         className={`input input-bordered w-full ${errors.telefone ? 'input-error' : ''}`}
-                        value={data.telefone}
+                        value={data.telefone || ''}
                         onAccept={(value) => setData('telefone', value)}
                         placeholder="+55 (00) 00000-0000"
                     />
@@ -218,7 +160,7 @@ export default function UpdateProfileInformation({
                         id="cpf"
                         mask="000.000.000-00"
                         className={`input input-bordered w-full ${errors.cpf ? 'input-error' : ''}`}
-                        value={data.cpf}
+                        value={data.cpf || ''}
                         onAccept={(value) => setData('cpf', value)}
                         required
                     />
@@ -229,7 +171,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="rg"
                         className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
-                        value={data.rg}
+                        value={data.rg || ''}
                         minLength={7}
                         maxLength={9}
                         onChange={(e) => setData('rg', e.target.value)}
@@ -245,7 +187,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="orgao_emissor_rg"
                         className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
-                        value={data.orgao_emissor_rg}
+                        value={data.orgao_emissor_rg || ''}
                         onChange={(e) =>
                             setData('orgao_emissor_rg', e.target.value)
                         }
@@ -284,7 +226,7 @@ export default function UpdateProfileInformation({
                         id="cep"
                         mask="00000-000"
                         className={`input input-bordered w-full ${errors.cep ? 'input-error' : ''}`}
-                        value={data.cep}
+                        value={data.cep || ''}
                         onAccept={(value) => setData('cep', value)}
                         placeholder="00000-000"
                         required
@@ -296,7 +238,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="endereco"
                         className={`input input-bordered w-full ${errors.endereco ? 'input-error' : ''}`}
-                        value={data.endereco}
+                        value={data.endereco || ''}
                         onChange={(e) => setData('endereco', e.target.value)}
                         required
                     />
@@ -307,7 +249,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="numero"
                         className={`input input-bordered w-full ${errors.numero ? 'input-error' : ''}`}
-                        value={data.numero}
+                        value={data.numero || ''}
                         onChange={(e) => setData('numero', e.target.value)}
                         required
                     />
@@ -318,7 +260,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="complemento"
                         className={`input input-bordered w-full ${errors.complemento ? 'input-error' : ''}`}
-                        value={data.complemento}
+                        value={data.complemento || ''}
                         onChange={(e) => setData('complemento', e.target.value)}
                     />
                     <InputError className="mt-2" message={errors.complemento} />
@@ -328,7 +270,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="bairro"
                         className={`input input-bordered w-full ${errors.bairro ? 'input-error' : ''}`}
-                        value={data.bairro}
+                        value={data.bairro || ''}
                         onChange={(e) => setData('bairro', e.target.value)}
                         required
                     />
@@ -359,7 +301,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="cidade"
                         className={`input input-bordered w-full ${errors.cidade ? 'input-error' : ''}`}
-                        value={data.cidade}
+                        value={data.cidade || ''}
                         onChange={(e) => setData('cidade', e.target.value)}
                         required
                     />
@@ -395,7 +337,7 @@ export default function UpdateProfileInformation({
                         id="conta_bancaria"
                         mask="00000-0"
                         className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
-                        value={data.conta_bancaria}
+                        value={data.conta_bancaria || ''}
                         onAccept={(value) => setData('conta_bancaria', value)}
                         placeholder="00000-0"
                     />
@@ -410,7 +352,7 @@ export default function UpdateProfileInformation({
                         id="agencia"
                         mask="0000-0"
                         className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
-                        value={data.agencia}
+                        value={data.agencia || ''}
                         onAccept={(value) => setData('agencia', value)}
                         placeholder="0000-0"
                         required
@@ -428,7 +370,7 @@ export default function UpdateProfileInformation({
                         id="curriculo_lattes_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
-                        value={data.curriculo_lattes_url}
+                        value={data.curriculo_lattes_url || ''}
                         onChange={(e) =>
                             setData('curriculo_lattes_url', e.target.value)
                         }
@@ -445,7 +387,7 @@ export default function UpdateProfileInformation({
                         id="linkedin_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.linkedin_url ? 'input-error' : ''}`}
-                        value={data.linkedin_url}
+                        value={data.linkedin_url || ''}
                         onChange={(e) =>
                             setData('linkedin_url', e.target.value)
                         }
@@ -461,22 +403,24 @@ export default function UpdateProfileInformation({
                         id="github_url"
                         type="url"
                         className={`input input-bordered w-full ${errors.github_url ? 'input-error' : ''}`}
-                        value={data.github_url}
+                        value={data.github_url || ''}
                         onChange={(e) => setData('github_url', e.target.value)}
                     />
                     <InputError className="mt-2" message={errors.github_url} />
                 </div>
                 <div>
-                    <InputLabel htmlFor="figma_url" value="Figma" />
+                    <InputLabel htmlFor="website_url" value="Figma" />
                     <TextInput
-                        id="figma_url"
+                        id="website_url"
                         type="url"
-                        className={`input input-bordered w-full ${errors.figma_url ? 'input-error' : ''}`}
-                        value={data.figma_url}
-                        onChange={(e) => setData('figma_url', e.target.value)}
+                        className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
+                        value={data.website_url || ''}
+                        onChange={(e) => setData('website_url', e.target.value)}
                     />
-                    <InputError className="mt-2" message={errors.figma_url} />
+                    <InputError className="mt-2" message={errors.website_url} />
                 </div>
+
+                {/* TODO converter pra um multiselect */}
                 <div>
                     <InputLabel
                         htmlFor="area_atuacao"
@@ -485,7 +429,7 @@ export default function UpdateProfileInformation({
                     <TextInput
                         id="area_atuacao"
                         className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
-                        value={data.area_atuacao}
+                        value={data.area_atuacao || ''}
                         onChange={(e) =>
                             setData('area_atuacao', e.target.value)
                         }
@@ -496,17 +440,22 @@ export default function UpdateProfileInformation({
                         message={errors.area_atuacao}
                     />
                 </div>
+
+                {/* TODO converter para um multiselect */}
                 <div>
                     <InputLabel htmlFor="tecnologias" value="Tecnologias" />
                     <TextInput
                         id="tecnologias"
                         className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
-                        value={data.tecnologias}
+                        value={data.tecnologias || ''}
                         onChange={(e) => setData('tecnologias', e.target.value)}
                         placeholder="Digite as tecnologias que você domina..."
                     />
                     <InputError className="mt-2" message={errors.tecnologias} />
                 </div>
+
+                {/* TODO adicionar campos extras aqui */}
+
                 {/* Verificação de e-mail */}
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div className="alert alert-warning">
