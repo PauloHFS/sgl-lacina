@@ -24,7 +24,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
         status_colaborador,
     }) => {
         switch (status_colaborador) {
-            case 'VINCULO_PENDENTE':
+            case 'APROVACAO_PENDENTE':
                 return (
                     <StatusAlert
                         type="warning"
@@ -54,7 +54,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                         }
                     />
                 );
-            case 'APROVACAO_PENDENTE':
+            case 'VINCULO_PENDENTE':
                 return (
                     <StatusAlert
                         type="info"
