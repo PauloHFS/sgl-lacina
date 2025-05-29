@@ -128,15 +128,15 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 ) : (
                     <InfoItem label="GitHub" value="-" />
                 )}
-                {colaborador.figma_url ? (
+                {colaborador.website_url ? (
                     <InfoItem label="Figma">
                         <a
-                            href={colaborador.figma_url}
+                            href={colaborador.website_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="link link-primary break-all"
                         >
-                            {colaborador.figma_url}
+                            {colaborador.website_url}
                         </a>
                     </InfoItem>
                 ) : (
@@ -704,23 +704,23 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     )}
                 </div>
                 <div>
-                    <label className="label" htmlFor="figma_url">
+                    <label className="label" htmlFor="website_url">
                         <span className="label-text font-semibold">
                             Figma URL:
                         </span>
                     </label>
                     <input
-                        id="figma_url"
+                        id="website_url"
                         type="url"
-                        className={`input input-bordered w-full ${errors.figma_url ? 'input-error' : ''}`}
-                        value={data.figma_url || ''}
-                        onChange={(e) => setData('figma_url', e.target.value)}
+                        className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
+                        value={data.website_url || ''}
+                        onChange={(e) => setData('website_url', e.target.value)}
                         disabled={processing || !canEdit}
                         placeholder="https://figma.com/..."
                     />
-                    {errors.figma_url && (
+                    {errors.website_url && (
                         <p className="text-error mt-1 text-xs">
-                            {errors.figma_url}
+                            {errors.website_url}
                         </p>
                     )}
                 </div>

@@ -9,7 +9,7 @@ interface Colaborador {
     email: string;
     linkedin_url?: string;
     github_url?: string;
-    figma_url?: string;
+    website_url?: string;
     foto_url?: string;
     area_atuacao?: string;
     tecnologias?: string;

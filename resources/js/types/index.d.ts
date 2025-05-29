@@ -42,10 +42,11 @@ export interface User {
     password?: string;
     remember_token?: string | null;
     status_cadastro: StatusCadastro;
+    campos_extras: Record<string, string>;
     curriculo_lattes_url?: string | null;
     linkedin_url?: string | null;
     github_url?: string | null;
-    figma_url?: string | null;
+    website_url?: string | null;
     area_atuacao?: string | null;
     tecnologias?: string | null;
     cpf?: string | null;

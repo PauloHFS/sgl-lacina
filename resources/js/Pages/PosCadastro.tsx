@@ -47,7 +47,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
         curriculo_lattes_url: string;
         linkedin_url: string;
         github_url: string;
-        figma_url: string;
+        website_url: string;
         area_atuacao: string;
         tecnologias: string;
     }>({
@@ -72,7 +72,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
         curriculo_lattes_url: '',
         linkedin_url: '',
         github_url: '',
-        figma_url: '',
+        website_url: '',
         area_atuacao: '',
         tecnologias: '',
     });
@@ -969,27 +969,27 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                         </label>
                                     </div>
 
-                                    {/* Figma */}
+                                    {/* Website */}
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Figma
+                                                Website
                                             </span>
                                             <input
-                                                id="figma"
+                                                id="website"
                                                 type="url"
-                                                className={`input input-bordered w-full ${errors.figma_url ? 'input-error' : ''}`}
-                                                value={data.figma_url}
+                                                className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
+                                                value={data.website_url}
                                                 onChange={(e) =>
                                                     setData(
-                                                        'figma_url',
+                                                        'website_url',
                                                         e.target.value,
                                                     )
                                                 }
                                             />
-                                            {errors.figma_url && (
+                                            {errors.website_url && (
                                                 <span className="label-text-alt text-error">
-                                                    {errors.figma_url}
+                                                    {errors.website_url}
                                                 </span>
                                             )}
                                         </label>

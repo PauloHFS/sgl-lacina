@@ -28,10 +28,11 @@ export interface ColaboradorData {
     name: string;
     email: string;
     status_cadastro: StatusCadastro;
+    campos_extras?: Record<string, string>;
     curriculo_lattes_url?: string | null;
     linkedin_url?: string | null;
     github_url?: string | null;
-    figma_url?: string | null;
+    website_url?: string | null;
     area_atuacao?: string | null;
     tecnologias?: string | null;
     cpf?: string | null;
@@ -157,7 +158,7 @@ export default function Show({
         curriculo_lattes_url: colaborador.curriculo_lattes_url,
         linkedin_url: colaborador.linkedin_url,
         github_url: colaborador.github_url,
-        figma_url: colaborador.figma_url,
+        website_url: colaborador.website_url,
         area_atuacao: colaborador.area_atuacao,
         tecnologias: colaborador.tecnologias,
         cpf: colaborador.cpf,

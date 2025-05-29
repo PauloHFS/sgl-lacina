@@ -217,9 +217,10 @@ class ColaboradorController extends Controller
             'curriculo_lattes_url' => 'nullable|url|max:1000',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
-            'figma_url' => 'nullable|url|max:255',
+            'website_url' => 'nullable|url|max:255',
             'area_atuacao' => 'nullable|string',
             'tecnologias' => 'nullable|string',
+            'campos_extras' => 'nullable|json',
             'cpf' => [
                 'nullable',
                 'string',

@@ -66,7 +66,7 @@ class UserFactory extends Factory
                 'curriculo_lattes_url' => fake()->numerify('http://lattes.cnpq.br/################'),
                 'linkedin_url' => fake()->optional()->passthrough('https://www.linkedin.com/in/' . fake()->userName()),
                 'github_url' => fake()->optional()->passthrough('https://github.com/' . fake()->userName()),
-                'figma_url' => fake()->optional()->passthrough('https://www.figma.com/@' . fake()->userName()),
+                'website_url' => fake()->optional()->passthrough(fake()->url()),
 
                 'area_atuacao' => fake()->jobTitle(),
                 'tecnologias' => implode(', ', fake()->randomElements(

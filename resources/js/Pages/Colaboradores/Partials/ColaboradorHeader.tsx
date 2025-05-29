@@ -4,14 +4,14 @@ import { SocialLinks } from './SocialLinks';
 
 interface ColaboradorHeaderProps {
     colaborador: Pick<
-        ColaboradorData, // Use ColaboradorData directly
+        ColaboradorData,
         | 'name'
         | 'email'
         | 'curriculo_lattes_url'
         | 'linkedin_url'
         | 'github_url'
-        | 'figma_url'
-    > & { foto_url?: string | null }; // Ensure foto_url is optional
+        | 'website_url'
+    > & { foto_url?: string | null };
 }
 
 export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
@@ -42,7 +42,7 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                     curriculoLattesUrl={colaborador.curriculo_lattes_url}
                     linkedinUrl={colaborador.linkedin_url}
                     githubUrl={colaborador.github_url}
-                    figmaUrl={colaborador.figma_url}
+                    figmaUrl={colaborador.website_url}
                     colaboradorName={colaborador.name}
                 />
             </div>
