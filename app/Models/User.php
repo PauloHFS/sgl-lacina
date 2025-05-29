@@ -25,24 +25,20 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public $keyType = 'string';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'id',
         'name',
         'email',
         'password',
         'status_cadastro',
+        'campos_extras',
         'curriculo_lattes_url',
         'linkedin_url',
         'github_url',
-        'figma_url',
+        'website_url',
         'foto_url',
-        'area_atuacao', // Corrigido de area_atuacao_id e para corresponder ao formulário/tabela
-        'tecnologias', // Adicionado
+        'area_atuacao',
+        'tecnologias',
         'genero',
         'data_nascimento',
         'cpf',
@@ -50,7 +46,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'uf_rg',
         'orgao_emissor_rg',
         'telefone',
-        'banco_id', // Adicionado
+        'banco_id',
         'conta_bancaria',
         'agencia',
         'cep',
@@ -62,11 +58,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'uf',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -77,11 +68,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return ['id'];
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -90,6 +76,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'status_cadastro' => StatusCadastro::class,
             'genero' => Genero::class,
             'data_nascimento' => 'date',
+            'campos_extras' => 'array', // Cast JSONB para array
         ];
     }
 
@@ -106,13 +93,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    /**
-     * Get the bank associated with the user.
-     *
-     * This defines a BelongsTo relationship between the User and Banco models.
-     *
-     * @return BelongsTo
-     */
     public function banco(): BelongsTo
     {
         return $this->belongsTo(Banco::class, 'banco_id');
@@ -158,5 +138,49 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('projeto_id', $projeto->id)
             ->where('status', StatusVinculoProjeto::PENDENTE)
             ->exists();
+    }
+
+    /**
+     * Obtém um campo extra
+     */
+    public function getCampoExtra(string $key, $default = null)
+    {
+        return data_get($this->campos_extra, $key, $default);
+    }
+
+    /**
+     *  Insere um campo extra
+     */
+    public function setCampoExtra(string $key, $value): void
+    {
+        $campos = $this->campos_extra ?? [];
+        data_set($campos, $key, $value);
+        $this->campos_extra = $campos;
+    }
+
+    /**
+     * Remove um valor específico de campos extras
+     */
+    public function removeCampoExtra(string $key): void
+    {
+        $campos = $this->campos_extra ?? [];
+        data_forget($campos, $key);
+        $this->campos_extra = $campos;
+    }
+
+    /**
+     * Verifica se um campo específico existe nos campos_extras
+     */
+    public function hasCampoExtra(string $key): bool
+    {
+        return data_get($this->campos_extras, $key) !== null;
+    }
+
+    /**
+     * Mescla novos dados com o campo JSONB existente
+     */
+    public function mergeCamposExtra(array $data): void
+    {
+        $this->campos_extra = array_merge($this->campos_extra ?? [], $data);
     }
 }

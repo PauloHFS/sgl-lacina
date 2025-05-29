@@ -57,6 +57,12 @@ class UserFactory extends Factory
             return [
                 'cpf' => fake()->unique()->numerify('###########'),
 
+                'campos_extras' => [
+                    'Matricula' => fake()->numerify('##########'),
+                    'Chave Dell' => fake()->numerify('##########'),
+                    'Chave Microsoft' => fake()->numerify('##########'),
+                ],
+
                 'curriculo_lattes_url' => fake()->numerify('http://lattes.cnpq.br/################'),
                 'linkedin_url' => fake()->optional()->passthrough('https://www.linkedin.com/in/' . fake()->userName()),
                 'github_url' => fake()->optional()->passthrough('https://github.com/' . fake()->userName()),

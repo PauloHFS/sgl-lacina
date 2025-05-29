@@ -28,12 +28,14 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
 
+            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"));
+
             $table->enum('status_cadastro', array_column(StatusCadastro::cases(), 'value'))->default(StatusCadastro::PENDENTE->value);
 
             $table->text('curriculo_lattes_url')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->string('github_url')->nullable();
-            $table->string('figma_url')->nullable();
+            $table->string('website_url')->nullable();
             $table->text('area_atuacao')->nullable();
             $table->text('tecnologias')->nullable();
 

@@ -17,11 +17,12 @@ Table "users" {
   "email_verified_at" timestamp
   "password" varchar(255) [not null]
   "remember_token" varchar(100)
+  "campos_extras" jsonb [not null, default: '{}']
   "status_cadastro" varchar(255) [not null, default: 'PENDENTE']
   "curriculo_lattes_url" text
   "linkedin_url" varchar(255)
   "github_url" varchar(255)
-  "figma_url" varchar(255)
+  "website_url" varchar(255)
   "area_atuacao" text
   "tecnologias" text
   "cpf" bpchar(11) [unique]
