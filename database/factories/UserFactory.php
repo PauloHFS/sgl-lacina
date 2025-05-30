@@ -88,6 +88,7 @@ class UserFactory extends Factory
                 'bairro' => fake()->word(),
                 'cidade' => fake()->city(),
                 'uf' => fake()->stateAbbr(),
+                'status_cadastro' => StatusCadastro::ACEITO,
             ];
         });
     }
