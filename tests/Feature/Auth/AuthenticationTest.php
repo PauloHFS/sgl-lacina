@@ -13,7 +13,7 @@ test('users can authenticate using the login screen', function () {
 
     $response = $this->post('/login', [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'Ab@12312',
     ]);
 
     $this->assertAuthenticated();
