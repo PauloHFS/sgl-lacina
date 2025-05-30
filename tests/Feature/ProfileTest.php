@@ -1,6 +1,47 @@
 <?php
 
 use App\Models\User;
+use App\Models\Banco;
+
+/**
+ * Helper function to generate valid profile data
+ */
+function getValidProfileData(User $user, array $overrides = []): array
+{
+    // Primeiro tenta buscar um banco existente, se não houver, cria um
+    $banco = Banco::first() ?? Banco::factory()->create();
+
+    $validData = [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'genero' => 'MASCULINO',
+        'data_nascimento' => '1990-01-01',
+        'cpf' => '12345678901',
+        'rg' => '123456789',
+        'uf_rg' => 'SP',
+        'orgao_emissor_rg' => 'SSP',
+        'cep' => '12345678',
+        'endereco' => 'Rua Test, 123',
+        'numero' => '123',
+        'complemento' => 'Apt 1',
+        'bairro' => 'Centro',
+        'cidade' => 'São Paulo',
+        'uf' => 'SP',
+        'telefone' => '(11) 99999-9999',
+        'conta_bancaria' => '123456789',
+        'agencia' => '1234',
+        'banco_id' => $banco->id,
+        'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123456',
+        'linkedin_url' => 'https://linkedin.com/in/test',
+        'github_url' => 'https://github.com/test',
+        'website_url' => 'https://test.com',
+        'area_atuacao' => 'Desenvolvimento Web',
+        'tecnologias' => 'PHP, Laravel, JavaScript',
+        'campos_extras' => json_encode(['test' => 'value']),
+    ];
+
+    return array_merge($validData, $overrides);
+}
 
 test('profile page is displayed', function () {
     $user = User::factory()->cadastroCompleto()->create();
@@ -15,12 +56,16 @@ test('profile page is displayed', function () {
 test('profile information can be updated', function () {
     $user = User::factory()->cadastroCompleto()->create();
 
+    $updateData = getValidProfileData($user, [
+        'name' => 'Test User Updated',
+        'email' => 'testupdated@example.com',
+        'cpf' => $user->cpf,
+        'rg' => $user->rg,
+    ]);
+
     $response = $this
         ->actingAs($user)
-        ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        ->patch('/profile', $updateData);
 
     $response
         ->assertSessionHasNoErrors()
@@ -28,20 +73,24 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
+    $this->assertSame('Test User Updated', $user->name);
+    $this->assertSame('testupdated@example.com', $user->email);
     $this->assertNull($user->email_verified_at);
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->cadastroCompleto()->create();
 
+    $updateData = getValidProfileData($user, [
+        'name' => $user->name,
+        'email' => $user->email,
+        'cpf' => $user->cpf,
+        'rg' => $user->rg,
+    ]);
+
     $response = $this
         ->actingAs($user)
-        ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => $user->email,
-        ]);
+        ->patch('/profile', $updateData);
 
     $response
         ->assertSessionHasNoErrors()

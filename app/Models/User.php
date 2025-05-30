@@ -68,6 +68,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return ['id'];
     }
 
+    /**
+     * Get the value of the model's primary key.
+     * Ensures the UUID is returned as a string to avoid issues with NotificationFake.
+     */
+    public function getKey()
+    {
+        return (string) $this->getAttribute($this->getKeyName());
+    }
+
     protected function casts(): array
     {
         return [
