@@ -1,5 +1,5 @@
+import { StatusAlert } from '@/Components/StatusAlert';
 import React from 'react';
-import { StatusAlert } from './StatusAlert';
 
 interface ColaboradorStatusProps {
     onAceitarCadastro: () => void;

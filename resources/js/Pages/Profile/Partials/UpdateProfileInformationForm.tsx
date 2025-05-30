@@ -1,8 +1,10 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { StatusAlert } from '@/Components/StatusAlert';
 import TextInput from '@/Components/TextInput';
 import { ESTADOS } from '@/constants';
+import { useToast } from '@/Context/ToastProvider';
 import { Banco, Genero } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
@@ -22,7 +24,12 @@ export default function UpdateProfileInformation({
 }) {
     const user = usePage().props.auth.user;
     const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm(user);
+        useForm<
+            Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
+        >({
+            ...user,
+            foto_url: user.foto_url ?? null,
+        });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -35,6 +42,8 @@ export default function UpdateProfileInformation({
         patch(route('profile.update'), cleanedData);
     };
 
+    const { toast } = useToast();
+
     return (
         <section className={className}>
             <header>
@@ -45,6 +54,11 @@ export default function UpdateProfileInformation({
                     Atualize as informações do perfil da sua conta.
                 </p>
             </header>
+            <StatusAlert
+                type="info"
+                title="Atualização de dados indisponivel no momento!"
+                // message="As informações do perfil estão travadas no momento"
+            />
             <form onSubmit={submit} className="mt-6 space-y-6">
                 {/* Nome e E-mail */}
                 <div>
@@ -56,6 +70,7 @@ export default function UpdateProfileInformation({
                         onChange={(e) => setData('name', e.target.value)}
                         required
                         autoComplete="name"
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.name} />
                 </div>
@@ -69,27 +84,98 @@ export default function UpdateProfileInformation({
                         onChange={(e) => setData('email', e.target.value)}
                         required
                         autoComplete="username"
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.email} />
                 </div>
+
                 {/* Foto de Perfil */}
-                {/* <div>
+                <div>
                     <InputLabel htmlFor="foto_url" value="Foto de Perfil" />
-                    <input
-                        id="foto_url"
-                        type="file"
-                        accept="image/*"
-                        className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
-                        onChange={(e) => {
-                            const file =
-                                e.target.files && e.target.files[0]
-                                    ? e.target.files[0]
-                                    : null;
-                            setData('foto_url', file);
-                        }}
-                    />
-                    <InputError className="mt-2" message={errors.foto_url} />
-                </div> */}
+                    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                        {/* Avatar Preview or Placeholder */}
+                        {data.foto_url ? (
+                            <div className="avatar">
+                                <div className="ring-primary ring-offset-base-100 h-24 w-24 rounded-lg ring ring-offset-2">
+                                    <img
+                                        src={
+                                            typeof data.foto_url === 'string'
+                                                ? data.foto_url.startsWith(
+                                                      'http',
+                                                  )
+                                                    ? data.foto_url
+                                                    : `/storage/${data.foto_url}`
+                                                : URL.createObjectURL(
+                                                      data.foto_url,
+                                                  )
+                                        }
+                                        alt="Preview da Foto de Perfil"
+                                        className="h-full w-full rounded-lg object-cover"
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-base-200 ring-base-300 flex aspect-square h-24 w-24 items-center justify-center rounded-lg ring-1">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="text-base-content flex h-12 w-12 opacity-30"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                    />
+                                </svg>
+                            </div>
+                        )}
+
+                        {/* File Input and messages */}
+                        <div className="w-full flex-grow sm:w-auto">
+                            <input
+                                id="foto_url"
+                                type="file"
+                                accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
+                                className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
+                                onChange={(e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        const file = e.target.files[0];
+                                        if (file.size > 2048 * 1024) {
+                                            // 2MB
+                                            toast(
+                                                'A foto não pode ser maior que 2MB.',
+                                                'error',
+                                            );
+                                            setData('foto_url', null);
+                                            e.target.value = ''; // Limpa o campo de input
+                                        } else {
+                                            setData('foto_url', file);
+                                        }
+                                    } else {
+                                        setData('foto_url', null); // Limpa se nenhum arquivo for selecionado
+                                        e.target.value = '';
+                                    }
+                                }}
+                                disabled
+                            />
+                            {errors.foto_url ? (
+                                <span className="label-text-alt text-error mt-1">
+                                    {errors.foto_url}
+                                </span>
+                            ) : (
+                                <span className="label-text-alt mt-1">
+                                    Formatos aceitos: PNG, JPG, GIF, WEBP, HEIC.
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Gênero */}
+
                 {/* Gênero */}
                 <div>
                     <InputLabel htmlFor="genero" value="Gênero" />
@@ -100,6 +186,7 @@ export default function UpdateProfileInformation({
                         onChange={(e) =>
                             setData('genero', e.target.value as Genero)
                         }
+                        disabled
                     >
                         <option value="" disabled>
                             Selecione o gênero...
@@ -133,6 +220,7 @@ export default function UpdateProfileInformation({
                         onChange={(e) =>
                             setData('data_nascimento', e.target.value)
                         }
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -149,6 +237,7 @@ export default function UpdateProfileInformation({
                         value={data.telefone || ''}
                         onAccept={(value) => setData('telefone', value)}
                         placeholder="+55 (00) 00000-0000"
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.telefone} />
                 </div>
@@ -163,6 +252,7 @@ export default function UpdateProfileInformation({
                         value={data.cpf || ''}
                         onAccept={(value) => setData('cpf', value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.cpf} />
                 </div>
@@ -176,6 +266,7 @@ export default function UpdateProfileInformation({
                         maxLength={9}
                         onChange={(e) => setData('rg', e.target.value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.rg} />
                 </div>
@@ -192,6 +283,7 @@ export default function UpdateProfileInformation({
                             setData('orgao_emissor_rg', e.target.value)
                         }
                         required
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -206,6 +298,7 @@ export default function UpdateProfileInformation({
                         value={data.uf_rg || ''}
                         onChange={(e) => setData('uf_rg', e.target.value)}
                         required
+                        disabled
                     >
                         <option value="" disabled>
                             Selecione uma UF...
@@ -230,6 +323,7 @@ export default function UpdateProfileInformation({
                         onAccept={(value) => setData('cep', value)}
                         placeholder="00000-000"
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.cep} />
                 </div>
@@ -241,6 +335,7 @@ export default function UpdateProfileInformation({
                         value={data.endereco || ''}
                         onChange={(e) => setData('endereco', e.target.value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.endereco} />
                 </div>
@@ -252,6 +347,7 @@ export default function UpdateProfileInformation({
                         value={data.numero || ''}
                         onChange={(e) => setData('numero', e.target.value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.numero} />
                 </div>
@@ -262,6 +358,7 @@ export default function UpdateProfileInformation({
                         className={`input input-bordered w-full ${errors.complemento ? 'input-error' : ''}`}
                         value={data.complemento || ''}
                         onChange={(e) => setData('complemento', e.target.value)}
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.complemento} />
                 </div>
@@ -273,6 +370,7 @@ export default function UpdateProfileInformation({
                         value={data.bairro || ''}
                         onChange={(e) => setData('bairro', e.target.value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.bairro} />
                 </div>
@@ -284,6 +382,7 @@ export default function UpdateProfileInformation({
                         value={data.uf || ''}
                         onChange={(e) => setData('uf', e.target.value)}
                         required
+                        disabled
                     >
                         <option value="" disabled>
                             Selecione um estado...
@@ -304,6 +403,7 @@ export default function UpdateProfileInformation({
                         value={data.cidade || ''}
                         onChange={(e) => setData('cidade', e.target.value)}
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.cidade} />
                 </div>
@@ -316,6 +416,7 @@ export default function UpdateProfileInformation({
                         className={`select select-bordered w-full ${errors.banco_id ? 'select-error' : ''}`}
                         value={data.banco_id || ''}
                         onChange={(e) => setData('banco_id', e.target.value)}
+                        disabled
                     >
                         <option value="" disabled>
                             Selecione um banco...
@@ -340,6 +441,7 @@ export default function UpdateProfileInformation({
                         value={data.conta_bancaria || ''}
                         onAccept={(value) => setData('conta_bancaria', value)}
                         placeholder="00000-0"
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -356,6 +458,7 @@ export default function UpdateProfileInformation({
                         onAccept={(value) => setData('agencia', value)}
                         placeholder="0000-0"
                         required
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.agencia} />
                 </div>
@@ -375,6 +478,7 @@ export default function UpdateProfileInformation({
                             setData('curriculo_lattes_url', e.target.value)
                         }
                         required
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -391,6 +495,7 @@ export default function UpdateProfileInformation({
                         onChange={(e) =>
                             setData('linkedin_url', e.target.value)
                         }
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -405,6 +510,7 @@ export default function UpdateProfileInformation({
                         className={`input input-bordered w-full ${errors.github_url ? 'input-error' : ''}`}
                         value={data.github_url || ''}
                         onChange={(e) => setData('github_url', e.target.value)}
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.github_url} />
                 </div>
@@ -416,6 +522,7 @@ export default function UpdateProfileInformation({
                         className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
                         value={data.website_url || ''}
                         onChange={(e) => setData('website_url', e.target.value)}
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.website_url} />
                 </div>
@@ -434,6 +541,7 @@ export default function UpdateProfileInformation({
                             setData('area_atuacao', e.target.value)
                         }
                         placeholder="Digite sua área de atuação..."
+                        disabled
                     />
                     <InputError
                         className="mt-2"
@@ -450,6 +558,7 @@ export default function UpdateProfileInformation({
                         value={data.tecnologias || ''}
                         onChange={(e) => setData('tecnologias', e.target.value)}
                         placeholder="Digite as tecnologias que você domina..."
+                        disabled
                     />
                     <InputError className="mt-2" message={errors.tecnologias} />
                 </div>
@@ -493,7 +602,9 @@ export default function UpdateProfileInformation({
                     </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
+                    <PrimaryButton disabled={processing || true}>
+                        Salvar
+                    </PrimaryButton>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
