@@ -98,10 +98,18 @@ class ProjetoVinculoController extends Controller
 
     $usuarioProjeto = UsuarioProjeto::with('usuario')->findOrFail($id);
 
+    $statusOriginal = $usuarioProjeto->status;
+    $vinculoFoiAceito = false;
+
     if ($request->filled('status')) {
       $usuarioProjeto->status = $validatedData['status'];
 
-      if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+      if (
+        $statusOriginal !== StatusVinculoProjeto::APROVADO &&
+        $usuarioProjeto->status === StatusVinculoProjeto::APROVADO
+      ) {
+        $vinculoFoiAceito = true;
+
         $vinculoAntigo = UsuarioProjeto::where('trocar', true)->where('usuario_id', $usuarioProjeto->usuario_id)->first();
         if ($vinculoAntigo) {
           $vinculoAntigo->trocar = false;
@@ -120,7 +128,7 @@ class ProjetoVinculoController extends Controller
           $usuarioProjeto->data_fim = null;
         }
       }
-    };
+    }
 
     if ($request->filled('carga_horaria_semanal')) {
       $usuarioProjeto->carga_horaria_semanal = $validatedData['carga_horaria_semanal'];
@@ -144,7 +152,7 @@ class ProjetoVinculoController extends Controller
 
     $usuarioProjeto->save();
 
-    if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+    if ($vinculoFoiAceito) {
       event(new VinculoAceito($usuarioProjeto->usuario, $usuarioProjeto->projeto));
     }
 
