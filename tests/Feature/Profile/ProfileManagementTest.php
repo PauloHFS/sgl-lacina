@@ -15,9 +15,10 @@ test('usuário pode acessar página de pós cadastro', function () {
     $response = $this->actingAs($user)->get('/pos-cadastro');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('PosCadastro')
-             ->has('bancos', 3)
+            ->has('bancos', 3)
     );
 });
 
@@ -51,7 +52,7 @@ test('usuário pode completar cadastro com dados bancários', function () {
     $response = $this->actingAs($user)->post('/profile/update', $dadosCompletos);
 
     $response->assertRedirect('/dashboard');
-    
+
     $user->refresh();
     expect($user->cpf)->toBe('12345678901');
     expect($user->banco_id)->toBe($banco->id);
@@ -67,7 +68,8 @@ test('usuário pode editar perfil', function () {
     $response = $this->actingAs($user)->get('/profile');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Profile/Edit')
     );
 });
@@ -91,7 +93,7 @@ test('usuário pode atualizar dados do perfil', function () {
     $response = $this->actingAs($user)->patch('/profile', $dadosAtualizados);
 
     $response->assertRedirect('/profile');
-    
+
     $user->refresh();
     expect($user->name)->toBe('Nome Novo');
     expect($user->linkedin_url)->toBe('https://linkedin.com/in/novo');
@@ -105,9 +107,9 @@ test('usuário pode deletar conta', function () {
     ]);
 
     $response = $this->actingAs($user)
-                     ->delete('/profile', [
-                         'password' => 'Ab@12312'
-                     ]);
+        ->delete('/profile', [
+            'password' => 'Ab@12312'
+        ]);
 
     $response->assertRedirect('/');
     $this->assertGuest();
@@ -120,9 +122,9 @@ test('usuário não pode deletar conta com senha incorreta', function () {
     ]);
 
     $response = $this->actingAs($user)
-                     ->delete('/profile', [
-                         'password' => 'senha-errada'
-                     ]);
+        ->delete('/profile', [
+            'password' => 'senha-errada'
+        ]);
 
     $response->assertSessionHasErrors('password');
     $this->assertDatabaseHas('users', ['id' => $user->id]);
@@ -150,9 +152,9 @@ test('dados obrigatórios são validados no completar cadastro', function () {
 
 test('CPF deve ser único no completar cadastro', function () {
     $cpfExistente = '12345678901';
-    
+
     User::factory()->create(['cpf' => $cpfExistente]);
-    
+
     $user = User::factory()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),

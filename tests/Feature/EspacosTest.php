@@ -35,7 +35,7 @@ test('docente pode criar sala', function () {
 
     expect($sala->nome)->toBe('Sala de Desenvolvimento');
     expect($sala->senha_porta)->toBe('1234');
-    
+
     $this->assertDatabaseHas('salas', [
         'id' => $sala->id,
         'nome' => 'Sala de Desenvolvimento',
@@ -261,7 +261,7 @@ test('listar todas as salas com contagem de baias', function () {
     $salasComBaias = Salas::withCount('baias')->get();
 
     expect($salasComBaias)->toHaveCount(2);
-    
+
     $salaA = $salasComBaias->where('nome', 'Sala A')->first();
     $salaB = $salasComBaias->where('nome', 'Sala B')->first();
 
@@ -286,7 +286,7 @@ test('sala com nome único', function () {
     $sala2 = Salas::factory()->create(['nome' => 'Sala Única']);
 
     expect($sala2->nome)->toBe('Sala Única');
-    
+
     // Verificar se existem duas salas com mesmo nome
     $salasComMesmoNome = Salas::where('nome', 'Sala Única')->count();
     expect($salasComMesmoNome)->toBe(2);

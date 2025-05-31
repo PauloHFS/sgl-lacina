@@ -29,12 +29,12 @@ test('coordenador pode criar projeto', function () {
         ->post('/projeto/new', $dadosProjeto);
 
     $response->assertRedirect();
-    
+
     $this->assertDatabaseHas('projetos', [
         'nome' => 'Projeto Teste',
         'cliente' => 'Cliente Teste',
     ]);
-    
+
     // Verificar se o coordenador foi automaticamente vinculado ao projeto
     $projeto = Projeto::where('nome', 'Projeto Teste')->first();
     $this->assertDatabaseHas('usuario_projeto', [
@@ -48,7 +48,7 @@ test('coordenador pode criar projeto', function () {
 test('coordenador pode visualizar projetos que coordena', function () {
     $coordenador = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create();
-    
+
     UsuarioProjeto::factory()->create([
         'usuario_id' => $coordenador->id,
         'projeto_id' => $projeto->id,
@@ -59,16 +59,17 @@ test('coordenador pode visualizar projetos que coordena', function () {
     $response = $this->actingAs($coordenador)->get('/projeto?tab=coordenador');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Index')
-             ->has('projetos')
+            ->has('projetos')
     );
 });
 
 test('colaborador pode visualizar projetos que participa', function () {
     $colaborador = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create();
-    
+
     UsuarioProjeto::factory()->create([
         'usuario_id' => $colaborador->id,
         'projeto_id' => $projeto->id,
@@ -79,16 +80,17 @@ test('colaborador pode visualizar projetos que participa', function () {
     $response = $this->actingAs($colaborador)->get('/projeto?tab=colaborador');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Index')
-             ->has('projetos')
+            ->has('projetos')
     );
 });
 
 test('usuário pode visualizar detalhes de projeto se tiver vínculo aprovado', function () {
     $usuario = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create();
-    
+
     UsuarioProjeto::factory()->create([
         'usuario_id' => $usuario->id,
         'projeto_id' => $projeto->id,
@@ -99,10 +101,11 @@ test('usuário pode visualizar detalhes de projeto se tiver vínculo aprovado', 
     $response = $this->actingAs($usuario)->get("/projeto/{$projeto->id}");
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Show')
-             ->has('projeto')
-             ->has('usuarioVinculo')
+            ->has('projeto')
+            ->has('usuarioVinculo')
     );
 });
 
@@ -120,7 +123,7 @@ test('coordenador pode visualizar participantes do projeto', function () {
     $coordenador = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $colaborador = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create();
-    
+
     // Coordenador do projeto
     UsuarioProjeto::factory()->create([
         'usuario_id' => $coordenador->id,
@@ -140,9 +143,10 @@ test('coordenador pode visualizar participantes do projeto', function () {
     $response = $this->actingAs($coordenador)->get("/projeto/{$projeto->id}");
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Show')
-             ->has('participantesProjeto.data')
+            ->has('participantesProjeto.data')
     );
 });
 
@@ -154,9 +158,10 @@ test('projeto pode ser pesquisado por nome', function () {
     $response = $this->actingAs($usuario)->get('/projeto?search=Sistema');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Index')
-             ->has('projetos')
+            ->has('projetos')
     );
 });
 
@@ -168,9 +173,10 @@ test('projeto pode ser pesquisado por cliente', function () {
     $response = $this->actingAs($usuario)->get('/projeto?search=Dell');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Index')
-             ->has('projetos')
+            ->has('projetos')
     );
 });
 
@@ -180,9 +186,10 @@ test('usuário pode acessar página de criação de projeto', function () {
     $response = $this->actingAs($usuario)->get('/projeto/new');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
+    $response->assertInertia(
+        fn($page) =>
         $page->component('Projetos/Create')
-             ->has('tiposProjeto')
+            ->has('tiposProjeto')
     );
 });
 

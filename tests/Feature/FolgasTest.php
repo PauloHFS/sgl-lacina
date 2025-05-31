@@ -31,7 +31,7 @@ test('colaborador pode criar folga individual', function () {
     expect($folga->tipo)->toBe(TipoFolga::INDIVIDUAL);
     expect($folga->status)->toBe(StatusFolga::PENDENTE);
     expect($folga->justificativa)->toBe('Viagem familiar');
-    
+
     $this->assertDatabaseHas('folgas', [
         'id' => $folga->id,
         'usuario_id' => $user->id,

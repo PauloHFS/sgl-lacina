@@ -299,7 +299,7 @@ test('validação de enums deve aceitar valores válidos', function () {
     foreach ($enumsValidos as $enumTest) {
         $field = $enumTest['field'];
         $value = $enumTest['value'];
-        
+
         $validator = Validator::make(
             [$field => $value],
             [$field => 'string']

@@ -15,9 +15,10 @@ test('usuário autenticado pode visualizar página de horários', function () {
     $response = $this->actingAs($user)->get('/meus-horarios');
 
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => $page
-        ->component('Horarios/MeuHorario')
-        ->has('auth.user')
+    $response->assertInertia(
+        fn($page) => $page
+            ->component('Horarios/MeuHorario')
+            ->has('auth.user')
     );
 });
 
@@ -42,7 +43,7 @@ test('horário pode ser criado com dados válidos', function () {
     expect($horario->usuario_id)->toBe($user->id);
     expect($horario->dia_semana)->toBe(WeekDay::Monday);
     expect($horario->tipo)->toBe(TipoHorario::AULA);
-    
+
     $this->assertDatabaseHas('horarios', [
         'id' => $horario->id,
         'usuario_id' => $user->id,
@@ -88,7 +89,7 @@ test('usuário pode ter múltiplos horários em dias diferentes', function () {
     ];
 
     expect($horarios)->toHaveCount(3);
-    
+
     foreach ($horarios as $horario) {
         expect($horario->usuario_id)->toBe($user->id);
         $this->assertDatabaseHas('horarios', [
@@ -177,7 +178,7 @@ test('horário mantém timestamps corretos', function () {
     ]);
 
     $beforeCreation = now();
-    
+
     $horario = Horarios::factory()->create([
         'usuario_id' => $user->id,
     ]);

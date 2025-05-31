@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Mail;
 
 test('usuário pode solicitar relatório de participação por email', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     // Criar histórico de participação
     $projeto = Projeto::factory()->create();
     HistoricoUsuarioProjeto::create([
@@ -37,25 +37,25 @@ test('usuário pode solicitar relatório de participação por email', function 
 
     $response->assertRedirect();
     $response->assertSessionHas('success', 'Relatório de participação enviado para o seu e-mail com o PDF anexado.');
-    
+
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) use ($user) {
-        return $mail->hasTo($user->email) && 
-               $mail->user->id === $user->id &&
-               $mail->historico->isNotEmpty();
+        return $mail->hasTo($user->email) &&
+            $mail->user->id === $user->id &&
+            $mail->historico->isNotEmpty();
     });
 });
 
 test('relatório incluir todos os projetos do histórico do usuário', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     // Criar múltiplos projetos no histórico
     $projetos = Projeto::factory()->count(3)->create();
-    
+
     foreach ($projetos as $projeto) {
         HistoricoUsuarioProjeto::create([
             'usuario_id' => $user->id,
@@ -73,7 +73,7 @@ test('relatório incluir todos os projetos do histórico do usuário', function 
     $response = $this->actingAs($user)->post('/relatorio/participacao');
 
     $response->assertRedirect();
-    
+
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) {
         return $mail->historico->count() === 3;
     });
@@ -81,15 +81,15 @@ test('relatório incluir todos os projetos do histórico do usuário', function 
 
 test('relatório deve estar ordenado por data de início decrescente', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     $projeto1 = Projeto::factory()->create(['nome' => 'Projeto Antigo']);
     $projeto2 = Projeto::factory()->create(['nome' => 'Projeto Novo']);
-    
+
     // Criar histórico com datas diferentes
     HistoricoUsuarioProjeto::create([
         'usuario_id' => $user->id,
@@ -102,7 +102,7 @@ test('relatório deve estar ordenado por data de início decrescente', function 
         'data_fim' => now()->subMonths(8),
         'trocar' => false,
     ]);
-    
+
     HistoricoUsuarioProjeto::create([
         'usuario_id' => $user->id,
         'projeto_id' => $projeto2->id,
@@ -120,15 +120,15 @@ test('relatório deve estar ordenado por data de início decrescente', function 
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) {
         $primeiro = $mail->historico->first();
         $ultimo = $mail->historico->last();
-        
+
         return $primeiro->projeto->nome === 'Projeto Novo' &&
-               $ultimo->projeto->nome === 'Projeto Antigo';
+            $ultimo->projeto->nome === 'Projeto Antigo';
     });
 });
 
 test('usuário sem histórico pode solicitar relatório vazio', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
@@ -137,10 +137,10 @@ test('usuário sem histórico pode solicitar relatório vazio', function () {
     $response = $this->actingAs($user)->post('/relatorio/participacao');
 
     $response->assertRedirect();
-    
+
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) use ($user) {
-        return $mail->user->id === $user->id && 
-               $mail->historico->isEmpty();
+        return $mail->user->id === $user->id &&
+            $mail->historico->isEmpty();
     });
 });
 
@@ -164,17 +164,17 @@ test('usuário com cadastro pendente não pode solicitar relatório', function (
 
 test('relatório deve incluir informações corretas do projeto', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     $projeto = Projeto::factory()->create([
         'nome' => 'Sistema de Gestão',
         'cliente' => 'Cliente Teste',
     ]);
-    
+
     HistoricoUsuarioProjeto::create([
         'usuario_id' => $user->id,
         'projeto_id' => $projeto->id,
@@ -191,16 +191,16 @@ test('relatório deve incluir informações corretas do projeto', function () {
 
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) {
         $item = $mail->historico->first();
-        
+
         return $item->projeto->nome === 'Sistema de Gestão' &&
-               $item->projeto->cliente === 'Cliente Teste' &&
-               $item->carga_horaria_semanal === 20;
+            $item->projeto->cliente === 'Cliente Teste' &&
+            $item->carga_horaria_semanal === 20;
     });
 });
 
 test('nome do arquivo PDF deve incluir ID do usuário e timestamp', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
@@ -210,13 +210,13 @@ test('nome do arquivo PDF deve incluir ID do usuário e timestamp', function () 
 
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) use ($user) {
         return str_contains($mail->pdfFilename, 'relatorio_participacao_' . $user->id . '_') &&
-               str_contains($mail->pdfFilename, '.pdf');
+            str_contains($mail->pdfFilename, '.pdf');
     });
 });
 
 test('email deve conter PDF como anexo', function () {
     Mail::fake();
-    
+
     $user = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
@@ -231,19 +231,19 @@ test('email deve conter PDF como anexo', function () {
 
 test('relatório deve incluir apenas histórico do usuário logado', function () {
     Mail::fake();
-    
+
     $user1 = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     $user2 = User::factory()->cadastroCompleto()->create([
         'status_cadastro' => StatusCadastro::ACEITO,
         'email_verified_at' => now(),
     ]);
-    
+
     $projeto = Projeto::factory()->create();
-    
+
     // Criar histórico para ambos usuários
     HistoricoUsuarioProjeto::create([
         'usuario_id' => $user1->id,
@@ -256,7 +256,7 @@ test('relatório deve incluir apenas histórico do usuário logado', function ()
         'data_fim' => now()->subMonths(2),
         'trocar' => false,
     ]);
-    
+
     HistoricoUsuarioProjeto::create([
         'usuario_id' => $user2->id,
         'projeto_id' => $projeto->id,
@@ -272,9 +272,9 @@ test('relatório deve incluir apenas histórico do usuário logado', function ()
     $response = $this->actingAs($user1)->post('/relatorio/participacao');
 
     $response->assertRedirect();
-    
+
     Mail::assertSent(ParticipacaoLacinaReportMail::class);
-    
+
     // Verify the mail content separately
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) use ($user1) {
         return $mail->user->id === $user1->id;

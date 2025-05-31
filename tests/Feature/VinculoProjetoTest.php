@@ -23,7 +23,7 @@ test('usuário com cadastro aceito pode solicitar vínculo a projeto', function 
     $response = $this->actingAs($usuario)->post('/vinculo', $dadosVinculo);
 
     $response->assertRedirect();
-    
+
     $this->assertDatabaseHas('usuario_projeto', [
         'usuario_id' => $usuario->id,
         'projeto_id' => $projeto->id,
@@ -102,7 +102,7 @@ test('coordenador pode aprovar solicitação de vínculo', function () {
         ]);
 
     $response->assertRedirect();
-    
+
     $vinculoPendente->refresh();
     expect($vinculoPendente->status)->toBe(StatusVinculoProjeto::APROVADO);
 });
@@ -134,7 +134,7 @@ test('coordenador pode recusar solicitação de vínculo', function () {
         ]);
 
     $response->assertRedirect();
-    
+
     $vinculoPendente->refresh();
     expect($vinculoPendente->status)->toBe(StatusVinculoProjeto::RECUSADO);
 });
@@ -170,7 +170,7 @@ test('coordenador pode editar dados do vínculo antes de aprovar', function () {
         ]);
 
     $response->assertRedirect();
-    
+
     $vinculoPendente->refresh();
     expect($vinculoPendente->status)->toBe(StatusVinculoProjeto::APROVADO);
     expect($vinculoPendente->carga_horaria_semanal)->toBe(30);
@@ -203,7 +203,7 @@ test('usuário pode solicitar troca de projeto', function () {
     $response = $this->actingAs($usuario)->post('/vinculo', $dadosTroca);
 
     $response->assertRedirect();
-    
+
     // Verificar se o vínculo antigo foi marcado para troca
     $vinculoAtual->refresh();
     expect($vinculoAtual->trocar)->toBeTrue();
@@ -262,7 +262,7 @@ test('colaborador sem vínculo pode solicitar adesão direta', function () {
     $response = $this->actingAs($usuario)->post('/vinculo', $dadosVinculo);
 
     $response->assertRedirect();
-    
+
     $this->assertDatabaseHas('usuario_projeto', [
         'usuario_id' => $usuario->id,
         'projeto_id' => $projeto->id,
