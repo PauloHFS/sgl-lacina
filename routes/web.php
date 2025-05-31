@@ -89,6 +89,12 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
             Route::post('/{colaborador}/aceitar', [ColaboradorController::class, 'aceitarVinculo'])->name('vinculos.aceitar');
             Route::post('/{colaborador}/recusar', [ColaboradorController::class, 'recusarVinculo'])->name('vinculos.recusar');
         });
+
+        // Rotas para Configurações (apenas coordenadores)
+        Route::prefix('/configuracoes')->name('configuracoes.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\ConfiguracaoController::class, 'index'])->name('index');
+            Route::patch('/senha-laboratorio', [\App\Http\Controllers\ConfiguracaoController::class, 'atualizarSenhaLaboratorio'])->name('senha-laboratorio.update');
+        });
     });
 });
 

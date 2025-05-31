@@ -38,7 +38,8 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    if ($value !== '1234') {
+                    $senhaLaboratorio = \App\Models\ConfiguracaoSistema::obterValor('senha_laboratorio');
+                    if (!Hash::check($value, $senhaLaboratorio)) {
                         $fail('A senha do laboratório está incorreta.');
                     }
                 }

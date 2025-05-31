@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Configurações do sistema
+        $this->call(ConfiguracaoSistemaSeeder::class);
 
         $bancos = [
             ['codigo' => '001', 'nome' => 'Banco do Brasil'],
