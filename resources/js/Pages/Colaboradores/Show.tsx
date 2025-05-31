@@ -381,392 +381,451 @@ export default function Show({
                         <div className="card-body">
                             <ColaboradorHeader colaborador={colaborador} />
 
-                            <div className="divider">
-                                Status do Cadastro e Vínculo
-                            </div>
-                            <ColaboradorStatus
-                                onAceitarCadastro={handleAceitarCadastro}
-                                onRecusarCadastro={handleRecusarCadastro}
-                                onAceitarVinculo={handleAceitarVinculo}
-                                onRecusarVinculo={handleRecusarVinculo}
-                                processing={
-                                    processingVinculo || processingDetalhes
-                                }
-                                status_colaborador={status_colaborador}
-                            />
+                            {/* Sistema de Abas */}
+                            <div className="tabs tabs-border tabs-box mt-6 w-full">
+                                <input
+                                    type="radio"
+                                    name="colaborador_tabs"
+                                    className="tab"
+                                    aria-label="Status e Vínculo"
+                                    defaultChecked
+                                />
+                                <div className="tab-content p-6">
+                                    <div className="divider">
+                                        Status do Cadastro e Vínculo
+                                    </div>
+                                    <ColaboradorStatus
+                                        onAceitarCadastro={
+                                            handleAceitarCadastro
+                                        }
+                                        onRecusarCadastro={
+                                            handleRecusarCadastro
+                                        }
+                                        onAceitarVinculo={handleAceitarVinculo}
+                                        onRecusarVinculo={handleRecusarVinculo}
+                                        processing={
+                                            processingVinculo ||
+                                            processingDetalhes
+                                        }
+                                        status_colaborador={status_colaborador}
+                                    />
 
-                            {ultimo_vinculo &&
-                                ultimo_vinculo?.status === 'PENDENTE' && (
-                                    <>
-                                        <div className="divider">
-                                            Detalhes do Vínculo com o Projeto
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                            <InfoItem
-                                                label="Projeto"
-                                                value={
-                                                    ultimo_vinculo.projeto?.nome
-                                                }
-                                            />
+                                    {ultimo_vinculo &&
+                                        ultimo_vinculo?.status ===
+                                            'PENDENTE' && (
+                                            <>
+                                                <div className="divider">
+                                                    Detalhes do Vínculo com o
+                                                    Projeto
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                                                    <InfoItem
+                                                        label="Projeto"
+                                                        value={
+                                                            ultimo_vinculo
+                                                                .projeto?.nome
+                                                        }
+                                                    />
 
-                                            <InfoItem
-                                                label="Cliente"
-                                                value={
-                                                    ultimo_vinculo.projeto
-                                                        ?.cliente
-                                                }
-                                            />
+                                                    <InfoItem
+                                                        label="Cliente"
+                                                        value={
+                                                            ultimo_vinculo
+                                                                .projeto
+                                                                ?.cliente
+                                                        }
+                                                    />
 
-                                            <div>
-                                                <label
-                                                    className="label"
-                                                    htmlFor="funcao"
-                                                >
-                                                    <span className="label-text font-semibold">
-                                                        Função:
-                                                    </span>
-                                                </label>
-                                                <select
-                                                    id="funcao"
-                                                    className={`select select-bordered w-full ${
-                                                        ultimo_vinculo?.funcao !==
-                                                            vinculoData.funcao &&
-                                                        vinculoData.funcao !==
-                                                            undefined
-                                                            ? 'select-warning'
-                                                            : ''
-                                                    } ${vinculoErrors.funcao ? 'select-error' : ''}`}
-                                                    value={
-                                                        vinculoData.funcao || ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setVinculoData(
-                                                            'funcao',
-                                                            e.target
-                                                                .value as Funcao,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        processingVinculo ||
-                                                        processingDetalhes ||
-                                                        ultimo_vinculo?.status !==
-                                                            'PENDENTE'
-                                                    }
-                                                >
-                                                    {(
-                                                        [
-                                                            'COORDENADOR',
-                                                            'PESQUISADOR',
-                                                            'DESENVOLVEDOR',
-                                                            'TECNICO',
-                                                            'ALUNO',
-                                                        ] as Array<Funcao>
-                                                    ).map((funcao) => (
-                                                        <option
-                                                            key={funcao}
-                                                            value={funcao}
+                                                    <div>
+                                                        <label
+                                                            className="label"
+                                                            htmlFor="funcao"
                                                         >
-                                                            {funcao}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                {vinculoErrors.funcao && (
-                                                    <p className="text-error mt-1 text-xs">
-                                                        {vinculoErrors.funcao}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label
-                                                    className="label"
-                                                    htmlFor="tipovinculo"
-                                                >
-                                                    <span className="label-text font-semibold">
-                                                        Tipo de Vínculo:
-                                                    </span>
-                                                </label>
-                                                <select
-                                                    id="tipovinculo"
-                                                    className={`select select-bordered w-full ${
-                                                        ultimo_vinculo?.tipo_vinculo !==
-                                                            vinculoData.tipo_vinculo &&
-                                                        vinculoData.tipo_vinculo !==
-                                                            undefined
-                                                            ? 'select-warning'
-                                                            : ''
-                                                    } ${vinculoErrors.tipo_vinculo ? 'select-error' : ''}`}
-                                                    value={
-                                                        vinculoData.tipo_vinculo ||
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setVinculoData(
-                                                            'tipo_vinculo',
-                                                            e.target
-                                                                .value as TipoVinculo,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        processingVinculo ||
-                                                        processingDetalhes ||
-                                                        ultimo_vinculo?.status !==
-                                                            'PENDENTE'
-                                                    }
-                                                >
-                                                    {(
-                                                        [
-                                                            'COLABORADOR',
-                                                            'COORDENADOR',
-                                                        ] as Array<TipoVinculo>
-                                                    ).map((tipo) => (
-                                                        <option
-                                                            key={tipo}
-                                                            value={tipo}
-                                                        >
-                                                            {tipo
-                                                                .replace(
-                                                                    /_/g,
-                                                                    ' ',
+                                                            <span className="label-text font-semibold">
+                                                                Função:
+                                                            </span>
+                                                        </label>
+                                                        <select
+                                                            id="funcao"
+                                                            className={`select select-bordered w-full ${
+                                                                ultimo_vinculo?.funcao !==
+                                                                    vinculoData.funcao &&
+                                                                vinculoData.funcao !==
+                                                                    undefined
+                                                                    ? 'select-warning'
+                                                                    : ''
+                                                            } ${vinculoErrors.funcao ? 'select-error' : ''}`}
+                                                            value={
+                                                                vinculoData.funcao ||
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setVinculoData(
+                                                                    'funcao',
+                                                                    e.target
+                                                                        .value as Funcao,
                                                                 )
-                                                                .toLowerCase()
-                                                                .replace(
-                                                                    /\b\w/g,
-                                                                    (char) =>
-                                                                        char.toUpperCase(),
-                                                                )}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                {vinculoErrors.tipo_vinculo && (
-                                                    <p className="text-error mt-1 text-xs">
-                                                        {
-                                                            vinculoErrors.tipo_vinculo
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label
-                                                    className="label"
-                                                    htmlFor="carga_horaria_semanal"
-                                                >
-                                                    <span className="label-text font-semibold">
-                                                        Carga Horária Semanal:
-                                                    </span>
-                                                </label>
-                                                <input
-                                                    id="carga_horaria_semanal"
-                                                    type="number"
-                                                    className={`input input-bordered w-full ${
-                                                        ultimo_vinculo?.carga_horaria_semanal !==
-                                                            vinculoData.carga_horaria_semanal &&
-                                                        vinculoData.carga_horaria_semanal !==
-                                                            undefined
-                                                            ? 'input-warning'
-                                                            : ''
-                                                    } ${vinculoErrors.carga_horaria_semanal ? 'input-error' : ''}`}
-                                                    value={
-                                                        vinculoData.carga_horaria_semanal ||
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setVinculoData(
-                                                            'carga_horaria_semanal',
-                                                            parseInt(
-                                                                e.target.value,
-                                                                10,
-                                                            ),
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        processingVinculo ||
-                                                        processingDetalhes ||
-                                                        ultimo_vinculo?.status !==
-                                                            'PENDENTE'
-                                                    }
-                                                />
-                                                <span className="label-text-alt">
-                                                    {`${vinculoData.carga_horaria_semanal ? vinculoData.carga_horaria_semanal * 4 : 0} horas/mês`}
-                                                </span>
-                                                {vinculoErrors.carga_horaria_semanal && (
-                                                    <p className="text-error mt-1 text-xs">
-                                                        {
-                                                            vinculoErrors.carga_horaria_semanal
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label
-                                                    className="label"
-                                                    htmlFor="data_inicio"
-                                                >
-                                                    <span className="label-text font-semibold">
-                                                        Data de Início:
-                                                    </span>
-                                                </label>
-                                                <input
-                                                    id="data_inicio"
-                                                    type="date"
-                                                    className={`input input-bordered w-full ${
-                                                        ultimo_vinculo?.data_inicio?.substring(
-                                                            0,
-                                                            10,
-                                                        ) !==
-                                                            vinculoData.data_inicio &&
-                                                        vinculoData.data_inicio !==
-                                                            undefined
-                                                            ? 'input-warning'
-                                                            : ''
-                                                    } ${vinculoErrors.data_inicio ? 'input-error' : ''}`}
-                                                    value={
-                                                        vinculoData.data_inicio ||
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setVinculoData(
-                                                            'data_inicio',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        processingVinculo ||
-                                                        processingDetalhes ||
-                                                        ultimo_vinculo?.status !==
-                                                            'PENDENTE'
-                                                    }
-                                                />
-                                                {vinculoErrors.data_inicio && (
-                                                    <p className="text-error mt-1 text-xs">
-                                                        {
-                                                            vinculoErrors.data_inicio
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {ultimo_vinculo?.status ===
-                                                'PENDENTE' &&
-                                                areVinculoFieldsDirty && (
-                                                    <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                handleResetVinculoFields
                                                             }
-                                                            className="btn btn-ghost"
                                                             disabled={
                                                                 processingVinculo ||
-                                                                processingDetalhes
+                                                                processingDetalhes ||
+                                                                ultimo_vinculo?.status !==
+                                                                    'PENDENTE'
                                                             }
                                                         >
-                                                            Restaurar
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={
-                                                                handleAtualizarStatusVinculo
-                                                            }
-                                                            className="btn btn-primary"
-                                                            disabled={
-                                                                processingVinculo ||
-                                                                processingDetalhes
-                                                            }
-                                                        >
-                                                            {processingVinculo ? (
-                                                                <span className="loading loading-spinner loading-sm"></span>
-                                                            ) : (
-                                                                'Salvar Alterações no Vínculo'
-                                                            )}
-                                                        </button>
+                                                            {(
+                                                                [
+                                                                    'COORDENADOR',
+                                                                    'PESQUISADOR',
+                                                                    'DESENVOLVEDOR',
+                                                                    'TECNICO',
+                                                                    'ALUNO',
+                                                                ] as Array<Funcao>
+                                                            ).map((funcao) => (
+                                                                <option
+                                                                    key={funcao}
+                                                                    value={
+                                                                        funcao
+                                                                    }
+                                                                >
+                                                                    {funcao}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        {vinculoErrors.funcao && (
+                                                            <p className="text-error mt-1 text-xs">
+                                                                {
+                                                                    vinculoErrors.funcao
+                                                                }
+                                                            </p>
+                                                        )}
                                                     </div>
-                                                )}
-                                        </div>
-                                    </>
-                                )}
 
-                            <div className="divider">Dados Pessoais</div>
-                            {can_update_colaborador && !isEditingDetalhes && (
-                                <div className="card-actions mb-4 justify-end">
-                                    <button
-                                        className="btn btn-sm btn-outline btn-primary"
-                                        onClick={() =>
-                                            setIsEditingDetalhes(true)
-                                        }
-                                        disabled={
-                                            processingDetalhes ||
-                                            processingVinculo
-                                        }
-                                    >
-                                        Editar Detalhes
-                                    </button>
+                                                    <div>
+                                                        <label
+                                                            className="label"
+                                                            htmlFor="tipovinculo"
+                                                        >
+                                                            <span className="label-text font-semibold">
+                                                                Tipo de Vínculo:
+                                                            </span>
+                                                        </label>
+                                                        <select
+                                                            id="tipovinculo"
+                                                            className={`select select-bordered w-full ${
+                                                                ultimo_vinculo?.tipo_vinculo !==
+                                                                    vinculoData.tipo_vinculo &&
+                                                                vinculoData.tipo_vinculo !==
+                                                                    undefined
+                                                                    ? 'select-warning'
+                                                                    : ''
+                                                            } ${vinculoErrors.tipo_vinculo ? 'select-error' : ''}`}
+                                                            value={
+                                                                vinculoData.tipo_vinculo ||
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setVinculoData(
+                                                                    'tipo_vinculo',
+                                                                    e.target
+                                                                        .value as TipoVinculo,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes ||
+                                                                ultimo_vinculo?.status !==
+                                                                    'PENDENTE'
+                                                            }
+                                                        >
+                                                            {(
+                                                                [
+                                                                    'COLABORADOR',
+                                                                    'COORDENADOR',
+                                                                ] as Array<TipoVinculo>
+                                                            ).map((tipo) => (
+                                                                <option
+                                                                    key={tipo}
+                                                                    value={tipo}
+                                                                >
+                                                                    {tipo
+                                                                        .replace(
+                                                                            /_/g,
+                                                                            ' ',
+                                                                        )
+                                                                        .toLowerCase()
+                                                                        .replace(
+                                                                            /\b\w/g,
+                                                                            (
+                                                                                char,
+                                                                            ) =>
+                                                                                char.toUpperCase(),
+                                                                        )}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        {vinculoErrors.tipo_vinculo && (
+                                                            <p className="text-error mt-1 text-xs">
+                                                                {
+                                                                    vinculoErrors.tipo_vinculo
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label
+                                                            className="label"
+                                                            htmlFor="carga_horaria_semanal"
+                                                        >
+                                                            <span className="label-text font-semibold">
+                                                                Carga Horária
+                                                                Semanal:
+                                                            </span>
+                                                        </label>
+                                                        <input
+                                                            id="carga_horaria_semanal"
+                                                            type="number"
+                                                            className={`input input-bordered w-full ${
+                                                                ultimo_vinculo?.carga_horaria_semanal !==
+                                                                    vinculoData.carga_horaria_semanal &&
+                                                                vinculoData.carga_horaria_semanal !==
+                                                                    undefined
+                                                                    ? 'input-warning'
+                                                                    : ''
+                                                            } ${vinculoErrors.carga_horaria_semanal ? 'input-error' : ''}`}
+                                                            value={
+                                                                vinculoData.carga_horaria_semanal ||
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setVinculoData(
+                                                                    'carga_horaria_semanal',
+                                                                    parseInt(
+                                                                        e.target
+                                                                            .value,
+                                                                        10,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes ||
+                                                                ultimo_vinculo?.status !==
+                                                                    'PENDENTE'
+                                                            }
+                                                        />
+                                                        <span className="label-text-alt">
+                                                            {`${vinculoData.carga_horaria_semanal ? vinculoData.carga_horaria_semanal * 4 : 0} horas/mês`}
+                                                        </span>
+                                                        {vinculoErrors.carga_horaria_semanal && (
+                                                            <p className="text-error mt-1 text-xs">
+                                                                {
+                                                                    vinculoErrors.carga_horaria_semanal
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label
+                                                            className="label"
+                                                            htmlFor="data_inicio"
+                                                        >
+                                                            <span className="label-text font-semibold">
+                                                                Data de Início:
+                                                            </span>
+                                                        </label>
+                                                        <input
+                                                            id="data_inicio"
+                                                            type="date"
+                                                            className={`input input-bordered w-full ${
+                                                                ultimo_vinculo?.data_inicio?.substring(
+                                                                    0,
+                                                                    10,
+                                                                ) !==
+                                                                    vinculoData.data_inicio &&
+                                                                vinculoData.data_inicio !==
+                                                                    undefined
+                                                                    ? 'input-warning'
+                                                                    : ''
+                                                            } ${vinculoErrors.data_inicio ? 'input-error' : ''}`}
+                                                            value={
+                                                                vinculoData.data_inicio ||
+                                                                ''
+                                                            }
+                                                            onChange={(e) =>
+                                                                setVinculoData(
+                                                                    'data_inicio',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes ||
+                                                                ultimo_vinculo?.status !==
+                                                                    'PENDENTE'
+                                                            }
+                                                        />
+                                                        {vinculoErrors.data_inicio && (
+                                                            <p className="text-error mt-1 text-xs">
+                                                                {
+                                                                    vinculoErrors.data_inicio
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {ultimo_vinculo?.status ===
+                                                        'PENDENTE' &&
+                                                        areVinculoFieldsDirty && (
+                                                            <div className="mt-4 flex justify-end space-x-3 md:col-span-2">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={
+                                                                        handleResetVinculoFields
+                                                                    }
+                                                                    className="btn btn-ghost"
+                                                                    disabled={
+                                                                        processingVinculo ||
+                                                                        processingDetalhes
+                                                                    }
+                                                                >
+                                                                    Restaurar
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={
+                                                                        handleAtualizarStatusVinculo
+                                                                    }
+                                                                    className="btn btn-primary"
+                                                                    disabled={
+                                                                        processingVinculo ||
+                                                                        processingDetalhes
+                                                                    }
+                                                                >
+                                                                    {processingVinculo ? (
+                                                                        <span className="loading loading-spinner loading-sm"></span>
+                                                                    ) : (
+                                                                        'Salvar Alterações no Vínculo'
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            </>
+                                        )}
                                 </div>
-                            )}
-                            <ColaboradorDetalhes
-                                colaborador={colaborador}
-                                isEditing={isEditingDetalhes}
-                                data={detalhesData}
-                                setData={setDetalhesData}
-                                errors={detalhesErrors}
-                                processing={processingDetalhes}
-                                onCancel={handleCancelEditDetalhes}
-                                onSubmit={handleUpdateDetalhesColaborador}
-                                bancos={bancos}
-                                canEdit={can_update_colaborador}
-                            />
 
-                            <div className="divider">Projeto(s) Ativos</div>
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                {colaborador.projetos.filter(
-                                    (p) => p.vinculo.status === 'APROVADO',
-                                ).length > 0 ? (
-                                    colaborador.projetos
-                                        .filter(
+                                <input
+                                    type="radio"
+                                    name="colaborador_tabs"
+                                    className="tab"
+                                    aria-label="Dados Pessoais"
+                                />
+                                <div className="tab-content p-6">
+                                    <div className="divider">
+                                        Dados Pessoais
+                                    </div>
+                                    {can_update_colaborador &&
+                                        !isEditingDetalhes && (
+                                            <div className="card-actions mb-4 justify-end">
+                                                <button
+                                                    className="btn btn-sm btn-outline btn-primary"
+                                                    onClick={() =>
+                                                        setIsEditingDetalhes(
+                                                            true,
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        processingDetalhes ||
+                                                        processingVinculo
+                                                    }
+                                                >
+                                                    Editar Detalhes
+                                                </button>
+                                            </div>
+                                        )}
+                                    <ColaboradorDetalhes
+                                        colaborador={colaborador}
+                                        isEditing={isEditingDetalhes}
+                                        data={detalhesData}
+                                        setData={setDetalhesData}
+                                        errors={detalhesErrors}
+                                        processing={processingDetalhes}
+                                        onCancel={handleCancelEditDetalhes}
+                                        onSubmit={
+                                            handleUpdateDetalhesColaborador
+                                        }
+                                        bancos={bancos}
+                                        canEdit={can_update_colaborador}
+                                    />
+                                </div>
+
+                                <input
+                                    type="radio"
+                                    name="colaborador_tabs"
+                                    className="tab"
+                                    aria-label="Projetos"
+                                />
+                                <div className="tab-content p-6">
+                                    <div className="divider">
+                                        Projeto(s) Ativos
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
+                                        {colaborador.projetos.filter(
                                             (p) =>
                                                 p.vinculo.status === 'APROVADO',
-                                        )
-                                        .map((projeto) => (
-                                            <div
-                                                key={projeto.id}
-                                                className="flex items-center justify-between"
-                                            >
-                                                <InfoItem
-                                                    label="Projeto"
-                                                    className="flex-grow"
-                                                >
-                                                    <Link
-                                                        href={route(
-                                                            'projetos.show',
-                                                            projeto.id,
+                                        ).length > 0 ? (
+                                            colaborador.projetos
+                                                .filter(
+                                                    (p) =>
+                                                        p.vinculo.status ===
+                                                        'APROVADO',
+                                                )
+                                                .map((projeto) => (
+                                                    <div
+                                                        key={projeto.id}
+                                                        className="flex items-center justify-between"
+                                                    >
+                                                        <InfoItem
+                                                            label="Projeto"
+                                                            className="flex-grow"
+                                                        >
+                                                            <Link
+                                                                href={route(
+                                                                    'projetos.show',
+                                                                    projeto.id,
+                                                                )}
+                                                                className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 w-full items-center py-2 break-words whitespace-normal"
+                                                            >
+                                                                {projeto.nome}
+                                                            </Link>
+                                                        </InfoItem>
+                                                        {can_update_colaborador && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleEditVinculoClick(
+                                                                        projeto.vinculo,
+                                                                    )
+                                                                }
+                                                                className="btn btn-ghost btn-sm ml-2"
+                                                                aria-label="Editar Vínculo"
+                                                            >
+                                                                Editar
+                                                            </button>
                                                         )}
-                                                        className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 w-full items-center py-2 break-words whitespace-normal"
-                                                    >
-                                                        {projeto.nome}
-                                                    </Link>
-                                                </InfoItem>
-                                                {can_update_colaborador && (
-                                                    <button
-                                                        onClick={() =>
-                                                            handleEditVinculoClick(
-                                                                projeto.vinculo,
-                                                            )
-                                                        }
-                                                        className="btn btn-ghost btn-sm ml-2"
-                                                        aria-label="Editar Vínculo"
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))
-                                ) : (
-                                    <p className="text-base-content/70">
-                                        Nenhum projeto com vínculo aprovado.
-                                    </p>
-                                )}
+                                                    </div>
+                                                ))
+                                        ) : (
+                                            <p className="text-base-content/70">
+                                                Nenhum projeto com vínculo
+                                                aprovado.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
