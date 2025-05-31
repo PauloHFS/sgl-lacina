@@ -1,4 +1,4 @@
-import { ESTADOS } from '@/constants';
+import { ESTADOS, AREAS_ATUACAO, TECNOLOGIAS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Banco, PageProps } from '@/types';
@@ -6,6 +6,7 @@ import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import React, { FormEventHandler } from 'react';
 import { IMaskInput } from 'react-imask';
+import MultiSelect from '@/Components/MultiSelect';
 
 interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
@@ -48,8 +49,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
         linkedin_url: string;
         github_url: string;
         website_url: string;
-        area_atuacao: string;
-        tecnologias: string;
+        area_atuacao: string[];
+        tecnologias: string[];
     }>({
         foto_url: null,
         genero: '',
@@ -73,8 +74,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
         linkedin_url: '',
         github_url: '',
         website_url: '',
-        area_atuacao: '',
-        tecnologias: '',
+        area_atuacao: [],
+        tecnologias: [],
     });
 
     const { toast } = useToast();
@@ -88,6 +89,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
             cpf: data.cpf.replace(/\\D/g, ''),
             telefone: data.telefone.replace(/\\D/g, ''),
             rg: data.rg.replace(/\\D/g, ''),
+            area_atuacao: data.area_atuacao.join(', '),
+            tecnologias: data.tecnologias.join(', '),
         };
 
         post(route('profile.completarCadastro'), {
@@ -152,7 +155,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-2">
-                                                Foto de Perfil
+                                                Foto de Perfil*
                                             </span>
                                             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                                                 {/* Avatar Preview or Placeholder */}
@@ -255,7 +258,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Gênero
+                                                Gênero*
                                             </span>
                                             <select
                                                 id="genero"
@@ -296,7 +299,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Data de Nascimento
+                                                Data de Nascimento*
                                             </span>
                                             <input
                                                 id="data_nascimento"
@@ -324,7 +327,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Telefone
+                                                Telefone*
                                             </span>
 
                                             <IMaskInput
@@ -533,7 +536,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Endereço
+                                                Endereço*
                                             </span>
                                             <input
                                                 id="endereco"
@@ -560,7 +563,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Número
+                                                Número*
                                             </span>
                                             <input
                                                 id="numero"
@@ -640,7 +643,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Estado
+                                                Estado*
                                             </span>
                                             <select
                                                 id="estado"
@@ -679,7 +682,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Cidade
+                                                Cidade*
                                             </span>
                                             <input
                                                 id="cidade"
@@ -765,6 +768,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                placeholder='Ex: 1234 ou 12345'
                                                 required
                                             />
                                             {errors.agencia && (
@@ -997,56 +1001,28 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
 
                                     {/* Área de Atuação */}
                                     <div>
-                                        <label className="form-control w-full">
-                                            <span className="label-text mb-1">
-                                                Área de Atuação
-                                            </span>
-                                            <input
-                                                id="area_atuacao"
-                                                type="text"
-                                                className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
-                                                value={data.area_atuacao}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'area_atuacao',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Digite sua área de atuação..."
-                                            />
-                                            {errors.area_atuacao && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.area_atuacao}
-                                                </span>
-                                            )}
-                                        </label>
+                                        <MultiSelect
+                                            id="area_atuacao"
+                                            label="Área de Atuação"
+                                            options={AREAS_ATUACAO}
+                                            value={data.area_atuacao}
+                                            onChange={(value) => setData('area_atuacao', value)}
+                                            error={errors.area_atuacao}
+                                            placeholder="Selecione suas áreas de atuação..."
+                                        />
                                     </div>
 
                                     {/* Tecnologias */}
                                     <div>
-                                        <label className="form-control w-full">
-                                            <span className="label-text mb-1">
-                                                Tecnologias
-                                            </span>
-                                            <input
-                                                id="tecnologias"
-                                                type="text"
-                                                className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
-                                                value={data.tecnologias}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'tecnologias',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Digite as tecnologias que você domina..."
-                                            />
-                                            {errors.tecnologias && (
-                                                <span className="label-text-alt text-error">
-                                                    {errors.tecnologias}
-                                                </span>
-                                            )}
-                                        </label>
+                                        <MultiSelect
+                                            id="tecnologias"
+                                            label="Tecnologias"
+                                            options={TECNOLOGIAS}
+                                            value={data.tecnologias}
+                                            onChange={(value) => setData('tecnologias', value)}
+                                            error={errors.tecnologias}
+                                            placeholder="Selecione as tecnologias que você domina..."
+                                        />
                                     </div>
 
                                     {/* Botão */}
