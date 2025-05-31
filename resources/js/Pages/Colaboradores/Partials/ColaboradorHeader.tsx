@@ -36,7 +36,7 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                     curriculoLattesUrl={colaborador.curriculo_lattes_url}
                     linkedinUrl={colaborador.linkedin_url}
                     githubUrl={colaborador.github_url}
-                    figmaUrl={colaborador.website_url}
+                    websiteUrl={colaborador.website_url}
                     colaboradorName={colaborador.name}
                 />
             </div>

@@ -4,7 +4,7 @@ interface SocialLinksProps {
     curriculoLattesUrl?: string | null;
     linkedinUrl?: string | null;
     githubUrl?: string | null;
-    figmaUrl?: string | null;
+    websiteUrl?: string | null;
     colaboradorName: string;
 }
 
@@ -48,14 +48,20 @@ const GitHubIcon = () => (
     </svg>
 );
 
-const FigmaIcon = () => (
+const WebsiteIcon = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         className="mr-1 h-4 w-4"
-        fill="currentColor"
+        fill="none"
         viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
     >
-        <path d="M12 0c-2.761 0-5 2.239-5 5v2.5c0 .828.672 1.5 1.5 1.5s1.5-.672 1.5-1.5v-2.5c0-.828.672-1.5 1.5-1.5s1.5.672 1.5 1.5v5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5v-2.5c0-2.761-2.239-5-5-5s-5 2.239-5 5v5c0 2.761 2.239 5 5 5s5-2.239 5-5v-2.5c0-.828-.672-1.5-1.5-1.5s-1.5.672-1.5 1.5v2.5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5v-5c0-.828.672-1.5 1.5-1.5s1.5.672 1.5 1.5v2.5c0 2.761 2.239 5 5 5s5-2.239 5-5v-10c0-2.761-2.239-5-5-5z" />
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+        />
     </svg>
 );
 
@@ -64,7 +70,7 @@ export const SocialLinks: React.FC<SocialLinksProps> = React.memo(
         curriculoLattesUrl,
         linkedinUrl,
         githubUrl,
-        figmaUrl,
+        websiteUrl,
         colaboradorName,
     }) => (
         <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
@@ -104,16 +110,16 @@ export const SocialLinks: React.FC<SocialLinksProps> = React.memo(
                     GitHub
                 </a>
             )}
-            {figmaUrl && (
+            {websiteUrl && (
                 <a
-                    href={figmaUrl}
+                    href={websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-sm btn-accent"
-                    aria-label={`Figma de ${colaboradorName}`}
+                    aria-label={`Website de ${colaboradorName}`}
                 >
-                    <FigmaIcon />
-                    Figma
+                    <WebsiteIcon />
+                    Website
                 </a>
             )}
         </div>

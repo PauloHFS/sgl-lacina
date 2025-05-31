@@ -10,7 +10,7 @@
 
 ### Gestão de Colaboradores (Discentes, Externos, Docentes)
 
-- **RF04:** Discentes podem realizar seu pré-cadastro na plataforma, informando Nome, Email, Período de Entrada na Graduação, Período de Conclusão da Graduação, Links (LinkedIn, GitHub, Figma), Foto, Currículo, Área de Atuação e Tecnologias. (Feito)
+- **RF04:** Discentes podem realizar seu pré-cadastro na plataforma, informando Nome, Email, Período de Entrada na Graduação, Período de Conclusão da Graduação, Links (LinkedIn, GitHub, WebSite), Foto, Currículo, Área de Atuação e Tecnologias. (Feito)
 - **RF05:** Colaboradores podem solicitar inscrição em projetos informando os dados necessários. (Feito)
 - **RF06:** O primeiro cadastro deve exigir CPF, Nome, Email, Senha e Email do docente responsável pela avaliação do cadastro. (Feito)
 - **RF07:** Coordenadores de projeto (docentes) podem validar, editar ou rejeitar os cadastros. (Feito)

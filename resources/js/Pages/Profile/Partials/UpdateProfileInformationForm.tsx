@@ -515,7 +515,7 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.github_url} />
                 </div>
                 <div>
-                    <InputLabel htmlFor="website_url" value="Figma" />
+                    <InputLabel htmlFor="website_url" value="Website" />
                     <TextInput
                         id="website_url"
                         type="url"

@@ -587,6 +587,9 @@ export default function Show({
                                                             'PENDENTE'
                                                     }
                                                 />
+                                                <span className="label-text-alt">
+                                                    {`${vinculoData.carga_horaria_semanal ? vinculoData.carga_horaria_semanal * 4 : 0} horas/mês`}
+                                                </span>
                                                 {vinculoErrors.carga_horaria_semanal && (
                                                     <p className="text-error mt-1 text-xs">
                                                         {
@@ -856,6 +859,9 @@ export default function Show({
                                 max="40"
                                 required
                             />
+                            <span className="label-text-alt">
+                                {`${vinculoEditForm.data.carga_horaria_semanal ? Number(vinculoEditForm.data.carga_horaria_semanal) * 4 : 0} horas/mês`}
+                            </span>
                             <InputError
                                 message={
                                     vinculoEditForm.errors.carga_horaria_semanal

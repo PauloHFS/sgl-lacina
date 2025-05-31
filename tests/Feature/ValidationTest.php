@@ -198,7 +198,7 @@ test('validação de URLs deve aceitar formatos válidos', function () {
         'https://github.com/user',
         'https://linkedin.com/in/user',
         'http://example.com',
-        'https://www.figma.com/file/123',
+        'https://www.website.com',
     ];
 
     foreach ($urlsValidas as $url) {
