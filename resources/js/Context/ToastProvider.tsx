@@ -28,13 +28,15 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     return (
         <ToastContext.Provider value={{ toast }}>
             {children}
-            <div className="toast toast-top toast-end z-[100] flex flex-col gap-2 p-4">
-                {toasts.map((t) => (
-                    <div key={t.id} className={`alert alert-${t.type}`}>
-                        <span>{t.message}</span>
-                    </div>
-                ))}
-            </div>
+            {toasts.length > 0 && (
+                <div className="toast toast-top toast-end z-[100]">
+                    {toasts.map((t) => (
+                        <div key={t.id} className={`alert alert-${t.type}`}>
+                            <span>{t.message}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
         </ToastContext.Provider>
     );
 };
