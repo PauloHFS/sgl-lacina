@@ -176,13 +176,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl leading-tight font-semibold">
-                    Completar Cadastro
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <div className="py-12">
                 <Head title="Cadastro de Discente" />
 
@@ -190,6 +184,27 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                     <div className="card bg-base-100 shadow-lg">
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
+                                {/* Aviso de Completar Cadastro */}
+                                <div className="alert alert-info mb-6">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        className="h-6 w-6 shrink-0 stroke-current"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="m11.25 11.25.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                                        />
+                                    </svg>
+                                    <span>
+                                        Complete o seu cadastro antes de usar a
+                                        plataforma
+                                    </span>
+                                </div>
+
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     {/* Foto de Perfil */}
                                     <div>
