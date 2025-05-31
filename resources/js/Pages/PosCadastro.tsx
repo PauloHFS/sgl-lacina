@@ -5,7 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Banco, PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import React, { FormEventHandler, useState } from 'react';
+import React, { FormEventHandler, useEffect, useState } from 'react';
 import { IMaskInput } from 'react-imask';
 
 interface PosCadastroProps extends PageProps {
@@ -80,6 +80,26 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
 
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [countdown, setCountdown] = useState<number>(0);
+    const [isCountdownActive, setIsCountdownActive] = useState(false);
+
+    // Effect para gerenciar o temporizador
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+
+        if (isCountdownActive && countdown > 0) {
+            interval = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        } else if (countdown === 0) {
+            setIsCountdownActive(false);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isCountdownActive, countdown]);
 
     // Função para validar CPF
     const validarCPF = (cpf: string): boolean => {
@@ -116,19 +136,26 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        // Validar CPF antes de enviar
+        // Validar CPF antes de prosseguir
         if (!validarCPF(data.cpf)) {
             toast('Por favor, insira um CPF válido', 'error');
             setCpfValido(false);
             return;
         }
 
+        // Mostrar modal de confirmação e iniciar temporizador
+        setShowConfirmModal(true);
+        setCountdown(2);
+        setIsCountdownActive(true);
+    };
+
+    const confirmSubmit = () => {
         // Remover formatação do CPF e telefone antes de enviar
         const cleanedData = {
             ...data,
-            cpf: data.cpf.replace(/\\D/g, ''),
-            telefone: data.telefone.replace(/\\D/g, ''),
-            rg: data.rg.replace(/\\D/g, ''),
+            cpf: data.cpf.replace(/\D/g, ''),
+            telefone: data.telefone.replace(/\D/g, ''),
+            rg: data.rg.replace(/\D/g, ''),
             area_atuacao: data.area_atuacao.join(', '),
             tecnologias: data.tecnologias.join(', '),
         };
@@ -138,11 +165,23 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
             forceFormData: true,
             onSuccess: () => {
                 toast('Cadastro realizado com sucesso!', 'success');
+                setShowConfirmModal(false);
+                setCountdown(0);
+                setIsCountdownActive(false);
             },
             onError: () => {
                 toast('Erro ao realizar cadastro. Tente novamente.', 'error');
+                setShowConfirmModal(false);
+                setCountdown(0);
+                setIsCountdownActive(false);
             },
         });
+    };
+
+    const closeModal = () => {
+        setShowConfirmModal(false);
+        setCountdown(0);
+        setIsCountdownActive(false);
     };
 
     // TODO: travar os dados de endereço até fazer a request, depois libera achando ou não o cep
@@ -256,7 +295,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                             <input
                                                                 id="foto_url"
                                                                 type="file"
-                                                                accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
+                                                                accept="image/png, image/jpeg, image/webp"
                                                                 className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
                                                                 onChange={(
                                                                     e,
@@ -302,6 +341,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                                             '';
                                                                     }
                                                                 }}
+                                                                required
                                                             />
                                                             {errors.foto_url ? (
                                                                 <span className="label-text-alt text-error mt-1">
@@ -314,9 +354,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                                     Formatos
                                                                     aceitos:
                                                                     PNG, JPG,
-                                                                    GIF, WEBP,
-                                                                    HEIC. Máximo
-                                                                    2MB.
+                                                                    WEBP. Máximo
+                                                                    5MB.
                                                                 </span>
                                                             )}
                                                         </div>
@@ -462,6 +501,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                required
                                             >
                                                 <option value="" disabled>
                                                     Selecione o gênero...
@@ -506,6 +546,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                required
                                             />
                                             {errors.data_nascimento && (
                                                 <span className="label-text-alt text-error">
@@ -531,6 +572,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                     setData('telefone', value)
                                                 }
                                                 placeholder="+55 (00) 00000-0000"
+                                                required
                                             />
                                             {errors.telefone && (
                                                 <span className="label-text-alt text-error">
@@ -1283,6 +1325,46 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Confirmação */}
+            <dialog
+                className={`modal ${showConfirmModal ? 'modal-open' : ''}`}
+                onClose={closeModal}
+            >
+                <div className="modal-box">
+                    <h3 className="mb-4 text-lg font-bold">
+                        Confirmar Envio do Cadastro
+                    </h3>
+                    <p className="mb-6">
+                        Tem certeza de que deseja enviar seu cadastro? Após o
+                        envio, suas informações serão analisadas pela
+                        coordenação.
+                    </p>
+                    <div className="modal-action">
+                        <button
+                            className="btn btn-ghost"
+                            onClick={closeModal}
+                            disabled={processing}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={confirmSubmit}
+                            disabled={processing || countdown > 0}
+                        >
+                            {processing
+                                ? 'Enviando...'
+                                : countdown > 0
+                                  ? `Confirmar Envio (${countdown}s)`
+                                  : 'Confirmar Envio'}
+                        </button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button onClick={closeModal}>Fechar</button>
+                </form>
+            </dialog>
         </AuthenticatedLayout>
     );
 }

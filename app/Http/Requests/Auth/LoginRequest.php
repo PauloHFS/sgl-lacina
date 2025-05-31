@@ -80,6 +80,25 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'O campo email é obrigatório.',
+            'email.email' => 'Por favor, insira um endereço de email válido.',
+            'email.max' => 'O email não pode ter mais de 255 caracteres.',
+            'email.exists' => 'Não encontramos uma conta com este email.',
+            'password.required' => 'O campo senha é obrigatório.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.max' => 'A senha não pode ter mais de 255 caracteres.',
+            'remember.boolean' => 'O campo lembrar deve ser verdadeiro ou falso.',
+        ];
     }
 }
