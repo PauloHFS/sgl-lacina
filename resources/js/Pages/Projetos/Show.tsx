@@ -104,33 +104,48 @@ export default function Show({
             }
 
             return (
-                <div className="card bg-base-200 mt-4">
-                    <div className="card-body p-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                                Status do vínculo:
-                            </span>
-                            <span className={`badge ${statusClass} badge-sm`}>
-                                {statusText}
-                            </span>
-                        </div>
-                        <div className="mt-3 space-y-2">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">
-                                    Função:
+                <div className="card bg-base-200 mt-6 shadow">
+                    <div className="card-body">
+                        <h3 className="text-base-content mb-4 text-lg font-medium">
+                            Seu Vínculo Atual com Este Projeto
+                        </h3>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-base-content/70 text-sm font-medium">
+                                    Status do vínculo:
                                 </span>
-                                <span className="badge badge-outline badge-sm">
-                                    {usuarioVinculo.funcao}
+                                <span
+                                    className={`badge ${statusClass} badge-md`}
+                                >
+                                    {statusText}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">
-                                    Tipo de Vínculo:
-                                </span>
-                                <span className="badge badge-primary badge-sm">
-                                    {usuarioVinculo.tipo_vinculo}
-                                </span>
-                            </div>
+
+                            {(usuarioVinculo.funcao ||
+                                usuarioVinculo.tipo_vinculo) && (
+                                <div className="divider my-1"></div>
+                            )}
+
+                            {usuarioVinculo.funcao && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-base-content/70 text-sm font-medium">
+                                        Função:
+                                    </span>
+                                    <span className="badge badge-outline badge-md">
+                                        {usuarioVinculo.funcao}
+                                    </span>
+                                </div>
+                            )}
+                            {usuarioVinculo.tipo_vinculo && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-base-content/70 text-sm font-medium">
+                                        Tipo de Vínculo:
+                                    </span>
+                                    <span className="badge badge-primary badge-md">
+                                        {usuarioVinculo.tipo_vinculo}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -140,13 +155,7 @@ export default function Show({
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200">
-                    Detalhes do Projeto: {projeto.nome}
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title={`Projeto: ${projeto.nome}`} />
 
             <div className="py-12">

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Funcao, PageProps, StatusVinculoProjeto, TipoVinculo } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
 export default function Dashboard({
     projetos,
@@ -91,7 +91,7 @@ export default function Dashboard({
                     {/* Recent Projects */}
                     <div className="card bg-base-100 shadow">
                         <div className="card-body">
-                            <div className="mb-4 flex items-center justify-between">
+                            {/* <div className="mb-4 flex items-center justify-between">
                                 <h3 className="card-title">
                                     Histórico de Projetos
                                 </h3>
@@ -112,7 +112,7 @@ export default function Dashboard({
                                         Gerar Relatório por Email
                                     </button>
                                 </form>
-                            </div>
+                            </div> */}
                             <div className="overflow-x-auto">
                                 <table className="table-zebra table">
                                     <thead>
