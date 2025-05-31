@@ -54,24 +54,18 @@ export default function Authenticated({
                                 role="button"
                                 className="btn btn-ghost btn-circle avatar"
                             >
-                                {user.foto_url ? (
-                                    <div className="w-10 rounded-full">
+                                <div className="avatar">
+                                    <div className="mask mask-squircle h-10 w-10">
                                         <img
-                                            src={`/storage/${user.foto_url}`}
-                                            alt={user.name}
+                                            src={
+                                                user.foto_url
+                                                    ? `/storage/${user.foto_url}`
+                                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
+                                            }
+                                            alt={`Foto de ${user.name}`}
                                         />
                                     </div>
-                                ) : (
-                                    <div className="avatar placeholder">
-                                        <div className="bg-neutral text-neutral-content w-10 rounded-full">
-                                            <span className="text-sm font-medium">
-                                                {user.name
-                                                    .charAt(0)
-                                                    .toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
+                                </div>
                             </div>
                             <ul
                                 tabIndex={0}
@@ -164,16 +158,11 @@ export default function Authenticated({
                 <aside className="bg-base-100 border-base-200 flex min-h-full w-80 flex-col border-r shadow-xl">
                     {/* Logo Section */}
                     <div className="border-base-200 border-b p-6">
-                        <Link href="/" className="flex items-center gap-3">
-                            <ApplicationLogo className="h-10 w-auto" />
-                            <div>
-                                <h1 className="text-base-content text-xl font-bold">
-                                    LACINA
-                                </h1>
-                                <p className="text-base-content/70 text-sm">
-                                    Sistema de RH
-                                </p>
-                            </div>
+                        <Link
+                            href="/"
+                            className="flex items-center justify-center gap-3"
+                        >
+                            <ApplicationLogo className="h-13 w-auto" />
                         </Link>
                     </div>
 
@@ -309,24 +298,19 @@ export default function Authenticated({
                     {/* User Section */}
                     <div className="border-base-200 border-t p-4">
                         <div className="mb-4 flex items-center gap-3">
-                            {user.foto_url ? (
-                                <div className="avatar">
-                                    <div className="w-12 rounded-full">
-                                        <img
-                                            src={`/storage/${user.foto_url}`}
-                                            alt={user.name}
-                                        />
-                                    </div>
+                            {' '}
+                            <div className="avatar">
+                                <div className="mask mask-squircle h-12 w-12">
+                                    <img
+                                        src={
+                                            user.foto_url
+                                                ? `/storage/${user.foto_url}`
+                                                : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
+                                        }
+                                        alt={`Foto de ${user.name}`}
+                                    />
                                 </div>
-                            ) : (
-                                <div className="avatar placeholder">
-                                    <div className="bg-neutral text-neutral-content w-12 rounded-full">
-                                        <span className="text-lg font-semibold">
-                                            {user.name.charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
+                            </div>
                             <div className="min-w-0 flex-1">
                                 <p className="text-base-content truncate text-sm font-semibold">
                                     {user.name}

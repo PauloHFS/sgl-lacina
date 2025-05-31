@@ -189,28 +189,18 @@ export default function Index({ colaboradores }: IndexProps) {
                                                             key={colaborador.id}
                                                         >
                                                             <td>
-                                                                {colaborador.foto_url ? (
-                                                                    <div className="avatar">
-                                                                        <div className="w-12 rounded-full">
-                                                                            <img
-                                                                                src={`/storage/${colaborador.foto_url}`}
-                                                                                alt={`Foto de ${colaborador.name}`}
-                                                                            />
-                                                                        </div>
+                                                                <div className="avatar">
+                                                                    <div className="mask mask-squircle h-12 w-12">
+                                                                        <img
+                                                                            src={
+                                                                                colaborador.foto_url
+                                                                                    ? `/storage/${colaborador.foto_url}`
+                                                                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(colaborador.name)}&background=random&color=fff`
+                                                                            }
+                                                                            alt={`Foto de ${colaborador.name}`}
+                                                                        />
                                                                     </div>
-                                                                ) : (
-                                                                    <div className="avatar avatar-placeholder">
-                                                                        <div className="bg-neutral text-neutral-content w-12 rounded-full">
-                                                                            <span className="text">
-                                                                                {colaborador.name
-                                                                                    .charAt(
-                                                                                        0,
-                                                                                    )
-                                                                                    .toUpperCase()}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                                </div>
                                                             </td>
                                                             <td>
                                                                 <span className="text-base-content font-medium">
