@@ -207,106 +207,243 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
 
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     {/* Foto de Perfil */}
-                                    <div>
-                                        <label className="form-control w-full">
-                                            <span className="label-text mb-2">
+                                    <div className="col-span-2">
+                                        <div className="card bg-base-200 p-6">
+                                            <h3 className="mb-4 text-lg font-semibold">
                                                 Foto de Perfil*
-                                            </span>
-                                            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                                                {/* Avatar Preview or Placeholder */}
-                                                {data.foto_url ? (
-                                                    <div className="avatar">
-                                                        <div className="ring-primary ring-offset-base-100 h-24 w-24 rounded-lg ring ring-offset-2">
-                                                            <img
-                                                                src={URL.createObjectURL(
-                                                                    data.foto_url,
-                                                                )}
-                                                                alt="Preview da Foto de Perfil"
-                                                                className="h-full w-full rounded-lg object-cover"
+                                            </h3>
+
+                                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                                {/* Upload e Preview */}
+                                                <div>
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        {/* Avatar Preview */}
+                                                        {data.foto_url ? (
+                                                            <div className="avatar">
+                                                                <div className="ring-primary ring-offset-base-100 h-32 w-32 rounded-lg ring ring-offset-2">
+                                                                    <img
+                                                                        src={URL.createObjectURL(
+                                                                            data.foto_url,
+                                                                        )}
+                                                                        alt="Preview da Foto de Perfil"
+                                                                        className="h-full w-full rounded-lg object-cover"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="bg-base-100 ring-base-300 flex aspect-square h-32 w-32 items-center justify-center rounded-lg ring-1">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={
+                                                                        1.5
+                                                                    }
+                                                                    stroke="currentColor"
+                                                                    className="text-base-content h-16 w-16 opacity-30"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                        )}
+
+                                                        {/* File Input */}
+                                                        <div className="w-full">
+                                                            <input
+                                                                id="foto_url"
+                                                                type="file"
+                                                                accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
+                                                                className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
+                                                                onChange={(
+                                                                    e,
+                                                                ) => {
+                                                                    if (
+                                                                        e.target
+                                                                            .files &&
+                                                                        e.target
+                                                                            .files[0]
+                                                                    ) {
+                                                                        const file =
+                                                                            e
+                                                                                .target
+                                                                                .files[0];
+                                                                        if (
+                                                                            file.size >
+                                                                            2048 *
+                                                                                1024
+                                                                        ) {
+                                                                            // 2MB
+                                                                            toast(
+                                                                                'A foto não pode ser maior que 2MB.',
+                                                                                'error',
+                                                                            );
+                                                                            setData(
+                                                                                'foto_url',
+                                                                                null,
+                                                                            );
+                                                                            e.target.value =
+                                                                                ''; // Limpa o campo de input
+                                                                        } else {
+                                                                            setData(
+                                                                                'foto_url',
+                                                                                file,
+                                                                            );
+                                                                        }
+                                                                    } else {
+                                                                        setData(
+                                                                            'foto_url',
+                                                                            null,
+                                                                        ); // Limpa se nenhum arquivo for selecionado
+                                                                        e.target.value =
+                                                                            '';
+                                                                    }
+                                                                }}
                                                             />
+                                                            {errors.foto_url ? (
+                                                                <span className="label-text-alt text-error mt-1">
+                                                                    {
+                                                                        errors.foto_url
+                                                                    }
+                                                                </span>
+                                                            ) : (
+                                                                <span className="label-text-alt mt-1">
+                                                                    Formatos
+                                                                    aceitos:
+                                                                    PNG, JPG,
+                                                                    GIF, WEBP,
+                                                                    HEIC. Máximo
+                                                                    2MB.
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                ) : (
-                                                    <div className="bg-base-200 ring-base-300 flex aspect-square h-24 w-24 items-center justify-center rounded-lg ring-1">
+                                                </div>
+
+                                                {/* Diretrizes da Foto */}
+                                                <div>
+                                                    <h4 className="mb-3 text-base font-medium">
+                                                        Diretrizes para uma boa
+                                                        foto:
+                                                    </h4>
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="badge badge-success badge-sm">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    className="h-3 w-3 stroke-current"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M5 13l4 4L19 7"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-sm">
+                                                                Foto com roupa
+                                                                adequada/profissional
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="badge badge-success badge-sm">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    className="h-3 w-3 stroke-current"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M5 13l4 4L19 7"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-sm">
+                                                                Foto apenas do
+                                                                rosto e ombros
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="badge badge-success badge-sm">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    className="h-3 w-3 stroke-current"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M5 13l4 4L19 7"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-sm">
+                                                                Fundo liso ou
+                                                                neutro
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="badge badge-success badge-sm">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    className="h-3 w-3 stroke-current"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M5 13l4 4L19 7"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-sm">
+                                                                Boa iluminação
+                                                                natural ou
+                                                                artificial
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="alert alert-warning mt-4">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
+                                                            className="h-4 w-4 shrink-0 stroke-current"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="text-base-content flex h-12 w-12 opacity-30"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
                                                                 strokeLinejoin="round"
-                                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                                                strokeWidth="2"
+                                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
                                                             />
                                                         </svg>
+                                                        <span className="text-xs">
+                                                            Esta foto será usada
+                                                            em documentos
+                                                            oficiais e no
+                                                            sistema.
+                                                        </span>
                                                     </div>
-                                                )}
-
-                                                {/* File Input and messages */}
-                                                <div className="w-full flex-grow sm:w-auto">
-                                                    <input
-                                                        id="foto_url"
-                                                        type="file"
-                                                        accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
-                                                        className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
-                                                        onChange={(e) => {
-                                                            if (
-                                                                e.target
-                                                                    .files &&
-                                                                e.target
-                                                                    .files[0]
-                                                            ) {
-                                                                const file =
-                                                                    e.target
-                                                                        .files[0];
-                                                                if (
-                                                                    file.size >
-                                                                    2048 * 1024
-                                                                ) {
-                                                                    // 2MB
-                                                                    toast(
-                                                                        'A foto não pode ser maior que 2MB.',
-                                                                        'error',
-                                                                    );
-                                                                    setData(
-                                                                        'foto_url',
-                                                                        null,
-                                                                    );
-                                                                    e.target.value =
-                                                                        ''; // Limpa o campo de input
-                                                                } else {
-                                                                    setData(
-                                                                        'foto_url',
-                                                                        file,
-                                                                    );
-                                                                }
-                                                            } else {
-                                                                setData(
-                                                                    'foto_url',
-                                                                    null,
-                                                                ); // Limpa se nenhum arquivo for selecionado
-                                                                e.target.value =
-                                                                    '';
-                                                            }
-                                                        }}
-                                                    />
-                                                    {errors.foto_url ? (
-                                                        <span className="label-text-alt text-error mt-1">
-                                                            {errors.foto_url}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="label-text-alt mt-1">
-                                                            Formatos aceitos:
-                                                            PNG, JPG, GIF, WEBP,
-                                                            HEIC.
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </div>
-                                        </label>
+                                        </div>
                                     </div>
 
                                     {/* Gênero */}
