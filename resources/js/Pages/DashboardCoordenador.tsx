@@ -1,11 +1,43 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Funcao, StatusVinculoProjeto, TipoVinculo } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+
+type ProjetoAtivoType = {
+    id: string;
+    nome: string;
+    descricao: string | null;
+    data_inicio: string;
+    data_termino: string | null;
+    cliente: string;
+    slack_url: string | null;
+    discord_url: string | null;
+    board_url: string | null;
+    git_url: string | null;
+    tipo: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    vinculo: {
+        usuario_id: string;
+        projeto_id: string;
+        id: string;
+        tipo_vinculo: TipoVinculo;
+        funcao: Funcao;
+        status: StatusVinculoProjeto;
+        carga_horaria_semanal: number;
+        data_inicio: string;
+        data_fim: string | null;
+        created_at: string;
+        updated_at: string;
+    };
+};
 
 type DashboardProps = {
     projetosCount: number;
     usuariosCount: number;
     solicitacoesPendentes: number;
-    ultimosProjetos: { id: number; nome: string; cliente: string }[];
+    ultimosProjetos: { id: string; nome: string; cliente: string }[];
+    projetosAtivos: ProjetoAtivoType[];
 };
 
 export default function Dashboard({
@@ -13,7 +45,12 @@ export default function Dashboard({
     usuariosCount = 0,
     solicitacoesPendentes = 0,
     ultimosProjetos = [],
+    projetosAtivos = [],
 }: DashboardProps) {
+    console.log('DashboardCoordenador', {
+        projetosAtivos,
+    });
+
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
@@ -68,30 +105,66 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <div className="card bg-base-100 shadow">
-                        <div className="card-body">
-                            <h3 className="card-title mb-4">
-                                Últimos projetos cadastrados
-                            </h3>
-                            {ultimosProjetos.length > 0 ? (
-                                <ul className="list">
-                                    {ultimosProjetos.map((projeto) => (
-                                        <li
-                                            key={projeto.id}
-                                            className="list-row flex justify-between"
-                                        >
-                                            <span>{projeto.nome}</span>
-                                            <span className="text-base-content/60">
-                                                {projeto.cliente}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <span className="text-base-content/60">
-                                    Nenhum projeto cadastrado recentemente.
-                                </span>
-                            )}
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div className="card bg-base-100 shadow md:col-span-2">
+                            <div className="card-body">
+                                <h3 className="card-title mb-4">
+                                    Seus projetos ativos
+                                </h3>
+                                {projetosAtivos.length > 0 ? (
+                                    <ul className="list">
+                                        {projetosAtivos.map((projeto) => (
+                                            <Link
+                                                as="li"
+                                                key={projeto.id}
+                                                className="list-row hover:bg-base-200 flex items-center justify-between rounded p-3 transition-colors"
+                                                href={`/projeto/${projeto.id}`}
+                                                data-testid={`projeto-${projeto.id}`}
+                                                title={`Acessar projeto: ${projeto.nome}`}
+                                                aria-label={`Acessar projeto: ${projeto.nome}`}
+                                                tabIndex={0}
+                                                role="link"
+                                            >
+                                                <span>{projeto.nome}</span>
+                                                <span className="text-base-content/60">
+                                                    {projeto.cliente}
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span className="text-base-content/60">
+                                        Nenhum projeto ativo no momento.
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="card bg-base-100 shadow">
+                            <div className="card-body flex-1">
+                                <h3 className="card-title mb-4">
+                                    Últimos projetos cadastrados
+                                </h3>
+                                {ultimosProjetos.length > 0 ? (
+                                    <ul className="list">
+                                        {ultimosProjetos.map((projeto) => (
+                                            <li
+                                                key={projeto.id}
+                                                className="list-row flex justify-between"
+                                            >
+                                                <span>{projeto.nome}</span>
+                                                <span className="text-base-content/60">
+                                                    {projeto.cliente}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span className="text-base-content/60">
+                                        Nenhum projeto cadastrado recentemente.
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
