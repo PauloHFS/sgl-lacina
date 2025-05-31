@@ -2,6 +2,7 @@ import { ESTADOS, GENEROS } from '@/constants';
 import React from 'react';
 import { IMaskInput } from 'react-imask';
 import { ColaboradorData, ShowPageProps } from '../Show';
+import { CamposExtrasSection } from './CamposExtrasSection';
 import { InfoItem } from './InfoItem';
 
 // Define types for setData and errors more generically, aligned with Inertia's useForm
@@ -75,7 +76,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     label="Conta Bancária"
                     value={colaborador.conta_bancaria}
                 />
-                                
+
                 <InfoItem label="CEP" value={colaborador.cep} />
                 <InfoItem label="Endereço" value={colaborador.endereco} />
                 <InfoItem label="Número" value={colaborador.numero} />
@@ -83,7 +84,28 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 <InfoItem label="Bairro" value={colaborador.bairro} />
                 <InfoItem label="Cidade" value={colaborador.cidade} />
                 <InfoItem label="UF" value={colaborador.uf} />
-                
+
+                {/* Campos Extras */}
+                {colaborador.campos_extras &&
+                    Object.keys(colaborador.campos_extras).length > 0 && (
+                        <>
+                            <div className="md:col-span-2">
+                                <h3 className="mb-2 text-lg font-semibold">
+                                    Campos Extras
+                                </h3>
+                            </div>
+                            {Object.entries(colaborador.campos_extras).map(
+                                ([key, value]) => (
+                                    <InfoItem
+                                        key={key}
+                                        label={key}
+                                        value={value || '-'}
+                                    />
+                                ),
+                            )}
+                        </>
+                    )}
+
                 {/*
                 <InfoItem
                     label="Área de Atuação"
@@ -570,9 +592,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
             {/* Estado */}
             <div>
                 <label className="label" htmlFor="estado">
-                    <span className="label-text font-semibold">
-                        Estado:
-                    </span>
+                    <span className="label-text font-semibold">Estado:</span>
                 </label>
                 <select
                     id="estado"
@@ -728,6 +748,23 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     )}
                 </div>
             </div> */}
+
+            {/* Campos Extras */}
+            <div className="md:col-span-2">
+                <CamposExtrasSection
+                    campos_extras={data.campos_extras || {}}
+                    onCamposChange={(campos: Record<string, string>) =>
+                        setData('campos_extras', campos)
+                    }
+                    errors={
+                        typeof errors.campos_extras === 'object'
+                            ? errors.campos_extras
+                            : undefined
+                    }
+                    processing={processing}
+                    canEdit={canEdit}
+                />
+            </div>
 
             {/* Actions */}
             {canEdit && (
