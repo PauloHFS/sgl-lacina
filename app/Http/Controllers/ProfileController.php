@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusCadastro;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Rules\ValidCpf;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -107,7 +108,7 @@ class ProfileController extends Controller
             'data_nascimento' => 'required|date',
 
             // Documentos
-            'cpf' => 'required|string|max:14|unique:users,cpf,' . $user->id,
+            'cpf' => ['required', 'string', 'max:14', new ValidCpf(), 'unique:users,cpf,' . $user->id],
             'rg' => 'required|string|max:16|unique:users,rg,' . $user->id, // Alterado de max:12 para max:16
             'uf_rg' => 'required|string|max:2',
             'orgao_emissor_rg' => 'required|string|max:255',

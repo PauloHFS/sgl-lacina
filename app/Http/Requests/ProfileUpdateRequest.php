@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Rules\ValidCpf;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -32,7 +33,7 @@ class ProfileUpdateRequest extends FormRequest
             'genero' => 'required|string|max:50',
             'data_nascimento' => 'required|date',
             // Documentos
-            'cpf' => 'required|string|max:14|unique:users,cpf,' . Auth::user()->id,
+            'cpf' => ['required', 'string', 'max:14', new ValidCpf(), Rule::unique(User::class, 'cpf')->ignore(Auth::user()->id)],
             'rg' => 'required|string|min:6|max:16|unique:users,rg,' . Auth::user()->id,
             'uf_rg' => 'required|string|max:2',
             'orgao_emissor_rg' => 'required|string|max:255',

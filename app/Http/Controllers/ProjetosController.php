@@ -59,9 +59,9 @@ class ProjetosController extends Controller
     ];
 
     $finalSelectColumns = [
-      'projetos.id', 
-      'projetos.nome', 
-      'projetos.cliente', 
+      'projetos.id',
+      'projetos.nome',
+      'projetos.cliente',
       'projetos.tipo',
       'up_status.status as user_status',
       'up_status.tipo_vinculo as user_tipo_vinculo'

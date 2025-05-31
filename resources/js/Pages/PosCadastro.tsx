@@ -1,12 +1,12 @@
-import { ESTADOS, AREAS_ATUACAO, TECNOLOGIAS } from '@/constants';
+import MultiSelect from '@/Components/MultiSelect';
+import { AREAS_ATUACAO, ESTADOS, TECNOLOGIAS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Banco, PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import React, { FormEventHandler } from 'react';
+import React, { FormEventHandler, useState } from 'react';
 import { IMaskInput } from 'react-imask';
-import MultiSelect from '@/Components/MultiSelect';
 
 interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
@@ -79,9 +79,49 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
     });
 
     const { toast } = useToast();
+    const [cpfValido, setCpfValido] = useState<boolean | null>(null);
+
+    // Função para validar CPF
+    const validarCPF = (cpf: string): boolean => {
+        // Remove formatação
+        const cpfLimpo = cpf.replace(/\D/g, '');
+
+        // Verifica se tem 11 dígitos
+        if (cpfLimpo.length !== 11) return false;
+
+        // Verifica se todos os dígitos são iguais
+        if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
+
+        // Validação do primeiro dígito verificador
+        let soma = 0;
+        for (let i = 0; i < 9; i++) {
+            soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
+        }
+        let resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpfLimpo.charAt(9))) return false;
+
+        // Validação do segundo dígito verificador
+        soma = 0;
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
+        }
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpfLimpo.charAt(10))) return false;
+
+        return true;
+    };
 
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
+
+        // Validar CPF antes de enviar
+        if (!validarCPF(data.cpf)) {
+            toast('Por favor, insira um CPF válido', 'error');
+            setCpfValido(false);
+            return;
+        }
 
         // Remover formatação do CPF e telefone antes de enviar
         const cleanedData = {
@@ -364,11 +404,36 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             <IMaskInput
                                                 id="cpf"
                                                 mask="000.000.000-00"
-                                                className={`input input-bordered w-full ${errors.cpf ? 'input-error' : ''}`}
+                                                className={`input input-bordered w-full ${
+                                                    errors.cpf
+                                                        ? 'input-error'
+                                                        : cpfValido === false
+                                                          ? 'input-error'
+                                                          : cpfValido === true
+                                                            ? 'input-success'
+                                                            : ''
+                                                }`}
                                                 value={data.cpf}
-                                                onAccept={(value: string) =>
-                                                    setData('cpf', value)
-                                                }
+                                                onAccept={(value: string) => {
+                                                    setData('cpf', value);
+
+                                                    // Validar CPF em tempo real
+                                                    if (value.length === 14) {
+                                                        // CPF formatado tem 14 caracteres
+                                                        const isValid =
+                                                            validarCPF(value);
+                                                        setCpfValido(isValid);
+
+                                                        if (!isValid) {
+                                                            toast(
+                                                                'CPF inválido',
+                                                                'error',
+                                                            );
+                                                        }
+                                                    } else {
+                                                        setCpfValido(null);
+                                                    }
+                                                }}
                                                 required
                                             />
                                             {errors.cpf && (
@@ -376,6 +441,18 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                     {errors.cpf}
                                                 </span>
                                             )}
+                                            {!errors.cpf &&
+                                                cpfValido === false && (
+                                                    <span className="label-text-alt text-error">
+                                                        CPF inválido
+                                                    </span>
+                                                )}
+                                            {!errors.cpf &&
+                                                cpfValido === true && (
+                                                    <span className="label-text-alt text-success">
+                                                        CPF válido
+                                                    </span>
+                                                )}
                                         </label>
                                     </div>
 
@@ -437,7 +514,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                             key={orgao.sigla}
                                                             value={orgao.sigla}
                                                         >
-                                                            {orgao.sigla} - {orgao.nome}
+                                                            {orgao.sigla} -{' '}
+                                                            {orgao.nome}
                                                         </option>
                                                     ),
                                                 )}
@@ -768,7 +846,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
-                                                placeholder='Ex: 1234 ou 12345'
+                                                placeholder="Ex: 1234 ou 12345"
                                                 required
                                             />
                                             {errors.agencia && (
@@ -1010,7 +1088,9 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             label="Área de Atuação"
                                             options={AREAS_ATUACAO}
                                             value={data.area_atuacao}
-                                            onChange={(value) => setData('area_atuacao', value)}
+                                            onChange={(value) =>
+                                                setData('area_atuacao', value)
+                                            }
                                             error={errors.area_atuacao}
                                             placeholder="Selecione suas áreas de atuação..."
                                             maxSelections={3}
@@ -1024,7 +1104,9 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             label="Tecnologias"
                                             options={TECNOLOGIAS}
                                             value={data.tecnologias}
-                                            onChange={(value) => setData('tecnologias', value)}
+                                            onChange={(value) =>
+                                                setData('tecnologias', value)
+                                            }
                                             error={errors.tecnologias}
                                             placeholder="Selecione as tecnologias que você domina..."
                                             maxSelections={5}
