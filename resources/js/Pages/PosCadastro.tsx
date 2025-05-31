@@ -1009,6 +1009,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             onChange={(value) => setData('area_atuacao', value)}
                                             error={errors.area_atuacao}
                                             placeholder="Selecione suas áreas de atuação..."
+                                            maxSelections={3}
                                         />
                                     </div>
 
@@ -1022,6 +1023,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             onChange={(value) => setData('tecnologias', value)}
                                             error={errors.tecnologias}
                                             placeholder="Selecione as tecnologias que você domina..."
+                                            maxSelections={5}
                                         />
                                     </div>
 

@@ -9,6 +9,7 @@ interface MultiSelectProps {
     error?: string;
     placeholder?: string;
     className?: string;
+    maxSelections?: number;
 }
 
 export default function MultiSelect({
@@ -20,6 +21,7 @@ export default function MultiSelect({
     error,
     placeholder = 'Selecione opções...',
     className = '',
+    maxSelections,
 }: MultiSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -32,6 +34,11 @@ export default function MultiSelect({
 
     const handleSelect = (option: string) => {
         if (!value.includes(option)) {
+            if (maxSelections && value.length >= maxSelections) {
+                setSearchTerm('');
+                setIsOpen(false);
+                return;
+            }
             onChange([...value, option]);
         }
         setSearchTerm('');
