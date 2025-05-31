@@ -123,13 +123,7 @@ export default function MeuHorario() {
     }, [data.horarios]);
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200">
-                    Meus Horários
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Meus Horários" />
 
             <div className="py-12">

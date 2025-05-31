@@ -43,17 +43,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 
     // Rota para a página de horários (mock)
     Route::get('/meus-horarios', function () {
-        // Mock de dados de autenticação, substitua pelo real quando integrado
-        $mockAuthUser = new class {
-            public $user;
-            public function __construct()
-            {
-                $this->user = (object)['name' => 'Usuário Mock', 'email' => 'mock@example.com']; // Simula um usuário logado
-            }
-        };
-        return Inertia::render('Horarios/MeuHorario', [
-            'auth' => $mockAuthUser, // Passa o mock de autenticação para o componente
-        ]);
+        return Inertia::render('Horarios/MeuHorario');
     })->name('horarios.meus');
 
 
