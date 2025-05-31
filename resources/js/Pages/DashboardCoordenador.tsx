@@ -1,3 +1,4 @@
+import Pagination, { Paginated } from '@/Components/Paggination';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Funcao, StatusVinculoProjeto, TipoVinculo } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -37,7 +38,7 @@ type DashboardProps = {
     usuariosCount: number;
     solicitacoesPendentes: number;
     ultimosProjetos: { id: string; nome: string; cliente: string }[];
-    projetosAtivos: ProjetoAtivoType[];
+    projetosAtivos: Paginated<ProjetoAtivoType>;
 };
 
 export default function Dashboard({
@@ -45,7 +46,21 @@ export default function Dashboard({
     usuariosCount = 0,
     solicitacoesPendentes = 0,
     ultimosProjetos = [],
-    projetosAtivos = [],
+    projetosAtivos = {
+        data: [],
+        current_page: 1,
+        first_page_url: '',
+        from: 0,
+        last_page: 1,
+        last_page_url: '',
+        links: [],
+        next_page_url: null,
+        path: '',
+        per_page: 10,
+        prev_page_url: null,
+        to: 0,
+        total: 0,
+    },
 }: DashboardProps) {
     console.log('DashboardCoordenador', {
         projetosAtivos,
@@ -111,27 +126,42 @@ export default function Dashboard({
                                 <h3 className="card-title mb-4">
                                     Seus projetos ativos
                                 </h3>
-                                {projetosAtivos.length > 0 ? (
-                                    <ul className="list">
-                                        {projetosAtivos.map((projeto) => (
-                                            <Link
-                                                as="li"
-                                                key={projeto.id}
-                                                className="list-row hover:bg-base-200 flex items-center justify-between rounded p-3 transition-colors"
-                                                href={`/projeto/${projeto.id}`}
-                                                data-testid={`projeto-${projeto.id}`}
-                                                title={`Acessar projeto: ${projeto.nome}`}
-                                                aria-label={`Acessar projeto: ${projeto.nome}`}
-                                                tabIndex={0}
-                                                role="link"
-                                            >
-                                                <span>{projeto.nome}</span>
-                                                <span className="text-base-content/60">
-                                                    {projeto.cliente}
-                                                </span>
-                                            </Link>
-                                        ))}
-                                    </ul>
+                                {projetosAtivos.data.length > 0 ? (
+                                    <>
+                                        <ul className="list">
+                                            {projetosAtivos.data.map(
+                                                (projeto: ProjetoAtivoType) => (
+                                                    <Link
+                                                        as="li"
+                                                        key={projeto.id}
+                                                        className="list-row hover:bg-base-200 flex cursor-pointer items-center justify-between rounded p-3 transition-colors"
+                                                        href={`/projeto/${projeto.id}`}
+                                                        data-testid={`projeto-${projeto.id}`}
+                                                        title={`Acessar projeto: ${projeto.nome}`}
+                                                        aria-label={`Acessar projeto: ${projeto.nome}`}
+                                                        tabIndex={0}
+                                                        role="link"
+                                                    >
+                                                        <span>
+                                                            {projeto.nome}
+                                                        </span>
+                                                        <span className="text-base-content/60">
+                                                            {projeto.cliente}
+                                                        </span>
+                                                    </Link>
+                                                ),
+                                            )}
+                                        </ul>
+
+                                        {/* Paginação dos projetos ativos */}
+                                        {projetosAtivos.last_page > 1 && (
+                                            <div className="mt-4">
+                                                <Pagination
+                                                    paginated={projetosAtivos}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <span className="text-base-content/60">
                                         Nenhum projeto ativo no momento.
@@ -148,15 +178,22 @@ export default function Dashboard({
                                 {ultimosProjetos.length > 0 ? (
                                     <ul className="list">
                                         {ultimosProjetos.map((projeto) => (
-                                            <li
+                                            <Link
+                                                as="li"
+                                                href={`/projeto/${projeto.id}`}
+                                                data-testid={`ultimo-projeto-${projeto.id}`}
+                                                aria-label={`Acessar projeto: ${projeto.nome}`}
+                                                tabIndex={0}
+                                                role="link"
+                                                title={`Acessar projeto: ${projeto.nome}`}
+                                                className="list-row hover:bg-base-200 flex cursor-pointer items-center justify-between rounded p-3 transition-colors"
                                                 key={projeto.id}
-                                                className="list-row flex justify-between"
                                             >
                                                 <span>{projeto.nome}</span>
                                                 <span className="text-base-content/60">
                                                     {projeto.cliente}
                                                 </span>
-                                            </li>
+                                            </Link>
                                         ))}
                                     </ul>
                                 ) : (

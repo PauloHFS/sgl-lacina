@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use App\Models\Projeto;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -42,11 +44,14 @@ class DashboardController extends Controller
       ->get(['id', 'nome', 'cliente'])
       ->toArray();
 
+    $projetosAtivos = Auth::user()->projetos()->paginate(10);
+
     return Inertia::render('DashboardCoordenador', [
       'projetosCount' => $projetosCount,
       'usuariosCount' => $usuariosCount,
       'solicitacoesPendentes' => $solicitacoesPendentes,
       'ultimosProjetos' => $ultimosProjetos,
+      'projetosAtivos' => $projetosAtivos,
     ]);
   }
 }
