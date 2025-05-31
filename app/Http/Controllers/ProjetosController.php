@@ -34,6 +34,12 @@ class ProjetosController extends Controller
       });
     }
 
+    // Join com usuario_projeto para obter informações do vínculo do usuário logado
+    $projetosQuery->leftJoin('usuario_projeto as up_status', function ($join) use ($user) {
+      $join->on('projetos.id', '=', 'up_status.projeto_id')
+        ->where('up_status.usuario_id', $user->id);
+    });
+
     $selectRawCase = "CASE up_order.status " .
       "WHEN '" . StatusVinculoProjeto::APROVADO->value . "' THEN 1 " .
       "WHEN '" . StatusVinculoProjeto::PENDENTE->value . "' THEN 2 " .
@@ -52,7 +58,14 @@ class ProjetosController extends Controller
       ]
     ];
 
-    $finalSelectColumns = ['projetos.id', 'projetos.nome', 'projetos.cliente', 'projetos.tipo'];
+    $finalSelectColumns = [
+      'projetos.id', 
+      'projetos.nome', 
+      'projetos.cliente', 
+      'projetos.tipo',
+      'up_status.status as user_status',
+      'up_status.tipo_vinculo as user_tipo_vinculo'
+    ];
 
     if (isset($tabConfigs[$tab])) {
       $config = $tabConfigs[$tab];

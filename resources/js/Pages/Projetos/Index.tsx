@@ -1,14 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps, TipoProjeto } from '@/types';
+import {
+    PageProps,
+    StatusVinculoProjeto,
+    TipoProjeto,
+    TipoVinculo,
+} from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
 type Projeto = {
-    id: string; // Changed from number to string to match controller and database schema
+    id: string;
     nome: string;
     cliente: string;
     tipo: TipoProjeto;
+    user_status: StatusVinculoProjeto | null;
+    user_tipo_vinculo: TipoVinculo | null;
 };
 
 type QueryParams = {
@@ -33,8 +40,6 @@ export default function Projetos({
     );
 
     useEffect(() => {
-        // Only make a request if debouncedSearchValue or activeTab has actually changed
-        // and is different from the initial queryparams.
         if (
             debouncedSearchValue !== (queryparams.search || '') ||
             activeTab !== (queryparams.tab || 'todos')
@@ -47,7 +52,6 @@ export default function Projetos({
         }
     }, [debouncedSearchValue, activeTab, queryparams.search, queryparams.tab]);
 
-    // Effect to sync local state if queryparams change from external navigation/reload
     useEffect(() => {
         setSearchValue(queryparams.search || '');
         setActiveTab(queryparams.tab || 'todos');
@@ -61,7 +65,6 @@ export default function Projetos({
         setActiveTab(tab);
     };
 
-    // filteredProjetos is directly from props, controller handles filtering
     const getBadgeColor = (tipo: TipoProjeto) => {
         const badgeColors: { [key in TipoProjeto]: string } = {
             PDI: 'badge-primary',
@@ -70,7 +73,7 @@ export default function Projetos({
             DOUTORADO: 'badge-info',
             SUPORTE: 'badge-warning',
         };
-        return badgeColors[tipo] || 'badge-info';
+        return badgeColors[tipo] || 'badge-neutral';
     };
 
     const getBarColor = (tipo: TipoProjeto) => {
@@ -81,11 +84,37 @@ export default function Projetos({
             DOUTORADO: 'bg-info',
             SUPORTE: 'bg-warning',
         };
-        return barColors[tipo] || 'bg-info';
+        return barColors[tipo] || 'bg-neutral';
     };
 
+    // const getStatusBadgeColor = (status: StatusVinculoProjeto | null) => {
+    //     if (!status) return 'badge-ghost';
+    //     const statusColors: { [key in StatusVinculoProjeto]: string } = {
+    //         APROVADO: 'badge-success',
+    //         PENDENTE: 'badge-warning',
+    //         RECUSADO: 'badge-error',
+    //         ENCERRADO: 'badge-neutral',
+    //     };
+    //     return statusColors[status] || 'badge-ghost';
+    // };
+
+    // const getTipoVinculoBadgeColor = (tipoVinculo: TipoVinculo | null) => {
+    //     if (!tipoVinculo) return 'badge-ghost';
+    //     const tipoVinculoColors: { [key in TipoVinculo]: string } = {
+    //         COLABORADOR: 'badge-primary',
+    //         COORDENADOR: 'badge-accent',
+    //     };
+    //     return tipoVinculoColors[tipoVinculo] || 'badge-ghost';
+    // };
+
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout
+            header={
+                <h2 className="text-xl leading-tight font-semibold text-gray-800">
+                    Projetos
+                </h2>
+            }
+        >
             <Head title="Projetos" />
 
             <div className="py-12">
@@ -172,7 +201,7 @@ export default function Projetos({
                                             }
                                         >
                                             <div
-                                                className={`h-3 w-full ${getBarColor(
+                                                className={`rounded-t-box h-3 w-full ${getBarColor(
                                                     projeto.tipo,
                                                 )}`}
                                             ></div>
@@ -189,22 +218,109 @@ export default function Projetos({
                                                         {projeto.tipo}
                                                     </span>
                                                 </div>
-                                                <p className="text-base-content/80 mb-4 text-sm">
+                                                <p className="text-base-content/80 mb-1 text-sm">
                                                     <span className="font-semibold">
                                                         Cliente:
                                                     </span>{' '}
                                                     {projeto.cliente}
                                                 </p>
+
+                                                {/* {projeto.user_status && (
+                                                    <div className="mb-1">
+                                                        <span className="text-sm font-semibold">
+                                                            Meu Status:
+                                                        </span>{' '}
+                                                        <span
+                                                            className={`badge ${getStatusBadgeColor(
+                                                                projeto.user_status,
+                                                            )}`}
+                                                        >
+                                                            {
+                                                                projeto.user_status
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {projeto.user_tipo_vinculo && (
+                                                    <div className="mb-4">
+                                                        <span className="text-sm font-semibold">
+                                                            Meu Vínculo:
+                                                        </span>{' '}
+                                                        <span
+                                                            className={`badge ${getTipoVinculoBadgeColor(
+                                                                projeto.user_tipo_vinculo,
+                                                            )}`}
+                                                        >
+                                                            {
+                                                                projeto.user_tipo_vinculo
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )} */}
+
                                                 <div className="card-actions border-base-300/50 mt-auto items-center justify-start border-t pt-4">
-                                                    {/* Placeholder for future actions like edit/delete icons if needed */}
+                                                    {/* Placeholder for future actions */}
+                                                    <span className="text-base-content/60 text-xs">
+                                                        Clique para ver detalhes
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center text-gray-500">
-                                    Nenhum projeto encontrado para esta seleção.
+                                <div className="py-10 text-center">
+                                    <svg
+                                        className="mx-auto h-12 w-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            vectorEffect="non-scaling-stroke"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                                        />
+                                    </svg>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">
+                                        Nenhum projeto encontrado
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {activeTab === 'todos' && !searchValue
+                                            ? 'Cadastre um novo projeto para começar.'
+                                            : 'Tente ajustar sua busca ou filtros.'}
+                                    </p>
+                                    {activeTab === 'todos' &&
+                                        !searchValue &&
+                                        auth.isCoordenador && (
+                                            <div className="mt-6">
+                                                <a
+                                                    href={route(
+                                                        'projetos.create',
+                                                    )}
+                                                    className="btn btn-primary"
+                                                >
+                                                    <svg
+                                                        className="mr-2 -ml-1 h-5 w-5"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                    Cadastrar Novo Projeto
+                                                </a>
+                                            </div>
+                                        )}
                                 </div>
                             )}
                         </div>
