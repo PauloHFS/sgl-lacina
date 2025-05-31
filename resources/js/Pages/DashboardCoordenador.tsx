@@ -62,10 +62,6 @@ export default function Dashboard({
         total: 0,
     },
 }: DashboardProps) {
-    console.log('DashboardCoordenador', {
-        projetosAtivos,
-    });
-
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />

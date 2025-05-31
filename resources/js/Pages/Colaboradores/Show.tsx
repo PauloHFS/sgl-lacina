@@ -405,7 +405,15 @@ export default function Show({
                                             <InfoItem
                                                 label="Projeto"
                                                 value={
-                                                    'ultimo_vinculo.projeto.nome'
+                                                    ultimo_vinculo.projeto?.nome
+                                                }
+                                            />
+
+                                            <InfoItem
+                                                label="Cliente"
+                                                value={
+                                                    ultimo_vinculo.projeto
+                                                        ?.cliente
                                                 }
                                             />
 

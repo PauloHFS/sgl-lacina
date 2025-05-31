@@ -98,6 +98,7 @@ class ColaboradorController extends Controller
 
         $ultimoVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
             ->orderBy('created_at', 'desc')
+            ->with(['projeto'])
             ->first();
 
         if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
