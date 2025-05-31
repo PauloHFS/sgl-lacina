@@ -28,8 +28,8 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                 return (
                     <StatusAlert
                         type="warning"
-                        title="Vínculo pendente de aprovação."
-                        message="Este Vinculo aguarda aprovação de cadastro."
+                        title="Cadastro pendente de aprovação."
+                        message="Este Usuário aguarda aprovação de cadastro."
                         actions={
                             <>
                                 <button

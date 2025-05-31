@@ -372,7 +372,7 @@ export default function Show({
     }, [setVinculoData, ultimo_vinculo, originalVinculoDisplayValues]);
 
     return (
-        <AuthenticatedLayout header="Detalhes do Colaborador">
+        <AuthenticatedLayout>
             <Head title={`Colaborador: ${colaborador.name}`} />
 
             <div className="py-12">

@@ -412,7 +412,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                     <div>
                                         <label className="form-control w-full">
                                             <span className="label-text mb-1">
-                                                Orgão Emissor*
+                                                Orgão Emissor RG*
                                             </span>
                                             <select
                                                 id="orgao_emissor_rg"
@@ -909,6 +909,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                placeholder="https://lattes.cnpq.br/1234567890123456"
                                                 required
                                             />
                                             {errors.curriculo_lattes_url && (
@@ -938,6 +939,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                placeholder="https://www.linkedin.com/in/..."
                                             />
                                             {errors.linkedin_url && (
                                                 <span className="label-text-alt text-error">
@@ -964,6 +966,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                placeholder="https://github.com/..."
                                             />
                                             {errors.github_url && (
                                                 <span className="label-text-alt text-error">
@@ -990,6 +993,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                         e.target.value,
                                                     )
                                                 }
+                                                placeholder="https://www.seusite.com.br"
                                             />
                                             {errors.website_url && (
                                                 <span className="label-text-alt text-error">

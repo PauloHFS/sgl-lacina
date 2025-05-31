@@ -75,6 +75,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     label="Conta Bancária"
                     value={colaborador.conta_bancaria}
                 />
+                                
                 <InfoItem label="CEP" value={colaborador.cep} />
                 <InfoItem label="Endereço" value={colaborador.endereco} />
                 <InfoItem label="Número" value={colaborador.numero} />
@@ -82,11 +83,13 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 <InfoItem label="Bairro" value={colaborador.bairro} />
                 <InfoItem label="Cidade" value={colaborador.cidade} />
                 <InfoItem label="UF" value={colaborador.uf} />
+                
+                {/*
                 <InfoItem
                     label="Área de Atuação"
                     value={colaborador.area_atuacao}
                 />
-                {colaborador.curriculo_lattes_url ? (
+                 {colaborador.curriculo_lattes_url ? (
                     <InfoItem label="Currículo Lattes">
                         <a
                             href={colaborador.curriculo_lattes_url}
@@ -141,8 +144,8 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                     </InfoItem>
                 ) : (
                     <InfoItem label="Figma" value="-" />
-                )}
-                <InfoItem label="Tecnologias">
+                )} */}
+                {/* <InfoItem label="Tecnologias">
                     <div className="input input-bordered flex h-auto min-h-10 flex-wrap items-center gap-1 py-2 break-words whitespace-normal">
                         {colaborador.tecnologias
                             ? colaborador.tecnologias
@@ -157,7 +160,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                                   ))
                             : '-'}
                     </div>
-                </InfoItem>
+                </InfoItem> */}
             </div>
         );
     }
@@ -564,15 +567,15 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 )}
             </div>
 
-            {/* UF (Endereço) */}
+            {/* Estado */}
             <div>
-                <label className="label" htmlFor="uf_endereco">
+                <label className="label" htmlFor="estado">
                     <span className="label-text font-semibold">
-                        UF (Endereço):
+                        Estado:
                     </span>
                 </label>
                 <select
-                    id="uf_endereco" // Changed id to avoid conflict
+                    id="estado"
                     className={`select select-bordered w-full ${errors.uf ? 'select-error' : ''}`}
                     value={data.uf || ''}
                     onChange={(e) => setData('uf', e.target.value)}
@@ -591,7 +594,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
             </div>
 
             {/* Área de Atuação */}
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
                 <label className="label" htmlFor="area_atuacao">
                     <span className="label-text font-semibold">
                         Área de Atuação:
@@ -610,10 +613,10 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         {errors.area_atuacao}
                     </p>
                 )}
-            </div>
+            </div> */}
 
             {/* Tecnologias */}
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
                 <label className="label" htmlFor="tecnologias">
                     <span className="label-text font-semibold">
                         Tecnologias (separadas por vírgula):
@@ -632,9 +635,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         {errors.tecnologias}
                     </p>
                 )}
-            </div>
+            </div> */}
 
-            {/* Links */}
+            {/* Links
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:col-span-2 md:grid-cols-2">
                 <div>
                     <label className="label" htmlFor="curriculo_lattes_url">
@@ -706,7 +709,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 <div>
                     <label className="label" htmlFor="website_url">
                         <span className="label-text font-semibold">
-                            Figma URL:
+                            Website URL:
                         </span>
                     </label>
                     <input
@@ -716,7 +719,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         value={data.website_url || ''}
                         onChange={(e) => setData('website_url', e.target.value)}
                         disabled={processing || !canEdit}
-                        placeholder="https://figma.com/..."
+                        placeholder="https://example.com"
                     />
                     {errors.website_url && (
                         <p className="text-error mt-1 text-xs">
@@ -724,7 +727,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                         </p>
                     )}
                 </div>
-            </div>
+            </div> */}
 
             {/* Actions */}
             {canEdit && (
