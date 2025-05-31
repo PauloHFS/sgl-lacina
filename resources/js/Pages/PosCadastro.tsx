@@ -437,7 +437,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                             key={orgao.sigla}
                                                             value={orgao.sigla}
                                                         >
-                                                            {orgao.nome}
+                                                            {orgao.sigla} - {orgao.nome}
                                                         </option>
                                                     ),
                                                 )}
