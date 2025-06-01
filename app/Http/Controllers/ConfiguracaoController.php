@@ -16,9 +16,17 @@ class ConfiguracaoController extends Controller
      */
     public function index(): Response
     {
+        $senhaExiste = ConfiguracaoSistema::where('chave', 'senha_laboratorio')->exists();
+        $token = null;
+
+        if ($senhaExiste) {
+            $token = ConfiguracaoSistema::obterValor('senha_laboratorio');
+        }
+
         return Inertia::render('Configuracao/Index', [
             'configuracoes' => [
-                'senha_laboratorio_existe' => ConfiguracaoSistema::where('chave', 'senha_laboratorio')->exists(),
+                'senha_laboratorio_existe' => $senhaExiste,
+                'token_laboratorio' => $token,
             ]
         ]);
     }
@@ -29,27 +37,18 @@ class ConfiguracaoController extends Controller
     public function atualizarSenhaLaboratorio(Request $request): RedirectResponse
     {
         $request->validate([
-            'senha_atual' => 'required|string',
-            'nova_senha' => 'required|string|min:4|confirmed',
+            'novo_token' => 'required|string|min:4',
         ], [
-            'senha_atual.required' => 'A senha atual é obrigatória.',
-            'nova_senha.required' => 'A nova senha é obrigatória.',
-            'nova_senha.min' => 'A nova senha deve ter pelo menos 4 caracteres.',
-            'nova_senha.confirmed' => 'A confirmação da nova senha não confere.',
+            'novo_token.required' => 'O novo token é obrigatório.',
+            'novo_token.min' => 'O token deve ter pelo menos 4 caracteres.',
         ]);
-
-        $senhaAtual = ConfiguracaoSistema::obterValor('senha_laboratorio');
-
-        if (!Hash::check($request->senha_atual, $senhaAtual)) {
-            return back()->withErrors(['senha_atual' => 'A senha atual está incorreta.']);
-        }
 
         ConfiguracaoSistema::definirValor(
             'senha_laboratorio',
-            Hash::make($request->nova_senha),
-            'Senha para cadastro no laboratório'
+            $request->novo_token,
+            'Token para cadastro no laboratório'
         );
 
-        return back()->with('success', 'Senha do laboratório atualizada com sucesso!');
+        return back()->with('success', 'Token do laboratório atualizado com sucesso!');
     }
 }
