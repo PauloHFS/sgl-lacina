@@ -108,13 +108,7 @@ export default function Projetos({
     // };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl leading-tight font-semibold text-gray-800">
-                    Projetos
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Projetos" />
 
             <div className="py-12">
