@@ -155,6 +155,7 @@ export default function Show({
         created_at: colaborador.created_at,
         updated_at: colaborador.updated_at,
         name: colaborador.name,
+        campos_extras: colaborador.campos_extras,
         curriculo_lattes_url: colaborador.curriculo_lattes_url,
         linkedin_url: colaborador.linkedin_url,
         github_url: colaborador.github_url,

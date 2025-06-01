@@ -1,5 +1,5 @@
 import { ESTADOS, GENEROS } from '@/constants';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { IMaskInput } from 'react-imask';
 import { ColaboradorData, ShowPageProps } from '../Show';
 import { CamposExtrasSection } from './CamposExtrasSection';
@@ -15,11 +15,11 @@ interface CustomSetData<TForm extends object> {
 type FormErrors<TForm> = Partial<Record<keyof TForm, string>>;
 
 interface ColaboradorDetalhesProps {
-    colaborador: ColaboradorData; // Use ColaboradorData
+    colaborador: ColaboradorData;
     isEditing: boolean;
-    data: ColaboradorData; // Use ColaboradorData
-    setData: CustomSetData<ColaboradorData>; // Use ColaboradorData
-    errors: FormErrors<ColaboradorData>; // Use ColaboradorData
+    data: ColaboradorData;
+    setData: CustomSetData<ColaboradorData>;
+    errors: FormErrors<ColaboradorData>;
     processing: boolean;
     onCancel: () => void;
     onSubmit: () => void;
@@ -39,6 +39,14 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
     bancos,
     canEdit,
 }) => {
+    // Memoizar a função onCamposChange para evitar re-renders desnecessários
+    const handleCamposChange = useCallback(
+        (campos: Record<string, string>) => {
+            setData('campos_extras', campos);
+        },
+        [setData],
+    );
+
     if (!isEditing) {
         return (
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
@@ -216,7 +224,7 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
             </div>
 
             {/* Email */}
-            <div>
+            {/* <div>
                 <label className="label" htmlFor="email">
                     <span className="label-text font-semibold">Email:</span>
                 </label>
@@ -231,7 +239,9 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
                 {errors.email && (
                     <p className="text-error mt-1 text-xs">{errors.email}</p>
                 )}
-            </div>
+            </div> */}
+
+            <InfoItem label="Email" value={colaborador.email} />
 
             {/* CPF */}
             <div>
@@ -752,10 +762,8 @@ export const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
             {/* Campos Extras */}
             <div className="md:col-span-2">
                 <CamposExtrasSection
-                    campos_extras={data.campos_extras || {}}
-                    onCamposChange={(campos: Record<string, string>) =>
-                        setData('campos_extras', campos)
-                    }
+                    campos_extras={data.campos_extras}
+                    onCamposChange={handleCamposChange}
                     errors={
                         typeof errors.campos_extras === 'object'
                             ? errors.campos_extras

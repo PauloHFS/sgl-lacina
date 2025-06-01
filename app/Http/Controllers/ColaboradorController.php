@@ -221,7 +221,7 @@ class ColaboradorController extends Controller
             'website_url' => 'nullable|url|max:255',
             'area_atuacao' => 'nullable|string',
             'tecnologias' => 'nullable|string',
-            'campos_extras' => 'nullable|json',
+            'campos_extras' => 'nullable|array',
             'cpf' => [
                 'nullable',
                 'string',

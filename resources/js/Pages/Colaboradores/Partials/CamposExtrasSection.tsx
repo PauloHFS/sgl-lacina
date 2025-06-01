@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface CampoExtra {
     key: string;
     value: string;
+    id: string; // Adicionar ID único para melhor performance
 }
 
 interface CamposExtrasSectionProps {
@@ -20,74 +21,93 @@ export const CamposExtrasSection: React.FC<CamposExtrasSectionProps> = ({
     processing = false,
     canEdit = true,
 }) => {
-    // Converter o objeto campos_extras em array para facilitar a edição
-    const camposExtrasArray: CampoExtra[] = Object.entries(campos_extras).map(
-        ([key, value]) => ({
-            key,
-            value: String(value),
-        }),
-    );
-
-    const [campos, setCampos] = useState<CampoExtra[]>(
-        camposExtrasArray.length > 0
-            ? camposExtrasArray
-            : [{ key: '', value: '' }],
-    );
-
-    useEffect(() => {
-        // Atualizar campos quando props mudarem
-        const newCamposArray = Object.entries(campos_extras).map(
-            ([key, value]) => ({
-                key,
-                value: String(value),
-            }),
-        );
-
-        if (newCamposArray.length === 0) {
-            setCampos([{ key: '', value: '' }]);
-        } else {
-            setCampos(newCamposArray);
-        }
+    const camposExtrasArray = useMemo((): CampoExtra[] => {
+        const entries = Object.entries(campos_extras);
+        return entries.length > 0
+            ? entries.map(([key, value], index) => ({
+                  key,
+                  value: String(value),
+                  id: `${key}-${index}`, // ID único baseado na chave e índice
+              }))
+            : [{ key: '', value: '', id: 'empty-0' }];
     }, [campos_extras]);
 
-    const adicionarCampo = () => {
-        setCampos([...campos, { key: '', value: '' }]);
-    };
+    const [campos, setCampos] = useState<CampoExtra[]>(camposExtrasArray);
 
-    const removerCampo = (index: number) => {
-        const novosCampos = campos.filter((_, i) => i !== index);
-        setCampos(novosCampos);
-        atualizarDados(novosCampos);
-    };
-
-    const atualizarCampo = (
-        index: number,
-        field: 'key' | 'value',
-        newValue: string,
-    ) => {
-        const novosCampos = campos.map((campo, i) =>
-            i === index ? { ...campo, [field]: newValue } : campo,
+    // Comparação inteligente para evitar updates desnecessários
+    useEffect(() => {
+        // Use uma ref para comparar com o valor anterior sem causar re-renders
+        const newCamposStr = JSON.stringify(
+            camposExtrasArray.map(({ key, value }) => ({ key, value })),
         );
-        setCampos(novosCampos);
-        atualizarDados(novosCampos);
-    };
 
-    const atualizarDados = (camposAtualizados: CampoExtra[]) => {
-        // Filtrar campos vazios e converter para objeto
-        const camposObj = camposAtualizados
-            .filter(
-                (campo) => campo.key.trim() !== '' && campo.value.trim() !== '',
-            )
-            .reduce(
-                (acc, campo) => {
-                    acc[campo.key.trim()] = campo.value.trim();
-                    return acc;
-                },
-                {} as Record<string, string>,
+        setCampos((prev) => {
+            const currentCamposStr = JSON.stringify(
+                prev.map(({ key, value }) => ({ key, value })),
             );
 
-        onCamposChange(camposObj);
-    };
+            // Só atualiza se realmente mudou
+            return currentCamposStr !== newCamposStr ? camposExtrasArray : prev;
+        });
+    }, [camposExtrasArray]); // Remove 'campos' da dependência
+
+    // Função para gerar ID único
+    const generateId = useCallback(() => {
+        return `campo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }, []);
+
+    // Função memoizada para atualizar dados
+    const atualizarDados = useCallback(
+        (camposAtualizados: CampoExtra[]) => {
+            // Filtrar campos vazios e converter para objeto
+            const camposObj = camposAtualizados
+                .filter(
+                    (campo) =>
+                        campo.key.trim() !== '' && campo.value.trim() !== '',
+                )
+                .reduce(
+                    (acc, campo) => {
+                        acc[campo.key.trim()] = campo.value.trim();
+                        return acc;
+                    },
+                    {} as Record<string, string>,
+                );
+
+            onCamposChange(camposObj);
+        },
+        [onCamposChange],
+    );
+
+    const adicionarCampo = useCallback(() => {
+        setCampos((prev) => [
+            ...prev,
+            { key: '', value: '', id: generateId() },
+        ]);
+    }, [generateId]);
+
+    const removerCampo = useCallback(
+        (index: number) => {
+            setCampos((prev) => {
+                const novosCampos = prev.filter((_, i) => i !== index);
+                atualizarDados(novosCampos);
+                return novosCampos;
+            });
+        },
+        [atualizarDados],
+    );
+
+    const atualizarCampo = useCallback(
+        (index: number, field: 'key' | 'value', newValue: string) => {
+            setCampos((prev) => {
+                const novosCampos = prev.map((campo, i) =>
+                    i === index ? { ...campo, [field]: newValue } : campo,
+                );
+                atualizarDados(novosCampos);
+                return novosCampos;
+            });
+        },
+        [atualizarDados],
+    );
 
     return (
         <div className="md:col-span-2">
@@ -103,7 +123,7 @@ export const CamposExtrasSection: React.FC<CamposExtrasSectionProps> = ({
             <div className="space-y-4">
                 {campos.map((campo, index) => (
                     <div
-                        key={index}
+                        key={campo.id}
                         className="border-base-300 grid grid-cols-1 items-end gap-4 rounded-lg border p-4 md:grid-cols-5"
                     >
                         <div className="md:col-span-2">
