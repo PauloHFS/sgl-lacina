@@ -17,16 +17,16 @@ class ConfiguracaoController extends Controller
     public function index(): Response
     {
         $senhaExiste = ConfiguracaoSistema::where('chave', 'senha_laboratorio')->exists();
-        $token = null;
+        $senha = null;
 
         if ($senhaExiste) {
-            $token = ConfiguracaoSistema::obterValor('senha_laboratorio');
+            $senha = ConfiguracaoSistema::obterValor('senha_laboratorio');
         }
 
         return Inertia::render('Configuracao/Index', [
             'configuracoes' => [
                 'senha_laboratorio_existe' => $senhaExiste,
-                'token_laboratorio' => $token,
+                'senha_laboratorio' => $senha,
             ]
         ]);
     }
@@ -37,18 +37,18 @@ class ConfiguracaoController extends Controller
     public function atualizarSenhaLaboratorio(Request $request): RedirectResponse
     {
         $request->validate([
-            'novo_token' => 'required|string|min:4',
+            'novo_senha' => 'required|string|min:4',
         ], [
-            'novo_token.required' => 'O novo token é obrigatório.',
-            'novo_token.min' => 'O token deve ter pelo menos 4 caracteres.',
+            'novo_senha.required' => 'O novo senha é obrigatório.',
+            'novo_senha.min' => 'O senha deve ter pelo menos 4 caracteres.',
         ]);
 
         ConfiguracaoSistema::definirValor(
             'senha_laboratorio',
-            $request->novo_token,
-            'Token para cadastro no laboratório'
+            $request->novo_senha,
+            'Senha para cadastro no laboratório'
         );
 
-        return back()->with('success', 'Token do laboratório atualizado com sucesso!');
+        return back()->with('success', 'Senha do laboratório atualizado com sucesso!');
     }
 }

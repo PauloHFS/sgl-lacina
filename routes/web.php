@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ColaboradorController;
+use App\Http\Controllers\ConfiguracaoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjetoVinculoController;
@@ -92,8 +93,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 
         // Rotas para Configurações (apenas coordenadores)
         Route::prefix('/configuracoes')->name('configuracoes.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\ConfiguracaoController::class, 'index'])->name('index');
-            Route::patch('/senha-laboratorio', [\App\Http\Controllers\ConfiguracaoController::class, 'atualizarSenhaLaboratorio'])->name('senha-laboratorio.update');
+            Route::get('/', [ConfiguracaoController::class, 'index'])->name('index');
+            Route::patch('/senha-laboratorio', [ConfiguracaoController::class, 'atualizarSenhaLaboratorio'])->name('senha-laboratorio.update');
         });
     });
 });
