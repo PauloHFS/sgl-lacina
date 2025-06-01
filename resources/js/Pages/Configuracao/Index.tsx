@@ -31,7 +31,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl leading-tight font-semibold text-gray-800">
+                <h2 className="text-base-content text-xl leading-tight font-semibold">
                     Configurações do Sistema
                 </h2>
             }
@@ -40,15 +40,15 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
+                    <div className="card bg-base-100 shadow-xl">
+                        <div className="card-body">
                             {/* Seção de Senha do Laboratório */}
                             <div className="mb-8">
-                                <div className="mb-4">
-                                    <h3 className="text-lg font-medium text-gray-900">
+                                <div className="mb-6">
+                                    <h3 className="text-base-content text-lg font-medium">
                                         Senha do Laboratório
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-600">
+                                    <p className="text-base-content/70 mt-1 text-sm">
                                         Altere a senha utilizada para novos
                                         cadastros no laboratório.
                                     </p>
@@ -56,7 +56,9 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
 
                                 {!showForm ? (
                                     <div className="flex items-center gap-4">
-                                        <div className="badge badge-success badge-outline">
+                                        <div
+                                            className={`badge ${configuracoes.senha_laboratorio_existe ? 'badge-success' : 'badge-warning'} badge-outline`}
+                                        >
                                             {configuracoes.senha_laboratorio_existe
                                                 ? 'Configurada'
                                                 : 'Não configurada'}
@@ -66,25 +68,31 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                             onClick={() => setShowForm(true)}
                                             className="btn btn-primary btn-sm"
                                         >
-                                            Alterar Senha
+                                            {configuracoes.senha_laboratorio_existe
+                                                ? 'Alterar Senha'
+                                                : 'Configurar Senha'}
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="card card-border">
+                                    <div className="card bg-base-200/50 border-base-300 border">
                                         <div className="card-body">
                                             <form
                                                 onSubmit={handleSubmit}
                                                 className="space-y-6"
                                             >
-                                                <h4 className="text-lg font-medium text-gray-900">
-                                                    Alterar Senha do Laboratório
+                                                <h4 className="text-base-content text-lg font-medium">
+                                                    {configuracoes.senha_laboratorio_existe
+                                                        ? 'Alterar Senha do Laboratório'
+                                                        : 'Configurar Senha do Laboratório'}
                                                 </h4>
 
                                                 <div className="space-y-4">
                                                     <label className="form-control w-full">
                                                         <div className="label">
-                                                            <span className="label-text">
-                                                                Senha Atual
+                                                            <span className="label-text font-medium">
+                                                                {configuracoes.senha_laboratorio_existe
+                                                                    ? 'Senha Atual'
+                                                                    : 'Senha do Laboratório'}
                                                             </span>
                                                         </div>
                                                         <input
@@ -99,8 +107,12 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                                         .value,
                                                                 )
                                                             }
-                                                            className={`input input-bordered w-full ${errors.senha_atual ? 'input-error' : ''}`}
-                                                            placeholder="Digite a senha atual"
+                                                            className={`input input-bordered bg-base-100 w-full ${errors.senha_atual ? 'input-error' : ''}`}
+                                                            placeholder={
+                                                                configuracoes.senha_laboratorio_existe
+                                                                    ? 'Digite a senha atual'
+                                                                    : 'Digite a senha do laboratório'
+                                                            }
                                                             required
                                                         />
                                                         {errors.senha_atual && (
@@ -116,7 +128,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
 
                                                     <label className="form-control w-full">
                                                         <div className="label">
-                                                            <span className="label-text">
+                                                            <span className="label-text font-medium">
                                                                 Nova Senha
                                                             </span>
                                                         </div>
@@ -132,7 +144,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                                         .value,
                                                                 )
                                                             }
-                                                            className={`input input-bordered w-full ${errors.nova_senha ? 'input-error' : ''}`}
+                                                            className={`input input-bordered bg-base-100 w-full ${errors.nova_senha ? 'input-error' : ''}`}
                                                             placeholder="Digite a nova senha"
                                                             required
                                                         />
@@ -149,7 +161,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
 
                                                     <label className="form-control w-full">
                                                         <div className="label">
-                                                            <span className="label-text">
+                                                            <span className="label-text font-medium">
                                                                 Confirmar Nova
                                                                 Senha
                                                             </span>
@@ -166,14 +178,14 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                                         .value,
                                                                 )
                                                             }
-                                                            className="input input-bordered w-full"
+                                                            className="input input-bordered bg-base-100 w-full"
                                                             placeholder="Confirme a nova senha"
                                                             required
                                                         />
                                                     </label>
                                                 </div>
 
-                                                <div className="flex justify-end gap-2">
+                                                <div className="flex justify-end gap-3 pt-4">
                                                     <button
                                                         type="button"
                                                         onClick={() => {
@@ -181,6 +193,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                             reset();
                                                         }}
                                                         className="btn btn-ghost"
+                                                        disabled={processing}
                                                     >
                                                         Cancelar
                                                     </button>
@@ -194,8 +207,10 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                                 <span className="loading loading-spinner loading-sm"></span>
                                                                 Salvando...
                                                             </>
-                                                        ) : (
+                                                        ) : configuracoes.senha_laboratorio_existe ? (
                                                             'Salvar Nova Senha'
+                                                        ) : (
+                                                            'Configurar Senha'
                                                         )}
                                                     </button>
                                                 </div>
@@ -206,14 +221,14 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                             </div>
 
                             {/* Outras configurações futuras podem ser adicionadas aqui */}
-                            <div className="divider"></div>
+                            <div className="divider text-base-content/30"></div>
 
-                            <div className="alert alert-info">
+                            <div className="alert alert-info bg-info/10 border-info/20">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    className="h-6 w-6 shrink-0 stroke-current"
+                                    className="stroke-info h-6 w-6 shrink-0"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -223,10 +238,10 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                     ></path>
                                 </svg>
                                 <div>
-                                    <h4 className="font-bold">
+                                    <h4 className="text-info font-bold">
                                         Informação importante
                                     </h4>
-                                    <div className="text-xs">
+                                    <div className="text-base-content/80 text-sm">
                                         A senha do laboratório é utilizada
                                         durante o processo de cadastro de novos
                                         colaboradores. Certifique-se de
