@@ -19,6 +19,7 @@ use App\Enums\Genero;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Events\CadastroRecusado;
 
 class ColaboradorController extends Controller
 {
@@ -292,11 +293,24 @@ class ColaboradorController extends Controller
             return redirect()->back()->with('error', 'Este colaborador não está com cadastro pendente.');
         }
 
-        $colaborador->status_cadastro = 'RECUSADO';
-        $colaborador->save();
+        try {
+            // Armazenar dados para envio de email antes da deleção
+            $dadosColaborador = [
+                'name' => $colaborador->name,
+                'email' => $colaborador->email,
+            ];
 
-        // Aqui você pode disparar eventos/emails se necessário
+            // Deletar o usuário em vez de marcar como recusado
+            $colaborador->delete();
 
-        return redirect()->back()->with('success', 'Colaborador recusado com sucesso.');
+            // Disparar evento com os dados armazenados
+            event(new CadastroRecusado($dadosColaborador));
+
+            return redirect()->route('colaboradores.index', ['status' => 'cadastro_pendente'])
+                ->with('success', 'Cadastro do colaborador recusado e removido do sistema com sucesso.');
+        } catch (\Exception $e) {
+            Log::error("Erro ao recusar colaborador: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Erro ao recusar o cadastro. Tente novamente.');
+        }
     }
 }

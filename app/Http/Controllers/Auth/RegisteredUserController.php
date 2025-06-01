@@ -6,6 +6,7 @@ use App\Enums\StatusCadastro;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Docente;
+use App\Models\ConfiguracaoSistema;
 use App\Events\ColaboradorRegistrado;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -38,8 +39,8 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $senhaLaboratorio = \App\Models\ConfiguracaoSistema::obterValor('senha_laboratorio');
-                    if (!Hash::check($value, $senhaLaboratorio)) {
+                    $senhaLaboratorio = ConfiguracaoSistema::obterValor('senha_laboratorio');
+                    if ($value !== $senhaLaboratorio) {
                         $fail('A senha do laboratório está incorreta.');
                     }
                 }
