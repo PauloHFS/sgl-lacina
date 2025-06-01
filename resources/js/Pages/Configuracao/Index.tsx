@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 interface ConfiguracaoIndexProps {
     configuracoes: {
         senha_laboratorio_existe: boolean;
-        token_laboratorio?: string;
+        senha_laboratorio?: string;
     };
 }
 
@@ -14,7 +14,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
     const [copied, setCopied] = useState(false);
 
     const { data, setData, patch, processing, errors, reset } = useForm({
-        novo_token: '',
+        novo_senha: '',
     });
 
     const copyToClipboard = async (text: string) => {
@@ -56,10 +56,10 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                             <div className="mb-10">
                                 <div className="mb-8">
                                     <h3 className="text-base-content mb-3 text-xl font-semibold">
-                                        Token do Laboratório
+                                        Senha do Laboratório
                                     </h3>
                                     <p className="text-base-content/70 text-base leading-relaxed">
-                                        Gerencie o token utilizado para validar
+                                        Gerencie a senha utilizada para validar
                                         novos cadastros no laboratório.
                                     </p>
                                 </div>
@@ -102,8 +102,8 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                 </div>
                                                 <span className="text-base-content/60 text-sm">
                                                     {configuracoes.senha_laboratorio_existe
-                                                        ? 'O token do laboratório está ativo'
-                                                        : 'Configure um token para validar novos cadastros'}
+                                                        ? 'A senha do laboratório está ativo'
+                                                        : 'Configure uma senha para validar novos cadastros'}
                                                 </span>
                                             </div>
                                             <button
@@ -114,35 +114,35 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                 className="btn btn-primary"
                                             >
                                                 {configuracoes.senha_laboratorio_existe
-                                                    ? 'Alterar Token'
-                                                    : 'Configurar Token'}
+                                                    ? 'Alterar Senha'
+                                                    : 'Configurar Senha'}
                                             </button>
                                         </div>
 
-                                        {/* Seção de exibição do token atual */}
+                                        {/* Seção de exibição do Senha atual */}
                                         {configuracoes.senha_laboratorio_existe &&
-                                            configuracoes.token_laboratorio && (
+                                            configuracoes.senha_laboratorio && (
                                                 <div className="bg-base-100 border-base-300/50 rounded-lg border p-4">
                                                     <label className="label pb-2">
                                                         <span className="label-text text-base-content/70 text-sm font-medium">
-                                                            Token Atual
+                                                            Senha Atual
                                                         </span>
                                                     </label>
                                                     <div className="flex items-center gap-3">
                                                         <div className="bg-base-200/50 border-base-300/30 flex-1 rounded-lg border p-3 font-mono text-sm">
                                                             {
-                                                                configuracoes.token_laboratorio
+                                                                configuracoes.senha_laboratorio
                                                             }
                                                         </div>
                                                         <button
                                                             type="button"
                                                             onClick={() =>
                                                                 copyToClipboard(
-                                                                    configuracoes.token_laboratorio!,
+                                                                    configuracoes.senha_laboratorio!,
                                                                 )
                                                             }
                                                             className={`btn btn-square btn-sm ${copied ? 'btn-success' : 'btn-ghost'}`}
-                                                            title="Copiar token"
+                                                            title="Copiar Senha"
                                                         >
                                                             {copied ? (
                                                                 <svg
@@ -185,13 +185,13 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                 <div className="mb-8">
                                                     <h4 className="text-base-content mb-2 text-lg font-medium">
                                                         {configuracoes.senha_laboratorio_existe
-                                                            ? 'Alterar Token do Laboratório'
-                                                            : 'Configurar Token do Laboratório'}
+                                                            ? 'Alterar a senha do Laboratório'
+                                                            : 'Configurar a senha do Laboratório'}
                                                     </h4>
                                                     <p className="text-base-content/60 text-sm">
                                                         {configuracoes.senha_laboratorio_existe
-                                                            ? 'Digite o novo token desejado'
-                                                            : 'Defina um token para validar novos cadastros'}
+                                                            ? 'Digite a nova senha desejado'
+                                                            : 'Defina uma senha para validar novos cadastros'}
                                                     </p>
                                                 </div>
 
@@ -200,35 +200,35 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                         <label className="label pb-3">
                                                             <span className="label-text text-base font-medium">
                                                                 {configuracoes.senha_laboratorio_existe
-                                                                    ? 'Novo Token'
-                                                                    : 'Token do Laboratório'}
+                                                                    ? 'Novo Senha'
+                                                                    : 'Senha do Laboratório'}
                                                             </span>
                                                         </label>
                                                         <input
                                                             type="text"
                                                             value={
-                                                                data.novo_token
+                                                                data.novo_senha
                                                             }
                                                             onChange={(e) =>
                                                                 setData(
-                                                                    'novo_token',
+                                                                    'novo_senha',
                                                                     e.target
                                                                         .value,
                                                                 )
                                                             }
-                                                            className={`input input-bordered bg-base-100 h-12 w-full font-mono text-base ${errors.novo_token ? 'input-error' : 'focus:input-primary'}`}
+                                                            className={`input input-bordered bg-base-100 h-12 w-full font-mono text-base ${errors.novo_senha ? 'input-error' : 'focus:input-primary'}`}
                                                             placeholder={
                                                                 configuracoes.senha_laboratorio_existe
-                                                                    ? 'Digite o novo token'
-                                                                    : 'Digite o token do laboratório'
+                                                                    ? 'Digite a nova Senha'
+                                                                    : 'Digite a Senha do laboratório'
                                                             }
                                                             required
                                                         />
-                                                        {errors.novo_token && (
+                                                        {errors.novo_senha && (
                                                             <label className="label pt-2">
                                                                 <span className="label-text-alt text-error font-medium">
                                                                     {
-                                                                        errors.novo_token
+                                                                        errors.novo_senha
                                                                     }
                                                                 </span>
                                                             </label>
@@ -237,7 +237,7 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                             <span className="label-text-alt text-base-content/50 text-xs">
                                                                 Mínimo de 4
                                                                 caracteres. Use
-                                                                um token fácil
+                                                                uma senha fácil
                                                                 de compartilhar
                                                                 com novos
                                                                 colaboradores.
@@ -269,9 +269,9 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                                                 Salvando...
                                                             </>
                                                         ) : configuracoes.senha_laboratorio_existe ? (
-                                                            'Salvar Novo Token'
+                                                            'Salvar Nova Senha'
                                                         ) : (
-                                                            'Configurar Token'
+                                                            'Configurar Senha'
                                                         )}
                                                     </button>
                                                 </div>
@@ -307,10 +307,10 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                             Informação importante
                                         </h4>
                                         <p className="text-base-content/70 text-sm leading-relaxed">
-                                            O token do laboratório é utilizado
+                                            A senha do laboratório é utilizado
                                             durante o processo de cadastro de
                                             novos colaboradores. Certifique-se
-                                            de comunicar o novo token para os
+                                            de comunicar o novo Senha para os
                                             responsáveis pelo recrutamento.
                                         </p>
                                     </div>
