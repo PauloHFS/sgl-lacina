@@ -13,14 +13,31 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_started
-      meilisearch:
-        condition: service_started
     networks:
       lacina_network_staging:
         aliases:
           - app
+    env_file:
+      - .env.staging
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.staging
+    container_name: lacina_scheduler_staging
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: bash -c "while true; do php artisan schedule:run --verbose --no-interaction && sleep 60; done"
+    volumes:
+      - ./docker/staging/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ./docker/staging/php/php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - lacina_network_staging
     env_file:
       - .env.staging
 
@@ -77,38 +94,10 @@ services:
       - lacina_pg_data_staging:/var/lib/postgresql/data
       - ./docker/staging/db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  redis:
-    image: redis:alpine
-    container_name: lacina_redis_staging
-    restart: unless-stopped
-    volumes:
-      - lacina_redis_data_staging:/data
-    networks:
-      lacina_network_staging:
-        aliases:
-          - redis
-
-  meilisearch:
-    image: getmeili/meilisearch:latest
-    container_name: lacina_meilisearch_staging
-    restart: unless-stopped
-    env_file:
-      - .env.staging
-    volumes:
-      - lacina_meilisearch_data_staging:/data.ms
-    networks:
-      lacina_network_staging:
-        aliases:
-          - meilisearch
-
 volumes:
   lacina_app_public_all_staging:
     driver: local
   lacina_pg_data_staging:
-    driver: local
-  lacina_redis_data_staging:
-    driver: local
-  lacina_meilisearch_data_staging:
     driver: local
 
 networks:

@@ -13,10 +13,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_started
-      meilisearch:
-        condition: service_started
     networks:
       lacina_network_prod:
         aliases:
@@ -31,10 +27,35 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_PORT: 6379
-      MEILISEARCH_HOST: 'http://meilisearch:7700'
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: lacina_scheduler_prod
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: bash -c "while true; do php artisan schedule:run --verbose --no-interaction && sleep 60; done"
+    volumes:
+      - ./docker/prod/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ./docker/prod/php/php.ini:/usr/local/etc/php/php.ini
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - lacina_network_prod
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   nginx:
     image: nginx:alpine
@@ -73,39 +94,12 @@ services:
     networks:
       lacina_network_prod: {}
 
-  redis:
-    image: redis:alpine
-    container_name: lacina_redis_prod
-    restart: unless-stopped
-    volumes:
-      - lacina_redis_data_prod:/data
-    networks:
-      - lacina_network_prod
-
-  meilisearch:
-    image: getmeili/meilisearch:latest
-    container_name: lacina_meilisearch_prod
-    restart: unless-stopped
-    environment:
-      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-      MEILI_ENV: production
-    volumes:
-      - lacina_meili_data_prod:/meili_data
-    networks:
-      - lacina_network_prod
-    ports:
-      - '7700:7700'
-
 networks:
   lacina_network_prod:
     driver: bridge
 
 volumes:
   lacina_pg_data_prod:
-    driver: local
-  lacina_redis_data_prod:
-    driver: local
-  lacina_meili_data_prod:
     driver: local
   lacina_app_public_all:
     driver: local
