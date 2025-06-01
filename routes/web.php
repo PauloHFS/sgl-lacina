@@ -58,7 +58,8 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         Route::post('/new', [ProjetosController::class, 'store'])->name('projetos.store');
 
         Route::get('/{projeto}', [ProjetosController::class, 'show'])->name('projetos.show');
-        // Route::get('/{projeto}/edit', [ProjetosController::class, 'edit'])->name('projetos.edit');
+        Route::get('/{projeto}/edit', [ProjetosController::class, 'edit'])->name('projetos.edit');
+        Route::patch('/{projeto}', [ProjetosController::class, 'update'])->name('projetos.update');
     });
 
     // Rotas para Solicitação de Vínculo a Projeto

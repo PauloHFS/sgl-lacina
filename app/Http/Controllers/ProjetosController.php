@@ -177,6 +177,19 @@ class ProjetosController extends Controller
     ]);
   }
 
+  public function edit(Projeto $projeto)
+  {
+    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
+    if (!$usuarioVinculo || $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value || $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value) {
+      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Você não tem permissão para editar este projeto.');
+    }
+
+    return Inertia::render('Projetos/Edit', [
+      'projeto' => $projeto,
+      'tiposProjeto' => array_column(TipoProjeto::cases(), 'value'),
+    ]);
+  }
+
   public function store(Request $request)
   {
     $validatedData = $request->validate([

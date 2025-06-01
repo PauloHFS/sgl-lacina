@@ -31,7 +31,7 @@ interface ShowPageProps extends PageProps {
     participantesProjeto?: Paginated<ParticipanteProjeto>;
     temVinculosPendentes: boolean;
     jaTemTrocaEmAndamento: boolean;
-    coordenadoresDoProjeto: Coordenador[]; // Ensure this is using the global Coordenador type
+    coordenadoresDoProjeto: Coordenador[];
 }
 
 type VinculoCreateForm = {
@@ -53,7 +53,7 @@ export default function Show({
     vinculosDoUsuarioLogadoNoProjeto,
     participantesProjeto,
     temVinculosPendentes,
-    coordenadoresDoProjeto, // Make sure this is destructured
+    coordenadoresDoProjeto,
 }: ShowPageProps) {
     const { toast } = useToast();
     const form = useForm<VinculoCreateForm>({
@@ -162,13 +162,42 @@ export default function Show({
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     {/* Card for Project Details */}
                     <div className="bg-base-100 dark:bg-base-300 p-4 shadow sm:rounded-lg sm:p-8">
-                        <div className="max-w-xl">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                {projeto.nome}
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Cliente: {projeto.cliente}
-                            </p>
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                        {projeto.nome}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                        Cliente: {projeto.cliente}
+                                    </p>
+                                </div>
+                                {isCoordenadorDoProjetoAtual && (
+                                    <Link
+                                        href={route(
+                                            'projetos.edit',
+                                            projeto.id,
+                                        )}
+                                        className="btn btn-outline btn-sm"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="h-4 w-4"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13L2 21l.35-2.935a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                            />
+                                        </svg>
+                                        Editar
+                                    </Link>
+                                )}
+                            </div>
 
                             {auth.isCoordenador && temVinculosPendentes && (
                                 <Link
