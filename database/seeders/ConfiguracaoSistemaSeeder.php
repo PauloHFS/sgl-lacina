@@ -17,7 +17,7 @@ class ConfiguracaoSistemaSeeder extends Seeder
         ConfiguracaoSistema::updateOrCreate(
             ['chave' => 'senha_laboratorio'],
             [
-                'valor' => bcrypt('1234'),
+                'valor' => '1234',
                 'descricao' => 'Senha para cadastro no laboratório',
             ]
         );
