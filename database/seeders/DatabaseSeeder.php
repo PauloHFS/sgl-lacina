@@ -112,6 +112,7 @@ class DatabaseSeeder extends Seeder
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
+            'email_verified_at' => now(),
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => $status,
             'cpf' => $data['cpf'],

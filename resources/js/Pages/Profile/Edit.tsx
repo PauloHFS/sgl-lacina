@@ -12,11 +12,7 @@ export default function Edit({
     bancos,
 }: PageProps<{ mustVerifyEmail: boolean; status?: string; bancos: Banco[] }>) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl leading-tight font-semibold">Profile</h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Perfil" />
 
             <div className="py-12">
