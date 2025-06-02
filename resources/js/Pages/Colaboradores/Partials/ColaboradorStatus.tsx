@@ -95,8 +95,8 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                 return (
                     <StatusAlert
                         type="outline"
-                        title="Vinculo encerrado."
-                        message="Este Vinculo está atualmente encerrado."
+                        title="Colaborabor Inativo."
+                        message="Este colaborador nunca participou de projetos ou não está participando em um atualmente."
                     />
                 );
             default:
