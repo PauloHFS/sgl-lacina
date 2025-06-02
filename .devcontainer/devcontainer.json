@@ -1,9 +1,9 @@
 {
-	"name": "Laravel-Inertia-Devcontainer",
+	"name": "SGL-Lacina-Devcontainer",
 	"dockerComposeFile": [
 		"../docker-compose.yml"
 	],
-	"service": "laravel-test",
+	"service": "app",
 	"workspaceFolder": "/var/www/html",
 	"remoteUser": "sail",
 	"customizations": {
@@ -27,7 +27,7 @@
 			"settings": {
 				"php.validate.executablePath": "/usr/bin/php",
 				"php.debug.idekey": "VSCODE",
-				"intelephense.environment.phpVersion": "8.2"
+				"intelephense.environment.phpVersion": "8.4"
 			}
 		}
 	},
