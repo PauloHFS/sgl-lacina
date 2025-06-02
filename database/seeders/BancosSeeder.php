@@ -35,10 +35,10 @@ class BancosSeeder extends Seeder
         ];
 
         foreach ($bancos as $banco) {
-            Banco::create([
-                'codigo' => $banco['codigo'],
-                'nome' => $banco['nome'],
-            ]);
+            Banco::firstOrCreate(
+                ['codigo' => $banco['codigo']],
+                ['nome' => $banco['nome']]
+            );
         }
     }
 }

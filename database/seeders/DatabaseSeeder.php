@@ -31,46 +31,76 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO,
         ]);
+
         $campeloUser = User::factory()->cadastroCompleto()->create([
             'name' => 'Campelo',
             'email' => 'campelo@computacao.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO,
         ]);
+
         $pauloUser = User::factory()->cadastroCompleto()->create([
-            'name' => 'Paulo Hernane Fontes e Silva',
+            'name' => 'Paulo Hernane',
             'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
             'password' => Hash::make('Ab@12312'),
             'status_cadastro' => StatusCadastro::ACEITO,
         ]);
 
-
-        $cqsprojeto = Projeto::factory()->create([
-            'nome' => 'TS ETL',
-            'descricao' => 'Projeto de exemplo para testes',
+        $projetoTCCPaulo = Projeto::factory()->create([
+            'nome' => 'Sistema de Gerenciamento de Laboratório',
+            'descricao' => 'Projeto de TCC do Paulo Hernane',
             'data_inicio' => now()->subYear(),
-            'data_termino' => "2025-08-31",
+            'data_termino' => "2025-08-27",
+            'cliente' => 'LACINA',
+            'tipo' => TipoProjeto::TCC,
+        ]);
+
+        $projetoCQS = Projeto::factory()->create([
+            'nome' => 'TS ETL',
+            'descricao' => 'Descrição do projeto ABC',
+            'data_inicio' => now()->subYear(),
+            'data_termino' => '2025-08-31',
             'cliente' => 'CQS',
             'tipo' => TipoProjeto::PDI,
         ]);
 
         UsuarioProjeto::factory()->create([
             'usuario_id' => $maxwellUser->id,
-            'projeto_id' => $cqsprojeto->id,
+            'projeto_id' => $projetoTCCPaulo->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
-            'carga_horaria_semanal' => 20,
-            'data_inicio' => $cqsprojeto->data_inicio,
+            'carga_horaria_semanal' => 0,
+            'data_inicio' => $projetoTCCPaulo->data_inicio,
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $maxwellUser->id,
+            'projeto_id' => $projetoCQS->id,
+            'tipo_vinculo' => TipoVinculo::COORDENADOR,
+            'funcao' => Funcao::COORDENADOR,
+            'carga_horaria_semanal' => 0,
+            'data_inicio' => $projetoCQS->data_inicio,
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
         UsuarioProjeto::factory()->create([
             'usuario_id' => $pauloUser->id,
-            'projeto_id' => $cqsprojeto->id,
+            'projeto_id' => $projetoTCCPaulo->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'carga_horaria_semanal' => 20,
-            'data_inicio' => $cqsprojeto->data_inicio->addWeek(),
+            'data_inicio' => $projetoTCCPaulo->data_inicio,
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
+
+        UsuarioProjeto::factory()->create([
+            'usuario_id' => $pauloUser->id,
+            'projeto_id' => $projetoCQS->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::ALUNO,
+            'carga_horaria_semanal' => 20,
+            'data_inicio' => $projetoCQS->data_inicio,
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
@@ -114,7 +144,6 @@ class DatabaseSeeder extends Seeder
         //     'cliente' => 'Apple',
         //     'tipo' => TipoProjeto::PDI,
         // ]);
-
 
         // UsuarioProjeto::factory()->create([
         //     'usuario_id' => $maxwellUser->id,
