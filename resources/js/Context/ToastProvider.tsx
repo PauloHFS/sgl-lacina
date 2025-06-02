@@ -124,7 +124,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
             {/* Beta Toast */}
             {showBetaToast && (
                 <div className="toast toast-center toast-bottom z-[9999]">
-                    <div className="alert alert-warning max-w-md shadow-lg">
+                    <div className="alert alert-warning flex max-w-md items-center shadow-lg">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6 shrink-0 stroke-current"
@@ -138,24 +138,50 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
                                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                             />
                         </svg>
-                        <div className="flex-1">
-                            <span>Esta é uma versão beta.</span>
+                        <div className="min-w-0 flex-1">
+                            <span className="text-sm font-medium">
+                                Esta é uma versão beta.
+                            </span>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="ml-3 flex items-center gap-2">
                             <div
-                                className="tooltip tooltip-top tooltip-primary"
+                                className="tooltip tooltip-top tooltip-primary cursor-pointer"
                                 data-tip="Esta é uma versão beta. Algumas funcionalidades podem estar incompletas ou apresentar instabilidade. Agradecemos o seu feedback!"
                             >
-                                <button className="btn btn-circle btn-outline btn-xs">
-                                    ?
-                                </button>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="h-6 w-6"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
+                                    />
+                                </svg>
                             </div>
                             <button
-                                className="btn btn-sm btn-circle btn-ghost"
+                                className="btn btn-circle btn-ghost btn-xs"
                                 onClick={dismissBetaToast}
                                 aria-label="Fechar aviso beta"
                             >
-                                ✕
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="h-4 w-4"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18 18 6M6 6l12 12"
+                                    />
+                                </svg>
                             </button>
                         </div>
                     </div>
