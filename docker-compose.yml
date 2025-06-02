@@ -41,7 +41,7 @@ services:
             selenium:
                 condition: service_started
         healthcheck:
-            test: ['CMD-SHELL', 'curl -f http://localhost/up || exit 1']
+            test: ['CMD-SHELL', 'curl -f http://localhost || exit 1']
             interval: 30s
             timeout: 10s
             retries: 3
@@ -123,9 +123,7 @@ services:
             - 'sgl-lacina_db_dev:/var/lib/postgresql/data'
             - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
         networks:
-            sgl-lacina_network_dev:
-                aliases:
-                    - pgsql
+            sgl-lacina_network_dev: {}
         restart: unless-stopped
         healthcheck:
             test:
@@ -186,7 +184,14 @@ services:
             - sgl-lacina_network_dev
         restart: unless-stopped
         healthcheck:
-            test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+            test:
+                [
+                    'CMD',
+                    'wget',
+                    '--spider',
+                    '-q',
+                    'http://localhost:7700/health',
+                ]
             interval: 10s
             timeout: 5s
             retries: 5
