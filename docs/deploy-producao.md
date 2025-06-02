@@ -149,6 +149,12 @@ sudo chown -R $USER:$USER /backups/sgl-lacina
 git clone https://github.com/seu-usuario/sgl-lacina.git /opt/sgl-lacina
 cd /opt/sgl-lacina
 
+# Deploy de atualização
+cd /opt/sgl-lacina
+git fetch origin
+git checkout main
+git pull origin main
+
 # Deploys subsequentes
 cd /opt/sgl-lacina
 git pull origin main
@@ -386,6 +392,64 @@ echo "🌐 Aplicação disponível em: http://seu-dominio.com"
 
 ```bash
 chmod +x deploy.sh
+```
+
+## 🔒 Configuração SSL (HTTPS)
+
+### 1. Instalar Certbot
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+```
+
+### 2. Obter Certificado SSL
+
+```bash
+# Para domínio único
+sudo certbot --nginx -d seudominio.com
+
+# Para múltiplos domínios
+sudo certbot --nginx -d seudominio.com -d www.seudominio.com
+```
+
+### 3. Verificar Renovação Automática
+
+```bash
+# Testar renovação
+sudo certbot renew --dry-run
+
+# Verificar cron job
+sudo crontab -l | grep certbot
+```
+
+### 4. Atualizar configuração nginx
+
+O Certbot deve atualizar automaticamente o nginx, mas verifique se as configurações estão corretas:
+
+```nginx
+server {
+    listen 80;
+    server_name seudominio.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name seudominio.com;
+    
+    ssl_certificate /etc/letsencrypt/live/seudominio.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/seudominio.com/privkey.pem;
+    
+    # Resto da configuração nginx...
+}
+```
+
+### 5. Atualizar .env para HTTPS
+
+```env
+APP_URL=https://seudominio.com
+SESSION_SECURE_COOKIE=true
+SANCTUM_STATEFUL_DOMAINS=seudominio.com
 ```
 
 ## 🔙 Backup e Restore
@@ -742,6 +806,118 @@ echo "🌐 Aplicação disponível em: http://seu-servidor:16000"
 Tornar o script executável:
 ```bash
 chmod +x deploy.sh
+```
+
+## 📊 Monitoramento e Health Checks
+
+### 1. Verificação de Status dos Containers
+
+```bash
+# Status de todos os containers
+docker compose -f docker-compose.prod.yml ps
+
+# Logs em tempo real
+docker compose -f docker-compose.prod.yml logs -f
+
+# Logs de um container específico
+docker compose -f docker-compose.prod.yml logs app
+docker compose -f docker-compose.prod.yml logs db
+docker compose -f docker-compose.prod.yml logs nginx
+```
+
+### 2. Health Checks da Aplicação
+
+```bash
+# Verificar se a aplicação está respondendo
+curl -f http://localhost:16000/ || echo "❌ Aplicação não está respondendo"
+
+# Verificar banco de dados
+docker exec sgl-lacina_app_prod php artisan migrate:status
+
+# Verificar scheduler
+docker compose -f docker-compose.prod.yml logs scheduler | tail -20
+
+# Verificar queue worker
+docker compose -f docker-compose.prod.yml logs queue | tail -20
+```
+
+### 3. Monitoramento de Recursos
+
+```bash
+# Uso de CPU e memória dos containers
+docker stats --no-stream
+
+# Espaço em disco usado pelos volumes
+docker system df
+
+# Verificar espaço do volume de fotos
+du -sh $(docker volume inspect sgl-lacina_app_storage -f '{{.Mountpoint}}') 2>/dev/null || echo "Volume não encontrado"
+```
+
+### 4. Script de Health Check Automatizado
+
+Criar arquivo `health-check.sh`:
+
+```bash
+#!/bin/bash
+
+echo "🩺 Verificando saúde da aplicação SGL-LaCInA..."
+
+# Verificar containers
+echo "📦 Status dos containers:"
+docker compose -f docker-compose.prod.yml ps
+
+# Verificar aplicação web
+if curl -f -s http://localhost:16000/ > /dev/null; then
+    echo "✅ Aplicação web: OK"
+else
+    echo "❌ Aplicação web: FALHOU"
+fi
+
+# Verificar banco de dados
+if docker exec sgl-lacina_db_prod pg_isready -U sail > /dev/null 2>&1; then
+    echo "✅ Banco de dados: OK"
+else
+    echo "❌ Banco de dados: FALHOU"
+fi
+
+# Verificar queue
+QUEUE_JOBS=$(docker exec sgl-lacina_app_prod php artisan queue:work --stop-when-empty --timeout=1 2>/dev/null | wc -l)
+echo "📋 Jobs na fila: $QUEUE_JOBS"
+
+# Verificar logs de erro
+ERROR_COUNT=$(docker compose -f docker-compose.prod.yml logs --since=1h | grep -i error | wc -l)
+if [ $ERROR_COUNT -eq 0 ]; then
+    echo "✅ Logs: Sem erros na última hora"
+else
+    echo "⚠️ Logs: $ERROR_COUNT erros encontrados na última hora"
+fi
+
+echo "🩺 Verificação de saúde concluída!"
+```
+
+```bash
+chmod +x health-check.sh
+```
+
+### 5. Configurar Alertas (Opcional)
+
+Para receber alertas por email quando houver problemas:
+
+```bash
+# Instalar mailutils
+sudo apt install -y mailutils
+
+# Criar script de alerta
+cat > alert.sh << 'EOF'
+#!/bin/bash
+if ! curl -f -s http://localhost:16000/ > /dev/null; then
+    echo "Aplicação SGL-LaCInA está fora do ar!" | mail -s "ALERTA: SGL-LaCInA DOWN" admin@seudominio.com
+fi
+EOF
+
+# Adicionar ao crontab para verificar a cada 5 minutos
+echo "*/5 * * * * /opt/sgl-lacina/alert.sh" | crontab -
 ```
 
 ## 🔍 Monitoramento e Logs

@@ -33,7 +33,7 @@ services:
     container_name: sgl-lacina_scheduler_prod
     restart: unless-stopped
     working_dir: /var/www/html
-    command: bash -c "while true; do php artisan schedule:run --verbose --no-interaction && sleep 60; done"
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction && sleep 60; done"
     volumes:
       - ./docker/prod/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
       - ./docker/prod/php/php.ini:/usr/local/etc/php/php.ini
