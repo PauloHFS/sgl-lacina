@@ -11,52 +11,52 @@ use Illuminate\Queue\SerializesModels;
 
 class TestMail extends Mailable
 {
-    use Queueable, SerializesModels;
+  use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(
-        public string $assunto,
-        public string $conteudo
-    ) {
-        //
-    }
+  /**
+   * Create a new message instance.
+   */
+  public function __construct(
+    public string $assunto,
+    public string $conteudo
+  ) {
+    //
+  }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: $this->assunto,
-        );
-    }
+  /**
+   * Get the message envelope.
+   */
+  public function envelope(): Envelope
+  {
+    return new Envelope(
+      subject: $this->assunto,
+    );
+  }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            markdown: 'emails.test',
-            with: [
-                'conteudo' => $this->conteudo,
-                'assunto' => $this->assunto,
-                'timestamp' => now()->format('d/m/Y H:i:s'),
-                'environment' => app()->environment(),
-                'mailer' => config('mail.default'),
-            ],
-        );
-    }
+  /**
+   * Get the message content definition.
+   */
+  public function content(): Content
+  {
+    return new Content(
+      markdown: 'emails.test',
+      with: [
+        'conteudo' => $this->conteudo,
+        'assunto' => $this->assunto,
+        'timestamp' => now()->format('d/m/Y H:i:s'),
+        'environment' => app()->environment(),
+        'mailer' => config('mail.default'),
+      ],
+    );
+  }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
-    }
+  /**
+   * Get the attachments for the message.
+   *
+   * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+   */
+  public function attachments(): array
+  {
+    return [];
+  }
 }
