@@ -25,323 +25,127 @@ class DatabaseSeeder extends Seeder
         $this->call(ConfiguracaoSistemaSeeder::class);
         $this->call(BancosSeeder::class);
 
-        $maxwellUser = User::factory()->cadastroCompleto()->create([
+        $maxwell = $this->createUser([
             'name' => 'Maxwell Guimarães de Oliveira',
             'email' => 'maxwell@computacao.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'status_cadastro' => StatusCadastro::ACEITO,
+            'cpf' => '12345678901',
+            'data_nascimento' => '2000-01-01',
+            'telefone' => '83999990001',
+            'rg' => '1234567',
+            'conta_bancaria' => '12345-6',
         ]);
 
-        $campeloUser = User::factory()->cadastroCompleto()->create([
+        $campelo = $this->createUser([
             'name' => 'Campelo',
             'email' => 'campelo@computacao.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'status_cadastro' => StatusCadastro::ACEITO,
+            'cpf' => '98765432100',
+            'data_nascimento' => '2000-01-01',
+            'telefone' => '83999990002',
+            'rg' => '7654321',
+            'conta_bancaria' => '54321-0',
         ]);
 
-        $pauloUser = User::factory()->cadastroCompleto()->create([
-            'name' => 'Paulo Hernane',
+        $paulo = $this->createUser([
+            'name' => 'Paulo Hernane Silva',
             'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
-            'password' => Hash::make('Ab@12312'),
-            'status_cadastro' => StatusCadastro::ACEITO,
+            'cpf' => '61562374370',
+            'data_nascimento' => '2000-01-01',
+            'telefone' => '99984297519',
+            'rg' => '1112223',
+            'conta_bancaria' => '11111-1',
         ]);
 
-        $projetoTCCPaulo = Projeto::factory()->create([
-            'nome' => 'Sistema de Gerenciamento de Laboratório',
-            'descricao' => 'Projeto de TCC do Paulo Hernane',
-            'data_inicio' => now()->subYear(),
-            'data_termino' => "2025-08-27",
-            'cliente' => 'LACINA',
+        // Criar projetos
+        $projetoTCC = $this->createProject([
+            'nome' => 'Sistema de Gerenciamento de Laboratório - LaCInA',
+            'descricao' => 'Desenvolvimento de sistema web para gestão de recursos humanos, projetos e colaboradores do Laboratório de Computação Inteligente Aplicada da UFCG.',
+            'data_inicio' => '2024-03-01',
+            'data_termino' => '2025-08-27',
+            'cliente' => 'LaCInA - UFCG',
             'tipo' => TipoProjeto::TCC,
         ]);
 
-        $projetoCQS = Projeto::factory()->create([
-            'nome' => 'TS ETL',
-            'descricao' => 'Descrição do projeto ABC',
-            'data_inicio' => now()->subYear(),
-            'data_termino' => '2025-08-31',
+        $projetoPDI = $this->createProject([
+            'nome' => 'TS ETL - Sistema de Extração e Transformação de Dados',
+            'descricao' => 'Desenvolvimento de pipeline ETL para processamento de dados temporais usando TypeScript e tecnologias modernas de Big Data.',
+            'data_inicio' => '2024-01-15',
+            'data_termino' => '2025-12-31',
             'cliente' => 'CQS',
             'tipo' => TipoProjeto::PDI,
         ]);
 
-        UsuarioProjeto::factory()->create([
-            'usuario_id' => $maxwellUser->id,
-            'projeto_id' => $projetoTCCPaulo->id,
+        // Criar vínculos de coordenação
+        $this->createProjectLink([
+            'usuario_id' => $maxwell->id,
+            'projeto_id' => $projetoTCC->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
-            'carga_horaria_semanal' => 0,
-            'data_inicio' => $projetoTCCPaulo->data_inicio,
+            'carga_horaria_semanal' => 8,
+            'data_inicio' => '2024-03-01',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
-        UsuarioProjeto::factory()->create([
-            'usuario_id' => $maxwellUser->id,
-            'projeto_id' => $projetoCQS->id,
+        $this->createProjectLink([
+            'usuario_id' => $maxwell->id,
+            'projeto_id' => $projetoPDI->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
-            'carga_horaria_semanal' => 0,
-            'data_inicio' => $projetoCQS->data_inicio,
+            'carga_horaria_semanal' => 12,
+            'data_inicio' => '2024-01-15',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
-        UsuarioProjeto::factory()->create([
-            'usuario_id' => $pauloUser->id,
-            'projeto_id' => $projetoTCCPaulo->id,
+        // Criar vínculo de colaboração (TCC)
+        $this->createProjectLink([
+            'usuario_id' => $paulo->id,
+            'projeto_id' => $projetoTCC->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
             'carga_horaria_semanal' => 20,
-            'data_inicio' => $projetoTCCPaulo->data_inicio,
+            'data_inicio' => '2024-03-01',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
+    }
 
-        UsuarioProjeto::factory()->create([
-            'usuario_id' => $pauloUser->id,
-            'projeto_id' => $projetoCQS->id,
-            'tipo_vinculo' => TipoVinculo::COLABORADOR,
-            'funcao' => Funcao::ALUNO,
-            'carga_horaria_semanal' => 20,
-            'data_inicio' => $projetoCQS->data_inicio,
-            'status' => StatusVinculoProjeto::APROVADO,
+    private function createUser(array $data, StatusCadastro $status = StatusCadastro::ACEITO): User
+    {
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => $status,
+            'cpf' => $data['cpf'],
+            'data_nascimento' => $data['data_nascimento'],
+            'telefone' => $data['telefone'],
+            'rg' => $data['rg'],
+            'uf_rg' => $data['uf_rg'] ?? 'PB',
+            'orgao_emissor_rg' => $data['orgao_emissor_rg'] ?? 'SSP-PB',
+            'conta_bancaria' => $data['conta_bancaria'],
         ]);
+    }
 
-        // $projeto1 = Projeto::factory()->create([
-        //     'nome' => 'Projeto ABC',
-        //     'descricao' => 'Descrição do projeto ABC',
-        //     'data_inicio' => now()->subYear(),
-        //     'data_termino' => now()->addYear(),
-        //     'cliente' => 'Dell',
-        //     'tipo' => TipoProjeto::PDI,
-        // ]);
-        // $projeto2 = Projeto::factory()->create([
-        //     'nome' => 'Projeto DEF',
-        //     'descricao' => 'Descrição do projeto DEF',
-        //     'data_inicio' => now()->subYear(),
-        //     'data_termino' => now()->addYear(),
-        //     'cliente' => 'Keepee',
-        //     'tipo' => TipoProjeto::SUPORTE,
-        // ]);
-        // $projeto3 = Projeto::factory()->create([
-        //     'nome' => 'Projeto GHI',
-        //     'descricao' => 'Descrição do projeto GHI',
-        //     'data_inicio' => now()->subYear(),
-        //     'data_termino' => now()->addYear(),
-        //     'cliente' => 'Google',
-        //     'tipo' => TipoProjeto::SUPORTE,
-        // ]);
-        // $projeto4 = Projeto::factory()->create([
-        //     'nome' => 'Projeto JKL',
-        //     'descricao' => 'Descrição do projeto JKL',
-        //     'data_inicio' => now()->subYear(),
-        //     'data_termino' => now()->addYear(),
-        //     'cliente' => 'Microsoft',
-        //     'tipo' => TipoProjeto::PDI,
-        // ]);
-        // $projeto5 = Projeto::factory()->create([
-        //     'nome' => 'Projeto MNO',
-        //     'descricao' => 'Descrição do projeto MNO',
-        //     'data_inicio' => now()->subYear(),
-        //     'data_termino' => now()->addYear(),
-        //     'cliente' => 'Apple',
-        //     'tipo' => TipoProjeto::PDI,
-        // ]);
+    private function createProject(array $data): Projeto
+    {
+        return Projeto::create([
+            'nome' => $data['nome'],
+            'descricao' => $data['descricao'],
+            'data_inicio' => $data['data_inicio'],
+            'data_termino' => $data['data_termino'],
+            'cliente' => $data['cliente'],
+            'tipo' => $data['tipo'],
+        ]);
+    }
 
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $maxwellUser->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
-        //     'funcao' => Funcao::COORDENADOR,
-        //     'carga_horaria_semanal' => 20,
-        //     'data_inicio' => $projeto1->data_inicio,
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $maxwellUser->id,
-        //     'projeto_id' => $projeto2->id,
-        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
-        //     'funcao' => Funcao::COORDENADOR,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => $projeto2->data_inicio,
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $campeloUser->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
-        //     'funcao' => Funcao::COORDENADOR,
-        //     'carga_horaria_semanal' => 20,
-        //     'data_inicio' => $projeto1->data_inicio,
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $campeloUser->id,
-        //     'projeto_id' => $projeto2->id,
-        //     'tipo_vinculo' => TipoVinculo::COORDENADOR,
-        //     'funcao' => Funcao::COORDENADOR,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => $projeto2->data_inicio,
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-
-        // // usuario colaborador de um projeto (Ativo)
-        // $usuario_ativo = User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário Ativo',
-        //     'email' => 'usuario_ativo@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::ACEITO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_ativo->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 15,
-        //     'data_inicio' => $projeto1->data_inicio->addWeek(),
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-
-        // // usuario com cadastro pendente no laboratório
-        // User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário Cadastro Pendente',
-        //     'email' => 'usuario_pendente@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::PENDENTE,
-        // ]);
-
-        // // usuario aceito no laboratório com solicitação de vínculo pendente em um projeto
-        // $usuarioVinculoPendente = User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário Vínculo Pendente',
-        //     'email' => 'usuariovinculopendente@gmail.com',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::ACEITO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuarioVinculoPendente->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now(),
-        //     'status' => StatusVinculoProjeto::PENDENTE,
-        // ]);
-
-        // // usuário encerrado (encerrado no ultimo projeto)
-        // $usuario_encerrado = User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário encerrado',
-        //     'email' => 'usuario_encerrado@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::ACEITO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_encerrado->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now()->subMonth(),
-        //     'data_fim' => now(),
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        // ]);
-
-        // // usuario antigo com varias (5) trocas de projeto
-        // $usuario_antigo = User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário Antigo',
-        //     'email' => 'usuario_antigo@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::ACEITO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_antigo->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now()->subYears(5),
-        //     'data_fim' => now()->subYears(4),
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_antigo->id,
-        //     'projeto_id' => $projeto2->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::DESENVOLVEDOR,
-        //     'carga_horaria_semanal' => 15,
-        //     'data_inicio' => now()->subYears(4),
-        //     'data_fim' => now()->subYears(3),
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_antigo->id,
-        //     'projeto_id' => $projeto3->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::PESQUISADOR,
-        //     'carga_horaria_semanal' => 20,
-        //     'data_inicio' => now()->subYears(3),
-        //     'data_fim' => now()->subYears(2),
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_antigo->id,
-        //     'projeto_id' => $projeto4->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::TECNICO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now()->subYears(2),
-        //     'data_fim' => now()->subYear(),
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        // ]);
-        // UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_antigo->id,
-        //     'projeto_id' => $projeto5->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 12,
-        //     'data_inicio' => now()->subYear(),
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-
-        // User::factory(20)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::ACEITO]);
-        // User::factory(5)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::PENDENTE]);
-        // User::factory(2)->cadastroCompleto()->create(['status_cadastro' => StatusCadastro::RECUSADO]);
-
-        // $usuario_trocas = User::factory()->cadastroCompleto()->create([
-        //     'name' => 'Usuário Trocas',
-        //     'email' => 'usuario_trocas@ccc.ufcg.edu.br',
-        //     'password' => Hash::make('Ab@12312'),
-        //     'status_cadastro' => StatusCadastro::ACEITO,
-        // ]);
-
-        // $vinculoTrocado = UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_trocas->id,
-        //     'projeto_id' => $projeto1->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now()->subYears(5),
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-
-        // $vinculoTrocado->update([
-        //     'trocar' => true,
-        //     'updated_at' => now()->subYears(4),
-        // ]);
-
-        // $vinculoNovo = UsuarioProjeto::factory()->create([
-        //     'usuario_id' => $usuario_trocas->id,
-        //     'projeto_id' => $projeto2->id,
-        //     'tipo_vinculo' => TipoVinculo::COLABORADOR,
-        //     'funcao' => Funcao::ALUNO,
-        //     'carga_horaria_semanal' => 10,
-        //     'data_inicio' => now()->subYears(4),
-        //     'status' => StatusVinculoProjeto::PENDENTE,
-        // ]);
-
-        // $vinculoNovo->update([
-        //     'status' => StatusVinculoProjeto::APROVADO,
-        // ]);
-        // $vinculoTrocado->update([
-        //     'status' => StatusVinculoProjeto::ENCERRADO,
-        //     'data_fim' => now()->subYears(4),
-        // ]);
+    private function createProjectLink(array $data): UsuarioProjeto
+    {
+        return UsuarioProjeto::create([
+            'usuario_id' => $data['usuario_id'],
+            'projeto_id' => $data['projeto_id'],
+            'tipo_vinculo' => $data['tipo_vinculo'],
+            'funcao' => $data['funcao'],
+            'carga_horaria_semanal' => $data['carga_horaria_semanal'],
+            'data_inicio' => $data['data_inicio'],
+            'status' => $data['status'],
+        ]);
     }
 }
