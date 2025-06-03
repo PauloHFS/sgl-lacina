@@ -8,7 +8,8 @@ import { useToast } from '@/Context/ToastProvider';
 import { Banco, Genero } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import axios from 'axios';
+import { useState } from 'react';
 import { IMaskInput } from 'react-imask';
 
 export default function UpdateProfileInformation({
@@ -31,18 +32,82 @@ export default function UpdateProfileInformation({
             foto_url: user.foto_url ?? null,
         });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        const cleanedData = Object.fromEntries(
-            Object.entries(data).map(([k, v]) => [
-                k,
-                v === null || v === undefined ? '' : v,
-            ]),
-        );
-        patch(route('profile.update'), cleanedData);
+    const { toast } = useToast();
+    const [cpfValido, setCpfValido] = useState<boolean | null>(null);
+
+    // Função para validar CPF
+    const validarCPF = (cpf: string): boolean => {
+        // Remove formatação
+        const cpfLimpo = cpf.replace(/\D/g, '');
+
+        // Verifica se tem 11 dígitos
+        if (cpfLimpo.length !== 11) return false;
+
+        // Verifica se todos os dígitos são iguais
+        if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
+
+        // Validação do primeiro dígito verificador
+        let soma = 0;
+        for (let i = 0; i < 9; i++) {
+            soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
+        }
+        let resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpfLimpo.charAt(9))) return false;
+
+        // Validação do segundo dígito verificador
+        soma = 0;
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
+        }
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpfLimpo.charAt(10))) return false;
+
+        return true;
     };
 
-    const { toast } = useToast();
+    // Função para buscar endereço via CEP
+    const viaCEP = (cep: string) => {
+        if (cep.length !== 8) return;
+
+        axios
+            .get(`https://viacep.com.br/ws/${cep}/json/`)
+            .then((res) => {
+                if (res.data.erro) {
+                    toast('CEP não encontrado', 'info');
+                    return;
+                }
+
+                setData((prev) => ({
+                    ...prev,
+                    endereco: res.data.logradouro || prev.endereco || '',
+                    bairro: res.data.bairro || prev.bairro || '',
+                    cidade: res.data.localidade || prev.cidade || '',
+                    uf: res.data.uf || prev.uf || '',
+                    complemento: res.data.complemento || prev.complemento || '',
+                }));
+            })
+            .catch((err) => {
+                console.error('Erro ao buscar CEP:', err);
+                toast(
+                    'Erro ao buscar CEP. Tente novamente mais tarde.',
+                    'error',
+                );
+            });
+    };
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        patch(route('profile.update'), {
+            preserveScroll: true,
+            onSuccess: () => {},
+            onError: (errors) => {
+                console.error('Erro ao atualizar perfil:', errors);
+            },
+        });
+    };
 
     return (
         <section className={className}>
@@ -60,37 +125,40 @@ export default function UpdateProfileInformation({
                 // message="As informações do perfil estão travadas no momento"
             />
             <form onSubmit={submit} className="mt-6 space-y-6">
-                {/* Nome e E-mail */}
-                <div>
-                    <InputLabel htmlFor="name" value="Nome" />
-                    <TextInput
-                        id="name"
-                        className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        autoComplete="name"
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.name} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="email" value="E-mail" />
-                    <TextInput
-                        id="email"
-                        type="email"
-                        className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.email} />
+                {/* Grid de 2 colunas para campos básicos */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* Nome */}
+                    <div>
+                        <InputLabel htmlFor="name" value="Nome" />
+                        <TextInput
+                            id="name"
+                            className="mt-1 block w-full"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                            autoComplete="name"
+                        />
+                        <InputError className="mt-2" message={errors.name} />
+                    </div>
+
+                    {/* E-mail */}
+                    <div>
+                        <InputLabel htmlFor="email" value="E-mail" />
+                        <TextInput
+                            id="email"
+                            type="email"
+                            className="mt-1 block w-full"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                            autoComplete="username"
+                        />
+                        <InputError className="mt-2" message={errors.email} />
+                    </div>
                 </div>
 
-                {/* Foto de Perfil */}
-                <div>
+                {/* Foto de Perfil - largura completa */}
+                <div className="col-span-1 md:col-span-2">
                     <InputLabel htmlFor="foto_url" value="Foto de Perfil" />
                     <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                         {/* Avatar Preview or Placeholder */}
@@ -159,7 +227,6 @@ export default function UpdateProfileInformation({
                                         e.target.value = '';
                                     }
                                 }}
-                                disabled
                             />
                             {errors.foto_url ? (
                                 <span className="label-text-alt text-error mt-1">
@@ -174,393 +241,451 @@ export default function UpdateProfileInformation({
                     </div>
                 </div>
 
-                {/* Gênero */}
+                {/* Grid de 2 colunas para dados pessoais */}
+                <div className="divider col-span-1 md:col-span-2">
+                    Dados Pessoais
+                </div>
 
-                {/* Gênero */}
-                <div>
-                    <InputLabel htmlFor="genero" value="Gênero" />
-                    <select
-                        id="genero"
-                        className={`select select-bordered w-full ${errors.genero ? 'select-error' : ''}`}
-                        value={data.genero || ''}
-                        onChange={(e) =>
-                            setData('genero', e.target.value as Genero)
-                        }
-                        disabled
-                    >
-                        <option value="" disabled>
-                            Selecione o gênero...
-                        </option>
-                        <option value="MASCULINO">Masculino</option>
-                        <option value="FEMININO">Feminino</option>
-                        <option value="OUTRO">Outro</option>
-                        <option value="NAO_INFORMAR">
-                            Prefiro não informar
-                        </option>
-                    </select>
-                    <InputError className="mt-2" message={errors.genero} />
-                </div>
-                {/* Data de Nascimento */}
-                <div>
-                    <InputLabel
-                        htmlFor="data_nascimento"
-                        value="Data de Nascimento"
-                    />
-                    <TextInput
-                        id="data_nascimento"
-                        type="date"
-                        className={`input input-bordered w-full ${errors.data_nascimento ? 'input-error' : ''}`}
-                        value={
-                            data.data_nascimento
-                                ? new Date(data.data_nascimento)
-                                      .toISOString()
-                                      .split('T')[0]
-                                : ''
-                        }
-                        onChange={(e) =>
-                            setData('data_nascimento', e.target.value)
-                        }
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.data_nascimento}
-                    />
-                </div>
-                {/* Telefone */}
-                <div>
-                    <InputLabel htmlFor="telefone" value="Telefone" />
-                    <IMaskInput
-                        id="telefone"
-                        mask="+55 (00) 00000-0000"
-                        className={`input input-bordered w-full ${errors.telefone ? 'input-error' : ''}`}
-                        value={data.telefone || ''}
-                        onAccept={(value) => setData('telefone', value)}
-                        placeholder="+55 (00) 00000-0000"
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.telefone} />
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* Gênero */}
+                    <div>
+                        <InputLabel htmlFor="genero" value="Gênero" />
+                        <select
+                            id="genero"
+                            className={`select select-bordered w-full ${errors.genero ? 'select-error' : ''}`}
+                            value={data.genero || ''}
+                            onChange={(e) =>
+                                setData('genero', e.target.value as Genero)
+                            }
+                        >
+                            <option value="">Selecione o gênero...</option>
+                            <option value="MASCULINO">Masculino</option>
+                            <option value="FEMININO">Feminino</option>
+                            <option value="OUTRO">Outro</option>
+                            <option value="NAO_INFORMAR">
+                                Prefiro não informar
+                            </option>
+                        </select>
+                        <InputError className="mt-2" message={errors.genero} />
+                    </div>
+
+                    {/* Data de Nascimento */}
+                    <div>
+                        <InputLabel
+                            htmlFor="data_nascimento"
+                            value="Data de Nascimento"
+                        />
+                        <TextInput
+                            id="data_nascimento"
+                            type="date"
+                            className={`input input-bordered w-full ${errors.data_nascimento ? 'input-error' : ''}`}
+                            value={
+                                data.data_nascimento
+                                    ? new Date(data.data_nascimento)
+                                          .toISOString()
+                                          .split('T')[0]
+                                    : ''
+                            }
+                            onChange={(e) =>
+                                setData('data_nascimento', e.target.value)
+                            }
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.data_nascimento}
+                        />
+                    </div>
+
+                    {/* Telefone - largura completa */}
+                    <div className="col-span-1 md:col-span-2">
+                        <InputLabel htmlFor="telefone" value="Telefone" />
+                        <IMaskInput
+                            id="telefone"
+                            mask="+55 (00) 00000-0000"
+                            className={`input input-bordered w-full ${errors.telefone ? 'input-error' : ''}`}
+                            value={data.telefone || ''}
+                            onAccept={(value) => setData('telefone', value)}
+                            placeholder="+55 (00) 00000-0000"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.telefone}
+                        />
+                    </div>
                 </div>
                 {/* Documentos */}
-                <div className="divider">Documentos</div>
-                <div>
-                    <InputLabel htmlFor="cpf" value="CPF" />
-                    <IMaskInput
-                        id="cpf"
-                        mask="000.000.000-00"
-                        className={`input input-bordered w-full ${errors.cpf ? 'input-error' : ''}`}
-                        value={data.cpf || ''}
-                        onAccept={(value) => setData('cpf', value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.cpf} />
+                <div className="divider col-span-1 md:col-span-2">
+                    Documentos
                 </div>
-                <div>
-                    <InputLabel htmlFor="rg" value="RG" />
-                    <TextInput
-                        id="rg"
-                        className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
-                        value={data.rg || ''}
-                        minLength={7}
-                        maxLength={9}
-                        onChange={(e) => setData('rg', e.target.value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.rg} />
-                </div>
-                <div>
-                    <InputLabel
-                        htmlFor="orgao_emissor_rg"
-                        value="Orgão Emissor"
-                    />
-                    <TextInput
-                        id="orgao_emissor_rg"
-                        className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
-                        value={data.orgao_emissor_rg || ''}
-                        onChange={(e) =>
-                            setData('orgao_emissor_rg', e.target.value)
-                        }
-                        required
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.orgao_emissor_rg}
-                    />
-                </div>
-                <div>
-                    <InputLabel htmlFor="uf_rg" value="UF do RG" />
-                    <select
-                        id="uf_rg"
-                        className={`select select-bordered w-full ${errors.uf_rg ? 'select-error' : ''}`}
-                        value={data.uf_rg || ''}
-                        onChange={(e) => setData('uf_rg', e.target.value)}
-                        required
-                        disabled
-                    >
-                        <option value="" disabled>
-                            Selecione uma UF...
-                        </option>
-                        {ESTADOS.map((uf) => (
-                            <option key={uf.sigla} value={uf.sigla}>
-                                {uf.nome}
-                            </option>
-                        ))}
-                    </select>
-                    <InputError className="mt-2" message={errors.uf_rg} />
+                <div className="col-span-1 grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2">
+                    <div>
+                        <InputLabel htmlFor="cpf" value="CPF" />
+                        <IMaskInput
+                            id="cpf"
+                            mask="000.000.000-00"
+                            className={`input input-bordered w-full ${
+                                errors.cpf
+                                    ? 'input-error'
+                                    : cpfValido === true
+                                      ? 'input-success'
+                                      : cpfValido === false
+                                        ? 'input-error'
+                                        : ''
+                            }`}
+                            value={data.cpf || ''}
+                            onAccept={(value) => {
+                                setData('cpf', value);
+                                const isValid = validarCPF(value);
+                                setCpfValido(
+                                    value.length === 14 ? isValid : null,
+                                );
+                            }}
+                            required
+                        />
+                        {cpfValido === true && (
+                            <div className="text-success mt-1 text-sm">
+                                ✓ CPF válido
+                            </div>
+                        )}
+                        {cpfValido === false && (
+                            <div className="text-error mt-1 text-sm">
+                                ✗ CPF inválido
+                            </div>
+                        )}
+                        <InputError className="mt-2" message={errors.cpf} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="rg" value="RG" />
+                        <TextInput
+                            id="rg"
+                            className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
+                            value={data.rg || ''}
+                            minLength={7}
+                            maxLength={9}
+                            onChange={(e) => setData('rg', e.target.value)}
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.rg} />
+                    </div>
+                    <div>
+                        <InputLabel
+                            htmlFor="orgao_emissor_rg"
+                            value="Órgão Emissor"
+                        />
+                        <TextInput
+                            id="orgao_emissor_rg"
+                            className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
+                            value={data.orgao_emissor_rg || ''}
+                            onChange={(e) =>
+                                setData('orgao_emissor_rg', e.target.value)
+                            }
+                            required
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.orgao_emissor_rg}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="uf_rg" value="UF do RG" />
+                        <select
+                            id="uf_rg"
+                            className={`select select-bordered w-full ${errors.uf_rg ? 'select-error' : ''}`}
+                            value={data.uf_rg || ''}
+                            onChange={(e) => setData('uf_rg', e.target.value)}
+                            required
+                        >
+                            <option value="">Selecione uma UF...</option>
+                            {ESTADOS.map((uf) => (
+                                <option key={uf.sigla} value={uf.sigla}>
+                                    {uf.nome}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError className="mt-2" message={errors.uf_rg} />
+                    </div>
                 </div>
                 {/* Endereço */}
-                <div className="divider">Endereço</div>
-                <div>
-                    <InputLabel htmlFor="cep" value="CEP" />
-                    <IMaskInput
-                        id="cep"
-                        mask="00000-000"
-                        className={`input input-bordered w-full ${errors.cep ? 'input-error' : ''}`}
-                        value={data.cep || ''}
-                        onAccept={(value) => setData('cep', value)}
-                        placeholder="00000-000"
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.cep} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="endereco" value="Endereço" />
-                    <TextInput
-                        id="endereco"
-                        className={`input input-bordered w-full ${errors.endereco ? 'input-error' : ''}`}
-                        value={data.endereco || ''}
-                        onChange={(e) => setData('endereco', e.target.value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.endereco} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="numero" value="Número" />
-                    <TextInput
-                        id="numero"
-                        className={`input input-bordered w-full ${errors.numero ? 'input-error' : ''}`}
-                        value={data.numero || ''}
-                        onChange={(e) => setData('numero', e.target.value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.numero} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="complemento" value="Complemento" />
-                    <TextInput
-                        id="complemento"
-                        className={`input input-bordered w-full ${errors.complemento ? 'input-error' : ''}`}
-                        value={data.complemento || ''}
-                        onChange={(e) => setData('complemento', e.target.value)}
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.complemento} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="bairro" value="Bairro" />
-                    <TextInput
-                        id="bairro"
-                        className={`input input-bordered w-full ${errors.bairro ? 'input-error' : ''}`}
-                        value={data.bairro || ''}
-                        onChange={(e) => setData('bairro', e.target.value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.bairro} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="uf" value="Estado" />
-                    <select
-                        id="uf"
-                        className={`select select-bordered w-full ${errors.uf ? 'select-error' : ''}`}
-                        value={data.uf || ''}
-                        onChange={(e) => setData('uf', e.target.value)}
-                        required
-                        disabled
-                    >
-                        <option value="" disabled>
-                            Selecione um estado...
-                        </option>
-                        {ESTADOS.map((uf_item) => (
-                            <option key={uf_item.sigla} value={uf_item.sigla}>
-                                {uf_item.nome}
-                            </option>
-                        ))}
-                    </select>
-                    <InputError className="mt-2" message={errors.uf} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="cidade" value="Cidade" />
-                    <TextInput
-                        id="cidade"
-                        className={`input input-bordered w-full ${errors.cidade ? 'input-error' : ''}`}
-                        value={data.cidade || ''}
-                        onChange={(e) => setData('cidade', e.target.value)}
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.cidade} />
+                <div className="divider col-span-1 md:col-span-2">Endereço</div>
+                <div className="col-span-1 grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2">
+                    <div>
+                        <InputLabel htmlFor="cep" value="CEP" />
+                        <IMaskInput
+                            id="cep"
+                            mask="00000-000"
+                            className={`input input-bordered w-full ${errors.cep ? 'input-error' : ''}`}
+                            value={data.cep || ''}
+                            onAccept={(value) => {
+                                setData('cep', value);
+                                if (value.length === 9) {
+                                    const cepLimpo = value.replace(/\D/g, '');
+                                    viaCEP(cepLimpo);
+                                }
+                            }}
+                            placeholder="00000-000"
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.cep} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="endereco" value="Endereço" />
+                        <TextInput
+                            id="endereco"
+                            className={`input input-bordered w-full ${errors.endereco ? 'input-error' : ''}`}
+                            value={data.endereco || ''}
+                            onChange={(e) =>
+                                setData('endereco', e.target.value)
+                            }
+                            required
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.endereco}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="numero" value="Número" />
+                        <TextInput
+                            id="numero"
+                            className={`input input-bordered w-full ${errors.numero ? 'input-error' : ''}`}
+                            value={data.numero || ''}
+                            onChange={(e) => setData('numero', e.target.value)}
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.numero} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="complemento" value="Complemento" />
+                        <TextInput
+                            id="complemento"
+                            className={`input input-bordered w-full ${errors.complemento ? 'input-error' : ''}`}
+                            value={data.complemento || ''}
+                            onChange={(e) =>
+                                setData('complemento', e.target.value)
+                            }
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.complemento}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="bairro" value="Bairro" />
+                        <TextInput
+                            id="bairro"
+                            className={`input input-bordered w-full ${errors.bairro ? 'input-error' : ''}`}
+                            value={data.bairro || ''}
+                            onChange={(e) => setData('bairro', e.target.value)}
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.bairro} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="uf" value="Estado" />
+                        <select
+                            id="uf"
+                            className={`select select-bordered w-full ${errors.uf ? 'select-error' : ''}`}
+                            value={data.uf || ''}
+                            onChange={(e) => setData('uf', e.target.value)}
+                            required
+                        >
+                            <option value="">Selecione um estado...</option>
+                            {ESTADOS.map((uf_item) => (
+                                <option
+                                    key={uf_item.sigla}
+                                    value={uf_item.sigla}
+                                >
+                                    {uf_item.nome}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError className="mt-2" message={errors.uf} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="cidade" value="Cidade" />
+                        <TextInput
+                            id="cidade"
+                            className={`input input-bordered w-full ${errors.cidade ? 'input-error' : ''}`}
+                            value={data.cidade || ''}
+                            onChange={(e) => setData('cidade', e.target.value)}
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.cidade} />
+                    </div>
                 </div>
                 {/* Dados Bancários */}
-                <div className="divider">Dados Bancários</div>
-                <div>
-                    <InputLabel htmlFor="banco_id" value="Banco" />
-                    <select
-                        id="banco_id"
-                        className={`select select-bordered w-full ${errors.banco_id ? 'select-error' : ''}`}
-                        value={data.banco_id || ''}
-                        onChange={(e) => setData('banco_id', e.target.value)}
-                        disabled
-                    >
-                        <option value="" disabled>
-                            Selecione um banco...
-                        </option>
-                        {bancos.map((banco) => (
-                            <option key={banco.id} value={banco.id}>
-                                {banco.codigo} - {banco.nome}
-                            </option>
-                        ))}
-                    </select>
-                    <InputError className="mt-2" message={errors.banco_id} />
+                <div className="divider col-span-1 md:col-span-2">
+                    Dados Bancários
                 </div>
-                <div>
-                    <InputLabel
-                        htmlFor="conta_bancaria"
-                        value="Conta Bancária"
-                    />
-                    <IMaskInput
-                        id="conta_bancaria"
-                        mask="00000-0"
-                        className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
-                        value={data.conta_bancaria || ''}
-                        onAccept={(value) => setData('conta_bancaria', value)}
-                        placeholder="00000-0"
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.conta_bancaria}
-                    />
-                </div>
-                <div>
-                    <InputLabel htmlFor="agencia" value="Agência" />
-                    <IMaskInput
-                        id="agencia"
-                        mask="0000-0"
-                        className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
-                        value={data.agencia || ''}
-                        onAccept={(value) => setData('agencia', value)}
-                        placeholder="0000-0"
-                        required
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.agencia} />
+                <div className="col-span-1 grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2">
+                    <div className="col-span-1 md:col-span-2">
+                        <InputLabel htmlFor="banco_id" value="Banco" />
+                        <select
+                            id="banco_id"
+                            className={`select select-bordered w-full ${errors.banco_id ? 'select-error' : ''}`}
+                            value={data.banco_id || ''}
+                            onChange={(e) =>
+                                setData('banco_id', e.target.value)
+                            }
+                        >
+                            <option value="">Selecione um banco...</option>
+                            {bancos.map((banco) => (
+                                <option key={banco.id} value={banco.id}>
+                                    {banco.codigo} - {banco.nome}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError
+                            className="mt-2"
+                            message={errors.banco_id}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel
+                            htmlFor="conta_bancaria"
+                            value="Conta Bancária"
+                        />
+                        <IMaskInput
+                            id="conta_bancaria"
+                            mask="00000-0"
+                            className={`input input-bordered w-full ${errors.conta_bancaria ? 'input-error' : ''}`}
+                            value={data.conta_bancaria || ''}
+                            onAccept={(value) =>
+                                setData('conta_bancaria', value)
+                            }
+                            placeholder="00000-0"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.conta_bancaria}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="agencia" value="Agência" />
+                        <IMaskInput
+                            id="agencia"
+                            mask="0000-0"
+                            className={`input input-bordered w-full ${errors.agencia ? 'input-error' : ''}`}
+                            value={data.agencia || ''}
+                            onAccept={(value) => setData('agencia', value)}
+                            placeholder="0000-0"
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.agencia} />
+                    </div>
                 </div>
                 {/* Dados Profissionais */}
-                <div className="divider">Dados Profissionais</div>
-                <div>
-                    <InputLabel
-                        htmlFor="curriculo_lattes_url"
-                        value="Currículo Lattes"
-                    />
-                    <TextInput
-                        id="curriculo_lattes_url"
-                        type="url"
-                        className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
-                        value={data.curriculo_lattes_url || ''}
-                        onChange={(e) =>
-                            setData('curriculo_lattes_url', e.target.value)
-                        }
-                        required
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.curriculo_lattes_url}
-                    />
+                <div className="divider col-span-1 md:col-span-2">
+                    Dados Profissionais
                 </div>
-                <div>
-                    <InputLabel htmlFor="linkedin_url" value="LinkedIn" />
-                    <TextInput
-                        id="linkedin_url"
-                        type="url"
-                        className={`input input-bordered w-full ${errors.linkedin_url ? 'input-error' : ''}`}
-                        value={data.linkedin_url || ''}
-                        onChange={(e) =>
-                            setData('linkedin_url', e.target.value)
-                        }
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.linkedin_url}
-                    />
-                </div>
-                <div>
-                    <InputLabel htmlFor="github_url" value="GitHub" />
-                    <TextInput
-                        id="github_url"
-                        type="url"
-                        className={`input input-bordered w-full ${errors.github_url ? 'input-error' : ''}`}
-                        value={data.github_url || ''}
-                        onChange={(e) => setData('github_url', e.target.value)}
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.github_url} />
-                </div>
-                <div>
-                    <InputLabel htmlFor="website_url" value="Website" />
-                    <TextInput
-                        id="website_url"
-                        type="url"
-                        className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
-                        value={data.website_url || ''}
-                        onChange={(e) => setData('website_url', e.target.value)}
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.website_url} />
-                </div>
+                <div className="col-span-1 grid grid-cols-1 gap-6 md:col-span-2 md:grid-cols-2">
+                    <div>
+                        <InputLabel
+                            htmlFor="curriculo_lattes_url"
+                            value="Currículo Lattes"
+                        />
+                        <TextInput
+                            id="curriculo_lattes_url"
+                            type="url"
+                            className={`input input-bordered w-full ${errors.curriculo_lattes_url ? 'input-error' : ''}`}
+                            value={data.curriculo_lattes_url || ''}
+                            onChange={(e) =>
+                                setData('curriculo_lattes_url', e.target.value)
+                            }
+                            required
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.curriculo_lattes_url}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="linkedin_url" value="LinkedIn" />
+                        <TextInput
+                            id="linkedin_url"
+                            type="url"
+                            className={`input input-bordered w-full ${errors.linkedin_url ? 'input-error' : ''}`}
+                            value={data.linkedin_url || ''}
+                            onChange={(e) =>
+                                setData('linkedin_url', e.target.value)
+                            }
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.linkedin_url}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="github_url" value="GitHub" />
+                        <TextInput
+                            id="github_url"
+                            type="url"
+                            className={`input input-bordered w-full ${errors.github_url ? 'input-error' : ''}`}
+                            value={data.github_url || ''}
+                            onChange={(e) =>
+                                setData('github_url', e.target.value)
+                            }
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.github_url}
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="website_url" value="Website" />
+                        <TextInput
+                            id="website_url"
+                            type="url"
+                            className={`input input-bordered w-full ${errors.website_url ? 'input-error' : ''}`}
+                            value={data.website_url || ''}
+                            onChange={(e) =>
+                                setData('website_url', e.target.value)
+                            }
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.website_url}
+                        />
+                    </div>
 
-                {/* TODO converter pra um multiselect */}
-                <div>
-                    <InputLabel
-                        htmlFor="area_atuacao"
-                        value="Área de Atuação"
-                    />
-                    <TextInput
-                        id="area_atuacao"
-                        className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
-                        value={data.area_atuacao || ''}
-                        onChange={(e) =>
-                            setData('area_atuacao', e.target.value)
-                        }
-                        placeholder="Digite sua área de atuação..."
-                        disabled
-                    />
-                    <InputError
-                        className="mt-2"
-                        message={errors.area_atuacao}
-                    />
-                </div>
+                    {/* TODO converter pra um multiselect */}
+                    <div>
+                        <InputLabel
+                            htmlFor="area_atuacao"
+                            value="Área de Atuação"
+                        />
+                        <TextInput
+                            id="area_atuacao"
+                            className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
+                            value={data.area_atuacao || ''}
+                            onChange={(e) =>
+                                setData('area_atuacao', e.target.value)
+                            }
+                            placeholder="Digite sua área de atuação..."
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.area_atuacao}
+                        />
+                    </div>
 
-                {/* TODO converter para um multiselect */}
-                <div>
-                    <InputLabel htmlFor="tecnologias" value="Tecnologias" />
-                    <TextInput
-                        id="tecnologias"
-                        className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
-                        value={data.tecnologias || ''}
-                        onChange={(e) => setData('tecnologias', e.target.value)}
-                        placeholder="Digite as tecnologias que você domina..."
-                        disabled
-                    />
-                    <InputError className="mt-2" message={errors.tecnologias} />
+                    {/* TODO converter para um multiselect */}
+                    <div>
+                        <InputLabel htmlFor="tecnologias" value="Tecnologias" />
+                        <TextInput
+                            id="tecnologias"
+                            className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
+                            value={data.tecnologias || ''}
+                            onChange={(e) =>
+                                setData('tecnologias', e.target.value)
+                            }
+                            placeholder="Digite as tecnologias que você domina..."
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.tecnologias}
+                        />
+                    </div>
                 </div>
 
                 {/* TODO adicionar campos extras aqui */}
@@ -602,9 +727,7 @@ export default function UpdateProfileInformation({
                     </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing || true}>
-                        Salvar
-                    </PrimaryButton>
+                    <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"

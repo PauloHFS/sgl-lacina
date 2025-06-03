@@ -17,7 +17,7 @@ Table "users" {
   "email_verified_at" timestamp
   "password" varchar(255) [not null]
   "remember_token" varchar(100)
-  "campos_extras" jsonb [not null, default: '{}']
+  "campos_extras" jsonb [not null, default: `{}`]
   "status_cadastro" varchar(255) [not null, default: 'PENDENTE']
   "curriculo_lattes_url" text
   "linkedin_url" varchar(255)
@@ -205,6 +205,15 @@ Table "telescope_entries_tags" {
 
 Table "telescope_monitoring" {
   "tag" varchar(255) [pk, not null]
+}
+
+Table "configuracao_sistemas" {
+  "id" uuid [pk, not null, default: `gen_random_uuid()`]
+  "chave" varchar(255) [unique, not null]
+  "valor" text [not null]
+  "descricao" text
+  "created_at" timestamp
+  "updated_at" timestamp
 }
 
 Ref "historico_usuario_projeto_projeto_id_foreign":"projetos"."id" < "historico_usuario_projeto"."projeto_id"
