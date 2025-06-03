@@ -30,16 +30,16 @@ export default function Welcome({
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login')}
+                                            href={route('register')}
                                             className="btn btn-ghost btn-sm"
                                         >
-                                            Log in
+                                            Register
                                         </Link>
                                         <Link
-                                            href={route('register')}
+                                            href={route('login')}
                                             className="btn btn-primary btn-sm"
                                         >
-                                            Register
+                                            Log in
                                         </Link>
                                     </>
                                 )}
