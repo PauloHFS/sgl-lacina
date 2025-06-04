@@ -4,6 +4,24 @@
 
 - [Icons](https://heroicons.com/)
 
+## 📚 Documentação
+
+### Deploy e Produção
+- **[Deploy e Backup Completo](docs/deploy-e-backup-completo.md)** - Documentação completa do sistema de deploy, backup e rollback
+- **[Deploy em Produção](docs/deploy-producao.md)** - Guia original detalhado de deploy
+- **[Especificações Técnicas](docs/specs.md)** - Arquitetura e especificações do sistema
+
+### Desenvolvimento
+- **[Guia de Testes](docs/testing.md)** - Como executar e escrever testes
+- **[Componentes UI](docs/daisyui.md)** - Documentação dos componentes daisyUI
+
+### Scripts Disponíveis
+- `./deploy.sh` - Deploy automatizado enterprise-grade
+- `./backup.sh` - Sistema de backup completo
+- `./rollback.sh` - Rollback granular e inteligente  
+- `./health-check.sh` - Monitoramento de saúde da aplicação
+- `./sgl.sh` - Script principal de gerenciamento
+
 ## Requisitos para o desenvolvimento
 
 - Docker
