@@ -1,16 +1,41 @@
 <x-mail::message>
 
-  # Cadastro Aceito no {{ config('app.name') }}
+# 🎉 Bem-vindo(a) ao {{ config('app.name') }}!
 
-  Olá {{ $colaborador->name }}, 
-  seu cadastro foi aceito com sucesso no sistema {{ config('app.name') }}. Agora você pode acessar sua conta e solicitar um vinculo a algum projeto.
+Olá **{{ $colaborador->name }}**,
 
-  <x-mail::button :url="$url">
-    Acessar Conta
-  </x-mail::button>
+É com satisfação que informamos que seu cadastro foi **aprovado com sucesso** no SGL do LaCInA!
 
-  <x-mail::subcopy>
-    Se o botão não funcionar, copie e cole o seguinte link no seu navegador: [{{ $url }}]({{ $url }})
-  </x-mail::subcopy>
+## Próximos Passos
+
+Agora você pode:
+
+- ✅ Acessar sua conta no sistema
+- 🔍 Visualizar os projetos disponíveis
+- 📝 Solicitar vínculo aos projetos de seu interesse
+- 📊 Acompanhar o status de suas solicitações
+
+@if(isset($observacao) && !empty($observacao))
+<x-mail::panel>
+**💬 Mensagem do Coordenador:**
+
+{{ $observacao }}
+</x-mail::panel>
+@endif
+
+<x-mail::button :url="$url">
+🚀 Acessar Minha Conta
+</x-mail::button>
+
+---
+
+**Dúvidas?** Entre em contato com a coordenação do laboratório ou consulte a documentação do sistema.
+
+**Laboratório de Computação Inteligente Aplicada (LaCInA)**  
+*Universidade Federal de Campina Grande*
+
+<x-mail::subcopy>
+Se o botão não funcionar, copie e cole o seguinte link no seu navegador: {{ $url }}
+</x-mail::subcopy>
 
 </x-mail::message>

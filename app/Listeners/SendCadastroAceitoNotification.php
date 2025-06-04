@@ -27,7 +27,8 @@ class SendCadastroAceitoNotification implements ShouldQueue
         // $event->user is already an instance of App\Models\User due to the CadastroAceito event definition
         Mail::to($event->user->email)->send(new CadastroAceitoMail(
             $event->user,
-            config('app.url') . '/dashboard'
+            $event->url ?? config('app.url') . '/dashboard',
+            $event->observacao ?? ''
         ));
     }
 }

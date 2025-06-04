@@ -19,7 +19,8 @@ class CadastroAceito extends Mailable
    */
   public function __construct(
     public User $colaborador,
-    public string $url
+    public string $url,
+    public ?string $observacao = null
   ) {
     //
   }

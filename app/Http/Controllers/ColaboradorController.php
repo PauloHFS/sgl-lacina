@@ -272,12 +272,17 @@ class ColaboradorController extends Controller
     public function aceitar(User $colaborador, Request $request)
     {
         $this->authorize('update', $colaborador);
+        $request->validate([
+            'observacao' => 'nullable|string|max:1000'
+        ]);
+
+        $observacao = $request->input('observacao', '');
 
         if ($colaborador->status_cadastro === StatusCadastro::PENDENTE) {
             $colaborador->status_cadastro = StatusCadastro::ACEITO;
             $colaborador->save();
 
-            event(new CadastroAceito($colaborador));
+            event(new CadastroAceito($colaborador, null, $observacao));
 
             return redirect()->back()->with('success', 'Cadastro do colaborador aceito com sucesso.');
         }

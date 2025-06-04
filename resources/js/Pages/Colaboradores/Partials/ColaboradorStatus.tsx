@@ -2,7 +2,7 @@ import { StatusAlert } from '@/Components/StatusAlert';
 import React from 'react';
 
 interface ColaboradorStatusProps {
-    onAceitarCadastro: () => void;
+    onAceitarCadastro: (observacao?: string) => void;
     onRecusarCadastro: () => void;
     onAceitarVinculo: () => void;
     onRecusarVinculo: () => void;
@@ -23,6 +23,19 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
         processing,
         status_colaborador,
     }) => {
+        const [observacao, setObservacao] = React.useState<string>('');
+
+        const handleAceitarCadastro = () => {
+            onAceitarCadastro(observacao);
+            // Fechar o modal
+            const modal = document.getElementById(
+                'my_modal_2',
+            ) as HTMLDialogElement;
+            modal?.close();
+            // Limpar o campo
+            setObservacao('');
+        };
+
         switch (status_colaborador) {
             case 'APROVACAO_PENDENTE':
                 return (
@@ -93,6 +106,13 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                                     className="textarea textarea-bordered bg-base-100 text-base-content placeholder:text-base-content/40 focus:border-primary w-full resize-none transition-colors focus:outline-none"
                                                     rows={3}
                                                     placeholder="Adicione observações sobre a decisão tomada..."
+                                                    value={observacao}
+                                                    onChange={(e) =>
+                                                        setObservacao(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    maxLength={1000}
                                                 />
                                                 <div className="mt-2">
                                                     <span className="text-base-content/70 block text-xs leading-relaxed">
@@ -151,7 +171,9 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={onAceitarCadastro}
+                                                    onClick={
+                                                        handleAceitarCadastro
+                                                    }
                                                     className="btn btn-success flex-1"
                                                     aria-label="Aceitar cadastro do usuário"
                                                     disabled={processing}

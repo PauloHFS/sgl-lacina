@@ -15,13 +15,13 @@ class CadastroAceito
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public User $user;
-
     /**
      * Create a new event instance.
      */
-    public function __construct(User $user)
+    public function __construct(public User $user, public $url = null, public $observacao = null)
     {
         $this->user = $user;
+        $this->url = $url ?? config('app.url') . '/dashboard';
+        $this->observacao = $observacao;
     }
 }

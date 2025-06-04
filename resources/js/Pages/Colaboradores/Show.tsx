@@ -234,17 +234,22 @@ export default function Show({
         });
     };
 
-    const handleAceitarCadastro = useCallback(() => {
-        router.post(
-            route('colaboradores.aceitar', colaborador.id),
-            {},
-            {
-                onSuccess: () =>
-                    toast('Cadastro aceito com sucesso.', 'success'),
-                onError: () => toast('Erro ao aceitar cadastro.', 'error'),
-            },
-        );
-    }, [colaborador.id, toast]);
+    const handleAceitarCadastro = useCallback(
+        (observacao?: string) => {
+            router.post(
+                route('colaboradores.aceitar', colaborador.id),
+                {
+                    observacao: observacao || null,
+                },
+                {
+                    onSuccess: () =>
+                        toast('Cadastro aceito com sucesso.', 'success'),
+                    onError: () => toast('Erro ao aceitar cadastro.', 'error'),
+                },
+            );
+        },
+        [colaborador.id, toast],
+    );
 
     const handleRecusarCadastro = useCallback(() => {
         router.post(
