@@ -375,9 +375,8 @@ export default function Show({
     return (
         <AuthenticatedLayout>
             <Head title={`Colaborador: ${colaborador.name}`} />
-
             <div className="py-12">
-                <div className="mx-auto max-w-3xl sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
                     <div className="card card-bordered bg-base-100 shadow-xl">
                         <div className="card-body">
                             <ColaboradorHeader colaborador={colaborador} />
