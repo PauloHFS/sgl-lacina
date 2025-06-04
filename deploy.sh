@@ -111,8 +111,8 @@ log_success "Containers iniciados"
 log_info "Aguardando containers ficarem prontos..."
 sleep 30
 
-# Verificar se containers estão rodando
-if ! docker compose -f docker-compose.prod.yml ps | grep -q "running"; then
+# Verificar se containers estão rodando (aceitar diferentes estados válidos)
+if ! docker compose -f docker-compose.prod.yml ps | grep -E "(healthy|running|Up)" > /dev/null; then
     log_error "Alguns containers não estão rodando. Verificar logs:"
     docker compose -f docker-compose.prod.yml logs --tail=20
     exit 1
