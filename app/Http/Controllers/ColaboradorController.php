@@ -298,6 +298,10 @@ class ColaboradorController extends Controller
             return redirect()->back()->with('error', 'Este colaborador não está com cadastro pendente.');
         }
 
+        $request->validate([
+            'observacao' => 'nullable|string|max:1000'
+        ]);
+
         try {
             // Armazenar dados para envio de email antes da deleção
             $dadosColaborador = [
@@ -305,11 +309,13 @@ class ColaboradorController extends Controller
                 'email' => $colaborador->email,
             ];
 
+            $observacao = $request->input('observacao');
+
             // Deletar o usuário em vez de marcar como recusado
             $colaborador->delete();
 
             // Disparar evento com os dados armazenados
-            event(new CadastroRecusado($dadosColaborador));
+            event(new CadastroRecusado($dadosColaborador, null, $observacao));
 
             return redirect()->route('colaboradores.index', ['status' => 'cadastro_pendente'])
                 ->with('success', 'Cadastro do colaborador recusado e removido do sistema com sucesso.');

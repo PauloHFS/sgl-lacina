@@ -18,7 +18,8 @@ class CadastroRecusado extends Mailable
      */
     public function __construct(
         public array $dadosColaborador,
-        public string $url
+        public string $url,
+        public ?string $observacao = null
     ) {
         //
     }
@@ -29,7 +30,7 @@ class CadastroRecusado extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Cadastro Não Aprovado - ' . config('app.name'),
+            subject: 'Status do Cadastro - ' . config('app.name'),
         );
     }
 

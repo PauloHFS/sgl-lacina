@@ -1,24 +1,39 @@
 <x-mail::message>
 
-# Cadastro Não Aprovado - {{ config('app.name') }}
+# Status do Cadastro - {{ config('app.name') }}
 
-Olá {{ $dadosColaborador['name'] }},
+Prezado(a) {{ $dadosColaborador['name'] }},
 
-Informamos que seu cadastro no sistema {{ config('app.name') }} não foi aprovado pela coordenação.
+Agradecemos seu interesse em participar das atividades do **Laboratório de Computação Inteligente Aplicada (LaCInA)** da UFCG.
 
-Caso você acredite que houve algum equívoco ou deseje obter mais informações sobre o motivo da não aprovação, recomendamos que entre em contato diretamente com a coordenação do laboratório.
+Após análise cuidadosa da coordenação, informamos que seu cadastro não pôde ser aprovado neste momento.
 
-Se necessário, você pode realizar um novo cadastro no sistema:
+@if($observacao ?? false)
+## Feedback da Coordenação
+
+{{ $observacao }}
+
+@endif
+## Próximos Passos
+
+Para esclarecer dúvidas sobre os critérios de seleção ou obter orientações para uma futura candidatura, recomendamos que entre em contato com a coordenação do laboratório.
+
+Você pode realizar um novo cadastro a qualquer momento, seguindo as diretrizes atualizadas:
 
 <x-mail::button :url="$url">
 Realizar Novo Cadastro
 </x-mail::button>
 
-Atenciosamente,<br>
+<x-mail::panel>
+💡 **Dica:** Certifique-se de preencher todos os campos obrigatórios e fornecer informações completas sobre sua experiência acadêmica e profissional.
+</x-mail::panel>
+
+Cordialmente,<br>
+**Coordenação do LaCInA**<br>
 {{ config('app.name') }}
 
 <x-mail::subcopy>
-Se o botão não funcionar, copie e cole o seguinte link no seu navegador: [{{ $url }}]({{ $url }})
+Se o botão "Realizar Novo Cadastro" não funcionar, acesse diretamente: {{ $url }}
 </x-mail::subcopy>
 
 </x-mail::message>

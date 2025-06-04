@@ -105,3 +105,40 @@ test('email de cadastro recusado contém informações corretas', function () {
             str_contains($mail->url, '/register');
     });
 });
+
+test('email de cadastro recusado inclui motivo quando fornecido', function () {
+    Mail::fake();
+
+    $coordenador = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+    ]);
+
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $coordenador->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR,
+        'status' => StatusVinculoProjeto::APROVADO,
+    ]);
+
+    $colaborador = User::factory()->create([
+        'status_cadastro' => StatusCadastro::PENDENTE,
+        'name' => 'Carlos Silva',
+        'email' => 'carlos@test.com',
+    ]);
+
+    $observacao = 'Candidato não possui experiência suficiente na área de atuação.';
+
+    $this->actingAs($coordenador)
+        ->post(route('colaboradores.recusar', $colaborador), [
+            'observacao' => $observacao,
+        ]);
+
+    Mail::assertSent(\App\Mail\CadastroRecusado::class, function ($mail) use ($observacao) {
+        return $mail->dadosColaborador['name'] === 'Carlos Silva' &&
+            $mail->dadosColaborador['email'] === 'carlos@test.com' &&
+            $mail->observacao === $observacao &&
+            str_contains($mail->url, '/register');
+    });
+});

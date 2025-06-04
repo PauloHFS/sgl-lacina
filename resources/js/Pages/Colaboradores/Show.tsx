@@ -251,17 +251,22 @@ export default function Show({
         [colaborador.id, toast],
     );
 
-    const handleRecusarCadastro = useCallback(() => {
-        router.post(
-            route('colaboradores.recusar', colaborador.id),
-            {},
-            {
-                onSuccess: () =>
-                    toast('Cadastro recusado com sucesso.', 'success'),
-                onError: () => toast('Erro ao recusar cadastro.', 'error'),
-            },
-        );
-    }, [colaborador.id, toast]);
+    const handleRecusarCadastro = useCallback(
+        (observacao?: string) => {
+            router.post(
+                route('colaboradores.recusar', colaborador.id),
+                {
+                    observacao: observacao || null,
+                },
+                {
+                    onSuccess: () =>
+                        toast('Cadastro recusado com sucesso.', 'success'),
+                    onError: () => toast('Erro ao recusar cadastro.', 'error'),
+                },
+            );
+        },
+        [colaborador.id, toast],
+    );
 
     const handleAtualizarStatusVinculo = useCallback(() => {
         if (!ultimo_vinculo) {

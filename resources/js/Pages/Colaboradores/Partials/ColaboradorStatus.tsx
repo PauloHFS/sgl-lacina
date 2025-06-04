@@ -3,7 +3,7 @@ import React from 'react';
 
 interface ColaboradorStatusProps {
     onAceitarCadastro: (observacao?: string) => void;
-    onRecusarCadastro: () => void;
+    onRecusarCadastro: (observacao?: string) => void;
     onAceitarVinculo: () => void;
     onRecusarVinculo: () => void;
     processing: boolean;
@@ -33,6 +33,15 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
             ) as HTMLDialogElement;
             modal?.close();
             // Limpar o campo
+            setObservacao('');
+        };
+
+        const handleRecusarCadastro = () => {
+            onRecusarCadastro(observacao);
+            const modal = document.getElementById(
+                'my_modal_2',
+            ) as HTMLDialogElement;
+            modal?.close();
             setObservacao('');
         };
 
@@ -145,7 +154,9 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                             <div className="flex w-full gap-3">
                                                 <button
                                                     type="button"
-                                                    onClick={onRecusarCadastro}
+                                                    onClick={
+                                                        handleRecusarCadastro
+                                                    }
                                                     className="btn btn-error flex-1"
                                                     aria-label="Recusar cadastro do usuário"
                                                     disabled={processing}
