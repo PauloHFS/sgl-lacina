@@ -18,9 +18,9 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'email' => [
-                'required',
+                'nullable',
                 'string',
                 'lowercase',
                 'email',
@@ -30,36 +30,36 @@ class ProfileUpdateRequest extends FormRequest
             // Foto
             'foto_url' => 'nullable|image|max:5120', // Max 5MB
             // Dados pessoais
-            'genero' => 'required|string|max:50',
-            'data_nascimento' => 'required|date',
+            'genero' => 'nullable|string|max:50',
+            'data_nascimento' => 'nullable|date',
             // Documentos
-            'cpf' => ['required', 'string', 'max:14', new ValidCpf(), Rule::unique(User::class, 'cpf')->ignore(Auth::user()->id)],
-            'rg' => 'required|string|min:6|max:16|unique:users,rg,' . Auth::user()->id,
-            'uf_rg' => 'required|string|max:2',
-            'orgao_emissor_rg' => 'required|string|max:255',
+            'cpf' => ['nullable', 'string', 'max:14', new ValidCpf(), Rule::unique(User::class, 'cpf')->ignore(Auth::user()->id)],
+            'rg' => 'nullable|string|min:6|max:16|unique:users,rg,' . Auth::user()->id,
+            'uf_rg' => 'nullable|string|max:2',
+            'orgao_emissor_rg' => 'nullable|string|max:255',
             // Endereço
-            'cep' => 'required|string|max:9',
-            'endereco' => 'required|string|max:255',
-            'numero' => 'required|string|max:10',
+            'cep' => 'nullable|string|max:9',
+            'endereco' => 'nullable|string|max:255',
+            'numero' => 'nullable|string|max:10',
             'complemento' => 'nullable|string|max:255',
-            'bairro' => 'required|string|max:255',
-            'cidade' => 'required|string|max:255',
-            'uf' => 'required|string|max:2',
+            'bairro' => 'nullable|string|max:255',
+            'cidade' => 'nullable|string|max:255',
+            'uf' => 'nullable|string|max:2',
             // Dados de contato
-            'telefone' => 'required|string|max:20',
+            'telefone' => 'nullable|string|max:20',
             // Dados bancários
-            'conta_bancaria' => 'required|string|max:20',
-            'agencia' => 'required|string|max:10',
-            'banco_id' => 'required|uuid|exists:bancos,id',
+            'conta_bancaria' => 'nullable|string|max:20',
+            'agencia' => 'nullable|string|max:10',
+            'banco_id' => 'nullable|uuid|exists:bancos,id',
             // Dados profissionais
-            'curriculo_lattes_url' => 'required|string|max:255',
+            'curriculo_lattes_url' => 'nullable|string|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url' => 'nullable|url|max:255',
             'website_url' => 'nullable|url|max:255',
             'area_atuacao' => 'nullable|string|max:255',
             'tecnologias' => 'nullable|string|max:255',
 
-            'campos_extras' => 'nullable|json',
+            'campos_extras' => 'nullable|array',
         ];
     }
 
@@ -173,7 +173,7 @@ class ProfileUpdateRequest extends FormRequest
             'tecnologias.string' => 'O campo tecnologias deve ser um texto.',
             'tecnologias.max' => 'O campo tecnologias não pode ter mais de :max caracteres.',
 
-            'campos_extras.json' => 'O campo campos extras deve estar em formato JSON válido.',
+            'campos_extras.array' => 'O campo campos extras deve ser um objeto válido.',
         ];
     }
 }

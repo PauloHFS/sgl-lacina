@@ -5,9 +5,9 @@ import { StatusAlert } from '@/Components/StatusAlert';
 import TextInput from '@/Components/TextInput';
 import { ESTADOS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
-import { Banco, Genero } from '@/types';
+import { Banco, Genero, User } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { IMaskInput } from 'react-imask';
@@ -16,21 +16,21 @@ export default function UpdateProfileInformation({
     mustVerifyEmail,
     status,
     bancos = [],
+    user,
     className = '',
 }: {
     mustVerifyEmail: boolean;
     status?: string;
     bancos?: Banco[];
+    user: User;
     className?: string;
 }) {
-    const user = usePage().props.auth.user;
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm<
-            Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
-        >({
-            ...user,
-            foto_url: user.foto_url ?? null,
-        });
+    const { data, setData, patch, errors, recentlySuccessful } = useForm<
+        Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
+    >({
+        ...user,
+        foto_url: user.foto_url ?? null,
+    });
 
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -137,6 +137,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) => setData('name', e.target.value)}
                             required
                             autoComplete="name"
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.name} />
                     </div>
@@ -152,6 +153,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) => setData('email', e.target.value)}
                             required
                             autoComplete="username"
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.email} />
                     </div>
@@ -227,6 +229,7 @@ export default function UpdateProfileInformation({
                                         e.target.value = '';
                                     }
                                 }}
+                                disabled
                             />
                             {errors.foto_url ? (
                                 <span className="label-text-alt text-error mt-1">
@@ -257,6 +260,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('genero', e.target.value as Genero)
                             }
+                            disabled
                         >
                             <option value="">Selecione o gênero...</option>
                             <option value="MASCULINO">Masculino</option>
@@ -289,6 +293,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('data_nascimento', e.target.value)
                             }
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -306,6 +311,7 @@ export default function UpdateProfileInformation({
                             value={data.telefone || ''}
                             onAccept={(value) => setData('telefone', value)}
                             placeholder="+55 (00) 00000-0000"
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -341,6 +347,7 @@ export default function UpdateProfileInformation({
                                 );
                             }}
                             required
+                            disabled
                         />
                         {cpfValido === true && (
                             <div className="text-success mt-1 text-sm">
@@ -364,6 +371,7 @@ export default function UpdateProfileInformation({
                             maxLength={9}
                             onChange={(e) => setData('rg', e.target.value)}
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.rg} />
                     </div>
@@ -380,6 +388,7 @@ export default function UpdateProfileInformation({
                                 setData('orgao_emissor_rg', e.target.value)
                             }
                             required
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -394,6 +403,7 @@ export default function UpdateProfileInformation({
                             value={data.uf_rg || ''}
                             onChange={(e) => setData('uf_rg', e.target.value)}
                             required
+                            disabled
                         >
                             <option value="">Selecione uma UF...</option>
                             {ESTADOS.map((uf) => (
@@ -424,6 +434,7 @@ export default function UpdateProfileInformation({
                             }}
                             placeholder="00000-000"
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.cep} />
                     </div>
@@ -437,6 +448,7 @@ export default function UpdateProfileInformation({
                                 setData('endereco', e.target.value)
                             }
                             required
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -451,6 +463,7 @@ export default function UpdateProfileInformation({
                             value={data.numero || ''}
                             onChange={(e) => setData('numero', e.target.value)}
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.numero} />
                     </div>
@@ -463,6 +476,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('complemento', e.target.value)
                             }
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -477,6 +491,7 @@ export default function UpdateProfileInformation({
                             value={data.bairro || ''}
                             onChange={(e) => setData('bairro', e.target.value)}
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.bairro} />
                     </div>
@@ -488,6 +503,7 @@ export default function UpdateProfileInformation({
                             value={data.uf || ''}
                             onChange={(e) => setData('uf', e.target.value)}
                             required
+                            disabled
                         >
                             <option value="">Selecione um estado...</option>
                             {ESTADOS.map((uf_item) => (
@@ -509,6 +525,7 @@ export default function UpdateProfileInformation({
                             value={data.cidade || ''}
                             onChange={(e) => setData('cidade', e.target.value)}
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.cidade} />
                     </div>
@@ -527,6 +544,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('banco_id', e.target.value)
                             }
+                            disabled
                         >
                             <option value="">Selecione um banco...</option>
                             {bancos.map((banco) => (
@@ -554,6 +572,7 @@ export default function UpdateProfileInformation({
                                 setData('conta_bancaria', value)
                             }
                             placeholder="00000-0"
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -570,6 +589,7 @@ export default function UpdateProfileInformation({
                             onAccept={(value) => setData('agencia', value)}
                             placeholder="0000-0"
                             required
+                            disabled
                         />
                         <InputError className="mt-2" message={errors.agencia} />
                     </div>
@@ -593,6 +613,7 @@ export default function UpdateProfileInformation({
                                 setData('curriculo_lattes_url', e.target.value)
                             }
                             required
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -609,6 +630,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('linkedin_url', e.target.value)
                             }
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -625,6 +647,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('github_url', e.target.value)
                             }
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -641,6 +664,7 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('website_url', e.target.value)
                             }
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -662,6 +686,7 @@ export default function UpdateProfileInformation({
                                 setData('area_atuacao', e.target.value)
                             }
                             placeholder="Digite sua área de atuação..."
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -680,6 +705,7 @@ export default function UpdateProfileInformation({
                                 setData('tecnologias', e.target.value)
                             }
                             placeholder="Digite as tecnologias que você domina..."
+                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -687,8 +713,6 @@ export default function UpdateProfileInformation({
                         />
                     </div>
                 </div>
-
-                {/* TODO adicionar campos extras aqui */}
 
                 {/* Verificação de e-mail */}
                 {mustVerifyEmail && user.email_verified_at === null && (
@@ -727,7 +751,7 @@ export default function UpdateProfileInformation({
                     </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
+                    <PrimaryButton disabled>Salvar</PrimaryButton>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"

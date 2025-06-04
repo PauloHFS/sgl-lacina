@@ -23,10 +23,13 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $bancos = Banco::all();
+        $user = $request->user();
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'bancos' => $bancos,
+            'user' => $user,
         ]);
     }
 
@@ -38,18 +41,34 @@ class ProfileController extends Controller
         /** @var \Illuminate\Http\Request $request */
         $user = Auth::user();
 
-        // Remover formatação do CPF e CEP
-        $request->merge([
-            'cpf' => preg_replace('/\D/', '', $request->input('cpf')),
-            'cep' => preg_replace('/\D/', '', $request->input('cep')),
-        ]);
+        // Remover formatação do CPF e CEP apenas se os campos estiverem preenchidos
+        $cleanedData = [];
+
+        if ($request->filled('cpf')) {
+            $cleanedData['cpf'] = preg_replace('/\D/', '', $request->input('cpf'));
+        }
+
+        if ($request->filled('cep')) {
+            $cleanedData['cep'] = preg_replace('/\D/', '', $request->input('cep'));
+        }
+
+        if (!empty($cleanedData)) {
+            $request->merge($cleanedData);
+        }
 
         if ($request->hasFile('foto_url')) {
             $path = $request->file('foto_url')->store('fotos', 'public');
             $user->foto_url = $path;
         }
 
-        $user->fill($request->except('foto_url'));
+        // Filtrar apenas campos preenchidos, excluindo foto_url que já foi tratada
+        $fillData = array_filter($request->except('foto_url'), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        Log::info('Dados filtrados para fill:', $fillData);
+
+        $user->fill($fillData);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

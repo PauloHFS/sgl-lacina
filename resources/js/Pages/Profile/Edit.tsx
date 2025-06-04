@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Banco, PageProps } from '@/types';
+import { Banco, PageProps, User } from '@/types';
 import { Head } from '@inertiajs/react';
 import CamposExtrasForm from './Partials/CamposExtrasForm';
 import DeleteUserForm from './Partials/DeleteUserForm';
@@ -10,7 +10,13 @@ export default function Edit({
     mustVerifyEmail,
     status,
     bancos,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string; bancos: Banco[] }>) {
+    user,
+}: PageProps<{ 
+    mustVerifyEmail: boolean; 
+    status?: string; 
+    bancos: Banco[];
+    user: User;
+}>) {
     return (
         <AuthenticatedLayout>
             <Head title="Perfil" />
@@ -23,6 +29,7 @@ export default function Edit({
                                 mustVerifyEmail={mustVerifyEmail}
                                 status={status}
                                 bancos={bancos}
+                                user={user}
                                 className="max-w-xl"
                             />
                         </div>
