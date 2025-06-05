@@ -315,6 +315,11 @@ class DevelopmentSeeder extends Seeder
 
         $this->command->info("Criando vínculos entre {$usuariosAtivos->count()} usuários e {$projetos->count()} projetos...");
 
+        // Busca os docentes específicos
+        $maxwell = User::where('email', 'maxwell@computacao.ufcg.edu.br')->first();
+        $campelo = User::where('email', 'campelo@computacao.ufcg.edu.br')->first();
+        $paulo = User::where('email', 'paulo.hernane.silva@ccc.ufcg.edu.br')->first();
+
         // Para cada projeto ativo, criar vínculos
         $projetosAtivos = $projetos->filter(function ($projeto) {
             return $projeto->data_inicio <= now() && $projeto->data_termino >= now();
@@ -329,9 +334,40 @@ class DevelopmentSeeder extends Seeder
         });
 
         // Vínculos para projetos ativos
-        foreach ($projetosAtivos as $projeto) {
-            $numParticipantes = rand(2, 8); // 2-8 participantes por projeto
-            $participantes = $usuariosAtivos->random(min($numParticipantes, $usuariosAtivos->count()));
+        foreach ($projetosAtivos as $index => $projeto) {
+            // Define coordenador do projeto alternando entre Maxwell e Campelo
+            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
+
+            if ($coordenador) {
+                $this->createVinculo(
+                    $coordenador,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    $projeto->data_inicio,
+                    null,
+                    Funcao::COORDENADOR
+                );
+            }
+
+            // Paulo como colaborador em alguns projetos (30% de chance)
+            if ($paulo && rand(1, 100) <= 30) {
+                $this->createVinculo(
+                    $paulo,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    $projeto->data_inicio,
+                    null,
+                    Funcao::ALUNO
+                );
+            }
+
+            // Outros participantes
+            $numParticipantes = rand(2, 6);
+            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
+                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
+            });
+
+            $participantes = $outrosUsuarios->random(min($numParticipantes, $outrosUsuarios->count()));
 
             foreach ($participantes as $usuario) {
                 $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::APROVADO, $projeto->data_inicio);
@@ -339,17 +375,48 @@ class DevelopmentSeeder extends Seeder
 
             // Adiciona algumas solicitações pendentes para projetos ativos
             if (rand(1, 100) <= 30) { // 30% chance de ter solicitações pendentes
-                $solicitantes = $usuariosAtivos->diff($participantes)->random(rand(1, 3));
+                $solicitantes = $outrosUsuarios->diff($participantes)->random(rand(1, 3));
                 foreach ($solicitantes as $solicitante) {
                     $this->createVinculo($solicitante, $projeto, StatusVinculoProjeto::PENDENTE, now());
                 }
             }
         }
 
-        // Vínculos para projetos finalizados (apenas aprovados no passado)
-        foreach ($projetosFinalizados as $projeto) {
-            $numParticipantes = rand(1, 6);
-            $participantes = $usuariosAtivos->random(min($numParticipantes, $usuariosAtivos->count()));
+        // Vínculos para projetos finalizados
+        foreach ($projetosFinalizados as $index => $projeto) {
+            // Define coordenador do projeto alternando entre Maxwell e Campelo
+            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
+
+            if ($coordenador) {
+                $this->createVinculo(
+                    $coordenador,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    $projeto->data_inicio,
+                    $projeto->data_termino,
+                    Funcao::COORDENADOR
+                );
+            }
+
+            // Paulo como colaborador em alguns projetos finalizados
+            if ($paulo && rand(1, 100) <= 25) {
+                $this->createVinculo(
+                    $paulo,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    $projeto->data_inicio,
+                    $projeto->data_termino,
+                    Funcao::ALUNO
+                );
+            }
+
+            // Outros participantes
+            $numParticipantes = rand(1, 5);
+            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
+                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
+            });
+
+            $participantes = $outrosUsuarios->random(min($numParticipantes, $outrosUsuarios->count()));
 
             foreach ($participantes as $usuario) {
                 $this->createVinculo(
@@ -362,10 +429,29 @@ class DevelopmentSeeder extends Seeder
             }
         }
 
-        // Vínculos para projetos futuros (mix de pendentes e alguns já aprovados)
-        foreach ($projetosFuturos as $projeto) {
-            $numSolicitacoes = rand(1, 5);
-            $solicitantes = $usuariosAtivos->random(min($numSolicitacoes, $usuariosAtivos->count()));
+        // Vínculos para projetos futuros
+        foreach ($projetosFuturos as $index => $projeto) {
+            // Define coordenador do projeto alternando entre Maxwell e Campelo
+            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
+
+            if ($coordenador) {
+                $this->createVinculo(
+                    $coordenador,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    now(),
+                    null,
+                    Funcao::COORDENADOR
+                );
+            }
+
+            // Outras solicitações para projetos futuros
+            $numSolicitacoes = rand(1, 4);
+            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
+                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
+            });
+
+            $solicitantes = $outrosUsuarios->random(min($numSolicitacoes, $outrosUsuarios->count()));
 
             foreach ($solicitantes as $solicitante) {
                 // 70% pendente, 30% já aprovado
@@ -376,7 +462,11 @@ class DevelopmentSeeder extends Seeder
 
         // Cria algumas solicitações recusadas para realismo
         for ($i = 0; $i < 8; $i++) {
-            $usuario = $usuariosAtivos->random();
+            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
+                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
+            });
+
+            $usuario = $outrosUsuarios->random();
             $projeto = $projetos->random();
 
             $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subDays(rand(1, 30)));
@@ -389,7 +479,7 @@ class DevelopmentSeeder extends Seeder
     /**
      * Cria um vínculo específico entre usuário e projeto
      */
-    private function createVinculo(User $usuario, Projeto $projeto, StatusVinculoProjeto $status, $dataInicio, $dataFim = null): void
+    private function createVinculo(User $usuario, Projeto $projeto, StatusVinculoProjeto $status, $dataInicio, $dataFim = null, ?Funcao $funcao = null): void
     {
         // Evita vínculos duplicados
         $vinculoExistente = UsuarioProjeto::where('usuario_id', $usuario->id)
@@ -407,7 +497,7 @@ class DevelopmentSeeder extends Seeder
             'usuario_id' => $usuario->id,
             'projeto_id' => $projeto->id,
             'status' => $status,
-            'funcao' => $funcoes[array_rand($funcoes)],
+            'funcao' => $funcao ?? $funcoes[array_rand($funcoes)],
             'tipo_vinculo' => $tiposVinculo[array_rand($tiposVinculo)],
             'carga_horaria_semanal' => rand(10, 40),
             'data_inicio' => $dataInicio,
