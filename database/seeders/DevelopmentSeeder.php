@@ -7,9 +7,11 @@ use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoProjeto;
 use App\Enums\StatusCadastro;
+use App\Enums\Genero;
 use App\Models\User;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
+use App\Models\Banco;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -152,43 +154,128 @@ class DevelopmentSeeder extends Seeder
     }
 
     /**
-     * Cria os docentes coordenadores principais
+     * Cria os docentes principais com perfis completos
      */
     private function createDocentes(): void
     {
+        // Garante que existe um banco para associar aos docentes
+        $banco = Banco::firstOrCreate(
+            ['codigo' => '001'],
+            ['nome' => 'Banco do Brasil']
+        );
+
         $docentes = [
+            // Maxwell - Coordenador Principal
             [
                 'email' => 'maxwell@computacao.ufcg.edu.br',
                 'name' => 'Maxwell Guimarães de Oliveira',
                 'cpf' => '12345678901',
-                'telefone' => '(83) 9999-9999',
+                'rg' => '1234567',
+                'uf_rg' => 'PB',
+                'orgao_emissor_rg' => 'SSP',
+                'telefone' => '(83) 99999-9999',
                 'data_nascimento' => '1980-01-01',
+                'genero' => Genero::MASCULINO->value,
+                'cep' => '58429900',
+                'endereco' => 'Rua dos Docentes',
+                'numero' => '100',
+                'bairro' => 'Universitário',
+                'cidade' => 'Campina Grande',
+                'uf' => 'PB',
+                'banco_id' => $banco->id,
+                'conta_bancaria' => '12345-6',
+                'agencia' => '1234',
+                'area_atuacao' => 'Inteligência Artificial, Aprendizado de Máquina, Ciência de Dados',
+                'tecnologias' => 'Python, R, TensorFlow, PyTorch, Scikit-learn, Jupyter',
+                'linkedin_url' => 'https://linkedin.com/in/maxwell-guimaraes',
+                'github_url' => 'https://github.com/maxwell-oliveira',
+                'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123456',
+                'website_url' => 'https://sites.google.com/maxwell-oliveira',
+                'is_coordenador' => true,
             ],
+            // Campelo - Coordenador
             [
                 'email' => 'campelo@computacao.ufcg.edu.br',
                 'name' => 'Cláudio Campelo',
                 'cpf' => '12345678902',
-                'telefone' => '(83) 8888-8888',
+                'rg' => '1234568',
+                'uf_rg' => 'PB',
+                'orgao_emissor_rg' => 'SSP',
+                'telefone' => '(83) 88888-8888',
                 'data_nascimento' => '1970-01-01',
+                'genero' => Genero::MASCULINO->value,
+                'cep' => '58429900',
+                'endereco' => 'Rua dos Docentes',
+                'numero' => '200',
+                'bairro' => 'Universitário',
+                'cidade' => 'Campina Grande',
+                'uf' => 'PB',
+                'banco_id' => $banco->id,
+                'conta_bancaria' => '12345-7',
+                'agencia' => '1234',
+                'area_atuacao' => 'Engenharia de Software, Arquitetura de Software, Sistemas Distribuídos',
+                'tecnologias' => 'Java, Spring Boot, Docker, Kubernetes, PostgreSQL, Redis',
+                'linkedin_url' => 'https://linkedin.com/in/claudio-campelo',
+                'github_url' => 'https://github.com/claudio-campelo',
+                'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123457',
+                'website_url' => 'https://sites.google.com/claudio-campelo',
+                'is_coordenador' => true,
             ],
+            // Paulo Hernane - Colaborador
             [
                 'email' => 'paulo.hernane.silva@ccc.ufcg.edu.br',
                 'name' => 'Paulo Hernane Fontes e Silva',
                 'cpf' => '12345678903',
-                'telefone' => '(83) 7777-7777',
+                'rg' => '1234569',
+                'uf_rg' => 'PB',
+                'orgao_emissor_rg' => 'SSP',
+                'telefone' => '(83) 77777-7777',
                 'data_nascimento' => '1975-01-01',
+                'genero' => Genero::MASCULINO->value,
+                'cep' => '58429900',
+                'endereco' => 'Rua dos Docentes',
+                'numero' => '300',
+                'bairro' => 'Universitário',
+                'cidade' => 'Campina Grande',
+                'uf' => 'PB',
+                'banco_id' => $banco->id,
+                'conta_bancaria' => '12345-8',
+                'agencia' => '1234',
+                'area_atuacao' => 'Computação Gráfica, Visualização de Dados, Interface Humano-Computador',
+                'tecnologias' => 'JavaScript, React, D3.js, Three.js, OpenGL, WebGL',
+                'linkedin_url' => 'https://linkedin.com/in/paulo-hernane',
+                'github_url' => 'https://github.com/paulo-hernane',
+                'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123458',
+                'website_url' => 'https://sites.google.com/paulo-hernane',
+                'is_coordenador' => false,
             ],
         ];
 
         foreach ($docentes as $docenteData) {
-            User::firstOrCreate(
-                ['email' => $docenteData['email']],
-                array_merge($docenteData, [
-                    'password' => Hash::make('password123'),
-                    'status_cadastro' => StatusCadastro::ACEITO,
-                    'genero' => 'MASCULINO',
-                ])
-            );
+            $isCoordernador = $docenteData['is_coordenador'];
+            unset($docenteData['is_coordenador']); // Remove esse campo personalizado
+
+            // Força a atualização dos dados dos docentes
+            $user = User::where('email', $docenteData['email'])->first();
+
+            $updateData = array_merge($docenteData, [
+                'password' => Hash::make('password123'),
+                'status_cadastro' => StatusCadastro::ACEITO,
+                'email_verified_at' => now(),
+            ]);
+
+            if ($user) {
+                // Atualiza usuário existente - forçar update campo por campo
+                foreach ($updateData as $key => $value) {
+                    $user->$key = $value;
+                }
+                $user->save();
+                $this->command->info("👨‍🏫 Atualizado docente: {$user->name} (" . ($isCoordernador ? 'Coordenador' : 'Colaborador') . ")");
+            } else {
+                // Cria novo usuário
+                $user = User::create($updateData);
+                $this->command->info("👨‍🏫 Criado docente: {$user->name} (" . ($isCoordernador ? 'Coordenador' : 'Colaborador') . ")");
+            }
         }
     }
 
@@ -345,19 +432,21 @@ class DevelopmentSeeder extends Seeder
                     StatusVinculoProjeto::APROVADO,
                     $projeto->data_inicio,
                     null,
-                    Funcao::COORDENADOR
+                    Funcao::COORDENADOR,
+                    TipoVinculo::COORDENADOR
                 );
             }
 
-            // Paulo como colaborador em alguns projetos (30% de chance)
-            if ($paulo && rand(1, 100) <= 30) {
+            // Paulo sempre como colaborador em projetos ativos (100% de chance)
+            if ($paulo) {
                 $this->createVinculo(
                     $paulo,
                     $projeto,
                     StatusVinculoProjeto::APROVADO,
                     $projeto->data_inicio,
                     null,
-                    Funcao::ALUNO
+                    Funcao::PESQUISADOR,
+                    TipoVinculo::COLABORADOR
                 );
             }
 
@@ -394,19 +483,21 @@ class DevelopmentSeeder extends Seeder
                     StatusVinculoProjeto::APROVADO,
                     $projeto->data_inicio,
                     $projeto->data_termino,
-                    Funcao::COORDENADOR
+                    Funcao::COORDENADOR,
+                    TipoVinculo::COORDENADOR
                 );
             }
 
-            // Paulo como colaborador em alguns projetos finalizados
-            if ($paulo && rand(1, 100) <= 25) {
+            // Paulo sempre como colaborador em projetos finalizados
+            if ($paulo) {
                 $this->createVinculo(
                     $paulo,
                     $projeto,
                     StatusVinculoProjeto::APROVADO,
                     $projeto->data_inicio,
                     $projeto->data_termino,
-                    Funcao::ALUNO
+                    Funcao::PESQUISADOR,
+                    TipoVinculo::COLABORADOR
                 );
             }
 
@@ -441,7 +532,8 @@ class DevelopmentSeeder extends Seeder
                     StatusVinculoProjeto::APROVADO,
                     now(),
                     null,
-                    Funcao::COORDENADOR
+                    Funcao::COORDENADOR,
+                    TipoVinculo::COORDENADOR
                 );
             }
 
@@ -479,7 +571,7 @@ class DevelopmentSeeder extends Seeder
     /**
      * Cria um vínculo específico entre usuário e projeto
      */
-    private function createVinculo(User $usuario, Projeto $projeto, StatusVinculoProjeto $status, $dataInicio, $dataFim = null, ?Funcao $funcao = null): void
+    private function createVinculo(User $usuario, Projeto $projeto, StatusVinculoProjeto $status, $dataInicio, $dataFim = null, ?Funcao $funcao = null, ?TipoVinculo $tipoVinculo = null): void
     {
         // Evita vínculos duplicados
         $vinculoExistente = UsuarioProjeto::where('usuario_id', $usuario->id)
@@ -498,7 +590,7 @@ class DevelopmentSeeder extends Seeder
             'projeto_id' => $projeto->id,
             'status' => $status,
             'funcao' => $funcao ?? $funcoes[array_rand($funcoes)],
-            'tipo_vinculo' => $tiposVinculo[array_rand($tiposVinculo)],
+            'tipo_vinculo' => $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)],
             'carga_horaria_semanal' => rand(10, 40),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
