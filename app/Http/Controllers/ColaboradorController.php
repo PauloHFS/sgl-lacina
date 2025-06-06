@@ -36,7 +36,9 @@ class ColaboradorController extends Controller
         $usuarios = null;
 
         if ($status == 'cadastro_pendente') {
-            $usuarios = User::where('status_cadastro', StatusCadastro::PENDENTE)->paginate(10);
+            $usuarios = User::where('status_cadastro', StatusCadastro::PENDENTE)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
         } else if ($status == 'vinculo_pendente') {
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
