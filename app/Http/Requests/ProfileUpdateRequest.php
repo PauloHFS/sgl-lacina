@@ -6,10 +6,41 @@ use App\Models\User;
 use App\Rules\ValidCpf;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Processar campos_extras se vier como JSON string (do FormData)
+        if ($this->has('campos_extras') && is_string($this->input('campos_extras'))) {
+            try {
+                $camposExtras = json_decode($this->input('campos_extras'), true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($camposExtras)) {
+                    $this->merge(['campos_extras' => $camposExtras]);
+                    Log::info('campos_extras decodificado com sucesso no FormRequest', [
+                        'original' => $this->input('campos_extras'),
+                        'decoded' => $camposExtras
+                    ]);
+                } else {
+                    // JSON inválido, remover o campo para não quebrar a validação
+                    $this->offsetUnset('campos_extras');
+                    Log::warning('JSON inválido em campos_extras, campo removido para validação', [
+                        'original' => $this->input('campos_extras')
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Em caso de erro, remover o campo para não quebrar a validação
+                $this->offsetUnset('campos_extras');
+                Log::warning('Erro ao decodificar campos_extras no FormRequest: ' . $e->getMessage());
+            }
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

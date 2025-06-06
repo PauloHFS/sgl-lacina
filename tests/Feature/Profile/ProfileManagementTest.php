@@ -6,6 +6,7 @@ use App\Enums\StatusCadastro;
 use App\Enums\Genero;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('usuário pode acessar página de pós cadastro', function () {
@@ -678,4 +679,427 @@ test('deletar conta requer senha correta', function () {
 
     $response->assertSessionHasErrors(['password']);
     $this->assertDatabaseHas('users', ['id' => $user->id]);
+});
+
+test('validação de tamanho máximo funciona no update do perfil', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => str_repeat('a', 256), // Acima do limite de 255
+            'email' => str_repeat('a', 250) . '@teste.com', // Email muito longo
+        ]);
+
+    $response->assertSessionHasErrors(['name', 'email']);
+});
+
+test('limpeza de dados CPF e CEP funciona no update', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'cpf' => '12345678901',
+        'cep' => '12345678',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'cpf' => '111.444.777-35', // Com formatação
+            'cep' => '58000-000', // Com formatação
+        ]);
+
+    $response->assertRedirect('/profile');
+
+    $user->refresh();
+    expect($user->cpf)->toBe('11144477735'); // Sem formatação
+    expect($user->cep)->toBe('58000000'); // Sem formatação
+});
+
+test('campos JSONB (campos_extras) podem ser atualizados via update', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'campos_extras' => ['antigo' => 'valor'],
+    ]);
+
+    $novosCamposExtras = [
+        'Matricula' => '2024001234',
+        'Chave Dell' => 'DELL123456',
+        'Periodo Entrada' => '2024.1',
+        'Observacoes' => 'Colaborador dedicado',
+    ];
+
+    // Atualizamos através do método fill, simulando o comportamento do controller
+    $user->update(['campos_extras' => $novosCamposExtras]);
+
+    $user->refresh();
+    // Verificamos cada campo individualmente em vez de comparar arrays completos
+    expect($user->campos_extras['Matricula'])->toBe('2024001234');
+    expect($user->campos_extras['Chave Dell'])->toBe('DELL123456');
+    expect($user->campos_extras['Periodo Entrada'])->toBe('2024.1');
+    expect($user->campos_extras['Observacoes'])->toBe('Colaborador dedicado');
+    // Verificamos que o campo antigo foi substituído
+    expect($user->campos_extras)->not->toHaveKey('antigo');
+});
+
+test('comportamento com dados nulos no update', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'linkedin_url' => 'https://linkedin.com/in/old',
+        'github_url' => 'https://github.com/old',
+        'website_url' => 'https://old.dev',
+    ]);
+
+    // Enviando valores vazios (que deveriam ser filtrados pelo array_filter)
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'linkedin_url' => '', // Campo vazio
+            'github_url' => null, // Campo null
+            'website_url' => '   ', // Campo só com espaços
+            'area_atuacao' => 'Nova área', // Campo válido
+        ]);
+
+    $response->assertRedirect('/profile');
+
+    $user->refresh();
+    // Campos vazios/null não devem sobrescrever valores existentes devido ao array_filter
+    expect($user->linkedin_url)->toBe('https://linkedin.com/in/old');
+    expect($user->github_url)->toBe('https://github.com/old');
+    expect($user->website_url)->toBe('https://old.dev');
+    expect($user->area_atuacao)->toBe('Nova área');
+});
+
+test('falha no upload de foto mantém dados do usuário', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'foto_url' => 'fotos/foto_antiga.jpg',
+    ]);
+
+    // Simular um arquivo muito grande (acima do limite de 5MB)
+    $largeFile = UploadedFile::fake()->image('large.jpg')->size(6000); // 6MB
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'foto_url' => $largeFile,
+        ]);
+
+    $response->assertSessionHasErrors(['foto_url']);
+
+    $user->refresh();
+    // Foto antiga deve ser mantida
+    expect($user->foto_url)->toBe('fotos/foto_antiga.jpg');
+});
+
+test('atualização de foto substitui foto anterior', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'foto_url' => null,
+    ]);
+
+    // Primeira foto
+    $primeiraFoto = UploadedFile::fake()->image('primeira.jpg', 300, 300);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'foto_url' => $primeiraFoto,
+        ]);
+
+    $response->assertRedirect('/profile');
+    $user->refresh();
+    $primeiraFotoPath = $user->foto_url;
+
+    expect($primeiraFotoPath)->not->toBeNull();
+    $this->assertTrue(Storage::disk('public')->exists($primeiraFotoPath));
+
+    // Segunda foto (substituindo a primeira)
+    $segundaFoto = UploadedFile::fake()->image('segunda.jpg', 400, 400);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'foto_url' => $segundaFoto,
+        ]);
+
+    $response->assertRedirect('/profile');
+    $user->refresh();
+
+    expect($user->foto_url)->not->toBe($primeiraFotoPath);
+    expect($user->foto_url)->not->toBeNull();
+    $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
+});
+
+test('update preserva campos não enviados na requisição', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'linkedin_url' => 'https://linkedin.com/in/original',
+        'github_url' => 'https://github.com/original',
+        'area_atuacao' => 'Área Original',
+        'tecnologias' => 'Tech Original',
+    ]);
+
+    // Atualizando apenas alguns campos
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => 'Nome Atualizado',
+            'email' => $user->email,
+            'linkedin_url' => 'https://linkedin.com/in/novo',
+            // github_url, area_atuacao e tecnologias não enviados
+        ]);
+
+    $response->assertRedirect('/profile');
+
+    $user->refresh();
+    expect($user->name)->toBe('Nome Atualizado');
+    expect($user->linkedin_url)->toBe('https://linkedin.com/in/novo');
+    // Campos não enviados devem ser preservados
+    expect($user->github_url)->toBe('https://github.com/original');
+    expect($user->area_atuacao)->toBe('Área Original');
+    expect($user->tecnologias)->toBe('Tech Original');
+});
+
+test('validação de formato de email no update', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => 'email-inválido', // Email com formato inválido
+        ]);
+
+    $response->assertSessionHasErrors(['email']);
+
+    $user->refresh();
+    expect($user->email)->not->toBe('email-inválido');
+});
+
+test('validação de URLs inválidas no update', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'linkedin_url' => 'url-inválida', // URL inválida
+            'github_url' => 'outra-url-inválida', // URL inválida
+        ]);
+
+    $response->assertSessionHasErrors(['linkedin_url', 'github_url']);
+});
+
+test('dados são limpos corretamente no update (CPF e CEP)', function () {
+    $user = User::factory()->cadastroCompleto()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'email_verified_at' => now(),
+        'cpf' => '12345678901',
+        'cep' => '12345678',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'cpf' => '111.444.777-35', // CPF com pontos e hífen
+            'cep' => '58000-000', // CEP com hífen
+        ]);
+
+    $response->assertRedirect('/profile');
+
+    $user->refresh();
+    expect($user->cpf)->toBe('11144477735'); // Deve ficar apenas números
+    expect($user->cep)->toBe('58000000'); // Deve ficar apenas números
+});
+
+test('reproduzir problema upload foto real com dados mistos', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $this->actingAs($user);
+
+    // Simular arquivo de imagem real
+    Storage::fake('public');
+    $file = UploadedFile::fake()->image('nova_foto.jpg', 800, 600)->size(1024); // 1MB
+
+    // Dados típicos enviados do frontend - cenário real
+    $formData = [
+        'name' => 'Nome Atualizado',
+        'email' => 'novo@email.com',
+        'foto_url' => $file,
+        'telefone' => '85999887766',
+        'area_atuacao' => 'Desenvolvimento Web',
+        'cpf' => '',  // Campo vazio
+        'cep' => '',  // Campo vazio
+        'genero' => '', // Campo vazio
+    ];
+
+    $response = $this->patch(route('profile.update'), $formData);
+
+    $response->assertRedirect(route('profile.edit'));
+    $response->assertSessionHas('status', 'Cadastro atualizado com sucesso!');
+
+    // Verificar se os dados foram salvos corretamente
+    $user->refresh();
+
+    // Verificar outros campos
+    $this->assertEquals('Nome Atualizado', $user->name);
+    $this->assertEquals('novo@email.com', $user->email);
+    $this->assertEquals('85999887766', $user->telefone);
+    $this->assertEquals('Desenvolvimento Web', $user->area_atuacao);
+
+    // Verificar se o arquivo foi armazenado - AQUI ESTÁ O PROBLEMA
+    $this->assertNotNull($user->foto_url, 'foto_url não deveria ser null');
+    $this->assertStringStartsWith('fotos/', $user->foto_url);
+    $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
+
+    // Log para debug
+    Log::info('Teste problema upload - foto_url no DB: ' . $user->foto_url);
+    Log::info('Teste problema upload - arquivo existe: ' . (Storage::disk('public')->exists($user->foto_url) ? 'SIM' : 'NÃO'));
+});
+
+test('problema frontend - dados sem arquivo real enviado', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $this->actingAs($user);
+
+    Storage::fake('public');
+
+    // Simulando dados que chegam quando frontend não configura corretamente o upload
+    $formData = [
+        'name' => 'Nome Atualizado',
+        'email' => 'novo@email.com',
+        'foto_url' => '', // Frontend pode enviar string vazia ao invés do arquivo
+        'telefone' => '85999887766',
+        'area_atuacao' => 'Desenvolvimento Web',
+    ];
+
+    $response = $this->patch(route('profile.update'), $formData);
+
+    $response->assertRedirect(route('profile.edit'));
+
+    $user->refresh();
+
+    // Os outros campos devem ser atualizados
+    expect($user->name)->toBe('Nome Atualizado');
+    expect($user->email)->toBe('novo@email.com');
+    expect($user->telefone)->toBe('85999887766');
+
+    // A foto não deve ter sido alterada (deveria permanecer null)
+    expect($user->foto_url)->toBeNull();
+});
+
+test('upload de foto funciona após correção do frontend', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $this->actingAs($user);
+
+    Storage::fake('public');
+    $file = UploadedFile::fake()->image('foto_corrigida.jpg', 800, 600)->size(1500); // 1.5MB
+
+    // Simulando como o FormData seria enviado após a correção do frontend
+    $formData = [
+        '_method' => 'PATCH',
+        'name' => 'Nome Após Correção',
+        'email' => 'corrigido@teste.com',
+        'foto_url' => $file,
+        'telefone' => '85988776655',
+    ];
+
+    // Usando POST com _method PATCH (como o frontend corrigido fará)
+    $response = $this->post(route('profile.update'), $formData);
+
+    $response->assertRedirect(route('profile.edit'));
+    $response->assertSessionHas('status', 'Cadastro atualizado com sucesso!');
+
+    $user->refresh();
+
+    // Verificar dados textuais
+    expect($user->name)->toBe('Nome Após Correção');
+    expect($user->email)->toBe('corrigido@teste.com');
+    expect($user->telefone)->toBe('85988776655');
+
+    // Verificar upload da foto
+    expect($user->foto_url)->not->toBeNull();
+    expect($user->foto_url)->toStartWith('fotos/');
+    $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
+
+    // Log para documentar o sucesso
+    Log::info('Upload corrigido - foto salva em: ' . $user->foto_url);
+});
+
+test('integração completa - upload de foto com atualização de perfil', function () {
+    $user = User::factory()->create([
+        'status_cadastro' => StatusCadastro::ACEITO,
+        'name' => 'Nome Original',
+        'email' => 'original@email.com',
+        'foto_url' => null,
+    ]);
+    $this->actingAs($user);
+
+    Storage::fake('public');
+    $foto = UploadedFile::fake()->image('foto_perfil.jpg', 400, 400)->size(800); // 800KB
+
+    // Cenário real: usuário atualiza foto e alguns dados do perfil
+    $dadosAtualizacao = [
+        '_method' => 'PATCH',
+        'name' => 'Nome Completo Atualizado',
+        'email' => 'email_atualizado@teste.com',
+        'foto_url' => $foto,
+        'telefone' => '85987654321',
+        'area_atuacao' => 'Desenvolvimento Full Stack',
+        'tecnologias' => 'Laravel, React, TypeScript',
+        // Campos vazios que não devem alterar dados existentes
+        'cpf' => '',
+        'rg' => '',
+        'endereco' => '',
+    ];
+
+    $response = $this->post(route('profile.update'), $dadosAtualizacao);
+
+    $response->assertRedirect(route('profile.edit'));
+    $response->assertSessionHas('status', 'Cadastro atualizado com sucesso!');
+
+    // Verificar se todas as atualizações foram aplicadas
+    $user->refresh();
+
+    expect($user->name)->toBe('Nome Completo Atualizado');
+    expect($user->email)->toBe('email_atualizado@teste.com');
+    expect($user->telefone)->toBe('85987654321');
+    expect($user->area_atuacao)->toBe('Desenvolvimento Full Stack');
+    expect($user->tecnologias)->toBe('Laravel, React, TypeScript');
+
+    // Verificar upload da foto
+    expect($user->foto_url)->not->toBeNull();
+    expect($user->foto_url)->toStartWith('fotos/');
+    $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
+
+    // Verificar que campos vazios não alteraram dados existentes (mantiveram null)
+    expect($user->cpf)->toBeNull();
+    expect($user->rg)->toBeNull();
+    expect($user->endereco)->toBeNull();
+
+    // Verificar que email_verified_at foi resetado devido à mudança de email
+    expect($user->email_verified_at)->toBeNull();
+
+    Log::info('Teste integração completa - Upload realizado com sucesso');
+    Log::info('Arquivo salvo em: ' . $user->foto_url);
 });
