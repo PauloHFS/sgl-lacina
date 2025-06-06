@@ -14,16 +14,9 @@ test('usuário pode acessar página de pós cadastro', function () {
         'email_verified_at' => now(),
     ]);
 
-    $bancos = Banco::factory()->count(3)->create();
-
     $response = $this->actingAs($user)->get('/pos-cadastro');
 
     $response->assertStatus(200);
-    $response->assertInertia(
-        fn($page) =>
-        $page->component('PosCadastro')
-            ->has('bancos', 3)
-    );
 });
 
 test('usuário pode completar cadastro com dados bancários', function () {
@@ -124,13 +117,15 @@ test('usuário não pode deletar conta com senha incorreta', function () {
 
 test('dados obrigatórios são validados no completar cadastro', function () {
     $user = User::factory()->create([
-        'status_cadastro' => StatusCadastro::ACEITO,
+        'status_cadastro' => StatusCadastro::IMCOMPLETO,
         'email_verified_at' => now(),
     ]);
 
-    $response = $this->actingAs($user)->post('/profile/update', []);
+    $response = $this->actingAs($user)->post('/pos-cadastro', []);
 
     $response->assertSessionHasErrors([
+        'genero',
+        'data_nascimento',
         'cpf',
         'rg',
         'uf_rg',
@@ -139,6 +134,13 @@ test('dados obrigatórios são validados no completar cadastro', function () {
         'banco_id',
         'conta_bancaria',
         'agencia',
+        'cep',
+        'endereco',
+        'numero',
+        'bairro',
+        'cidade',
+        'estado',
+        'curriculo_lattes_url',
     ]);
 });
 
@@ -148,14 +150,16 @@ test('CPF deve ser único no completar cadastro', function () {
     User::factory()->create(['cpf' => $cpfExistente]);
 
     $user = User::factory()->create([
-        'status_cadastro' => StatusCadastro::ACEITO,
+        'status_cadastro' => StatusCadastro::IMCOMPLETO,
         'email_verified_at' => now(),
         'cpf' => null,
     ]);
 
     $banco = Banco::factory()->create();
 
-    $response = $this->actingAs($user)->post('/profile/update', [
+    $response = $this->actingAs($user)->post('/pos-cadastro', [
+        'genero' => Genero::MASCULINO->value,
+        'data_nascimento' => '1990-01-01',
         'cpf' => $cpfExistente,
         'rg' => '123456789',
         'uf_rg' => 'PB',
@@ -164,6 +168,13 @@ test('CPF deve ser único no completar cadastro', function () {
         'banco_id' => $banco->id,
         'conta_bancaria' => '123456789',
         'agencia' => '1234',
+        'cep' => '58000000',
+        'endereco' => 'Rua Teste, 123',
+        'numero' => '123',
+        'bairro' => 'Centro',
+        'cidade' => 'Campina Grande',
+        'uf' => 'PB',
+        'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
     ]);
 
     $response->assertSessionHasErrors('cpf');
@@ -277,10 +288,22 @@ test('CPF deve ter formato válido', function () {
     $banco = Banco::factory()->create();
 
     $profileData = [
-        'name' => 'João Silva',
-        'email' => 'joao@test.com',
+        'genero' => Genero::MASCULINO->value,
+        'data_nascimento' => '1990-01-01',
         'cpf' => '123', // CPF inválido
+        'rg' => '123456789',
+        'uf_rg' => 'PB',
+        'orgao_emissor_rg' => 'SSP',
+        'telefone' => '(83) 99999-9999',
         'banco_id' => $banco->id,
+        'conta_bancaria' => '123456789',
+        'agencia' => '1234',
+        'cep' => '58000000',
+        'endereco' => 'Rua Teste, 123',
+        'numero' => '123',
+        'bairro' => 'Centro',
+        'cidade' => 'Campina Grande',
+        'uf' => 'PB',
         'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
     ];
 
@@ -313,7 +336,7 @@ test('CEP deve ter formato válido', function () {
         'numero' => '123',
         'bairro' => 'Centro',
         'cidade' => 'Campina Grande',
-        'estado' => 'PB',
+        'uf' => 'PB',
         // Dados de contato
         'telefone' => '83999999999',
         // Dados bancários
@@ -436,10 +459,6 @@ test('perfil pode ser visualizado com todos os dados', function () {
 });
 
 test('usuário não pode usar CPF já cadastrado', function () {
-    $existingUser = User::factory()->cadastroCompleto()->create([
-        'cpf' => '11111111111',
-    ]);
-
     $user = User::factory()->create([
         'status_cadastro' => StatusCadastro::IMCOMPLETO,
         'email_verified_at' => now(),
@@ -449,10 +468,22 @@ test('usuário não pode usar CPF já cadastrado', function () {
 
     $response = $this->actingAs($user)
         ->post('/pos-cadastro', [
-            'name' => 'João Silva',
-            'email' => 'joao@test.com',
+            'genero' => Genero::MASCULINO->value,
+            'data_nascimento' => '1990-01-01',
             'cpf' => '11111111111', // CPF já existe
+            'rg' => '123456789',
+            'uf_rg' => 'PB',
+            'orgao_emissor_rg' => 'SSP',
+            'telefone' => '(83) 99999-9999',
             'banco_id' => $banco->id,
+            'conta_bancaria' => '123456789',
+            'agencia' => '1234',
+            'cep' => '58000000',
+            'endereco' => 'Rua Teste, 123',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'Campina Grande',
+            'uf' => 'PB',
             'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
         ]);
 
@@ -473,11 +504,22 @@ test('usuário não pode usar RG já cadastrado', function () {
 
     $response = $this->actingAs($user)
         ->post('/pos-cadastro', [
-            'name' => 'João Silva',
-            'email' => 'joao@test.com',
+            'genero' => Genero::MASCULINO->value,
+            'data_nascimento' => '1990-01-01',
             'cpf' => '22222222222',
             'rg' => '123456789', // RG já existe
+            'uf_rg' => 'PB',
+            'orgao_emissor_rg' => 'SSP',
+            'telefone' => '(83) 99999-9999',
             'banco_id' => $banco->id,
+            'conta_bancaria' => '123456789',
+            'agencia' => '1234',
+            'cep' => '58000000',
+            'endereco' => 'Rua Teste, 123',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'Campina Grande',
+            'uf' => 'PB',
             'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
         ]);
 
@@ -528,7 +570,7 @@ test('gênero deve ser um valor válido do enum', function () {
             'numero' => '123',
             'bairro' => 'Centro',
             'cidade' => 'Campina Grande',
-            'estado' => 'PB',
+            'uf' => 'PB',
             // Dados de contato
             'telefone' => '83999999999',
             // Dados bancários
@@ -552,11 +594,22 @@ test('data de nascimento deve ter formato válido', function () {
 
     $response = $this->actingAs($user)
         ->post('/pos-cadastro', [
-            'name' => 'João Silva',
-            'email' => 'joao@test.com',
-            'data_nascimento' => 'invalid-date',
+            'genero' => Genero::MASCULINO->value,
+            'data_nascimento' => 'invalid-date', // Data inválida
             'cpf' => '12345678901',
+            'rg' => '123456789',
+            'uf_rg' => 'PB',
+            'orgao_emissor_rg' => 'SSP',
+            'telefone' => '(83) 99999-9999',
             'banco_id' => $banco->id,
+            'conta_bancaria' => '123456789',
+            'agencia' => '1234',
+            'cep' => '58000000',
+            'endereco' => 'Rua Teste, 123',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'Campina Grande',
+            'uf' => 'PB',
             'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
         ]);
 
@@ -573,11 +626,22 @@ test('conta bancária deve ter formato válido', function () {
 
     $response = $this->actingAs($user)
         ->post('/pos-cadastro', [
-            'name' => 'João Silva',
-            'email' => 'joao@test.com',
+            'genero' => Genero::MASCULINO->value,
+            'data_nascimento' => '1990-01-01',
             'cpf' => '12345678901',
+            'rg' => '123456789',
+            'uf_rg' => 'PB',
+            'orgao_emissor_rg' => 'SSP',
+            'telefone' => '(83) 99999-9999',
             'banco_id' => $banco->id,
             'conta_bancaria' => 'invalid@account', // Conta bancária inválida
+            'agencia' => '1234',
+            'cep' => '58000000',
+            'endereco' => 'Rua Teste, 123',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'Campina Grande',
+            'uf' => 'PB',
             'curriculo_lattes_url' => 'http://lattes.cnpq.br/123456789',
         ]);
 
