@@ -28,10 +28,28 @@ return Application::configure(basePath: dirname(__DIR__))
         // Reportar erros críticos para Discord apenas em produção
         if (app()->environment('production')) {
             $exceptions->report(function (\Throwable $e) {
-                if ($this->shouldReportToDiscord($e)) {
+                $shouldReportToDiscord = function (\Throwable $e): bool {
+                    // Não reportar alguns tipos de erros
+                    $ignoredExceptions = [
+                        \Illuminate\Auth\AuthenticationException::class,
+                        \Illuminate\Validation\ValidationException::class,
+                        \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
+                        \Illuminate\Session\TokenMismatchException::class,
+                    ];
+
+                    foreach ($ignoredExceptions as $ignoredException) {
+                        if ($e instanceof $ignoredException) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                };
+
+                if ($shouldReportToDiscord($e)) {
                     Log::channel('discord')->error($e->getMessage(), [
                         'exception' => $e,
-                        'user_id' => Auth::user()->id,
+                        'user_id' => Auth::user()->id ?? null,
                         'url' => request()->url(),
                         'ip' => request()->ip(),
                         'user_agent' => request()->userAgent(),
@@ -40,22 +58,3 @@ return Application::configure(basePath: dirname(__DIR__))
             });
         }
     })->create();
-
-function shouldReportToDiscord(\Throwable $e): bool
-{
-    // Não reportar alguns tipos de erros
-    $ignoredExceptions = [
-        \Illuminate\Auth\AuthenticationException::class,
-        \Illuminate\Validation\ValidationException::class,
-        \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
-        \Illuminate\Session\TokenMismatchException::class,
-    ];
-
-    foreach ($ignoredExceptions as $ignoredException) {
-        if ($e instanceof $ignoredException) {
-            return false;
-        }
-    }
-
-    return true;
-}

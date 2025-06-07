@@ -121,6 +121,7 @@ Table "projetos" {
   "id" uuid [pk, not null]
   "nome" varchar(255) [not null]
   "descricao" text
+  "campos_extras" jsonb [not null, default: `{}`]
   "data_inicio" date [not null]
   "data_termino" date
   "cliente" varchar(255) [not null]
@@ -142,7 +143,7 @@ Table "usuario_projeto" {
   "tipo_vinculo" varchar(255) [not null]
   "funcao" varchar(255) [not null]
   "status" varchar(255) [not null]
-  "carga_horaria_semanal" int4 [not null]
+  "carga_horaria_mensal" int4 [not null]
   "data_inicio" timestamp [not null]
   "data_fim" timestamp
   "created_at" timestamp

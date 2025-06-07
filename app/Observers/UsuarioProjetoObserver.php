@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\StatusVinculoProjeto;
 use App\Models\UsuarioProjeto;
 use App\Models\HistoricoUsuarioProjeto;
 
@@ -12,7 +13,10 @@ class UsuarioProjetoObserver
      */
     public function created(UsuarioProjeto $usuarioProjeto): void
     {
-        // $this->logHistory($usuarioProjeto);
+        // Registra histórico quando um vínculo é criado e aprovado
+        if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+            $this->logHistory($usuarioProjeto);
+        }
     }
 
     /**
@@ -21,7 +25,10 @@ class UsuarioProjetoObserver
     public function updated(UsuarioProjeto $usuarioProjeto): void
     {
         if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria_semanal', 'data_fim', 'tipo_vinculo'])) {
-            $this->logHistory($usuarioProjeto);
+            // Só registra histórico para vínculos aprovados
+            if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
+                $this->logHistory($usuarioProjeto);
+            }
         }
     }
 
@@ -30,7 +37,7 @@ class UsuarioProjetoObserver
      */
     public function deleted(UsuarioProjeto $usuarioProjeto): void
     {
-        // $this->logHistory($usuarioProjeto, 'REMOVIDO_LOGICAMENTE');
+        $this->logHistory($usuarioProjeto, StatusVinculoProjeto::ENCERRADO->value);
     }
 
     /**
@@ -38,7 +45,7 @@ class UsuarioProjetoObserver
      */
     public function restored(UsuarioProjeto $usuarioProjeto): void
     {
-        //
+        $this->logHistory($usuarioProjeto);
     }
 
     /**
