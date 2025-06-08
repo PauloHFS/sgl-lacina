@@ -591,7 +591,7 @@ class DevelopmentSeeder extends Seeder
             'status' => $status,
             'funcao' => $funcao ?? $funcoes[array_rand($funcoes)],
             'tipo_vinculo' => $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)],
-            'carga_horaria_semanal' => rand(10, 40),
+            'carga_horaria' => rand(10, 40),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
             'trocar' => rand(1, 100) <= 5, // 5% chance de querer trocar
