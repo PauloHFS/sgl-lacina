@@ -235,8 +235,8 @@ test('validação de carga horária deve aceitar valores válidos', function () 
 
     foreach ($cargasValidas as $carga) {
         $validator = Validator::make(
-            ['carga_horaria_semanal' => $carga],
-            ['carga_horaria_semanal' => 'integer|min:1|max:44']
+            ['carga_horaria' => $carga],
+            ['carga_horaria' => 'integer|min:1|max:44']
         );
 
         expect($validator->passes())->toBeTrue();
@@ -248,8 +248,8 @@ test('validação de carga horária deve rejeitar valores inválidos', function 
 
     foreach ($cargasInvalidas as $carga) {
         $validator = Validator::make(
-            ['carga_horaria_semanal' => $carga],
-            ['carga_horaria_semanal' => 'integer|min:1|max:44']
+            ['carga_horaria' => $carga],
+            ['carga_horaria' => 'integer|min:1|max:44']
         );
 
         expect($validator->fails())->toBeTrue();

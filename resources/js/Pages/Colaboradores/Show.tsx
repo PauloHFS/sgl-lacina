@@ -78,7 +78,7 @@ export interface ColaboradorData {
             tipo_vinculo: TipoVinculo;
             funcao: Funcao;
             status: StatusVinculoProjeto;
-            carga_horaria_semanal: number;
+            carga_horaria: number;
             data_inicio: string;
             data_fim?: string | null;
             created_at: string;
@@ -101,7 +101,7 @@ export interface ShowPageProps extends PageProps {
 
 interface VinculoEditFormData {
     funcao: Funcao | '';
-    carga_horaria_semanal: number | string;
+    carga_horaria: number | string;
     data_inicio: string | null | undefined;
     data_fim: string | null | undefined;
 }
@@ -127,13 +127,13 @@ export default function Show({
         status?: StatusVinculoProjeto;
         funcao?: Funcao;
         tipo_vinculo?: TipoVinculo;
-        carga_horaria_semanal?: number;
+        carga_horaria?: number;
         data_inicio?: string;
     }>({
         status: ultimo_vinculo?.status,
         funcao: ultimo_vinculo?.funcao,
         tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
-        carga_horaria_semanal: ultimo_vinculo?.carga_horaria_semanal,
+        carga_horaria: ultimo_vinculo?.carga_horaria,
         data_inicio: ultimo_vinculo?.data_inicio
             ? ultimo_vinculo.data_inicio.substring(0, 10)
             : undefined,
@@ -189,7 +189,7 @@ export default function Show({
 
     const vinculoEditForm = useForm<VinculoEditFormData>({
         funcao: '',
-        carga_horaria_semanal: '',
+        carga_horaria: '',
         data_inicio: null,
         data_fim: null,
     });
@@ -198,7 +198,7 @@ export default function Show({
         setEditingVinculo(vinculo);
         vinculoEditForm.setData({
             funcao: vinculo.funcao,
-            carga_horaria_semanal: vinculo.carga_horaria_semanal,
+            carga_horaria: vinculo.carga_horaria,
             data_inicio: vinculo.data_inicio
                 ? new Date(vinculo.data_inicio).toISOString().split('T')[0]
                 : null,
@@ -277,7 +277,7 @@ export default function Show({
             status: vinculoData.status,
             funcao: vinculoData.funcao,
             tipo_vinculo: vinculoData.tipo_vinculo,
-            carga_horaria_semanal: vinculoData.carga_horaria_semanal,
+            carga_horaria: vinculoData.carga_horaria,
             data_inicio: vinculoData.data_inicio,
         };
 
@@ -297,7 +297,7 @@ export default function Show({
         vinculoData.status,
         vinculoData.funcao,
         vinculoData.tipo_vinculo,
-        vinculoData.carga_horaria_semanal,
+        vinculoData.carga_horaria,
         vinculoData.data_inicio,
         putVinculo,
         toast,
@@ -329,7 +329,7 @@ export default function Show({
         return {
             funcao: ultimo_vinculo?.funcao,
             tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
-            carga_horaria_semanal: ultimo_vinculo?.carga_horaria_semanal,
+            carga_horaria: ultimo_vinculo?.carga_horaria,
             data_inicio: ultimo_vinculo?.data_inicio
                 ? ultimo_vinculo.data_inicio.substring(0, 10)
                 : undefined,
@@ -341,8 +341,8 @@ export default function Show({
             vinculoData.funcao !== originalVinculoDisplayValues.funcao ||
             vinculoData.tipo_vinculo !==
                 originalVinculoDisplayValues.tipo_vinculo ||
-            vinculoData.carga_horaria_semanal !==
-                originalVinculoDisplayValues.carga_horaria_semanal ||
+            vinculoData.carga_horaria !==
+                originalVinculoDisplayValues.carga_horaria ||
             vinculoData.data_inicio !==
                 originalVinculoDisplayValues.data_inicio,
         [vinculoData, originalVinculoDisplayValues],
@@ -376,8 +376,7 @@ export default function Show({
             status: ultimo_vinculo?.status,
             funcao: originalVinculoDisplayValues.funcao,
             tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
-            carga_horaria_semanal:
-                originalVinculoDisplayValues.carga_horaria_semanal,
+            carga_horaria: originalVinculoDisplayValues.carga_horaria,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
     }, [setVinculoData, ultimo_vinculo, originalVinculoDisplayValues]);
@@ -586,31 +585,31 @@ export default function Show({
                                                     <div>
                                                         <label
                                                             className="label"
-                                                            htmlFor="carga_horaria_semanal"
+                                                            htmlFor="carga_horaria"
                                                         >
                                                             <span className="label-text font-semibold">
                                                                 Carga Horária
-                                                                Semanal:
+                                                                Mensal:
                                                             </span>
                                                         </label>
                                                         <input
-                                                            id="carga_horaria_semanal"
+                                                            id="carga_horaria"
                                                             type="number"
                                                             className={`input input-bordered w-full ${
-                                                                ultimo_vinculo?.carga_horaria_semanal !==
-                                                                    vinculoData.carga_horaria_semanal &&
-                                                                vinculoData.carga_horaria_semanal !==
+                                                                ultimo_vinculo?.carga_horaria !==
+                                                                    vinculoData.carga_horaria &&
+                                                                vinculoData.carga_horaria !==
                                                                     undefined
                                                                     ? 'input-warning'
                                                                     : ''
-                                                            } ${vinculoErrors.carga_horaria_semanal ? 'input-error' : ''}`}
+                                                            } ${vinculoErrors.carga_horaria ? 'input-error' : ''}`}
                                                             value={
-                                                                vinculoData.carga_horaria_semanal ||
+                                                                vinculoData.carga_horaria ||
                                                                 ''
                                                             }
                                                             onChange={(e) =>
                                                                 setVinculoData(
-                                                                    'carga_horaria_semanal',
+                                                                    'carga_horaria',
                                                                     parseInt(
                                                                         e.target
                                                                             .value,
@@ -626,12 +625,12 @@ export default function Show({
                                                             }
                                                         />
                                                         <span className="label-text-alt">
-                                                            {`${vinculoData.carga_horaria_semanal ? vinculoData.carga_horaria_semanal * 4 : 0} horas/mês`}
+                                                            {`${vinculoData.carga_horaria ? vinculoData.carga_horaria / 4 : 0} horas/semana`}
                                                         </span>
-                                                        {vinculoErrors.carga_horaria_semanal && (
+                                                        {vinculoErrors.carga_horaria && (
                                                             <p className="text-error mt-1 text-xs">
                                                                 {
-                                                                    vinculoErrors.carga_horaria_semanal
+                                                                    vinculoErrors.carga_horaria
                                                                 }
                                                             </p>
                                                         )}
@@ -902,25 +901,20 @@ export default function Show({
                         </div>
 
                         <div className="mt-4">
-                            <label
-                                htmlFor="carga_horaria_semanal"
-                                className="label"
-                            >
+                            <label htmlFor="carga_horaria" className="label">
                                 <span className="label-text">
-                                    Carga Horária Semanal
+                                    Carga Horária
                                 </span>
                             </label>
                             <TextInput
-                                id="carga_horaria_semanal"
-                                name="carga_horaria_semanal"
+                                id="carga_horaria"
+                                name="carga_horaria"
                                 type="number"
                                 className="mt-1 block w-full"
-                                value={
-                                    vinculoEditForm.data.carga_horaria_semanal
-                                }
+                                value={vinculoEditForm.data.carga_horaria}
                                 onChange={(e) =>
                                     vinculoEditForm.setData(
-                                        'carga_horaria_semanal',
+                                        'carga_horaria',
                                         parseInt(e.target.value) || '',
                                     )
                                 }
@@ -929,12 +923,10 @@ export default function Show({
                                 required
                             />
                             <span className="label-text-alt">
-                                {`${vinculoEditForm.data.carga_horaria_semanal ? Number(vinculoEditForm.data.carga_horaria_semanal) * 4 : 0} horas/mês`}
+                                {`${vinculoEditForm.data.carga_horaria ? Number(vinculoEditForm.data.carga_horaria) / 4 : 0} horas/semana`}
                             </span>
                             <InputError
-                                message={
-                                    vinculoEditForm.errors.carga_horaria_semanal
-                                }
+                                message={vinculoEditForm.errors.carga_horaria}
                                 className="mt-2"
                             />
                         </div>

@@ -121,7 +121,7 @@ export interface UsuarioProjeto {
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;
-    carga_horaria_semanal: number;
+    carga_horaria: number;
     data_inicio: string; // timestamp format: YYYY-MM-DD HH:MM:SS
     data_fim?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS

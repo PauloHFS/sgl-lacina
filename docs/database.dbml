@@ -164,7 +164,7 @@ Table "historico_usuario_projeto" {
   "tipo_vinculo" varchar(255) [not null]
   "funcao" varchar(255) [not null]
   "status" varchar(255) [not null]
-  "carga_horaria_semanal" int4 [not null]
+  "carga_horaria" int4 [not null]
   "data_inicio" timestamp [not null]
   "data_fim" timestamp
   "created_at" timestamp

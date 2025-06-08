@@ -38,7 +38,7 @@ type VinculoCreateForm = {
     projeto_id: string;
     tipo_vinculo: TipoVinculo | '';
     funcao: Funcao | '';
-    carga_horaria_semanal: number;
+    carga_horaria: number;
     data_inicio: string;
     trocar?: boolean;
     usuario_projeto_trocado_id?: string | null;
@@ -60,7 +60,7 @@ export default function Show({
         projeto_id: projeto.id,
         tipo_vinculo: '',
         funcao: '',
-        carga_horaria_semanal: 20,
+        carga_horaria: 20,
         data_inicio: '',
     });
 
@@ -676,20 +676,20 @@ export default function Show({
                                                                 type="number"
                                                                 className={`input input-bordered w-full ${
                                                                     form.errors
-                                                                        .carga_horaria_semanal
+                                                                        .carga_horaria
                                                                         ? 'input-error'
                                                                         : ''
                                                                 }`}
                                                                 placeholder="Ex: 20"
                                                                 value={
                                                                     form.data
-                                                                        .carga_horaria_semanal
+                                                                        .carga_horaria
                                                                 }
                                                                 onChange={(
                                                                     e: React.ChangeEvent<HTMLInputElement>,
                                                                 ) =>
                                                                     form.setData(
-                                                                        'carga_horaria_semanal',
+                                                                        'carga_horaria',
                                                                         parseInt(
                                                                             e
                                                                                 .target
@@ -701,13 +701,13 @@ export default function Show({
                                                                 max="40"
                                                             />
                                                             {form.errors
-                                                                .carga_horaria_semanal && (
+                                                                .carga_horaria && (
                                                                 <div className="label">
                                                                     <span className="label-text-alt text-error">
                                                                         {
                                                                             form
                                                                                 .errors
-                                                                                .carga_horaria_semanal
+                                                                                .carga_horaria
                                                                         }
                                                                     </span>
                                                                 </div>

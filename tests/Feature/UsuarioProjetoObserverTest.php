@@ -18,7 +18,7 @@ test('observer registra histórico quando vínculo é criado aprovado', function
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 80, // ou semanal dependendo da coluna
+        'carga_horaria' => 80, // ou semanal dependendo da coluna
         'data_inicio' => now(),
     ]);
 
@@ -39,7 +39,7 @@ test('observer registra histórico quando status muda para aprovado', function (
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::PENDENTE,
-        'carga_horaria_semanal' => 80,
+        'carga_horaria' => 80,
         'data_inicio' => now(),
     ]);
 

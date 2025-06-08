@@ -15,7 +15,7 @@ test('usuário com cadastro aceito pode solicitar vínculo a projeto', function 
     $dadosVinculo = [
         'projeto_id' => $projeto->id,
         'data_inicio' => now()->addDays(7)->format('Y-m-d'),
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
     ];
@@ -28,7 +28,7 @@ test('usuário com cadastro aceito pode solicitar vínculo a projeto', function 
         'usuario_id' => $usuario->id,
         'projeto_id' => $projeto->id,
         'status' => StatusVinculoProjeto::PENDENTE->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
     ]);
 });
 
@@ -39,7 +39,7 @@ test('usuário com cadastro pendente não pode solicitar vínculo', function () 
     $dadosVinculo = [
         'projeto_id' => $projeto->id,
         'data_inicio' => now()->addDays(7)->format('Y-m-d'),
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
     ];
@@ -64,7 +64,7 @@ test('usuário não pode solicitar vínculo duplicado ao mesmo projeto', functio
     $dadosVinculo = [
         'projeto_id' => $projeto->id,
         'data_inicio' => now()->addDays(7)->format('Y-m-d'),
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
     ];
@@ -158,14 +158,14 @@ test('coordenador pode editar dados do vínculo antes de aprovar', function () {
         'projeto_id' => $projeto->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'status' => StatusVinculoProjeto::PENDENTE,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'funcao' => Funcao::DESENVOLVEDOR,
     ]);
 
     $response = $this->actingAs($coordenador)
         ->patch("/vinculo/{$vinculoPendente->id}", [
             'status' => StatusVinculoProjeto::APROVADO->value,
-            'carga_horaria_semanal' => 30,
+            'carga_horaria' => 30,
             'funcao' => Funcao::PESQUISADOR->value,
         ]);
 
@@ -173,7 +173,7 @@ test('coordenador pode editar dados do vínculo antes de aprovar', function () {
 
     $vinculoPendente->refresh();
     expect($vinculoPendente->status)->toBe(StatusVinculoProjeto::APROVADO);
-    expect($vinculoPendente->carga_horaria_semanal)->toBe(30);
+    expect($vinculoPendente->carga_horaria)->toBe(30);
     expect($vinculoPendente->funcao)->toBe(Funcao::PESQUISADOR);
 });
 
@@ -193,7 +193,7 @@ test('usuário pode solicitar troca de projeto', function () {
     $dadosTroca = [
         'projeto_id' => $projetoNovo->id,
         'data_inicio' => now()->addDays(14)->format('Y-m-d'),
-        'carga_horaria_semanal' => 25,
+        'carga_horaria' => 25,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::PESQUISADOR->value,
         'trocar' => true,
@@ -233,7 +233,7 @@ test('usuário não pode ter múltiplas trocas em andamento', function () {
     $dadosTroca = [
         'projeto_id' => $projetoNovo->id,
         'data_inicio' => now()->addDays(14)->format('Y-m-d'),
-        'carga_horaria_semanal' => 25,
+        'carga_horaria' => 25,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::PESQUISADOR->value,
         'trocar' => true,
@@ -253,7 +253,7 @@ test('colaborador sem vínculo pode solicitar adesão direta', function () {
     $dadosVinculo = [
         'projeto_id' => $projeto->id,
         'data_inicio' => now()->addDays(7)->format('Y-m-d'),
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::ALUNO->value,
         'trocar' => false,
@@ -271,19 +271,19 @@ test('colaborador sem vínculo pode solicitar adesão direta', function () {
     ]);
 });
 
-test('carga horária semanal deve estar entre 1 e 40 horas', function () {
+test('carga horária deve estar entre 1 e 192 horas', function () {
     $usuario = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create();
 
     $dadosInvalidos = [
         'projeto_id' => $projeto->id,
         'data_inicio' => now()->addDays(7)->format('Y-m-d'),
-        'carga_horaria_semanal' => 50, // Acima do limite
+        'carga_horaria' => 500, // Acima do limite
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
     ];
 
     $response = $this->actingAs($usuario)->post('/vinculo', $dadosInvalidos);
 
-    $response->assertSessionHasErrors(['carga_horaria_semanal']);
+    $response->assertSessionHasErrors(['carga_horaria']);
 });

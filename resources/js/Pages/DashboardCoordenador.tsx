@@ -25,7 +25,7 @@ type ProjetoAtivoType = {
         tipo_vinculo: TipoVinculo;
         funcao: Funcao;
         status: StatusVinculoProjeto;
-        carga_horaria_semanal: number;
+        carga_horaria: number;
         data_inicio: string;
         data_fim: string | null;
         created_at: string;

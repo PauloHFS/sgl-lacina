@@ -55,7 +55,7 @@ beforeEach(function () {
         'tipo_vinculo' => TipoVinculo::COORDENADOR,
         'funcao' => Funcao::COORDENADOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 40,
+        'carga_horaria' => 40,
         'data_inicio' => now(),
     ]);
 });
@@ -69,7 +69,7 @@ describe('Project Coordination Dashboard', function () {
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now(),
         ]);
 
@@ -92,14 +92,14 @@ describe('Project Coordination Dashboard', function () {
             'usuario_id' => $this->discente1->id,
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
         ]);
 
         UsuarioProjeto::factory()->create([
             'usuario_id' => $this->discente2->id,
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::RECUSADO,
-            'carga_horaria_semanal' => 15,
+            'carga_horaria' => 15,
         ]);
 
         $this->actingAs($this->coordenador);
@@ -122,7 +122,7 @@ describe('Project Coordination Dashboard', function () {
             'status' => StatusVinculoProjeto::PENDENTE,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
-            'carga_horaria_semanal' => 10,
+            'carga_horaria' => 10,
         ]);
 
         $this->actingAs($this->coordenador);
@@ -146,7 +146,7 @@ describe('Team Member Management', function () {
             'status' => StatusVinculoProjeto::PENDENTE,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
         ]);
 
         $this->actingAs($this->coordenador);
@@ -193,7 +193,7 @@ describe('Team Member Management', function () {
             'usuario_id' => $this->discente1->id,
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::PENDENTE,
-            'carga_horaria_semanal' => 10,
+            'carga_horaria' => 10,
             'funcao' => Funcao::DESENVOLVEDOR,
         ]);
 
@@ -203,7 +203,7 @@ describe('Team Member Management', function () {
             'projeto' => $this->projeto,
             'vinculo' => $solicitacao,
         ]), [
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'funcao' => Funcao::TECNICO->value,
             'status' => StatusVinculoProjeto::APROVADO->value,
         ]);
@@ -212,7 +212,7 @@ describe('Team Member Management', function () {
 
         $this->assertDatabaseHas('usuario_projeto', [
             'id' => $solicitacao->id,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'funcao' => Funcao::TECNICO,
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
@@ -442,7 +442,7 @@ describe('Project Member Reporting', function () {
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::APROVADO,
             'funcao' => Funcao::DESENVOLVEDOR,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->subMonths(3),
         ]);
 
@@ -451,7 +451,7 @@ describe('Project Member Reporting', function () {
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::APROVADO,
             'funcao' => Funcao::TECNICO,
-            'carga_horaria_semanal' => 15,
+            'carga_horaria' => 15,
             'data_inicio' => now()->subMonths(2),
         ]);
 
@@ -488,14 +488,14 @@ describe('Project Member Reporting', function () {
             'usuario_id' => $this->discente1->id,
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
         ]);
 
         UsuarioProjeto::factory()->create([
             'usuario_id' => $this->discente2->id,
             'projeto_id' => $this->projeto->id,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 15,
+            'carga_horaria' => 15,
         ]);
 
         $this->actingAs($this->coordenador);
@@ -560,7 +560,7 @@ describe('Notification Management', function () {
         $this->post(route('projetos.vinculos.store', $this->projeto), [
             'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
             'funcao' => Funcao::DESENVOLVEDOR->value,
-            'carga_horaria_semanal' => 10,
+            'carga_horaria' => 10,
             'justificativa' => 'Gostaria de contribuir com o projeto.',
         ]);
 

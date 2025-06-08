@@ -29,7 +29,7 @@ class HistoricoUsuarioProjetoFactory extends Factory
             'tipo_vinculo' => $this->faker->randomElement([TipoVinculo::COORDENADOR, TipoVinculo::COLABORADOR]),
             'funcao' => $this->faker->randomElement([Funcao::COORDENADOR, Funcao::PESQUISADOR, Funcao::DESENVOLVEDOR, Funcao::TECNICO, Funcao::ALUNO]),
             'status' => $this->faker->randomElement([StatusVinculoProjeto::APROVADO, StatusVinculoProjeto::RECUSADO, StatusVinculoProjeto::ENCERRADO]),
-            'carga_horaria_semanal' => $this->faker->numberBetween(10, 40),
+            'carga_horaria' => $this->faker->numberBetween(10, 40),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
             'trocar' => $this->faker->boolean(20), // 20% chance of being true

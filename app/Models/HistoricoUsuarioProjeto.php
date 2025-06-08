@@ -23,7 +23,7 @@ class HistoricoUsuarioProjeto extends Model
         'tipo_vinculo',
         'funcao',
         'status',
-        'carga_horaria_semanal',
+        'carga_horaria',
         'data_inicio',
         'data_fim',
     ];

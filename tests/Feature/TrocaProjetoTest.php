@@ -34,7 +34,7 @@ test('usuário pode solicitar troca de projeto marcando trocar como true', funct
         'projeto_id' => $projetoNovo->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculoAtual->id,
@@ -78,7 +78,7 @@ test('usuário não pode ter múltiplas solicitações de troca simultâneas', f
         'projeto_id' => $projeto3->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo1->id,
@@ -337,7 +337,7 @@ test('usuário não pode solicitar troca para projeto que já participa', functi
         'projeto_id' => $projeto->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo->id,
@@ -441,7 +441,7 @@ test('múltiplas trocas sequenciais são processadas corretamente', function () 
         'projeto_id' => $projeto2->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addDay()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo1->id,
@@ -464,7 +464,7 @@ test('múltiplas trocas sequenciais são processadas corretamente', function () 
         'projeto_id' => $projeto3->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::TECNICO->value,
-        'carga_horaria_semanal' => 25,
+        'carga_horaria' => 25,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo2->id,
@@ -572,7 +572,7 @@ test('troca com dados inválidos é rejeitada', function () {
         'projeto_id' => 'inexistente',
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo->id,
@@ -585,7 +585,7 @@ test('troca com dados inválidos é rejeitada', function () {
         'projeto_id' => $projeto->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => 'inexistente',
@@ -622,7 +622,7 @@ test('troca de projeto funciona com diferentes tipos de vínculo e função', fu
         'status' => StatusVinculoProjeto::APROVADO,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::ALUNO,
-        'carga_horaria_semanal' => 15,
+        'carga_horaria' => 15,
         'trocar' => true,
     ]);
 
@@ -633,7 +633,7 @@ test('troca de projeto funciona com diferentes tipos de vínculo e função', fu
         'status' => StatusVinculoProjeto::PENDENTE,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::TECNICO,
-        'carga_horaria_semanal' => 30,
+        'carga_horaria' => 30,
     ]);
 
     // Aprovar troca
@@ -648,11 +648,11 @@ test('troca de projeto funciona com diferentes tipos de vínculo e função', fu
 
     expect($vinculoAntigo->status)->toBe(StatusVinculoProjeto::ENCERRADO);
     expect($vinculoAntigo->funcao)->toBe(Funcao::ALUNO);
-    expect($vinculoAntigo->carga_horaria_semanal)->toBe(15);
+    expect($vinculoAntigo->carga_horaria)->toBe(15);
 
     expect($vinculoNovo->status)->toBe(StatusVinculoProjeto::APROVADO);
     expect($vinculoNovo->funcao)->toBe(Funcao::TECNICO);
-    expect($vinculoNovo->carga_horaria_semanal)->toBe(30);
+    expect($vinculoNovo->carga_horaria)->toBe(30);
 });
 
 test('sistema impede trocar para mesmo projeto através de vínculo diferente', function () {
@@ -676,7 +676,7 @@ test('sistema impede trocar para mesmo projeto através de vínculo diferente', 
         'projeto_id' => $projeto->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo1->id,
@@ -709,7 +709,7 @@ test('usuários com cadastro não aceito não podem solicitar troca', function (
         'projeto_id' => $projeto2->id,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->addWeek()->format('Y-m-d'),
         'trocar' => true,
         'usuario_projeto_trocado_id' => $vinculo->id,

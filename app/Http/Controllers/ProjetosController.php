@@ -216,7 +216,7 @@ class ProjetosController extends Controller
           'tipo_vinculo' => TipoVinculo::COORDENADOR,
           'funcao' => Funcao::COORDENADOR,
           'status' => StatusVinculoProjeto::APROVADO,
-          'carga_horaria_semanal' => 0,
+          'carga_horaria' => 0,
           'data_inicio' => now(),
         ]);
       });

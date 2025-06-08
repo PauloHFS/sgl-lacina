@@ -183,7 +183,7 @@ test('colaborador não pode aprovar próprias solicitações', function () {
             'status' => StatusVinculoProjeto::APROVADO->value,
             'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
             'funcao' => Funcao::DESENVOLVEDOR->value,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->format('Y-m-d'),
         ]);
 

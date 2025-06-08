@@ -24,7 +24,7 @@ class UsuarioProjetoObserver
      */
     public function updated(UsuarioProjeto $usuarioProjeto): void
     {
-        if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria_semanal', 'data_fim', 'tipo_vinculo'])) {
+        if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria', 'data_fim', 'tipo_vinculo'])) {
             // Só registra histórico para vínculos aprovados
             if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
                 $this->logHistory($usuarioProjeto);
@@ -68,7 +68,7 @@ class UsuarioProjetoObserver
             'tipo_vinculo' => $usuarioProjeto->tipo_vinculo,
             'funcao' => $usuarioProjeto->funcao,
             'status' => $customStatus ?? $usuarioProjeto->status,
-            'carga_horaria_semanal' => $usuarioProjeto->carga_horaria_semanal,
+            'carga_horaria' => $usuarioProjeto->carga_horaria,
             'data_inicio' => $usuarioProjeto->data_inicio,
             'data_fim' => $usuarioProjeto->data_fim,
         ]);
