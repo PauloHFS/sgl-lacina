@@ -337,3 +337,423 @@ test('url fields must be valid urls when updating', function () {
     // A validação de 'discord_url' pode passar se 'http://incomplete' for considerado um início válido por 'url'.
     // Para ser mais rigoroso, poderia usar regex ou validação de domínio.
 });
+
+// Testes específicos para o campo valor_total
+
+test('can update project with valid valor_total', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto com Valor Total',
+        'descricao' => 'Projeto para testar valor total',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'valor_total' => 150000, // R$ 1500,00 em centavos
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData)
+        ->assertRedirect(route('projetos.show', $projeto->id))
+        ->assertSessionHas('success', 'Projeto atualizado com sucesso!');
+
+    $this->assertDatabaseHas('projetos', [
+        'id' => $projeto->id,
+        'nome' => 'Projeto com Valor Total',
+        'valor_total' => 150000,
+    ]);
+});
+
+test('can update project with null valor_total', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create(['valor_total' => 100000]);
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto sem Valor Total',
+        'descricao' => 'Projeto para testar valor total nulo',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        // Não enviamos valor_total para que use o valor default (0)
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar em uma nova consulta
+    $projetoAtualizado = Projeto::find($projeto->id);
+    // Como não enviamos valor_total, deve manter o valor anterior (não usar default)
+    expect($projetoAtualizado->valor_total)->toBe(100000);
+    expect($projetoAtualizado->nome)->toBe('Projeto sem Valor Total');
+});
+
+test('cannot update project with negative valor_total', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $invalidData = [
+        'nome' => 'Projeto com Valor Negativo',
+        'descricao' => 'Projeto para testar validação',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'valor_total' => -1000, // Valor negativo
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $invalidData)
+        ->assertSessionHasErrors(['valor_total']);
+});
+
+test('cannot update project with non-integer valor_total', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $invalidData = [
+        'nome' => 'Projeto com Valor Inválido',
+        'descricao' => 'Projeto para testar validação',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'valor_total' => 'invalid-value', // Valor não numérico
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $invalidData)
+        ->assertSessionHasErrors(['valor_total']);
+});
+
+// Testes específicos para o campo campos_extras
+
+test('can update project with valid campos_extras', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $camposExtras = [
+        'gerente' => 'João Silva',
+        'departamento' => 'TI',
+        'prioridade' => 'Alta',
+        'observacoes' => 'Projeto estratégico'
+    ];
+
+    $updateData = [
+        'nome' => 'Projeto com Campos Extras',
+        'descricao' => 'Projeto para testar campos extras',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'campos_extras' => $camposExtras,
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    $projeto->refresh();
+
+    // Verificar que todos os campos estão presentes, independente da ordem
+    expect($projeto->campos_extras)->toHaveCount(4);
+    expect($projeto->campos_extras)->toHaveKey('gerente', 'João Silva');
+    expect($projeto->campos_extras)->toHaveKey('departamento', 'TI');
+    expect($projeto->campos_extras)->toHaveKey('prioridade', 'Alta');
+    expect($projeto->campos_extras)->toHaveKey('observacoes', 'Projeto estratégico');
+});
+
+test('can update project with empty campos_extras', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create([
+        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2']
+    ]);
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto sem Campos Extras',
+        'descricao' => 'Projeto para testar campos extras vazios',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        // Não enviamos campos_extras para que mantenha o valor anterior
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData)
+        ->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar em uma nova consulta
+    $projetoAtualizado = Projeto::find($projeto->id);
+    // Como não enviamos campos_extras, deve manter o valor anterior
+    expect($projetoAtualizado->campos_extras)->toEqual(['campo1' => 'valor1', 'campo2' => 'valor2']);
+});
+
+test('can update project with null campos_extras', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create([
+        'campos_extras' => ['campo1' => 'valor1']
+    ]);
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto com Campos Extras Nulos',
+        'descricao' => 'Projeto para testar campos extras nulos',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        // Não enviamos campos_extras para que mantenha o valor anterior
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar em uma nova consulta
+    $projetoAtualizado = Projeto::find($projeto->id);
+    // Como não enviamos campos_extras, deve manter o valor anterior
+    expect($projetoAtualizado->campos_extras)->toEqual(['campo1' => 'valor1']);
+    expect($projetoAtualizado->nome)->toBe('Projeto com Campos Extras Nulos');
+});
+
+test('can explicitly clear campos_extras by sending empty array', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create([
+        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2']
+    ]);
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto com Campos Extras Limpos',
+        'descricao' => 'Projeto para testar limpeza de campos extras',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'campos_extras' => [], // Explicitamente enviando array vazio para limpar
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar em uma nova consulta
+    $projetoAtualizado = Projeto::find($projeto->id);
+    // Quando enviamos array vazio explicitamente, deve limpar os campos
+    expect($projetoAtualizado->campos_extras)->toEqual([]);
+    expect($projetoAtualizado->nome)->toBe('Projeto com Campos Extras Limpos');
+});
+
+test('can explicitly set valor_total to zero', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create(['valor_total' => 100000]);
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $updateData = [
+        'nome' => 'Projeto com Valor Zero',
+        'descricao' => 'Projeto para testar valor total zero',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'valor_total' => 0, // Explicitamente enviando zero
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar em uma nova consulta
+    $projetoAtualizado = Projeto::find($projeto->id);
+    // Quando enviamos 0 explicitamente, deve definir como 0
+    expect($projetoAtualizado->valor_total)->toBe(0);
+    expect($projetoAtualizado->nome)->toBe('Projeto com Valor Zero');
+});
+
+test('cannot update project with invalid campos_extras structure', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $invalidData = [
+        'nome' => 'Projeto com Campos Extras Inválidos',
+        'descricao' => 'Projeto para testar validação',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'campos_extras' => 'string-instead-of-array', // String ao invés de array
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $invalidData)
+        ->assertSessionHasErrors(['campos_extras']);
+});
+
+test('cannot update project with campos_extras values exceeding max length', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $longString = str_repeat('a', 256); // 256 caracteres, ultrapassando o limite de 255
+
+    $invalidData = [
+        'nome' => 'Projeto com Campos Extras Longos',
+        'descricao' => 'Projeto para testar validação',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'campos_extras' => [
+            'campo_longo' => $longString,
+        ],
+    ];
+
+    $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $invalidData)
+        ->assertSessionHasErrors(['campos_extras.campo_longo']);
+});
+
+test('can update project with both valor_total and campos_extras', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $camposExtras = [
+        'gerente' => 'Maria Santos',
+        'budget_aprovado' => 'Sim',
+        'criticidade' => 'Média'
+    ];
+
+    $updateData = [
+        'nome' => 'Projeto Completo',
+        'descricao' => 'Projeto para testar campos combinados',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'valor_total' => 250000, // R$ 2500,00 em centavos
+        'campos_extras' => $camposExtras,
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    $projeto->refresh();
+    expect($projeto->valor_total)->toBe(250000);
+
+    // Verificar que todos os campos estão presentes, independente da ordem
+    expect($projeto->campos_extras)->toHaveCount(3);
+    expect($projeto->campos_extras)->toHaveKey('gerente', 'Maria Santos');
+    expect($projeto->campos_extras)->toHaveKey('budget_aprovado', 'Sim');
+    expect($projeto->campos_extras)->toHaveKey('criticidade', 'Média');
+});
+
+test('campos_extras persist as json in database', function () {
+    $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
+    $projeto = Projeto::factory()->create();
+    UsuarioProjeto::factory()->create([
+        'usuario_id' => $user->id,
+        'projeto_id' => $projeto->id,
+        'tipo_vinculo' => TipoVinculo::COORDENADOR->value,
+        'status' => StatusVinculoProjeto::APROVADO->value,
+    ]);
+
+    $camposExtras = [
+        'responsavel_tecnico' => 'Pedro Oliveira',
+        'tecnologias' => 'Laravel, React',
+        'deadline_critico' => '2025-06-30'
+    ];
+
+    $updateData = [
+        'nome' => 'Projeto para Teste JSON',
+        'descricao' => 'Projeto para testar persistência JSON',
+        'data_inicio' => '2025-01-01',
+        'cliente' => 'Cliente Teste',
+        'tipo' => App\Enums\TipoProjeto::PDI->value,
+        'campos_extras' => $camposExtras,
+    ];
+
+    $response = $this->actingAs($user)
+        ->patch(route('projetos.update', $projeto), $updateData);
+
+    $response->assertRedirect(route('projetos.show', $projeto->id));
+
+    // Verificar que os dados foram salvos corretamente no banco
+    $this->assertDatabaseHas('projetos', [
+        'id' => $projeto->id,
+        'campos_extras' => json_encode($camposExtras),
+    ]);
+
+    // Verificar que o model retorna os dados corretamente (cast para array)
+    $projeto->refresh();
+    expect($projeto->campos_extras)->toHaveCount(3);
+    expect($projeto->campos_extras)->toHaveKey('responsavel_tecnico', 'Pedro Oliveira');
+    expect($projeto->campos_extras)->toHaveKey('tecnologias', 'Laravel, React');
+    expect($projeto->campos_extras)->toHaveKey('deadline_critico', '2025-06-30');
+});
