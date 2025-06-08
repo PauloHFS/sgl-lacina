@@ -14,7 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projetos', function (Blueprint $table) {
-            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"))->after('descricao');
+            $table->integer('valor_total')->default(0)->after('descricao');
+            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"))->after('valor_total');
         });
 
         Schema::table('usuario_projeto', function (Blueprint $table) {
@@ -42,6 +43,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('projetos', function (Blueprint $table) {
+            $table->dropColumn('valor_total');
             $table->dropColumn('campos_extras');
         });
 

@@ -1,13 +1,30 @@
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Projeto, TipoProjeto } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 
-interface CreateProjetoProps {
-    tiposProjeto: string[];
+interface CampoExtra {
+    key: string;
+    value: string;
 }
 
-export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
-    const { data, setData, post, errors, processing } = useForm({
+const tiposProjeto: TipoProjeto[] = [
+    'DOUTORADO',
+    'MESTRADO',
+    'PDI',
+    'TCC',
+    'SUPORTE',
+];
+
+export default function CreateProjeto() {
+    const { toast } = useToast();
+    const { data, setData, post, errors, processing } = useForm<
+        Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+    >('create-project', {
         nome: '',
         descricao: '',
         data_inicio: '',
@@ -17,32 +34,91 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
         discord_url: '',
         board_url: '',
         git_url: '',
-        tipo: tiposProjeto.length > 0 ? tiposProjeto[0] : '',
+        tipo: '' as TipoProjeto,
+        valor_total: 0,
+        campos_extras: {},
     });
+
+    const [campos, setCampos] = useState<CampoExtra[]>([]);
+
+    const adicionarCampo = () => {
+        setCampos([...campos, { key: '', value: '' }]);
+    };
+
+    const removerCampo = (index: number) => {
+        const novosCampos = campos.filter((_, i) => i !== index);
+        setCampos(novosCampos);
+        atualizarDados(novosCampos);
+    };
+
+    const atualizarCampo = (
+        index: number,
+        field: 'key' | 'value',
+        newValue: string,
+    ) => {
+        const novosCampos = campos.map((campo, i) =>
+            i === index ? { ...campo, [field]: newValue } : campo,
+        );
+        setCampos(novosCampos);
+        atualizarDados(novosCampos);
+    };
+
+    const atualizarDados = (camposAtualizados: CampoExtra[]) => {
+        // Filtrar campos vazios e converter para objeto
+        const camposObj = camposAtualizados
+            .filter(
+                (campo) => campo.key.trim() !== '' && campo.value.trim() !== '',
+            )
+            .reduce(
+                (acc, campo) => {
+                    acc[campo.key.trim()] = campo.value.trim();
+                    return acc;
+                },
+                {} as Record<string, string>,
+            );
+
+        setData('campos_extras', camposObj);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('projetos.store'), {
+            onSuccess: () => {
+                toast('Projeto cadastrado com sucesso!', 'success');
+            },
             onError: (formErrors) => {
                 console.error('Erro ao cadastrar projeto:', formErrors);
-                // You might want to display these errors to the user
+                toast(
+                    'Erro ao cadastrar projeto. Verifique os campos.',
+                    'error',
+                );
             },
         });
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-base-content text-xl leading-tight font-semibold">
-                    Cadastrar Novo Projeto
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Cadastrar Projeto" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
-                    <div className="card bg-base-100 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="card bg-base-100 overflow-hidden shadow-lg">
+                        {/* Header */}
+                        <div className="from-primary to-accent text-primary-content bg-gradient-to-r p-6">
+                            <div className="flex items-center gap-4">
+                                <div>
+                                    <h1 className="text-2xl font-bold">
+                                        Novo Projeto
+                                    </h1>
+                                    <p className="text-primary-content/80 mt-1">
+                                        Preencha as informações abaixo para
+                                        cadastrar um novo projeto no laboratório
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form Content */}
                         <div className="p-6">
                             <form onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -61,6 +137,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                                 setData('nome', e.target.value)
                                             }
                                             className="input input-bordered w-full"
+                                            placeholder="Digite o nome do projeto"
                                             required
                                         />
                                         {errors.nome && (
@@ -91,6 +168,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                                 )
                                             }
                                             className="input input-bordered w-full"
+                                            placeholder="Digite o nome do cliente"
                                             required
                                         />
                                         {errors.cliente && (
@@ -143,7 +221,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         <input
                                             id="data_termino"
                                             type="date"
-                                            value={data.data_termino}
+                                            value={data.data_termino || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'data_termino',
@@ -170,11 +248,18 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                             id="tipo"
                                             value={data.tipo}
                                             onChange={(e) =>
-                                                setData('tipo', e.target.value)
+                                                setData(
+                                                    'tipo',
+                                                    e.target
+                                                        .value as TipoProjeto,
+                                                )
                                             }
                                             className="select select-bordered w-full"
                                             required
                                         >
+                                            <option value="" disabled>
+                                                Selecione um tipo
+                                            </option>
                                             {tiposProjeto.map((tipo) => (
                                                 <option key={tipo} value={tipo}>
                                                     {tipo}
@@ -184,6 +269,63 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         {errors.tipo && (
                                             <span className="text-error text-xs">
                                                 {errors.tipo}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Valor Total */}
+                                    <div>
+                                        <label
+                                            htmlFor="valor_total"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Valor Total* (R$)
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="valor_total"
+                                            type="text"
+                                            value={(
+                                                data.valor_total / 100
+                                            ).toLocaleString('pt-BR', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            onChange={(e) => {
+                                                const apenasNumeros =
+                                                    e.target.value.replace(
+                                                        /\D/g,
+                                                        '',
+                                                    );
+                                                const centavos = parseInt(
+                                                    apenasNumeros || '0',
+                                                );
+                                                setData(
+                                                    'valor_total',
+                                                    centavos,
+                                                );
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.value = (
+                                                    data.valor_total / 100
+                                                ).toFixed(2);
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.value = (
+                                                    data.valor_total / 100
+                                                ).toLocaleString('pt-BR', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                });
+                                            }}
+                                            className="input input-bordered w-full"
+                                            required
+                                            placeholder="0,00"
+                                        />
+                                        {errors.valor_total && (
+                                            <span className="text-error text-xs">
+                                                {errors.valor_total}
                                             </span>
                                         )}
                                     </div>
@@ -200,7 +342,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         </label>
                                         <textarea
                                             id="descricao"
-                                            value={data.descricao}
+                                            value={data.descricao || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'descricao',
@@ -208,8 +350,14 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                                 )
                                             }
                                             className="textarea textarea-bordered w-full"
-                                            rows={3}
-                                        ></textarea>
+                                            rows={4}
+                                            maxLength={2000}
+                                            placeholder="Descreva os objetivos, metodologia e resultados esperados do projeto..."
+                                        />
+                                        <div className="text-base-content/70 mt-1 text-xs">
+                                            {(data.descricao || '').length}/2000
+                                            caracteres
+                                        </div>
                                         {errors.descricao && (
                                             <span className="text-error text-xs">
                                                 {errors.descricao}
@@ -230,7 +378,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         <input
                                             id="slack_url"
                                             type="url"
-                                            value={data.slack_url}
+                                            value={data.slack_url || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'slack_url',
@@ -260,7 +408,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         <input
                                             id="discord_url"
                                             type="url"
-                                            value={data.discord_url}
+                                            value={data.discord_url || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'discord_url',
@@ -290,7 +438,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         <input
                                             id="board_url"
                                             type="url"
-                                            value={data.board_url}
+                                            value={data.board_url || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'board_url',
@@ -298,6 +446,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                                 )
                                             }
                                             className="input input-bordered w-full"
+                                            placeholder="https://trello.com/seuprojeto"
                                         />
                                         {errors.board_url && (
                                             <span className="text-error text-xs">
@@ -319,7 +468,7 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                         <input
                                             id="git_url"
                                             type="url"
-                                            value={data.git_url}
+                                            value={data.git_url || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'git_url',
@@ -335,18 +484,149 @@ export default function CreateProjeto({ tiposProjeto }: CreateProjetoProps) {
                                             </span>
                                         )}
                                     </div>
+
+                                    <div className="md:col-span-2">
+                                        <label
+                                            htmlFor="campos_extras"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Campos Extras
+                                            </span>
+                                        </label>
+                                        <p className="text-base-content/70 mb-4 text-xs">
+                                            Adicione informações personalizadas
+                                            ao projeto. Use campos chave-valor
+                                            para armazenar dados específicos
+                                            como tags, categorias ou metadados.
+                                        </p>
+                                        <div>
+                                            <div className="space-y-4">
+                                                {campos.map((campo, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="border-base-300 grid grid-cols-1 items-end gap-4 rounded-lg border p-4 md:grid-cols-5"
+                                                    >
+                                                        <div className="md:col-span-2">
+                                                            <InputLabel
+                                                                htmlFor={`key-${index}`}
+                                                                value="Chave"
+                                                            />
+                                                            <TextInput
+                                                                id={`key-${index}`}
+                                                                type="text"
+                                                                className="mt-1 block w-full"
+                                                                value={
+                                                                    campo.key
+                                                                }
+                                                                onChange={(e) =>
+                                                                    atualizarCampo(
+                                                                        index,
+                                                                        'key',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="Ex: projeto_favorito"
+                                                            />
+                                                        </div>
+
+                                                        <div className="md:col-span-2">
+                                                            <InputLabel
+                                                                htmlFor={`value-${index}`}
+                                                                value="Valor"
+                                                            />
+                                                            <TextInput
+                                                                id={`value-${index}`}
+                                                                type="text"
+                                                                className="mt-1 block w-full"
+                                                                value={
+                                                                    campo.value
+                                                                }
+                                                                onChange={(e) =>
+                                                                    atualizarCampo(
+                                                                        index,
+                                                                        'value',
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                placeholder="Ex: Sistema de RH"
+                                                            />
+                                                        </div>
+
+                                                        <div className="md:col-span-1">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    removerCampo(
+                                                                        index,
+                                                                    )
+                                                                }
+                                                                className="btn btn-error btn-sm w-full"
+                                                                title="Remover campo"
+                                                            >
+                                                                <svg
+                                                                    className="h-4 w-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
+                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                    />
+                                                                </svg>
+                                                                Remover
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+                                                <button
+                                                    type="button"
+                                                    onClick={adicionarCampo}
+                                                    className="btn btn-outline btn-primary"
+                                                >
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M12 4v16m8-8H4"
+                                                        />
+                                                    </svg>
+                                                    Adicionar Campo
+                                                </button>
+                                            </div>
+
+                                            <InputError
+                                                message={errors.campos_extras}
+                                                className="mt-2"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Botão */}
                                 <div className="mt-6">
                                     <button
                                         type="submit"
-                                        className="btn btn-primary w-full sm:w-auto"
+                                        className="btn btn-accent w-full sm:w-auto"
                                         disabled={processing}
                                     >
-                                        {processing
-                                            ? 'Salvando...'
-                                            : 'Salvar Projeto'}
+                                        {processing ? 'Salvando...' : 'Criar'}
                                     </button>
                                 </div>
                             </form>

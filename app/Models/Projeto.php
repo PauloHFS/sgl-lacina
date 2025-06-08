@@ -22,6 +22,8 @@ class Projeto extends Model
         'id',
         'nome',
         'descricao',
+        'valor_total',
+        'campos_extras',
         'data_inicio',
         'data_termino',
         'cliente',
@@ -33,9 +35,10 @@ class Projeto extends Model
     ];
 
     protected $casts = [
+        'campos_extras' => 'array', // Cast JSONB para array
         'data_inicio' => 'date',
         'data_termino' => 'date',
-        'tipo' => TipoProjeto::class
+        'tipo' => TipoProjeto::class,
     ];
 
     public function uniqueIds(): array

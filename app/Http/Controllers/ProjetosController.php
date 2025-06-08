@@ -194,7 +194,10 @@ class ProjetosController extends Controller
   {
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
-      'descricao' => 'nullable|string',
+      'descricao' => 'nullable|string|max:2000',
+      'valor_total' => 'nullable|integer|min:0',
+      'campos_extras' => 'nullable|array',
+      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
       'data_inicio' => 'required|date',
       'data_termino' => 'nullable|date|after_or_equal:data_inicio',
       'cliente' => 'required|string|max:255',
@@ -242,6 +245,9 @@ class ProjetosController extends Controller
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
       'descricao' => 'nullable|string',
+      'valor_total' => 'nullable|integer|min:0',
+      'campos_extras' => 'nullable|array',
+      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
       'data_inicio' => 'required|date',
       'data_termino' => 'nullable|date|after_or_equal:data_inicio',
       'cliente' => 'required|string|max:255',

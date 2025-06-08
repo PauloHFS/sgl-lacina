@@ -93,6 +93,8 @@ export interface Projeto {
     id: string;
     nome: string;
     descricao?: string | null;
+    valor_total: number;
+    campos_extras: Record<string, string>;
     data_inicio: string; // date format: YYYY-MM-DD
     data_termino?: string | null; // date format: YYYY-MM-DD
     cliente: string;

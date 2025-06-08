@@ -259,7 +259,7 @@ class DevelopmentSeeder extends Seeder
             $user = User::where('email', $docenteData['email'])->first();
 
             $updateData = array_merge($docenteData, [
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Ab@12312'),
                 'status_cadastro' => StatusCadastro::ACEITO,
                 'email_verified_at' => now(),
             ]);
