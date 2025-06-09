@@ -830,8 +830,9 @@ export default function Show({
                         </>
                     )}
 
-                    {/* Project Participants List (for coordinators) */}
-                    {isCoordenadorDoProjetoAtual &&
+                    {/* Project Participants List */}
+                    {(isCoordenadorDoProjetoAtual ||
+                        usuarioVinculo?.status === 'APROVADO') &&
                         participantesProjeto &&
                         participantesProjeto.data.length > 0 && (
                             <div className="card bg-base-100 shadow-xl">
