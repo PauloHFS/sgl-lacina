@@ -36,6 +36,7 @@ export default function CreateProjeto() {
         git_url: '',
         tipo: '' as TipoProjeto,
         valor_total: 0,
+        meses_execucao: 0,
         campos_extras: {},
     });
 
@@ -326,6 +327,39 @@ export default function CreateProjeto() {
                                         {errors.valor_total && (
                                             <span className="text-error text-xs">
                                                 {errors.valor_total}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Meses de Execução */}
+                                    <div>
+                                        <label
+                                            htmlFor="meses_execucao"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Meses de Execução*
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="meses_execucao"
+                                            type="number"
+                                            value={data.meses_execucao}
+                                            onChange={(e) => {
+                                                setData(
+                                                    'meses_execucao',
+                                                    parseFloat(
+                                                        e.target.value,
+                                                    ) || 0,
+                                                );
+                                            }}
+                                            className="input input-bordered w-full"
+                                            required
+                                            placeholder="12"
+                                        />
+                                        {errors.meses_execucao && (
+                                            <span className="text-error text-xs">
+                                                {errors.meses_execucao}
                                             </span>
                                         )}
                                     </div>

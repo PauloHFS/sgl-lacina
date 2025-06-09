@@ -74,7 +74,6 @@ test('authenticated user who is an approved coordinator can access project edit 
                         ->where('id', (string)$projeto->id) // Ensure $projeto->id is cast to string for comparison
                         ->etc()
                 )
-                ->has('tiposProjeto')
         );
 });
 

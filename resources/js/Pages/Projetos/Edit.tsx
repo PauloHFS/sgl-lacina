@@ -31,6 +31,7 @@ export default function Edit({ projeto }: EditPageProps) {
         nome: projeto.nome,
         descricao: projeto.descricao || '',
         valor_total: projeto.valor_total || 0,
+        meses_execucao: projeto.meses_execucao || 0,
         campos_extras: projeto.campos_extras || {},
         data_inicio: projeto.data_inicio
             ? projeto.data_inicio.substring(0, 10)
@@ -353,6 +354,37 @@ export default function Edit({ projeto }: EditPageProps) {
                                             </span>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Meses de Execução */}
+                                <div>
+                                    <label
+                                        htmlFor="meses_execucao"
+                                        className="label"
+                                    >
+                                        <span className="label-text text-base-content">
+                                            Meses de Execução*
+                                        </span>
+                                    </label>
+                                    <input
+                                        id="meses_execucao"
+                                        type="number"
+                                        value={data.meses_execucao}
+                                        onChange={(e) => {
+                                            setData(
+                                                'meses_execucao',
+                                                parseFloat(e.target.value) || 0,
+                                            );
+                                        }}
+                                        className="input input-bordered w-full"
+                                        required
+                                        placeholder="12"
+                                    />
+                                    {errors.meses_execucao && (
+                                        <span className="text-error text-xs">
+                                            {errors.meses_execucao}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Descrição */}

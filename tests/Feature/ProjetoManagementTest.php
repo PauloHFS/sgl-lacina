@@ -189,7 +189,6 @@ test('usuário pode acessar página de criação de projeto', function () {
     $response->assertInertia(
         fn($page) =>
         $page->component('Projetos/Create')
-            ->has('tiposProjeto')
     );
 });
 

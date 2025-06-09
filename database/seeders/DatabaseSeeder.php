@@ -130,6 +130,8 @@ class DatabaseSeeder extends Seeder
         return Projeto::create([
             'nome' => $data['nome'],
             'descricao' => $data['descricao'],
+            'valor_total' => $data['valor_total'] ?? 50500430,
+            'meses_execucao' => $data['meses_execucao'] ?? 12.3,
             'data_inicio' => $data['data_inicio'],
             'data_termino' => $data['data_termino'],
             'cliente' => $data['cliente'],

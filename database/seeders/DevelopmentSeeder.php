@@ -371,6 +371,12 @@ class DevelopmentSeeder extends Seeder
                 'descricao' => 'Sistema de gestão de recursos humanos do laboratório para gerenciar colaboradores, projetos e vínculos de participação.',
                 'cliente' => 'LaCInA - UFCG',
                 'tipo' => TipoProjeto::PDI,
+                'valor_total' => 500990,
+                'meses_execucao' => 18.4,
+                'campos_extras' => [
+                    'tecnologias' => 'Laravel, Vue.js, PostgreSQL, Docker',
+                    'requisitos' => 'Gerenciamento de usuários, projetos, vínculos e histórico de participação.',
+                ],
                 'data_inicio' => now()->subMonths(6),
                 'data_termino' => now()->addMonths(12),
                 'slack_url' => 'https://lacina.slack.com/channels/rh-sistema',

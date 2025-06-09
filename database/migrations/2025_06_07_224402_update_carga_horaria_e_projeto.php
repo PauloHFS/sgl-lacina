@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::table('projetos', function (Blueprint $table) {
             $table->integer('valor_total')->default(0)->after('descricao');
-            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"))->after('valor_total');
+            $table->float("meses_execucao")->default(0)->after('valor_total');
+            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"))->after('meses_execucao');
         });
 
         Schema::table('usuario_projeto', function (Blueprint $table) {
@@ -44,6 +45,7 @@ return new class extends Migration
     {
         Schema::table('projetos', function (Blueprint $table) {
             $table->dropColumn('valor_total');
+            $table->dropColumn('meses_execucao');
             $table->dropColumn('campos_extras');
         });
 

@@ -22,6 +22,9 @@ export default function CamposExtrasForm({
     const user = usePage().props.auth.user;
     const { toast } = useToast();
 
+    console.log('Rendering CamposExtrasForm', {
+        campos_extras: user.campos_extras,
+    });
     // Converter o objeto campos_extras em array de chave-valor para facilitar a edição
     const camposExtrasArray: CampoExtra[] = user.campos_extras
         ? Object.entries(user.campos_extras).map(([key, value]) => ({

@@ -60,10 +60,11 @@ export default function Show({
         projeto_id: projeto.id,
         tipo_vinculo: '',
         funcao: '',
-        carga_horaria: 20,
+        carga_horaria: 80,
         data_inicio: '',
     });
 
+    // TODO: migrar para o back end
     const isCoordenadorDoProjetoAtual =
         usuarioVinculo?.tipo_vinculo === ('COORDENADOR' as TipoVinculo) &&
         usuarioVinculo?.status === ('APROVADO' as StatusVinculoProjeto);
@@ -278,6 +279,12 @@ export default function Show({
                                 </p>
                                 <p>
                                     <span className="font-semibold">
+                                        Meses de Execução:
+                                    </span>{' '}
+                                    {projeto.meses_execucao}
+                                </p>
+                                <div>
+                                    <span className="font-semibold">
                                         Campos Extras:
                                     </span>{' '}
                                     {Object.keys(projeto.campos_extras).length >
@@ -298,7 +305,7 @@ export default function Show({
                                     ) : (
                                         'Nenhum campo extra definido.'
                                     )}
-                                </p>
+                                </div>
                                 {renderVinculoStatus()}
                             </div>
                         </div>

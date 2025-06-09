@@ -23,6 +23,7 @@ class Projeto extends Model
         'nome',
         'descricao',
         'valor_total',
+        'meses_execucao',
         'campos_extras',
         'data_inicio',
         'data_termino',
