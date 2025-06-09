@@ -4,7 +4,19 @@
 
 Olá **{{ $colaborador->name }}**,
 
-É com satisfação que informamos que seu cadastro foi **aprovado com sucesso** no SGL do LaCInA!
+@if (isset($observacao) && !empty($observacao))
+Atenciosamente informamos que seu cadastro foi **aprovado com pendências**! O coordenador deixou a seguinte mensagem para você:
+@else
+É com satisfação que informamos que seu cadastro foi **aprovado com sucesso**!
+@endif
+
+@if(isset($observacao) && !empty($observacao))
+<x-mail::panel>
+**💬 Mensagem do Coordenador:**
+
+{{ $observacao }}
+</x-mail::panel>
+@endif
 
 ## Próximos Passos
 
@@ -14,14 +26,6 @@ Agora você pode:
 - 🔍 Visualizar os projetos disponíveis
 - 📝 Solicitar vínculo aos projetos de seu interesse
 - 📊 Acompanhar o status de suas solicitações
-
-@if(isset($observacao) && !empty($observacao))
-<x-mail::panel>
-**💬 Mensagem do Coordenador:**
-
-{{ $observacao }}
-</x-mail::panel>
-@endif
 
 <x-mail::button :url="$url">
 🚀 Acessar Minha Conta
