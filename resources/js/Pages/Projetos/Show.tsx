@@ -47,7 +47,6 @@ type VinculoCreateForm = {
 export default function Show({
     auth,
     projeto,
-    tiposVinculo,
     funcoes,
     usuarioVinculo,
     vinculosDoUsuarioLogadoNoProjeto,
@@ -58,7 +57,7 @@ export default function Show({
     const { toast } = useToast();
     const form = useForm<VinculoCreateForm>({
         projeto_id: projeto.id,
-        tipo_vinculo: '',
+        tipo_vinculo: 'COLABORADOR' as TipoVinculo,
         funcao: '',
         carga_horaria: 80,
         data_inicio: '',
@@ -562,7 +561,7 @@ export default function Show({
                                                             )}
 
                                                         {/* Tipo de Vínculo */}
-                                                        <div className="form-control">
+                                                        {/* <div className="form-control">
                                                             <label className="label">
                                                                 <span className="label-text font-medium">
                                                                     Tipo de
@@ -628,7 +627,7 @@ export default function Show({
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                        </div>
+                                                        </div> */}
 
                                                         {/* Função */}
                                                         <div className="form-control">

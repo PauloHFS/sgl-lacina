@@ -160,7 +160,6 @@ class ProjetosController extends Controller
 
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
-      'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
       'funcoes' => array_column(Funcao::cases(), 'value'),
       'usuarioVinculo' => $usuarioVinculo,
       'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
