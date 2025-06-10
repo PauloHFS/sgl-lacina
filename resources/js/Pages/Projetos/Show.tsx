@@ -389,15 +389,10 @@ export default function Show({
                                                                 <>
                                                                     {/* Checkbox for trocar */}
                                                                     <div className="form-control">
-                                                                        <label className="label cursor-pointer justify-start gap-4">
-                                                                            <span className="label-text font-medium">
-                                                                                Trocar
-                                                                                de
-                                                                                projeto?
-                                                                            </span>
+                                                                        <div className="bg-base-200 flex items-center gap-3 rounded-lg border p-4">
                                                                             <input
                                                                                 type="checkbox"
-                                                                                className="toggle toggle-primary"
+                                                                                className="checkbox checkbox-primary"
                                                                                 checked={
                                                                                     form
                                                                                         .data
@@ -415,18 +410,30 @@ export default function Show({
                                                                                     )
                                                                                 }
                                                                             />
-                                                                        </label>
-                                                                        <div className="label pt-0">
-                                                                            <span className="label-text-alt text-base-content/70">
-                                                                                Marque
-                                                                                se
-                                                                                deseja
-                                                                                trocar
-                                                                                de
-                                                                                um
-                                                                                projeto
-                                                                                atual
-                                                                            </span>
+                                                                            <div className="flex-1">
+                                                                                <label className="text-base-content cursor-pointer font-medium">
+                                                                                    Trocar
+                                                                                    de
+                                                                                    projeto
+                                                                                </label>
+                                                                                <p className="text-base-content/70 mt-1 text-sm">
+                                                                                    Marque
+                                                                                    esta
+                                                                                    opção
+                                                                                    se
+                                                                                    deseja
+                                                                                    encerrar
+                                                                                    sua
+                                                                                    participação
+                                                                                    em
+                                                                                    um
+                                                                                    projeto
+                                                                                    atual
+                                                                                    para
+                                                                                    participar
+                                                                                    deste
+                                                                                </p>
+                                                                            </div>
                                                                         </div>
                                                                         {form
                                                                             .errors
@@ -704,7 +711,7 @@ export default function Show({
                                                                 <span className="label-text font-medium">
                                                                     Carga
                                                                     Horária
-                                                                    Semanal
+                                                                    Mensal
                                                                     <span className="text-error ml-1">
                                                                         *
                                                                     </span>
@@ -721,7 +728,7 @@ export default function Show({
                                                                         ? 'input-error'
                                                                         : ''
                                                                 }`}
-                                                                placeholder="Ex: 20"
+                                                                placeholder="Ex: 80"
                                                                 value={
                                                                     form.data
                                                                         .carga_horaria
@@ -739,8 +746,14 @@ export default function Show({
                                                                     )
                                                                 }
                                                                 min="1"
-                                                                max="40"
+                                                                max="192"
                                                             />
+                                                            <span>
+                                                                {form.data
+                                                                    .carga_horaria /
+                                                                    4}{' '}
+                                                                horas/semana
+                                                            </span>
                                                             {form.errors
                                                                 .carga_horaria && (
                                                                 <div className="label">
