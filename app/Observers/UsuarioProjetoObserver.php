@@ -13,10 +13,7 @@ class UsuarioProjetoObserver
      */
     public function created(UsuarioProjeto $usuarioProjeto): void
     {
-        // Registra histórico quando um vínculo é criado e aprovado
-        if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
-            $this->logHistory($usuarioProjeto);
-        }
+        $this->logHistory($usuarioProjeto);
     }
 
     /**
@@ -25,10 +22,7 @@ class UsuarioProjetoObserver
     public function updated(UsuarioProjeto $usuarioProjeto): void
     {
         if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria', 'data_fim', 'tipo_vinculo'])) {
-            // Só registra histórico para vínculos aprovados
-            if ($usuarioProjeto->status === StatusVinculoProjeto::APROVADO) {
-                $this->logHistory($usuarioProjeto);
-            }
+            $this->logHistory($usuarioProjeto);
         }
     }
 
