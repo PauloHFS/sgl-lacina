@@ -49,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($shouldReportToDiscord($e)) {
                     Log::channel('discord')->error($e->getMessage(), [
                         'exception' => $e,
-                        'user_id' => Auth::user()->id ?? null,
+                        'user_id' => Auth::user()?->id,
                         'url' => request()->url(),
                         'ip' => request()->ip(),
                         'user_agent' => request()->userAgent(),
