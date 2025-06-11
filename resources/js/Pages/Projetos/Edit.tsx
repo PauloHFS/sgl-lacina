@@ -312,7 +312,7 @@ export default function Edit({ projeto }: EditPageProps) {
                                             id="valor_total"
                                             type="text"
                                             value={(
-                                                data.valor_total / 100
+                                                (data.valor_total || 0) / 100
                                             ).toLocaleString('pt-BR', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
@@ -333,12 +333,14 @@ export default function Edit({ projeto }: EditPageProps) {
                                             }}
                                             onFocus={(e) => {
                                                 e.target.value = (
-                                                    data.valor_total / 100
+                                                    (data.valor_total || 0) /
+                                                    100
                                                 ).toFixed(2);
                                             }}
                                             onBlur={(e) => {
                                                 e.target.value = (
-                                                    data.valor_total / 100
+                                                    (data.valor_total || 0) /
+                                                    100
                                                 ).toLocaleString('pt-BR', {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
