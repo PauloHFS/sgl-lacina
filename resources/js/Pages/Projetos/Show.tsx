@@ -265,47 +265,52 @@ export default function Show({
                                     <span className="font-semibold">Tipo:</span>{' '}
                                     {projeto.tipo}
                                 </p>
-                                <p>
-                                    <span className="font-semibold">
-                                        Valor Total:
-                                    </span>{' '}
-                                    {(projeto.valor_total / 100).toLocaleString(
-                                        'pt-BR',
-                                        {
-                                            style: 'currency',
-                                            currency: 'BRL',
-                                        },
-                                    )}
-                                </p>
-                                <p>
-                                    <span className="font-semibold">
-                                        Meses de Execução:
-                                    </span>{' '}
-                                    {projeto.meses_execucao}
-                                </p>
-                                <div>
-                                    <span className="font-semibold">
-                                        Campos Extras:
-                                    </span>{' '}
-                                    {Object.keys(projeto.campos_extras).length >
-                                    0 ? (
-                                        <ul className="mt-2 list-disc pl-5">
-                                            {Object.entries(
-                                                projeto.campos_extras,
-                                            ).map(([key, value]) => (
-                                                <li
-                                                    key={key}
-                                                    className="text-sm text-gray-700 dark:text-gray-300"
-                                                >
-                                                    <strong>{key}:</strong>{' '}
-                                                    {value}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        'Nenhum campo extra definido.'
-                                    )}
-                                </div>
+                                {auth.isCoordenador && (
+                                    <>
+                                        <p>
+                                            <span className="font-semibold">
+                                                Valor Total:
+                                            </span>{' '}
+                                            {(
+                                                projeto.valor_total / 100
+                                            ).toLocaleString('pt-BR', {
+                                                style: 'currency',
+                                                currency: 'BRL',
+                                            })}
+                                        </p>
+                                        <p>
+                                            <span className="font-semibold">
+                                                Meses de Execução:
+                                            </span>{' '}
+                                            {projeto.meses_execucao}
+                                        </p>
+                                        <div>
+                                            <span className="font-semibold">
+                                                Campos Extras:
+                                            </span>{' '}
+                                            {Object.keys(projeto.campos_extras)
+                                                .length > 0 ? (
+                                                <ul className="mt-2 list-disc pl-5">
+                                                    {Object.entries(
+                                                        projeto.campos_extras,
+                                                    ).map(([key, value]) => (
+                                                        <li
+                                                            key={key}
+                                                            className="text-sm text-gray-700 dark:text-gray-300"
+                                                        >
+                                                            <strong>
+                                                                {key}:
+                                                            </strong>{' '}
+                                                            {value}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                'Nenhum campo extra definido.'
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                                 {renderVinculoStatus()}
                             </div>
                         </div>

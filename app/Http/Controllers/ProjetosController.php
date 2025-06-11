@@ -110,6 +110,18 @@ class ProjetosController extends Controller
   {
     $projeto = Projeto::findOrFail(request()->route('projeto'));
 
+    $usuarioAutenticado = Auth::user();
+    $usuarioVinculo = $projeto->getUsuarioVinculo($usuarioAutenticado->id);
+
+    // Se o usuário não for coordenador aprovado, remover campos sensíveis
+    if (
+      !$usuarioVinculo ||
+      $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value ||
+      $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value
+    ) {
+      $projeto->makeHidden(['campos_extras', 'meses_execucao', 'valor_total']);
+    }
+
     if (!$projeto) {
       return Redirect::route('projetos.index')->with('error', 'Projeto não encontrado.');
     }
