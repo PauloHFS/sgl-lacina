@@ -149,7 +149,7 @@ export default function Dashboard({
                                                 <td>
                                                     <span className="badge badge-outline">
                                                         {p.carga_horaria}
-                                                        h/sem
+                                                        h/mês
                                                     </span>
                                                 </td>
                                                 <td>
