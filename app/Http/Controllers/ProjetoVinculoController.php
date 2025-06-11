@@ -21,7 +21,7 @@ class ProjetoVinculoController extends Controller
     $request->validate([
       'projeto_id' => 'required|exists:projetos,id',
       'data_inicio' => 'required|date',
-      'carga_horaria' => 'required|integer|min:1|max:40',
+      'carga_horaria' => 'required|integer|min:1|max:200',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
       'trocar' => 'sometimes|boolean',
@@ -89,7 +89,7 @@ class ProjetoVinculoController extends Controller
   {
     $validatedData = $request->validate([
       'status' => ['sometimes', 'required', Rule::enum(StatusVinculoProjeto::class)],
-      'carga_horaria' => 'sometimes|nullable|integer|min:1|max:40',
+      'carga_horaria' => 'sometimes|nullable|integer|min:1|max:200',
       'funcao' => ['sometimes', 'nullable', Rule::enum(Funcao::class)],
       'tipo_vinculo' => ['sometimes', 'nullable', Rule::enum(TipoVinculo::class)],
       'data_inicio' => 'sometimes|nullable|date',
