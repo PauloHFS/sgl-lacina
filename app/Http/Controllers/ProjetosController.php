@@ -113,6 +113,14 @@ class ProjetosController extends Controller
     $usuarioAutenticado = Auth::user();
     $usuarioVinculo = $projeto->getUsuarioVinculo($usuarioAutenticado->id);
 
+    if (
+      !$usuarioVinculo ||
+      $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value ||
+      $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value
+    ) {
+      $projeto->makeHidden(['campos_extras', 'meses_execucao', 'valor_total']);
+    }
+
     // Se o usuário não for coordenador aprovado, remover campos sensíveis
     if (
       !$usuarioVinculo ||
