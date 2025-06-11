@@ -413,7 +413,7 @@ class DevelopmentSeeder extends Seeder
         $campelo = User::where('email', 'campelo@computacao.ufcg.edu.br')->first();
         $paulo = User::where('email', 'paulo.hernane.silva@ccc.ufcg.edu.br')->first();
 
-        // Para cada projeto ativo, criar vínculos
+        // Categoriza os projetos por status temporal
         $projetosAtivos = $projetos->filter(function ($projeto) {
             return $projeto->data_inicio <= now() && $projeto->data_termino >= now();
         });
@@ -425,6 +425,14 @@ class DevelopmentSeeder extends Seeder
         $projetosFuturos = $projetos->filter(function ($projeto) {
             return $projeto->data_inicio > now();
         });
+
+        // Separa usuários que irão ter vínculos pendentes como último vínculo
+        $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
+            return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
+        });
+
+        $usuariosComVinculoPendente = $outrosUsuarios->random(min(8, $outrosUsuarios->count()));
+        $usuariosRestantes = $outrosUsuarios->diff($usuariosComVinculoPendente);
 
         // Vínculos para projetos ativos
         foreach ($projetosAtivos as $index => $projeto) {
@@ -456,23 +464,36 @@ class DevelopmentSeeder extends Seeder
                 );
             }
 
-            // Outros participantes
-            $numParticipantes = rand(2, 6);
-            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
-                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
-            });
+            // Outros participantes aprovados
+            $numParticipantes = rand(2, 5);
+            if ($usuariosRestantes->count() > 0) {
+                $participantes = $usuariosRestantes->random(min($numParticipantes, $usuariosRestantes->count()));
 
-            $participantes = $outrosUsuarios->random(min($numParticipantes, $outrosUsuarios->count()));
-
-            foreach ($participantes as $usuario) {
-                $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::APROVADO, $projeto->data_inicio);
+                foreach ($participantes as $usuario) {
+                    // 25% chance de querer trocar para projetos ativos
+                    $this->createVinculo(
+                        $usuario,
+                        $projeto,
+                        StatusVinculoProjeto::APROVADO,
+                        $projeto->data_inicio,
+                        null,
+                        null,
+                        null,
+                        rand(1, 100) <= 25 // 25% chance de trocar
+                    );
+                }
             }
 
-            // Adiciona algumas solicitações pendentes para projetos ativos
-            if (rand(1, 100) <= 30) { // 30% chance de ter solicitações pendentes
-                $solicitantes = $outrosUsuarios->diff($participantes)->random(rand(1, 3));
-                foreach ($solicitantes as $solicitante) {
-                    $this->createVinculo($solicitante, $projeto, StatusVinculoProjeto::PENDENTE, now());
+            // Adiciona solicitações pendentes com maior realismo
+            if (rand(1, 100) <= 40) { // 40% chance de ter solicitações pendentes
+                $numSolicitacoes = rand(1, 2);
+                $candidatos = $outrosUsuarios->diff($projeto->usuarios ?? collect())->shuffle();
+
+                if ($candidatos->count() > 0) {
+                    $solicitantes = $candidatos->take($numSolicitacoes);
+                    foreach ($solicitantes as $solicitante) {
+                        $this->createVinculo($solicitante, $projeto, StatusVinculoProjeto::PENDENTE, now());
+                    }
                 }
             }
         }
@@ -507,22 +528,24 @@ class DevelopmentSeeder extends Seeder
                 );
             }
 
-            // Outros participantes
-            $numParticipantes = rand(1, 5);
-            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
-                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
-            });
+            // Outros participantes em projetos finalizados
+            $numParticipantes = rand(1, 4);
+            if ($usuariosRestantes->count() > 0) {
+                $participantes = $usuariosRestantes->random(min($numParticipantes, $usuariosRestantes->count()));
 
-            $participantes = $outrosUsuarios->random(min($numParticipantes, $outrosUsuarios->count()));
-
-            foreach ($participantes as $usuario) {
-                $this->createVinculo(
-                    $usuario,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    $projeto->data_inicio,
-                    $projeto->data_termino
-                );
+                foreach ($participantes as $usuario) {
+                    // 15% chance de ter marcado para trocar (menos para projetos finalizados)
+                    $this->createVinculo(
+                        $usuario,
+                        $projeto,
+                        StatusVinculoProjeto::APROVADO,
+                        $projeto->data_inicio,
+                        $projeto->data_termino,
+                        null,
+                        null,
+                        rand(1, 100) <= 15 // 15% chance de trocar
+                    );
+                }
             }
         }
 
@@ -544,41 +567,96 @@ class DevelopmentSeeder extends Seeder
             }
 
             // Outras solicitações para projetos futuros
-            $numSolicitacoes = rand(1, 4);
-            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
-                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
-            });
+            $numSolicitacoes = rand(1, 3);
+            if ($usuariosRestantes->count() > 0) {
+                $solicitantes = $usuariosRestantes->random(min($numSolicitacoes, $usuariosRestantes->count()));
 
-            $solicitantes = $outrosUsuarios->random(min($numSolicitacoes, $outrosUsuarios->count()));
+                foreach ($solicitantes as $solicitante) {
+                    // 80% pendente, 20% já aprovado para projetos futuros
+                    $status = rand(1, 100) <= 80 ? StatusVinculoProjeto::PENDENTE : StatusVinculoProjeto::APROVADO;
+                    $this->createVinculo($solicitante, $projeto, $status, now());
+                }
+            }
+        }
 
-            foreach ($solicitantes as $solicitante) {
-                // 70% pendente, 30% já aprovado
-                $status = rand(1, 100) <= 70 ? StatusVinculoProjeto::PENDENTE : StatusVinculoProjeto::APROVADO;
-                $this->createVinculo($solicitante, $projeto, $status, now());
+        // Criar vínculos pendentes como último vínculo para usuários selecionados
+        foreach ($usuariosComVinculoPendente as $usuario) {
+            // Escolhe um projeto ativo aleatório para solicitar vínculo
+            if ($projetosAtivos->count() > 0) {
+                $projetoEscolhido = $projetosAtivos->random();
+
+                // Verifica se o usuário já não tem vínculo neste projeto
+                $jaTemVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
+                    ->where('projeto_id', $projetoEscolhido->id)
+                    ->exists();
+
+                if (!$jaTemVinculo) {
+                    // 40% chance de ser uma troca de projeto
+                    $isTroca = rand(1, 100) <= 40;
+
+                    if ($isTroca) {
+                        // Busca um vínculo aprovado existente para marcar como troca
+                        $vinculoAnterior = UsuarioProjeto::where('usuario_id', $usuario->id)
+                            ->where('status', StatusVinculoProjeto::APROVADO)
+                            ->whereNull('data_fim')
+                            ->first();
+
+                        if ($vinculoAnterior) {
+                            // Marca o vínculo anterior para troca
+                            $vinculoAnterior->update(['trocar' => true]);
+                        }
+                    }
+
+                    // Cria o vínculo pendente
+                    $this->createVinculo(
+                        $usuario,
+                        $projetoEscolhido,
+                        StatusVinculoProjeto::PENDENTE,
+                        now()->addDays(rand(1, 7))
+                    );
+                }
             }
         }
 
         // Cria algumas solicitações recusadas para realismo
-        for ($i = 0; $i < 8; $i++) {
-            $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
-                return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
-            });
+        for ($i = 0; $i < 6; $i++) {
+            if ($usuariosRestantes->count() > 0) {
+                $usuario = $usuariosRestantes->random();
+                $projeto = $projetos->random();
 
-            $usuario = $outrosUsuarios->random();
-            $projeto = $projetos->random();
+                // Verifica se já não existe vínculo
+                $jaTemVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
+                    ->where('projeto_id', $projeto->id)
+                    ->exists();
 
-            $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subDays(rand(1, 30)));
+                if (!$jaTemVinculo) {
+                    $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subDays(rand(1, 30)));
+                }
+            }
         }
 
         $totalVinculos = UsuarioProjeto::count();
+        $pendentes = UsuarioProjeto::where('status', StatusVinculoProjeto::PENDENTE)->count();
+        $comTroca = UsuarioProjeto::where('trocar', true)->count();
+
         $this->command->info("✅ Criados {$totalVinculos} vínculos de usuário-projeto");
+        $this->command->info("   - {$pendentes} vínculos pendentes");
+        $this->command->info("   - {$comTroca} vínculos marcados para troca");
     }
 
     /**
      * Cria um vínculo específico entre usuário e projeto
      */
-    private function createVinculo(User $usuario, Projeto $projeto, StatusVinculoProjeto $status, $dataInicio, $dataFim = null, ?Funcao $funcao = null, ?TipoVinculo $tipoVinculo = null): void
-    {
+    private function createVinculo(
+        User $usuario,
+        Projeto $projeto,
+        StatusVinculoProjeto $status,
+        $dataInicio,
+        $dataFim = null,
+        ?Funcao $funcao = null,
+        ?TipoVinculo $tipoVinculo = null,
+        bool $trocar = false
+    ): void {
         // Evita vínculos duplicados
         $vinculoExistente = UsuarioProjeto::where('usuario_id', $usuario->id)
             ->where('projeto_id', $projeto->id)
@@ -591,6 +669,13 @@ class DevelopmentSeeder extends Seeder
         $funcoes = Funcao::cases();
         $tiposVinculo = TipoVinculo::cases();
 
+        // Se não foi especificado explicitamente, ajusta a probabilidade de trocar baseado no status
+        if (!$trocar && $status === StatusVinculoProjeto::PENDENTE) {
+            $trocar = rand(1, 100) <= 35; // 35% chance de ser troca para pendentes
+        } elseif (!$trocar && $status === StatusVinculoProjeto::APROVADO) {
+            $trocar = rand(1, 100) <= 10; // 10% chance de querer trocar para aprovados
+        }
+
         UsuarioProjeto::create([
             'usuario_id' => $usuario->id,
             'projeto_id' => $projeto->id,
@@ -600,7 +685,7 @@ class DevelopmentSeeder extends Seeder
             'carga_horaria' => rand(10, 40),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
-            'trocar' => rand(1, 100) <= 5, // 5% chance de querer trocar
+            'trocar' => $trocar,
         ]);
     }
 }
