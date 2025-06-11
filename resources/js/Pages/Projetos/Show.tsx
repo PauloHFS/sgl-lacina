@@ -265,52 +265,77 @@ export default function Show({
                                     <span className="font-semibold">Tipo:</span>{' '}
                                     {projeto.tipo}
                                 </p>
-                                {projeto.valor_total && (
-                                    <p>
-                                        <span className="font-semibold">
-                                            Valor Total:
-                                        </span>{' '}
-                                        {(
-                                            projeto.valor_total / 100
-                                        ).toLocaleString('pt-BR', {
-                                            style: 'currency',
-                                            currency: 'BRL',
-                                        })}
-                                    </p>
-                                )}
-                                {projeto.meses_execucao && (
-                                    <p>
-                                        <span className="font-semibold">
-                                            Meses de Execução:
-                                        </span>{' '}
-                                        {projeto.meses_execucao}
-                                    </p>
-                                )}
-                                {projeto.campos_extras && (
-                                    <div>
-                                        <span className="font-semibold">
-                                            Campos Extras:
-                                        </span>{' '}
-                                        {Object.keys(projeto.campos_extras)
-                                            .length > 0 ? (
-                                            <ul className="mt-2 list-disc pl-5">
+                                {projeto.valor_total &&
+                                    projeto.valor_total > 0 && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-semibold">
+                                                Valor Total:
+                                            </span>
+                                            <span className="badge badge-success badge-lg">
+                                                {(
+                                                    projeto.valor_total / 100
+                                                ).toLocaleString('pt-BR', {
+                                                    style: 'currency',
+                                                    currency: 'BRL',
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    )}
+                                {projeto.meses_execucao &&
+                                    projeto.meses_execucao > 0 && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-semibold">
+                                                Meses de Execução:
+                                            </span>
+                                            <span className="badge badge-info badge-lg">
+                                                {projeto.meses_execucao}{' '}
+                                                {projeto.meses_execucao === 1
+                                                    ? 'mês'
+                                                    : 'meses'}
+                                            </span>
+                                        </div>
+                                    )}
+                                {projeto.campos_extras &&
+                                    Object.keys(projeto.campos_extras).length >
+                                        0 && (
+                                        <div className="mt-4">
+                                            <h4 className="text-base-content mb-3 font-semibold">
+                                                Campos Extras:
+                                            </h4>
+                                            <div className="bg-base-200 space-y-3 rounded-lg p-4">
                                                 {Object.entries(
                                                     projeto.campos_extras,
                                                 ).map(([key, value]) => (
-                                                    <li
+                                                    <div
                                                         key={key}
-                                                        className="text-sm text-gray-700 dark:text-gray-300"
+                                                        className="bg-base-100 flex items-start justify-between gap-4 rounded-md p-3 shadow-sm"
                                                     >
-                                                        <strong>{key}:</strong>{' '}
-                                                        {value}
-                                                    </li>
+                                                        <span className="text-base-content/80 min-w-0 flex-1 font-medium capitalize">
+                                                            {key.replace(
+                                                                /_/g,
+                                                                ' ',
+                                                            )}
+                                                            :
+                                                        </span>
+                                                        <span className="text-base-content max-w-xs text-right break-words">
+                                                            {value &&
+                                                            typeof value ===
+                                                                'object'
+                                                                ? JSON.stringify(
+                                                                      value,
+                                                                  )
+                                                                : String(
+                                                                      value ||
+                                                                          '',
+                                                                  )}
+                                                        </span>
+                                                    </div>
                                                 ))}
-                                            </ul>
-                                        ) : (
-                                            'Nenhum campo extra definido.'
-                                        )}
-                                    </div>
-                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 {renderVinculoStatus()}
                             </div>
                         </div>
