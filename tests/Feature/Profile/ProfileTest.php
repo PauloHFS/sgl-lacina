@@ -16,7 +16,7 @@ function getValidProfileData(User $user, array $overrides = []): array
         'email' => 'test@example.com',
         'genero' => 'MASCULINO',
         'data_nascimento' => '1990-01-01',
-        'cpf' => '12345678901',
+        'cpf' => '11144477735',
         'rg' => '123456789',
         'uf_rg' => 'SP',
         'orgao_emissor_rg' => 'SSP',
@@ -59,7 +59,7 @@ test('profile information can be updated', function () {
     $updateData = getValidProfileData($user, [
         'name' => 'Test User Updated',
         'email' => 'testupdated@example.com',
-        'cpf' => $user->cpf,
+        'cpf' => "11144477735",
         'rg' => $user->rg,
     ]);
 
@@ -84,7 +84,7 @@ test('email verification status is unchanged when the email address is unchanged
     $updateData = getValidProfileData($user, [
         'name' => $user->name,
         'email' => $user->email,
-        'cpf' => $user->cpf,
+        'cpf' => "11144477735",
         'rg' => $user->rg,
     ]);
 

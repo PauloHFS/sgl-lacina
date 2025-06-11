@@ -28,7 +28,7 @@ test('histórico é criado quando vínculo é aprovado', function () {
         'status' => StatusVinculoProjeto::PENDENTE,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now(),
     ]);
 
@@ -38,7 +38,7 @@ test('histórico é criado quando vínculo é aprovado', function () {
             'status' => StatusVinculoProjeto::APROVADO->value,
             'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
             'funcao' => Funcao::DESENVOLVEDOR->value,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->format('Y-m-d'),
         ]);
 
@@ -51,7 +51,7 @@ test('histórico é criado quando vínculo é aprovado', function () {
         'status' => StatusVinculoProjeto::APROVADO->value,
         'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
         'funcao' => Funcao::DESENVOLVEDOR->value,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
     ]);
 });
 
@@ -205,7 +205,7 @@ test('histórico inclui informações completas do vínculo', function () {
         'status' => StatusVinculoProjeto::APROVADO,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => $dataInicio,
         'data_fim' => $dataFim,
         'trocar' => false,
@@ -216,7 +216,7 @@ test('histórico inclui informações completas do vínculo', function () {
     expect($historico->status)->toBe(StatusVinculoProjeto::APROVADO);
     expect($historico->tipo_vinculo)->toBe(TipoVinculo::COLABORADOR);
     expect($historico->funcao)->toBe(Funcao::DESENVOLVEDOR);
-    expect($historico->carga_horaria_semanal)->toBe(20);
+    expect($historico->carga_horaria)->toBe(20);
     expect($historico->data_inicio->format('Y-m-d'))->toBe($dataInicio->format('Y-m-d'));
     expect($historico->data_fim->format('Y-m-d'))->toBe($dataFim->format('Y-m-d'));
     expect($historico->trocar)->toBeFalse();

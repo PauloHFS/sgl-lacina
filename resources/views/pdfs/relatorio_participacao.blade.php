@@ -81,7 +81,7 @@
                         <th>Cliente</th>
                         <th>Tipo de Vínculo</th>
                         <th>Função</th>
-                        <th>Carga Horária Semanal</th>
+                        <th>Carga Horária</th>
                         <th>Data Início</th>
                         <th>Data Fim</th>
                         <th>Status</th>
@@ -94,7 +94,7 @@
                             <td>{{ $item->projeto->cliente }}</td>
                             <td>{{ $item->tipo_vinculo }}</td>
                             <td>{{ $item->funcao }}</td>
-                            <td>{{ $item->carga_horaria_semanal }}h</td>
+                            <td>{{ $item->carga_horaria }}h</td>
                             <td>{{ $item->data_inicio->format('d/m/Y') }}</td>
                             <td>{{ $item->data_fim ? $item->data_fim->format('d/m/Y') : 'Atual' }}</td>
                             <td>{{ $item->status }}</td>

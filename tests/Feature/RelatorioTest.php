@@ -27,7 +27,7 @@ test('usuário pode solicitar relatório de participação por email', function 
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(6),
         'data_fim' => now()->subMonths(2),
         'trocar' => false,
@@ -63,7 +63,7 @@ test('relatório incluir todos os projetos do histórico do usuário', function 
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->subMonths(6),
             'data_fim' => now()->subMonths(2),
             'trocar' => false,
@@ -97,7 +97,7 @@ test('relatório deve estar ordenado por data de início decrescente', function 
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subYear(),
         'data_fim' => now()->subMonths(8),
         'trocar' => false,
@@ -109,7 +109,7 @@ test('relatório deve estar ordenado por data de início decrescente', function 
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(3),
         'data_fim' => now()->subMonth(),
         'trocar' => false,
@@ -181,7 +181,7 @@ test('relatório deve incluir informações corretas do projeto', function () {
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::PESQUISADOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(6),
         'data_fim' => now()->subMonths(2),
         'trocar' => false,
@@ -194,7 +194,7 @@ test('relatório deve incluir informações corretas do projeto', function () {
 
         return $item->projeto->nome === 'Sistema de Gestão' &&
             $item->projeto->cliente === 'Cliente Teste' &&
-            $item->carga_horaria_semanal === 20;
+            $item->carga_horaria === 20;
     });
 });
 
@@ -251,7 +251,7 @@ test('relatório deve incluir apenas histórico do usuário logado', function ()
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(6),
         'data_fim' => now()->subMonths(2),
         'trocar' => false,
@@ -263,7 +263,7 @@ test('relatório deve incluir apenas histórico do usuário logado', function ()
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(6),
         'data_fim' => now()->subMonths(2),
         'trocar' => false,

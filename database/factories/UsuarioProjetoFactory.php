@@ -24,7 +24,7 @@ class UsuarioProjetoFactory extends Factory
         return [
             'tipo_vinculo' => $this->faker->randomElement([TipoVinculo::COORDENADOR, TipoVinculo::COLABORADOR]),
             'funcao' => $this->faker->randomElement([Funcao::COORDENADOR, Funcao::PESQUISADOR, Funcao::DESENVOLVEDOR, Funcao::TECNICO, Funcao::ALUNO]),
-            'carga_horaria_semanal' => $this->faker->numberBetween(10, 40),
+            'carga_horaria' => $this->faker->numberBetween(10, 40),
             'data_inicio' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'data_fim' => null,
             'trocar' => false,

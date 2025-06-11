@@ -77,7 +77,7 @@ beforeEach(function () {
         'tipo_vinculo' => TipoVinculo::COORDENADOR,
         'funcao' => Funcao::COORDENADOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(6),
     ]);
 
@@ -87,7 +87,7 @@ beforeEach(function () {
         'tipo_vinculo' => TipoVinculo::COORDENADOR,
         'funcao' => Funcao::COORDENADOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now()->subMonths(3),
     ]);
 });
@@ -154,7 +154,7 @@ describe('Complete User Registration Flow', function () {
         $applicationData = [
             'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
             'funcao' => Funcao::DESENVOLVEDOR->value,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'justificativa' => 'Tenho experiência em desenvolvimento web e gostaria de contribuir.',
         ];
 
@@ -200,7 +200,7 @@ describe('Complete Project Switching Workflow', function () {
             'status' => StatusVinculoProjeto::APROVADO,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->subMonths(3),
         ]);
 
@@ -216,7 +216,7 @@ describe('Complete Project Switching Workflow', function () {
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
         ]);
 
         // Step 1: Discente requests project switch
@@ -273,7 +273,7 @@ describe('Complete Project Switching Workflow', function () {
         ])->first();
 
         $this->assertNotNull($novoVinculo);
-        $this->assertEquals(25, $novoVinculo->carga_horaria_semanal);
+        $this->assertEquals(25, $novoVinculo->carga_horaria);
 
         // Step 5: Verify historical records
         $this->assertDatabaseHas('historico_usuario_projeto', [
@@ -339,7 +339,7 @@ describe('Comprehensive Report Generation Workflow', function () {
             'status' => StatusVinculoProjeto::RECUSADO,
             'data_inicio' => now()->subMonths(12),
             'data_fim' => now()->subMonths(6),
-            'carga_horaria_semanal' => 15,
+            'carga_horaria' => 15,
         ]);
 
         $vinculo2 = UsuarioProjeto::factory()->create([
@@ -347,7 +347,7 @@ describe('Comprehensive Report Generation Workflow', function () {
             'projeto_id' => $this->projetoExtensao->id,
             'status' => StatusVinculoProjeto::APROVADO,
             'data_inicio' => now()->subMonths(3),
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
         ]);
 
         // Create historical records
@@ -357,7 +357,7 @@ describe('Comprehensive Report Generation Workflow', function () {
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 15,
+            'carga_horaria' => 15,
             'data_inicio' => now()->subMonths(12),
             'data_fim' => now()->subMonths(6),
         ]);
@@ -368,7 +368,7 @@ describe('Comprehensive Report Generation Workflow', function () {
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::DESENVOLVEDOR,
             'status' => StatusVinculoProjeto::APROVADO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => now()->subMonths(3),
         ]);
 
@@ -423,7 +423,7 @@ describe('Multi-User Concurrent Operations', function () {
         $applicationData = [
             'tipo_vinculo' => TipoVinculo::COLABORADOR->value,
             'funcao' => Funcao::DESENVOLVEDOR->value,
-            'carga_horaria_semanal' => 10,
+            'carga_horaria' => 10,
             'justificativa' => 'Interesse em participar.',
         ];
 

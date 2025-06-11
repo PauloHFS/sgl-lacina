@@ -17,7 +17,7 @@ test('usuário projeto pode ser criado com dados obrigatórios', function () {
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
         'status' => StatusVinculoProjeto::APROVADO,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
         'data_inicio' => now(),
     ]);
 
@@ -26,7 +26,7 @@ test('usuário projeto pode ser criado com dados obrigatórios', function () {
     expect($vinculo->tipo_vinculo)->toBe(TipoVinculo::COLABORADOR);
     expect($vinculo->funcao)->toBe(Funcao::DESENVOLVEDOR);
     expect($vinculo->status)->toBe(StatusVinculoProjeto::APROVADO);
-    expect($vinculo->carga_horaria_semanal)->toBe(20);
+    expect($vinculo->carga_horaria)->toBe(20);
     expect($vinculo->trocar)->toBeFalse();
 });
 

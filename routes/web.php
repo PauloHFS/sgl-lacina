@@ -31,7 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'bancos' => $bancos,
         ]);
     })->name('pos-cadastro');
-    Route::post('/profile/update', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
+    Route::post('/pos-cadastro', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
 });
 
 // Rotas Autenticadas e Verificadas
@@ -48,7 +48,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     })->name('horarios.meus');
 
 
-    // TODO: Mergear essas duas rotas
+    // TODO: Mergear essas duas rotas ??????????????????????????????????????????????
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::prefix('/projeto')->group(function () {
@@ -70,9 +70,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {
         Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
-        // A rota POST /colaboradores original apontava para ColaboradorController::aceitar sem um parâmetro {colaborador}.
-        // O método aceitar requer um User $colaborador. A rota /colaboradores/{colaborador}/aceitar já serve a este propósito.
-        // Route::post('/colaboradores', [ColaboradorController::class, 'aceitar'])->name('colaboradores.store');
+
         Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
         Route::put('/colaboradores/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
 

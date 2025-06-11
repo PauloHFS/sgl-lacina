@@ -160,7 +160,6 @@ class ProjetosController extends Controller
 
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
-      'tiposVinculo' => array_column(TipoVinculo::cases(), 'value'),
       'funcoes' => array_column(Funcao::cases(), 'value'),
       'usuarioVinculo' => $usuarioVinculo,
       'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
@@ -172,9 +171,7 @@ class ProjetosController extends Controller
 
   public function create()
   {
-    return Inertia::render('Projetos/Create', [
-      'tiposProjeto' => array_column(TipoProjeto::cases(), 'value'),
-    ]);
+    return Inertia::render('Projetos/Create');
   }
 
   public function edit(Projeto $projeto)
@@ -186,7 +183,6 @@ class ProjetosController extends Controller
 
     return Inertia::render('Projetos/Edit', [
       'projeto' => $projeto,
-      'tiposProjeto' => array_column(TipoProjeto::cases(), 'value'),
     ]);
   }
 
@@ -194,7 +190,11 @@ class ProjetosController extends Controller
   {
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
-      'descricao' => 'nullable|string',
+      'descricao' => 'nullable|string|max:2000',
+      'valor_total' => 'sometimes|integer|min:0',
+      'meses_execucao' => 'sometimes|numeric|min:0',
+      'campos_extras' => 'sometimes|array',
+      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
       'data_inicio' => 'required|date',
       'data_termino' => 'nullable|date|after_or_equal:data_inicio',
       'cliente' => 'required|string|max:255',
@@ -216,7 +216,7 @@ class ProjetosController extends Controller
           'tipo_vinculo' => TipoVinculo::COORDENADOR,
           'funcao' => Funcao::COORDENADOR,
           'status' => StatusVinculoProjeto::APROVADO,
-          'carga_horaria_semanal' => 0,
+          'carga_horaria' => 0,
           'data_inicio' => now(),
         ]);
       });
@@ -242,6 +242,10 @@ class ProjetosController extends Controller
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
       'descricao' => 'nullable|string',
+      'valor_total' => 'sometimes|integer|min:0',
+      'meses_execucao' => 'sometimes|numeric|min:0',
+      'campos_extras' => 'sometimes|array',
+      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
       'data_inicio' => 'required|date',
       'data_termino' => 'nullable|date|after_or_equal:data_inicio',
       'cliente' => 'required|string|max:255',

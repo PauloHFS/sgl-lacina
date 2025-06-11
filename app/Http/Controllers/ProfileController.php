@@ -123,7 +123,7 @@ class ProfileController extends Controller
             'foto_url' => 'nullable|image|max:2048',
 
             // Dados pessoais
-            'genero' => 'required|string|max:50',
+            'genero' => 'required|string|in:MASCULINO,FEMININO,OUTRO',
             'data_nascimento' => 'required|date',
 
             // Documentos
@@ -133,7 +133,7 @@ class ProfileController extends Controller
             'orgao_emissor_rg' => 'required|string|max:255',
 
             // Endereço
-            'cep' => 'required|string|max:9',
+            'cep' => ['required', 'string', 'size:8', 'regex:/^[0-9]{8}$/'],
             'endereco' => 'required|string|max:255',
             'numero' => 'required|string|max:10',
             'complemento' => 'nullable|string|max:255',

@@ -30,6 +30,12 @@ class CadastroAceito extends Mailable
    */
   public function envelope(): Envelope
   {
+    if ($this->observacao) {
+      return new Envelope(
+        subject: 'ATENÇÃO NECESSÁRIA - Cadastro Aceito Com Pendências',
+      );
+    }
+
     return new Envelope(
       subject: 'Cadastro Aceito',
     );

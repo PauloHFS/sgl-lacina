@@ -93,6 +93,9 @@ export interface Projeto {
     id: string;
     nome: string;
     descricao?: string | null;
+    valor_total: number;
+    meses_execucao: number;
+    campos_extras: Record<string, string>;
     data_inicio: string; // date format: YYYY-MM-DD
     data_termino?: string | null; // date format: YYYY-MM-DD
     cliente: string;
@@ -121,7 +124,7 @@ export interface UsuarioProjeto {
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;
-    carga_horaria_semanal: number;
+    carga_horaria: number;
     data_inicio: string; // timestamp format: YYYY-MM-DD HH:MM:SS
     data_fim?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
     created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS

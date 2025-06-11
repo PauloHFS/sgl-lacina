@@ -80,7 +80,7 @@ class DatabaseSeeder extends Seeder
             'projeto_id' => $projetoTCC->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
-            'carga_horaria_semanal' => 8,
+            'carga_horaria' => 8,
             'data_inicio' => '2024-03-01',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
             'projeto_id' => $projetoPDI->id,
             'tipo_vinculo' => TipoVinculo::COORDENADOR,
             'funcao' => Funcao::COORDENADOR,
-            'carga_horaria_semanal' => 12,
+            'carga_horaria' => 12,
             'data_inicio' => '2024-01-15',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
             'projeto_id' => $projetoTCC->id,
             'tipo_vinculo' => TipoVinculo::COLABORADOR,
             'funcao' => Funcao::ALUNO,
-            'carga_horaria_semanal' => 20,
+            'carga_horaria' => 20,
             'data_inicio' => '2024-03-01',
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
@@ -130,6 +130,8 @@ class DatabaseSeeder extends Seeder
         return Projeto::create([
             'nome' => $data['nome'],
             'descricao' => $data['descricao'],
+            'valor_total' => $data['valor_total'] ?? 50500430,
+            'meses_execucao' => $data['meses_execucao'] ?? 12.3,
             'data_inicio' => $data['data_inicio'],
             'data_termino' => $data['data_termino'],
             'cliente' => $data['cliente'],
@@ -144,7 +146,7 @@ class DatabaseSeeder extends Seeder
             'projeto_id' => $data['projeto_id'],
             'tipo_vinculo' => $data['tipo_vinculo'],
             'funcao' => $data['funcao'],
-            'carga_horaria_semanal' => $data['carga_horaria_semanal'],
+            'carga_horaria' => $data['carga_horaria'],
             'data_inicio' => $data['data_inicio'],
             'status' => $data['status'],
         ]);

@@ -13,7 +13,7 @@ export default function Dashboard({
         tipo_vinculo: TipoVinculo;
         funcao: Funcao;
         status: StatusVinculoProjeto;
-        carga_horaria_semanal: number;
+        carga_horaria: number;
         data_inicio: string;
         data_fim: string | null;
         created_at: string;
@@ -148,9 +148,7 @@ export default function Dashboard({
                                                 </td>
                                                 <td>
                                                     <span className="badge badge-outline">
-                                                        {
-                                                            p.carga_horaria_semanal
-                                                        }
+                                                        {p.carga_horaria}
                                                         h/sem
                                                     </span>
                                                 </td>

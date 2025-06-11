@@ -38,7 +38,7 @@ type VinculoCreateForm = {
     projeto_id: string;
     tipo_vinculo: TipoVinculo | '';
     funcao: Funcao | '';
-    carga_horaria_semanal: number;
+    carga_horaria: number;
     data_inicio: string;
     trocar?: boolean;
     usuario_projeto_trocado_id?: string | null;
@@ -47,7 +47,6 @@ type VinculoCreateForm = {
 export default function Show({
     auth,
     projeto,
-    tiposVinculo,
     funcoes,
     usuarioVinculo,
     vinculosDoUsuarioLogadoNoProjeto,
@@ -56,14 +55,16 @@ export default function Show({
     coordenadoresDoProjeto,
 }: ShowPageProps) {
     const { toast } = useToast();
+
     const form = useForm<VinculoCreateForm>({
         projeto_id: projeto.id,
-        tipo_vinculo: '',
+        tipo_vinculo: 'COLABORADOR' as TipoVinculo,
         funcao: '',
-        carga_horaria_semanal: 20,
+        carga_horaria: 80,
         data_inicio: '',
     });
 
+    // TODO: migrar para o back end
     const isCoordenadorDoProjetoAtual =
         usuarioVinculo?.tipo_vinculo === ('COORDENADOR' as TipoVinculo) &&
         usuarioVinculo?.status === ('APROVADO' as StatusVinculoProjeto);
@@ -264,6 +265,47 @@ export default function Show({
                                     <span className="font-semibold">Tipo:</span>{' '}
                                     {projeto.tipo}
                                 </p>
+                                <p>
+                                    <span className="font-semibold">
+                                        Valor Total:
+                                    </span>{' '}
+                                    {(projeto.valor_total / 100).toLocaleString(
+                                        'pt-BR',
+                                        {
+                                            style: 'currency',
+                                            currency: 'BRL',
+                                        },
+                                    )}
+                                </p>
+                                <p>
+                                    <span className="font-semibold">
+                                        Meses de Execução:
+                                    </span>{' '}
+                                    {projeto.meses_execucao}
+                                </p>
+                                <div>
+                                    <span className="font-semibold">
+                                        Campos Extras:
+                                    </span>{' '}
+                                    {Object.keys(projeto.campos_extras).length >
+                                    0 ? (
+                                        <ul className="mt-2 list-disc pl-5">
+                                            {Object.entries(
+                                                projeto.campos_extras,
+                                            ).map(([key, value]) => (
+                                                <li
+                                                    key={key}
+                                                    className="text-sm text-gray-700 dark:text-gray-300"
+                                                >
+                                                    <strong>{key}:</strong>{' '}
+                                                    {value}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        'Nenhum campo extra definido.'
+                                    )}
+                                </div>
                                 {renderVinculoStatus()}
                             </div>
                         </div>
@@ -273,44 +315,117 @@ export default function Show({
                         <>
                             <div className="card bg-base-100 mb-6 shadow-xl">
                                 <div className="card-body">
-                                    <h3 className="card-title text-xl">
-                                        Coordenadores do Projeto
-                                    </h3>
+                                    <div className="mb-4 flex items-center gap-3">
+                                        <div className="bg-primary/10 rounded-lg p-2">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="text-primary h-5 w-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="card-title text-xl">
+                                                Coordenadores do Projeto
+                                            </h3>
+                                            <p className="text-base-content/70 text-sm">
+                                                Entre em contato com os
+                                                coordenadores para
+                                                esclarecimentos
+                                            </p>
+                                        </div>
+                                    </div>
                                     {coordenadoresDoProjeto &&
                                     coordenadoresDoProjeto.length > 0 ? (
-                                        <ul className="mt-2 list-disc pl-5">
+                                        <div className="grid gap-3">
                                             {coordenadoresDoProjeto.map(
                                                 (coordenador: Coordenador) => (
-                                                    <li
+                                                    <div
                                                         key={coordenador.id}
-                                                        className="text-sm text-gray-700 dark:text-gray-300"
+                                                        className="bg-base-200/50 hover:bg-base-200 flex items-center gap-3 rounded-lg p-3 transition-colors"
                                                     >
-                                                        {coordenador.name}
-                                                    </li>
+                                                        <div className="avatar placeholder">
+                                                            <div className="bg-neutral text-neutral-content h-10 w-10 rounded-full">
+                                                                <span className="text-xs">
+                                                                    {coordenador.name
+                                                                        .charAt(
+                                                                            0,
+                                                                        )
+                                                                        .toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="text-base-content font-medium">
+                                                                {
+                                                                    coordenador.name
+                                                                }
+                                                            </div>
+                                                            <div className="text-base-content/70 text-sm">
+                                                                Coordenador
+                                                            </div>
+                                                        </div>
+                                                        <div className="badge badge-primary badge-sm">
+                                                            Ativo
+                                                        </div>
+                                                    </div>
                                                 ),
                                             )}
-                                        </ul>
+                                        </div>
                                     ) : (
-                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                            Nenhum coordenador encontrado para
-                                            este projeto.
-                                        </p>
+                                        <div className="py-8 text-center">
+                                            <div className="bg-warning/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="text-warning h-8 w-8"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12V15.75z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <p className="text-base-content/70">
+                                                Nenhum coordenador encontrado
+                                                para este projeto.
+                                            </p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
                             <div className="card bg-base-100 shadow-xl">
                                 <div className="card-body">
-                                    <h3 className="card-title mb-2 text-xl">
-                                        Solicitar Vínculo ao Projeto
-                                    </h3>
-                                    <p className="text-base-content/70 mb-6">
-                                        Preencha os dados abaixo para solicitar
-                                        sua participação neste projeto.
-                                    </p>
+                                    <div className="mb-6 flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <h3 className="card-title mb-2 text-xl">
+                                                Solicitar Vínculo ao Projeto
+                                            </h3>
+                                            <p className="text-base-content/70">
+                                                Preencha os dados abaixo para
+                                                solicitar sua participação neste
+                                                projeto. Sua solicitação será
+                                                analisada pelos coordenadores.
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <form
                                         onSubmit={submit}
-                                        className="space-y-6"
+                                        className="space-y-8"
                                     >
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             {auth.isVinculoProjetoPendente ? (
@@ -345,48 +460,108 @@ export default function Show({
                                                         {vinculosDoUsuarioLogadoNoProjeto &&
                                                             vinculosDoUsuarioLogadoNoProjeto.length >
                                                                 0 && (
-                                                                <>
-                                                                    {/* Checkbox for trocar */}
-                                                                    <div className="form-control">
-                                                                        <label className="label cursor-pointer justify-start gap-4">
-                                                                            <span className="label-text font-medium">
-                                                                                Trocar
-                                                                                de
-                                                                                projeto?
-                                                                            </span>
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                className="toggle toggle-primary"
-                                                                                checked={
-                                                                                    form
-                                                                                        .data
-                                                                                        .trocar ||
-                                                                                    false
-                                                                                }
-                                                                                onChange={(
-                                                                                    e,
-                                                                                ) =>
-                                                                                    form.setData(
-                                                                                        'trocar',
-                                                                                        e
-                                                                                            .target
-                                                                                            .checked,
-                                                                                    )
-                                                                                }
-                                                                            />
-                                                                        </label>
-                                                                        <div className="label pt-0">
-                                                                            <span className="label-text-alt text-base-content/70">
-                                                                                Marque
-                                                                                se
-                                                                                deseja
+                                                                <div className="space-y-4">
+                                                                    {/* Informação sobre troca de projeto */}
+                                                                    <div className="alert alert-info">
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            className="h-6 w-6 shrink-0 stroke-current"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth="2"
+                                                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                            ></path>
+                                                                        </svg>
+                                                                        <div>
+                                                                            <h4 className="font-medium">
+                                                                                Você
+                                                                                já
+                                                                                possui
+                                                                                vínculos
+                                                                                ativos
+                                                                            </h4>
+                                                                            <p className="text-sm">
+                                                                                Para
+                                                                                participar
+                                                                                deste
+                                                                                projeto,
+                                                                                você
+                                                                                pode
+                                                                                optar
+                                                                                por
                                                                                 trocar
-                                                                                de
                                                                                 um
-                                                                                projeto
-                                                                                atual
-                                                                            </span>
+                                                                                dos
+                                                                                seus
+                                                                                vínculos
+                                                                                atuais
+                                                                                ou
+                                                                                solicitar
+                                                                                participação
+                                                                                em
+                                                                                paralelo.
+                                                                            </p>
                                                                         </div>
+                                                                    </div>
+
+                                                                    {/* Toggle para troca de projeto */}
+                                                                    <div className="form-control">
+                                                                        <label className="cursor-pointer">
+                                                                            <div className="border-base-300 hover:bg-base-50 flex items-center space-x-3 rounded-lg border p-4 transition-colors">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    className="toggle toggle-primary"
+                                                                                    checked={
+                                                                                        form
+                                                                                            .data
+                                                                                            .trocar ||
+                                                                                        false
+                                                                                    }
+                                                                                    onChange={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        form.setData(
+                                                                                            'trocar',
+                                                                                            e
+                                                                                                .target
+                                                                                                .checked,
+                                                                                        );
+                                                                                        if (
+                                                                                            !e
+                                                                                                .target
+                                                                                                .checked
+                                                                                        ) {
+                                                                                            form.setData(
+                                                                                                'usuario_projeto_trocado_id',
+                                                                                                null,
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                                <div className="flex-1">
+                                                                                    <div className="text-base-content font-medium">
+                                                                                        Trocar
+                                                                                        de
+                                                                                        projeto
+                                                                                    </div>
+                                                                                    <div className="text-base-content/70 text-sm">
+                                                                                        Encerrar
+                                                                                        participação
+                                                                                        em
+                                                                                        um
+                                                                                        projeto
+                                                                                        atual
+                                                                                        para
+                                                                                        ingressar
+                                                                                        neste
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </label>
                                                                         {form
                                                                             .errors
                                                                             .trocar && (
@@ -402,125 +577,128 @@ export default function Show({
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Projeto a ser trocado */}
-                                                                    <div className="form-control">
-                                                                        <label className="label">
-                                                                            <span className="label-text font-medium">
-                                                                                Projeto
-                                                                                a
-                                                                                ser
-                                                                                trocado
-                                                                            </span>
-                                                                        </label>
-                                                                        <select
-                                                                            className={`select select-bordered w-full ${
-                                                                                !form
-                                                                                    .data
-                                                                                    .trocar
-                                                                                    ? 'select-disabled'
-                                                                                    : ''
-                                                                            } ${form.errors.usuario_projeto_trocado_id ? 'select-error' : ''}`}
-                                                                            disabled={
-                                                                                !form
-                                                                                    .data
-                                                                                    .trocar
-                                                                            }
-                                                                            value={
-                                                                                form
-                                                                                    .data
-                                                                                    .usuario_projeto_trocado_id ||
-                                                                                ''
-                                                                            }
-                                                                            onChange={(
-                                                                                e,
-                                                                            ) =>
-                                                                                form.setData(
-                                                                                    'usuario_projeto_trocado_id',
-                                                                                    e
-                                                                                        .target
-                                                                                        .value ||
-                                                                                        null,
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <option
-                                                                                value=""
-                                                                                disabled
-                                                                            >
-                                                                                Selecione
-                                                                                o
-                                                                                vínculo
-                                                                                a
-                                                                                ser
-                                                                                encerrado
-                                                                            </option>
-                                                                            {vinculosDoUsuarioLogadoNoProjeto
-                                                                                .filter(
-                                                                                    (
-                                                                                        vinculo,
-                                                                                    ) =>
-                                                                                        vinculo.status ===
-                                                                                            'APROVADO' &&
-                                                                                        !vinculo.data_fim,
-                                                                                )
-                                                                                .map(
-                                                                                    (
-                                                                                        vinculo,
-                                                                                    ) => (
-                                                                                        <option
-                                                                                            key={
-                                                                                                vinculo.id
-                                                                                            }
-                                                                                            value={
-                                                                                                vinculo.id
-                                                                                            }
-                                                                                        >
-                                                                                            {
-                                                                                                vinculo
-                                                                                                    .projeto
-                                                                                                    ?.nome
-                                                                                            }{' '}
-                                                                                            (
-                                                                                            {
-                                                                                                vinculo.funcao
-                                                                                            }
-
-                                                                                            )
-                                                                                        </option>
-                                                                                    ),
-                                                                                )}
-                                                                        </select>
-                                                                        <div className="label">
-                                                                            {!form
-                                                                                .data
-                                                                                .trocar && (
-                                                                                <span className="label-text-alt text-base-content/70">
-                                                                                    Disponível
-                                                                                    apenas
-                                                                                    ao
-                                                                                    trocar
-                                                                                    de
-                                                                                    projeto
+                                                                    {/* Seleção do projeto a ser trocado - aparece apenas quando toggle está ativo */}
+                                                                    {form.data
+                                                                        .trocar && (
+                                                                        <div className="form-control">
+                                                                            <label className="label">
+                                                                                <span className="label-text font-medium">
+                                                                                    Selecione
+                                                                                    o
+                                                                                    vínculo
+                                                                                    a
+                                                                                    ser
+                                                                                    encerrado
+                                                                                    <span className="text-error ml-1">
+                                                                                        *
+                                                                                    </span>
                                                                                 </span>
-                                                                            )}
+                                                                            </label>
+                                                                            <select
+                                                                                className={`select select-bordered w-full ${
+                                                                                    form
+                                                                                        .errors
+                                                                                        .usuario_projeto_trocado_id
+                                                                                        ? 'select-error'
+                                                                                        : ''
+                                                                                }`}
+                                                                                value={
+                                                                                    form
+                                                                                        .data
+                                                                                        .usuario_projeto_trocado_id ||
+                                                                                    ''
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) =>
+                                                                                    form.setData(
+                                                                                        'usuario_projeto_trocado_id',
+                                                                                        e
+                                                                                            .target
+                                                                                            .value ||
+                                                                                            null,
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <option
+                                                                                    value=""
+                                                                                    disabled
+                                                                                >
+                                                                                    Escolha
+                                                                                    qual
+                                                                                    vínculo
+                                                                                    será
+                                                                                    encerrado
+                                                                                </option>
+                                                                                {vinculosDoUsuarioLogadoNoProjeto
+                                                                                    .filter(
+                                                                                        (
+                                                                                            vinculo,
+                                                                                        ) =>
+                                                                                            vinculo.status ===
+                                                                                                'APROVADO' &&
+                                                                                            !vinculo.data_fim,
+                                                                                    )
+                                                                                    .map(
+                                                                                        (
+                                                                                            vinculo,
+                                                                                        ) => (
+                                                                                            <option
+                                                                                                key={
+                                                                                                    vinculo.id
+                                                                                                }
+                                                                                                value={
+                                                                                                    vinculo.id
+                                                                                                }
+                                                                                            >
+                                                                                                {
+                                                                                                    vinculo
+                                                                                                        .projeto
+                                                                                                        ?.nome
+                                                                                                }{' '}
+                                                                                                -{' '}
+                                                                                                {
+                                                                                                    vinculo.funcao
+                                                                                                }
+                                                                                            </option>
+                                                                                        ),
+                                                                                    )}
+                                                                            </select>
                                                                             {form
                                                                                 .errors
                                                                                 .usuario_projeto_trocado_id && (
-                                                                                <span className="label-text-alt text-error">
-                                                                                    {
-                                                                                        form
-                                                                                            .errors
-                                                                                            .usuario_projeto_trocado_id
-                                                                                    }
-                                                                                </span>
+                                                                                <div className="label">
+                                                                                    <span className="label-text-alt text-error">
+                                                                                        {
+                                                                                            form
+                                                                                                .errors
+                                                                                                .usuario_projeto_trocado_id
+                                                                                        }
+                                                                                    </span>
+                                                                                </div>
                                                                             )}
+                                                                            <div className="label">
+                                                                                <span className="label-text-alt text-base-content/70">
+                                                                                    Este
+                                                                                    vínculo
+                                                                                    será
+                                                                                    encerrado
+                                                                                    automaticamente
+                                                                                    quando
+                                                                                    sua
+                                                                                    nova
+                                                                                    solicitação
+                                                                                    for
+                                                                                    aprovada
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                </>
+                                                                    )}
+                                                                </div>
                                                             )}
 
                                                         {/* Tipo de Vínculo */}
-                                                        <div className="form-control">
+                                                        {/* <div className="form-control">
                                                             <label className="label">
                                                                 <span className="label-text font-medium">
                                                                     Tipo de
@@ -586,198 +764,292 @@ export default function Show({
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                        </div>
+                                                        </div> */}
 
-                                                        {/* Função */}
-                                                        <div className="form-control">
-                                                            <label className="label">
-                                                                <span className="label-text font-medium">
-                                                                    Função
-                                                                    <span className="text-error ml-1">
-                                                                        *
-                                                                    </span>
-                                                                </span>
-                                                            </label>
-                                                            <select
-                                                                className={`select select-bordered w-full ${
-                                                                    form.errors
-                                                                        .funcao
-                                                                        ? 'select-error'
-                                                                        : ''
-                                                                }`}
-                                                                value={
-                                                                    form.data
-                                                                        .funcao
-                                                                }
-                                                                onChange={(e) =>
-                                                                    form.setData(
-                                                                        'funcao',
-                                                                        e.target
-                                                                            .value as Funcao,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <option
-                                                                    value=""
-                                                                    disabled
-                                                                >
-                                                                    Selecione a
-                                                                    função
-                                                                </option>
-                                                                {funcoes.map(
-                                                                    (
-                                                                        funcao,
-                                                                    ) => (
-                                                                        <option
-                                                                            key={
-                                                                                funcao
-                                                                            }
-                                                                            value={
-                                                                                funcao
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                funcao
-                                                                            }
-                                                                        </option>
-                                                                    ),
-                                                                )}
-                                                            </select>
-                                                            {form.errors
-                                                                .funcao && (
-                                                                <div className="label">
-                                                                    <span className="label-text-alt text-error">
-                                                                        {
+                                                        {/* Campos do Formulário */}
+                                                        <div className="col-span-full">
+                                                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                                                {/* Função */}
+                                                                <div className="form-control">
+                                                                    <label className="label">
+                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                            Função
+                                                                            <span className="text-error">
+                                                                                *
+                                                                            </span>
+                                                                        </span>
+                                                                    </label>
+                                                                    <select
+                                                                        className={`select select-bordered w-full ${
                                                                             form
                                                                                 .errors
                                                                                 .funcao
-                                                                        }
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Carga Horária */}
-                                                        <div className="form-control">
-                                                            <label className="label">
-                                                                <span className="label-text font-medium">
-                                                                    Carga
-                                                                    Horária
-                                                                    Semanal
-                                                                    <span className="text-error ml-1">
-                                                                        *
-                                                                    </span>
-                                                                </span>
-                                                                <span className="label-text-alt">
-                                                                    horas
-                                                                </span>
-                                                            </label>
-                                                            <input
-                                                                type="number"
-                                                                className={`input input-bordered w-full ${
-                                                                    form.errors
-                                                                        .carga_horaria_semanal
-                                                                        ? 'input-error'
-                                                                        : ''
-                                                                }`}
-                                                                placeholder="Ex: 20"
-                                                                value={
-                                                                    form.data
-                                                                        .carga_horaria_semanal
-                                                                }
-                                                                onChange={(
-                                                                    e: React.ChangeEvent<HTMLInputElement>,
-                                                                ) =>
-                                                                    form.setData(
-                                                                        'carga_horaria_semanal',
-                                                                        parseInt(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        ) || 0,
-                                                                    )
-                                                                }
-                                                                min="1"
-                                                                max="40"
-                                                            />
-                                                            {form.errors
-                                                                .carga_horaria_semanal && (
-                                                                <div className="label">
-                                                                    <span className="label-text-alt text-error">
-                                                                        {
+                                                                                ? 'select-error'
+                                                                                : ''
+                                                                        }`}
+                                                                        value={
                                                                             form
-                                                                                .errors
-                                                                                .carga_horaria_semanal
+                                                                                .data
+                                                                                .funcao
                                                                         }
-                                                                    </span>
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            form.setData(
+                                                                                'funcao',
+                                                                                e
+                                                                                    .target
+                                                                                    .value as Funcao,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <option
+                                                                            value=""
+                                                                            disabled
+                                                                        >
+                                                                            Selecione
+                                                                            sua
+                                                                            função
+                                                                            no
+                                                                            projeto
+                                                                        </option>
+                                                                        {funcoes.map(
+                                                                            (
+                                                                                funcao,
+                                                                            ) => (
+                                                                                <option
+                                                                                    key={
+                                                                                        funcao
+                                                                                    }
+                                                                                    value={
+                                                                                        funcao
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        funcao
+                                                                                    }
+                                                                                </option>
+                                                                            ),
+                                                                        )}
+                                                                    </select>
+                                                                    {form.errors
+                                                                        .funcao && (
+                                                                        <div className="label">
+                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                                {
+                                                                                    form
+                                                                                        .errors
+                                                                                        .funcao
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
-                                                        </div>
 
-                                                        {/* Data de Inicio */}
-                                                        <div className="form-control">
-                                                            <label className="label">
-                                                                <span className="label-text font-medium">
-                                                                    Data de
-                                                                    Início
-                                                                    <span className="text-error ml-1">
-                                                                        *
-                                                                    </span>
-                                                                </span>
-                                                            </label>
-                                                            <input
-                                                                type="date"
-                                                                className={`input input-bordered w-full ${
-                                                                    form.errors
-                                                                        .data_inicio
-                                                                        ? 'input-error'
-                                                                        : ''
-                                                                }`}
-                                                                value={
-                                                                    form.data
-                                                                        .data_inicio
-                                                                }
-                                                                onChange={(
-                                                                    e: React.ChangeEvent<HTMLInputElement>,
-                                                                ) =>
-                                                                    form.setData(
-                                                                        'data_inicio',
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                            />
-                                                            {form.errors
-                                                                .data_inicio && (
-                                                                <div className="label">
-                                                                    <span className="label-text-alt text-error">
-                                                                        {
+                                                                {/* Carga Horária */}
+                                                                <div className="form-control">
+                                                                    <label className="label">
+                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                            Carga
+                                                                            Horária
+                                                                            Mensal
+                                                                            <span className="text-error">
+                                                                                *
+                                                                            </span>
+                                                                        </span>
+                                                                        <span className="label-text-alt">
+                                                                            horas/mês
+                                                                        </span>
+                                                                    </label>
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="number"
+                                                                            className={`input input-bordered w-full pr-16 ${
+                                                                                form
+                                                                                    .errors
+                                                                                    .carga_horaria
+                                                                                    ? 'input-error'
+                                                                                    : ''
+                                                                            }`}
+                                                                            placeholder="Ex: 80"
+                                                                            value={
+                                                                                form
+                                                                                    .data
+                                                                                    .carga_horaria
+                                                                            }
+                                                                            onChange={(
+                                                                                e: React.ChangeEvent<HTMLInputElement>,
+                                                                            ) =>
+                                                                                form.setData(
+                                                                                    'carga_horaria',
+                                                                                    parseInt(
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                    ) ||
+                                                                                        0,
+                                                                                )
+                                                                            }
+                                                                            min="1"
+                                                                            max="192"
+                                                                        />
+                                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                                                                            <span className="text-base-content/60 text-xs">
+                                                                                hrs
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="label">
+                                                                        <span className="label-text-alt text-base-content/70 flex items-center gap-1">
+                                                                            ≈{' '}
+                                                                            {(
+                                                                                form
+                                                                                    .data
+                                                                                    .carga_horaria /
+                                                                                4
+                                                                            ).toFixed(
+                                                                                1,
+                                                                            )}{' '}
+                                                                            horas/semana
+                                                                        </span>
+                                                                    </div>
+                                                                    {form.errors
+                                                                        .carga_horaria && (
+                                                                        <div className="label">
+                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                                {
+                                                                                    form
+                                                                                        .errors
+                                                                                        .carga_horaria
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Data de Início */}
+                                                                <div className="form-control">
+                                                                    <label className="label">
+                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                            Data
+                                                                            de
+                                                                            Início
+                                                                            <span className="text-error">
+                                                                                *
+                                                                            </span>
+                                                                        </span>
+                                                                    </label>
+                                                                    <input
+                                                                        type="date"
+                                                                        className={`input input-bordered w-full ${
                                                                             form
                                                                                 .errors
                                                                                 .data_inicio
+                                                                                ? 'input-error'
+                                                                                : ''
+                                                                        }`}
+                                                                        value={
+                                                                            form
+                                                                                .data
+                                                                                .data_inicio
                                                                         }
-                                                                    </span>
+                                                                        min={
+                                                                            new Date()
+                                                                                .toISOString()
+                                                                                .split(
+                                                                                    'T',
+                                                                                )[0]
+                                                                        }
+                                                                        onChange={(
+                                                                            e: React.ChangeEvent<HTMLInputElement>,
+                                                                        ) =>
+                                                                            form.setData(
+                                                                                'data_inicio',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                    />
+
+                                                                    {form.errors
+                                                                        .data_inicio && (
+                                                                        <div className="label">
+                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                                {
+                                                                                    form
+                                                                                        .errors
+                                                                                        .data_inicio
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                            </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Submit Button */}
-                                                    <div className="card-actions justify-end pt-6">
-                                                        <button
-                                                            type="submit"
-                                                            className="btn btn-primary btn-wide"
-                                                            disabled={
-                                                                form.processing
-                                                            }
-                                                        >
-                                                            {form.processing && (
-                                                                <span className="loading loading-spinner loading-sm"></span>
-                                                            )}
-                                                            {form.processing
-                                                                ? 'Enviando...'
-                                                                : 'Solicitar Vínculo'}
-                                                        </button>
+                                                    <div className="col-span-full">
+                                                        <div className="border-base-300 flex flex-col gap-4 border-t pt-8 sm:flex-row">
+                                                            <div className="flex-1">
+                                                                <div className="text-base-content/70 flex items-center gap-2 text-sm">
+                                                                    Sua
+                                                                    solicitação
+                                                                    será
+                                                                    analisada
+                                                                    pelos
+                                                                    coordenadores
+                                                                    do projeto
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-3">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-ghost"
+                                                                    onClick={() =>
+                                                                        window.history.back()
+                                                                    }
+                                                                >
+                                                                    Cancelar
+                                                                </button>
+                                                                <button
+                                                                    type="submit"
+                                                                    className="btn btn-primary px-8"
+                                                                    disabled={
+                                                                        form.processing
+                                                                    }
+                                                                >
+                                                                    {form.processing ? (
+                                                                        <>
+                                                                            <span className="loading loading-spinner loading-sm"></span>
+                                                                            Enviando...
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none"
+                                                                                viewBox="0 0 20 20"
+                                                                                strokeWidth={
+                                                                                    1.5
+                                                                                }
+                                                                                stroke="currentColor"
+                                                                                className="h-4 w-4"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                                                                                />
+                                                                            </svg>
+                                                                            Solicitar
+                                                                            Vínculo
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -788,8 +1060,9 @@ export default function Show({
                         </>
                     )}
 
-                    {/* Project Participants List (for coordinators) */}
-                    {isCoordenadorDoProjetoAtual &&
+                    {/* Project Participants List */}
+                    {(isCoordenadorDoProjetoAtual ||
+                        usuarioVinculo?.status === 'APROVADO') &&
                         participantesProjeto &&
                         participantesProjeto.data.length > 0 && (
                             <div className="card bg-base-100 shadow-xl">

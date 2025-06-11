@@ -33,13 +33,13 @@ export default function Welcome({
                                             href={route('register')}
                                             className="btn btn-ghost btn-sm"
                                         >
-                                            Register
+                                            Cadastrar-se
                                         </Link>
                                         <Link
                                             href={route('login')}
                                             className="btn btn-primary btn-sm"
                                         >
-                                            Log in
+                                            Entrar
                                         </Link>
                                     </>
                                 )}
@@ -53,8 +53,8 @@ export default function Welcome({
                                     SGL LaCInA UFCG
                                 </h2>
                                 <p>
-                                    Sistema de Recursos Humanos para o
-                                    Laboratório de Computação Inteligente
+                                    Sistema de Gerenciamento de Laboratório para
+                                    o Laboratório de Computação Inteligente
                                     Aplicada (LACINA) da Universidade Federal de
                                     Campina Grande
                                 </p>

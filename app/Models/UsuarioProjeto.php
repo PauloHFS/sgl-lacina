@@ -31,7 +31,7 @@ class UsuarioProjeto extends Model
         'tipo_vinculo',
         'funcao',
         'status',
-        'carga_horaria_semanal',
+        'carga_horaria',
         'data_inicio',
         'data_fim',
     ];
@@ -40,7 +40,7 @@ class UsuarioProjeto extends Model
         'tipo_vinculo' => TipoVinculo::class,
         'funcao' => Funcao::class,
         'status' => StatusVinculoProjeto::class,
-        'carga_horaria_semanal' => 'integer',
+        'carga_horaria' => 'integer',
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];

@@ -65,6 +65,13 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'discord' => [
+            'driver' => 'custom',
+            'via' => App\Logging\DiscordLogger::class,
+            'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+            'level' => env('DISCORD_LOG_LEVEL', 'error'),
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
@@ -89,7 +96,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],

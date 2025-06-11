@@ -1,31 +1,38 @@
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Projeto, TipoProjeto } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
-interface Projeto {
-    id: string;
-    nome: string;
-    descricao?: string;
-    data_inicio: string;
-    data_termino?: string;
-    cliente: string;
-    slack_url?: string;
-    discord_url?: string;
-    board_url?: string;
-    git_url?: string;
-    tipo: string;
+interface CampoExtra {
+    key: string;
+    value: string;
 }
 
 interface EditPageProps {
     projeto: Projeto;
-    tiposProjeto: string[];
 }
 
-export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
-    const { data, setData, patch, processing, errors } = useForm({
+const tiposProjeto: TipoProjeto[] = [
+    'DOUTORADO',
+    'MESTRADO',
+    'PDI',
+    'TCC',
+    'SUPORTE',
+];
+
+export default function Edit({ projeto }: EditPageProps) {
+    const { data, setData, patch, processing, errors } = useForm<
+        Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+    >({
         nome: projeto.nome,
         descricao: projeto.descricao || '',
+        valor_total: projeto.valor_total || 0,
+        meses_execucao: projeto.meses_execucao || 0,
+        campos_extras: projeto.campos_extras || {},
         data_inicio: projeto.data_inicio
             ? projeto.data_inicio.substring(0, 10)
             : '',
@@ -42,16 +49,66 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
 
     const { toast } = useToast();
 
+    const camposExtrasArray: CampoExtra[] = projeto.campos_extras
+        ? Object.entries(projeto.campos_extras).map(([key, value]) => ({
+              key,
+              value: String(value),
+          }))
+        : [];
+
+    const [campos, setCampos] = useState<CampoExtra[]>(camposExtrasArray);
+
+    const adicionarCampo = () => {
+        setCampos([...campos, { key: '', value: '' }]);
+    };
+
+    const removerCampo = (index: number) => {
+        const novosCampos = campos.filter((_, i) => i !== index);
+        setCampos(novosCampos);
+        atualizarDados(novosCampos);
+    };
+
+    const atualizarCampo = (
+        index: number,
+        field: 'key' | 'value',
+        newValue: string,
+    ) => {
+        const novosCampos = campos.map((campo, i) =>
+            i === index ? { ...campo, [field]: newValue } : campo,
+        );
+        setCampos(novosCampos);
+        atualizarDados(novosCampos);
+    };
+
+    const atualizarDados = (camposAtualizados: CampoExtra[]) => {
+        // Filtrar campos vazios e converter para objeto
+        const camposObj = camposAtualizados
+            .filter(
+                (campo) => campo.key.trim() !== '' && campo.value.trim() !== '',
+            )
+            .reduce(
+                (acc, campo) => {
+                    acc[campo.key.trim()] = campo.value.trim();
+                    return acc;
+                },
+                {} as Record<string, string>,
+            );
+
+        setData('campos_extras', camposObj);
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
         patch(route('projetos.update', projeto.id), {
             onSuccess: () => {
-                toast('Projeto atualizado com sucesso.', 'success');
+                toast('Projeto Atualizada com sucesso!', 'success');
             },
-            onError: (errors) => {
-                console.error(errors);
-                toast('Não foi possível atualizar o projeto.', 'error');
+            onError: (formErrors) => {
+                console.error('Erro ao atualizar projeto:', formErrors);
+                toast(
+                    'Erro ao atualizar projeto. Verifique os campos.',
+                    'error',
+                );
             },
         });
     };
@@ -137,43 +194,6 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                         )}
                                     </div>
 
-                                    {/* Tipo do Projeto */}
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text font-medium">
-                                                Tipo do Projeto *
-                                            </span>
-                                        </label>
-                                        <select
-                                            className={`select select-bordered w-full ${
-                                                errors.tipo
-                                                    ? 'select-error'
-                                                    : ''
-                                            }`}
-                                            value={data.tipo}
-                                            onChange={(e) =>
-                                                setData('tipo', e.target.value)
-                                            }
-                                            required
-                                        >
-                                            <option value="">
-                                                Selecione o tipo
-                                            </option>
-                                            {tiposProjeto.map((tipo) => (
-                                                <option key={tipo} value={tipo}>
-                                                    {tipo}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.tipo && (
-                                            <div className="label">
-                                                <span className="label-text-alt text-error">
-                                                    {errors.tipo}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
                                     {/* Data de Início */}
                                     <div className="form-control">
                                         <label className="label">
@@ -220,7 +240,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                     ? 'input-error'
                                                     : ''
                                             }`}
-                                            value={data.data_termino}
+                                            value={data.data_termino || ''}
                                             onChange={(e) =>
                                                 setData(
                                                     'data_termino',
@@ -236,6 +256,135 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                             </div>
                                         )}
                                     </div>
+
+                                    {/* Tipo do Projeto */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text font-medium">
+                                                Tipo do Projeto *
+                                            </span>
+                                        </label>
+                                        <select
+                                            className={`select select-bordered w-full ${
+                                                errors.tipo
+                                                    ? 'select-error'
+                                                    : ''
+                                            }`}
+                                            value={data.tipo}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'tipo',
+                                                    e.target
+                                                        .value as TipoProjeto,
+                                                )
+                                            }
+                                            required
+                                        >
+                                            <option value="">
+                                                Selecione o tipo
+                                            </option>
+                                            {tiposProjeto.map((tipo) => (
+                                                <option key={tipo} value={tipo}>
+                                                    {tipo}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.tipo && (
+                                            <div className="label">
+                                                <span className="label-text-alt text-error">
+                                                    {errors.tipo}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Valor Total */}
+                                    <div className="form-control">
+                                        <label
+                                            htmlFor="valor_total"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Valor Total* (R$)
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="valor_total"
+                                            type="text"
+                                            value={(
+                                                data.valor_total / 100
+                                            ).toLocaleString('pt-BR', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            onChange={(e) => {
+                                                const apenasNumeros =
+                                                    e.target.value.replace(
+                                                        /\D/g,
+                                                        '',
+                                                    );
+                                                const centavos = parseInt(
+                                                    apenasNumeros || '0',
+                                                );
+                                                setData(
+                                                    'valor_total',
+                                                    centavos,
+                                                );
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.value = (
+                                                    data.valor_total / 100
+                                                ).toFixed(2);
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.value = (
+                                                    data.valor_total / 100
+                                                ).toLocaleString('pt-BR', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                });
+                                            }}
+                                            className="input input-bordered w-full"
+                                            required
+                                            placeholder="0,00"
+                                        />
+                                        {errors.valor_total && (
+                                            <span className="text-error text-xs">
+                                                {errors.valor_total}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Meses de Execução */}
+                                <div>
+                                    <label
+                                        htmlFor="meses_execucao"
+                                        className="label"
+                                    >
+                                        <span className="label-text text-base-content">
+                                            Meses de Execução*
+                                        </span>
+                                    </label>
+                                    <input
+                                        id="meses_execucao"
+                                        type="number"
+                                        value={data.meses_execucao}
+                                        onChange={(e) => {
+                                            setData(
+                                                'meses_execucao',
+                                                parseFloat(e.target.value) || 0,
+                                            );
+                                        }}
+                                        className="input input-bordered w-full"
+                                        required
+                                        placeholder="12"
+                                    />
+                                    {errors.meses_execucao && (
+                                        <span className="text-error text-xs">
+                                            {errors.meses_execucao}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Descrição */}
@@ -252,7 +401,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                 ? 'textarea-error'
                                                 : ''
                                         }`}
-                                        value={data.descricao}
+                                        value={data.descricao || ''}
                                         onChange={(e) =>
                                             setData('descricao', e.target.value)
                                         }
@@ -288,7 +437,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                         ? 'input-error'
                                                         : ''
                                                 }`}
-                                                value={data.slack_url}
+                                                value={data.slack_url || ''}
                                                 onChange={(e) =>
                                                     setData(
                                                         'slack_url',
@@ -320,7 +469,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                         ? 'input-error'
                                                         : ''
                                                 }`}
-                                                value={data.discord_url}
+                                                value={data.discord_url || ''}
                                                 onChange={(e) =>
                                                     setData(
                                                         'discord_url',
@@ -352,7 +501,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                         ? 'input-error'
                                                         : ''
                                                 }`}
-                                                value={data.board_url}
+                                                value={data.board_url || ''}
                                                 onChange={(e) =>
                                                     setData(
                                                         'board_url',
@@ -384,7 +533,7 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                         ? 'input-error'
                                                         : ''
                                                 }`}
-                                                value={data.git_url}
+                                                value={data.git_url || ''}
                                                 onChange={(e) =>
                                                     setData(
                                                         'git_url',
@@ -399,6 +548,150 @@ export default function Edit({ projeto, tiposProjeto }: EditPageProps) {
                                                     </span>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label
+                                                htmlFor="campos_extras"
+                                                className="label"
+                                            >
+                                                <span className="label-text text-base-content">
+                                                    Campos Extras
+                                                </span>
+                                            </label>
+                                            <p className="text-base-content/70 mb-4 text-xs">
+                                                Adicione informações
+                                                personalizadas ao projeto. Use
+                                                campos chave-valor para
+                                                armazenar dados específicos como
+                                                tags, categorias ou metadados.
+                                            </p>
+                                            <div>
+                                                <div className="space-y-4">
+                                                    {campos.map(
+                                                        (campo, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="border-base-300 grid grid-cols-1 items-end gap-4 rounded-lg border p-4 md:grid-cols-5"
+                                                            >
+                                                                <div className="md:col-span-2">
+                                                                    <InputLabel
+                                                                        htmlFor={`key-${index}`}
+                                                                        value="Chave"
+                                                                    />
+                                                                    <TextInput
+                                                                        id={`key-${index}`}
+                                                                        type="text"
+                                                                        className="mt-1 block w-full"
+                                                                        value={
+                                                                            campo.key
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            atualizarCampo(
+                                                                                index,
+                                                                                'key',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        placeholder="Ex: projeto_favorito"
+                                                                    />
+                                                                </div>
+
+                                                                <div className="md:col-span-2">
+                                                                    <InputLabel
+                                                                        htmlFor={`value-${index}`}
+                                                                        value="Valor"
+                                                                    />
+                                                                    <TextInput
+                                                                        id={`value-${index}`}
+                                                                        type="text"
+                                                                        className="mt-1 block w-full"
+                                                                        value={
+                                                                            campo.value
+                                                                        }
+                                                                        onChange={(
+                                                                            e,
+                                                                        ) =>
+                                                                            atualizarCampo(
+                                                                                index,
+                                                                                'value',
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        placeholder="Ex: Sistema de RH"
+                                                                    />
+                                                                </div>
+
+                                                                <div className="md:col-span-1">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            removerCampo(
+                                                                                index,
+                                                                            )
+                                                                        }
+                                                                        className="btn btn-error btn-sm w-full"
+                                                                        title="Remover campo"
+                                                                    >
+                                                                        <svg
+                                                                            className="h-4 w-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={
+                                                                                    2
+                                                                                }
+                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                            />
+                                                                        </svg>
+                                                                        Remover
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+
+                                                <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+                                                    <button
+                                                        type="button"
+                                                        onClick={adicionarCampo}
+                                                        className="btn btn-outline btn-primary"
+                                                    >
+                                                        <svg
+                                                            className="h-4 w-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 4v16m8-8H4"
+                                                            />
+                                                        </svg>
+                                                        Adicionar Campo
+                                                    </button>
+                                                </div>
+
+                                                <InputError
+                                                    message={
+                                                        errors.campos_extras
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

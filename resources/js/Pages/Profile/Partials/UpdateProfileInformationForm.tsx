@@ -7,7 +7,7 @@ import { ESTADOS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import { Banco, Genero, User } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Link, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { IMaskInput } from 'react-imask';
@@ -25,12 +25,13 @@ export default function UpdateProfileInformation({
     user: User;
     className?: string;
 }) {
-    const { data, setData, patch, errors, recentlySuccessful } = useForm<
-        Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
-    >({
-        ...user,
-        foto_url: user.foto_url ?? null,
-    });
+    const { data, setData, patch, errors, recentlySuccessful, processing } =
+        useForm<
+            Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
+        >({
+            ...user,
+            foto_url: user.foto_url ?? null,
+        });
 
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -100,13 +101,48 @@ export default function UpdateProfileInformation({
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        patch(route('profile.update'), {
-            preserveScroll: true,
-            onSuccess: () => {},
-            onError: (errors) => {
-                console.error('Erro ao atualizar perfil:', errors);
-            },
-        });
+        // Verifica se há um arquivo sendo enviado
+        const hasFile = data.foto_url instanceof File;
+
+        if (hasFile) {
+            // Para uploads de arquivo, usar POST com _method
+            const formData = new FormData();
+
+            // Adicionar todos os campos ao FormData
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    if (value instanceof File) {
+                        formData.append(key, value);
+                    } else if (typeof value === 'object') {
+                        // Para objetos como campos_extras, converter para JSON
+                        formData.append(key, JSON.stringify(value));
+                    } else {
+                        formData.append(key, String(value));
+                    }
+                }
+            });
+
+            // Adicionar o method override
+            formData.append('_method', 'PATCH');
+
+            // Usar router.post com FormData
+            router.post(route('profile.update'), formData, {
+                preserveScroll: true,
+                onSuccess: () => {},
+                onError: (errors) => {
+                    console.error('Erro ao atualizar perfil:', errors);
+                },
+            });
+        } else {
+            // Para dados sem arquivo, usar patch normal
+            patch(route('profile.update'), {
+                preserveScroll: true,
+                onSuccess: () => {},
+                onError: (errors) => {
+                    console.error('Erro ao atualizar perfil:', errors);
+                },
+            });
+        }
     };
 
     return (
@@ -137,7 +173,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) => setData('name', e.target.value)}
                             required
                             autoComplete="name"
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.name} />
                     </div>
@@ -153,93 +188,228 @@ export default function UpdateProfileInformation({
                             onChange={(e) => setData('email', e.target.value)}
                             required
                             autoComplete="username"
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.email} />
                     </div>
                 </div>
 
-                {/* Foto de Perfil - largura completa */}
+                {/* Foto de Perfil */}
                 <div className="col-span-1 md:col-span-2">
-                    <InputLabel htmlFor="foto_url" value="Foto de Perfil" />
-                    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                        {/* Avatar Preview or Placeholder */}
-                        {data.foto_url ? (
-                            <div className="avatar">
-                                <div className="ring-primary ring-offset-base-100 h-24 w-24 rounded-lg ring ring-offset-2">
-                                    <img
-                                        src={
-                                            typeof data.foto_url === 'string'
-                                                ? data.foto_url.startsWith(
-                                                      'http',
-                                                  )
-                                                    ? data.foto_url
-                                                    : `/storage/${data.foto_url}`
-                                                : URL.createObjectURL(
-                                                      data.foto_url,
-                                                  )
-                                        }
-                                        alt="Preview da Foto de Perfil"
-                                        className="h-full w-full rounded-lg object-cover"
-                                    />
+                    <div className="card bg-base-200 p-6">
+                        <h3 className="mb-4 text-lg font-semibold">
+                            Foto de Perfil*
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            {/* Upload e Preview */}
+                            <div>
+                                <div className="flex flex-col items-center gap-4">
+                                    {/* Avatar Preview */}
+                                    {data.foto_url ? (
+                                        <div className="avatar">
+                                            <div className="ring-primary ring-offset-base-100 h-32 w-32 rounded-lg ring ring-offset-2">
+                                                <img
+                                                    src={
+                                                        typeof data.foto_url ===
+                                                        'string'
+                                                            ? data.foto_url.startsWith(
+                                                                  'http',
+                                                              )
+                                                                ? data.foto_url
+                                                                : `/storage/${data.foto_url}`
+                                                            : URL.createObjectURL(
+                                                                  data.foto_url,
+                                                              )
+                                                    }
+                                                    alt="Preview da Foto de Perfil"
+                                                    className="h-full w-full rounded-lg object-cover"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-base-100 ring-base-300 flex aspect-square h-32 w-32 items-center justify-center rounded-lg ring-1">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="text-base-content h-16 w-16 opacity-30"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+
+                                    {/* File Input */}
+                                    <div className="w-full">
+                                        <input
+                                            id="foto_url"
+                                            type="file"
+                                            accept="image/png, image/jpeg, image/webp"
+                                            className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
+                                            onChange={(e) => {
+                                                if (
+                                                    e.target.files &&
+                                                    e.target.files[0]
+                                                ) {
+                                                    const file =
+                                                        e.target.files[0];
+                                                    if (
+                                                        file.size >
+                                                        2048 * 1024
+                                                    ) {
+                                                        // 2MB
+                                                        toast(
+                                                            'A foto não pode ser maior que 2MB.',
+                                                            'error',
+                                                        );
+                                                        setData(
+                                                            'foto_url',
+                                                            null,
+                                                        );
+                                                        e.target.value = ''; // Limpa o campo de input
+                                                    } else {
+                                                        setData(
+                                                            'foto_url',
+                                                            file,
+                                                        );
+                                                    }
+                                                } else {
+                                                    setData('foto_url', null); // Limpa se nenhum arquivo for selecionado
+                                                    e.target.value = '';
+                                                }
+                                            }}
+                                        />
+                                        {errors.foto_url ? (
+                                            <span className="label-text-alt text-error mt-1">
+                                                {errors.foto_url}
+                                            </span>
+                                        ) : (
+                                            <span className="label-text-alt mt-1">
+                                                Formatos aceitos: PNG, JPG,
+                                                WEBP. Máximo 2MB.
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="bg-base-200 ring-base-300 flex aspect-square h-24 w-24 items-center justify-center rounded-lg ring-1">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="text-base-content flex h-12 w-12 opacity-30"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                                    />
-                                </svg>
-                            </div>
-                        )}
 
-                        {/* File Input and messages */}
-                        <div className="w-full flex-grow sm:w-auto">
-                            <input
-                                id="foto_url"
-                                type="file"
-                                accept="image/png, image/jpeg, image/gif, image/webp, .heic, .heif"
-                                className={`file-input file-input-bordered w-full ${errors.foto_url ? 'file-input-error' : ''}`}
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                        const file = e.target.files[0];
-                                        if (file.size > 2048 * 1024) {
-                                            // 2MB
-                                            toast(
-                                                'A foto não pode ser maior que 2MB.',
-                                                'error',
-                                            );
-                                            setData('foto_url', null);
-                                            e.target.value = ''; // Limpa o campo de input
-                                        } else {
-                                            setData('foto_url', file);
-                                        }
-                                    } else {
-                                        setData('foto_url', null); // Limpa se nenhum arquivo for selecionado
-                                        e.target.value = '';
-                                    }
-                                }}
-                                disabled
-                            />
-                            {errors.foto_url ? (
-                                <span className="label-text-alt text-error mt-1">
-                                    {errors.foto_url}
-                                </span>
-                            ) : (
-                                <span className="label-text-alt mt-1">
-                                    Formatos aceitos: PNG, JPG, GIF, WEBP, HEIC.
-                                </span>
-                            )}
+                            {/* Diretrizes da Foto */}
+                            <div>
+                                <h4 className="mb-3 text-base font-medium">
+                                    Diretrizes para uma boa foto:
+                                </h4>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="badge badge-success badge-sm">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-3 w-3 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm">
+                                            Foto com roupa adequada/profissional
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="badge badge-success badge-sm">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-3 w-3 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm">
+                                            Foto apenas do rosto e ombros
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="badge badge-success badge-sm">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-3 w-3 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm">
+                                            Fundo liso ou neutro
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="badge badge-success badge-sm">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                className="h-3 w-3 stroke-current"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M5 13l4 4L19 7"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm">
+                                            Boa iluminação natural ou artificial
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="alert alert-warning mt-4">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4 shrink-0 stroke-current"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                        />
+                                    </svg>
+                                    <span className="text-xs">
+                                        Esta foto será usada em documentos
+                                        oficiais e no sistema.
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -260,7 +430,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('genero', e.target.value as Genero)
                             }
-                            disabled
                         >
                             <option value="">Selecione o gênero...</option>
                             <option value="MASCULINO">Masculino</option>
@@ -293,7 +462,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('data_nascimento', e.target.value)
                             }
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -311,7 +479,6 @@ export default function UpdateProfileInformation({
                             value={data.telefone || ''}
                             onAccept={(value) => setData('telefone', value)}
                             placeholder="+55 (00) 00000-0000"
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -347,7 +514,6 @@ export default function UpdateProfileInformation({
                                 );
                             }}
                             required
-                            disabled
                         />
                         {cpfValido === true && (
                             <div className="text-success mt-1 text-sm">
@@ -371,7 +537,6 @@ export default function UpdateProfileInformation({
                             maxLength={9}
                             onChange={(e) => setData('rg', e.target.value)}
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.rg} />
                     </div>
@@ -388,7 +553,6 @@ export default function UpdateProfileInformation({
                                 setData('orgao_emissor_rg', e.target.value)
                             }
                             required
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -403,7 +567,6 @@ export default function UpdateProfileInformation({
                             value={data.uf_rg || ''}
                             onChange={(e) => setData('uf_rg', e.target.value)}
                             required
-                            disabled
                         >
                             <option value="">Selecione uma UF...</option>
                             {ESTADOS.map((uf) => (
@@ -434,7 +597,6 @@ export default function UpdateProfileInformation({
                             }}
                             placeholder="00000-000"
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.cep} />
                     </div>
@@ -448,7 +610,6 @@ export default function UpdateProfileInformation({
                                 setData('endereco', e.target.value)
                             }
                             required
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -463,7 +624,6 @@ export default function UpdateProfileInformation({
                             value={data.numero || ''}
                             onChange={(e) => setData('numero', e.target.value)}
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.numero} />
                     </div>
@@ -476,7 +636,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('complemento', e.target.value)
                             }
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -491,7 +650,6 @@ export default function UpdateProfileInformation({
                             value={data.bairro || ''}
                             onChange={(e) => setData('bairro', e.target.value)}
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.bairro} />
                     </div>
@@ -503,7 +661,6 @@ export default function UpdateProfileInformation({
                             value={data.uf || ''}
                             onChange={(e) => setData('uf', e.target.value)}
                             required
-                            disabled
                         >
                             <option value="">Selecione um estado...</option>
                             {ESTADOS.map((uf_item) => (
@@ -525,7 +682,6 @@ export default function UpdateProfileInformation({
                             value={data.cidade || ''}
                             onChange={(e) => setData('cidade', e.target.value)}
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.cidade} />
                     </div>
@@ -544,7 +700,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('banco_id', e.target.value)
                             }
-                            disabled
                         >
                             <option value="">Selecione um banco...</option>
                             {bancos.map((banco) => (
@@ -572,7 +727,6 @@ export default function UpdateProfileInformation({
                                 setData('conta_bancaria', value)
                             }
                             placeholder="00000-0"
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -589,7 +743,6 @@ export default function UpdateProfileInformation({
                             onAccept={(value) => setData('agencia', value)}
                             placeholder="0000-0"
                             required
-                            disabled
                         />
                         <InputError className="mt-2" message={errors.agencia} />
                     </div>
@@ -613,7 +766,6 @@ export default function UpdateProfileInformation({
                                 setData('curriculo_lattes_url', e.target.value)
                             }
                             required
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -630,7 +782,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('linkedin_url', e.target.value)
                             }
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -647,7 +798,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('github_url', e.target.value)
                             }
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -664,7 +814,6 @@ export default function UpdateProfileInformation({
                             onChange={(e) =>
                                 setData('website_url', e.target.value)
                             }
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -686,7 +835,6 @@ export default function UpdateProfileInformation({
                                 setData('area_atuacao', e.target.value)
                             }
                             placeholder="Digite sua área de atuação..."
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -705,7 +853,6 @@ export default function UpdateProfileInformation({
                                 setData('tecnologias', e.target.value)
                             }
                             placeholder="Digite as tecnologias que você domina..."
-                            disabled
                         />
                         <InputError
                             className="mt-2"
@@ -751,7 +898,7 @@ export default function UpdateProfileInformation({
                     </div>
                 )}
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled>Salvar</PrimaryButton>
+                    <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"

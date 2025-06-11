@@ -21,7 +21,7 @@ class ProjetoVinculoController extends Controller
     $request->validate([
       'projeto_id' => 'required|exists:projetos,id',
       'data_inicio' => 'required|date',
-      'carga_horaria_semanal' => 'required|integer|min:1|max:40',
+      'carga_horaria' => 'required|integer|min:1|max:200',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
       'trocar' => 'sometimes|boolean',
@@ -66,7 +66,7 @@ class ProjetoVinculoController extends Controller
           'tipo_vinculo' => $request->tipo_vinculo,
           'funcao' => $request->funcao,
           'status' => StatusVinculoProjeto::PENDENTE,
-          'carga_horaria_semanal' => $request->carga_horaria_semanal,
+          'carga_horaria' => $request->carga_horaria,
           'data_inicio' => $request->data_inicio,
         ]);
       });
@@ -77,7 +77,7 @@ class ProjetoVinculoController extends Controller
         'tipo_vinculo' => $request->tipo_vinculo,
         'funcao' => $request->funcao,
         'status' => StatusVinculoProjeto::PENDENTE,
-        'carga_horaria_semanal' => $request->carga_horaria_semanal,
+        'carga_horaria' => $request->carga_horaria,
         'data_inicio' => $request->data_inicio,
       ]);
     }
@@ -89,7 +89,7 @@ class ProjetoVinculoController extends Controller
   {
     $validatedData = $request->validate([
       'status' => ['sometimes', 'required', Rule::enum(StatusVinculoProjeto::class)],
-      'carga_horaria_semanal' => 'sometimes|nullable|integer|min:1|max:40',
+      'carga_horaria' => 'sometimes|nullable|integer|min:1|max:200',
       'funcao' => ['sometimes', 'nullable', Rule::enum(Funcao::class)],
       'tipo_vinculo' => ['sometimes', 'nullable', Rule::enum(TipoVinculo::class)],
       'data_inicio' => 'sometimes|nullable|date',
@@ -130,8 +130,8 @@ class ProjetoVinculoController extends Controller
       }
     }
 
-    if ($request->filled('carga_horaria_semanal')) {
-      $usuarioProjeto->carga_horaria_semanal = $validatedData['carga_horaria_semanal'];
+    if ($request->filled('carga_horaria')) {
+      $usuarioProjeto->carga_horaria = $validatedData['carga_horaria'];
     }
 
     if ($request->filled('funcao')) {

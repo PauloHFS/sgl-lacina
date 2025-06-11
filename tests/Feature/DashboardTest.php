@@ -206,7 +206,7 @@ test('dashboard colaborador mostra vínculos com informações completas', funct
         'status' => StatusVinculoProjeto::APROVADO,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::DESENVOLVEDOR,
-        'carga_horaria_semanal' => 20,
+        'carga_horaria' => 20,
     ]);
 
     // Vínculo pendente
@@ -216,7 +216,7 @@ test('dashboard colaborador mostra vínculos com informações completas', funct
         'status' => StatusVinculoProjeto::PENDENTE,
         'tipo_vinculo' => TipoVinculo::COLABORADOR,
         'funcao' => Funcao::TECNICO,
-        'carga_horaria_semanal' => 10,
+        'carga_horaria' => 10,
     ]);
 
     $response = $this->actingAs($user)->get('/dashboard');

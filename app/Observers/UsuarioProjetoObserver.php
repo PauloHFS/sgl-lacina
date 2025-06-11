@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\StatusVinculoProjeto;
 use App\Models\UsuarioProjeto;
 use App\Models\HistoricoUsuarioProjeto;
 
@@ -12,7 +13,7 @@ class UsuarioProjetoObserver
      */
     public function created(UsuarioProjeto $usuarioProjeto): void
     {
-        // $this->logHistory($usuarioProjeto);
+        $this->logHistory($usuarioProjeto);
     }
 
     /**
@@ -20,7 +21,7 @@ class UsuarioProjetoObserver
      */
     public function updated(UsuarioProjeto $usuarioProjeto): void
     {
-        if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria_semanal', 'data_fim', 'tipo_vinculo'])) {
+        if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria', 'data_fim', 'tipo_vinculo'])) {
             $this->logHistory($usuarioProjeto);
         }
     }
@@ -30,7 +31,7 @@ class UsuarioProjetoObserver
      */
     public function deleted(UsuarioProjeto $usuarioProjeto): void
     {
-        // $this->logHistory($usuarioProjeto, 'REMOVIDO_LOGICAMENTE');
+        $this->logHistory($usuarioProjeto, StatusVinculoProjeto::ENCERRADO->value);
     }
 
     /**
@@ -38,7 +39,7 @@ class UsuarioProjetoObserver
      */
     public function restored(UsuarioProjeto $usuarioProjeto): void
     {
-        //
+        $this->logHistory($usuarioProjeto);
     }
 
     /**
@@ -61,7 +62,7 @@ class UsuarioProjetoObserver
             'tipo_vinculo' => $usuarioProjeto->tipo_vinculo,
             'funcao' => $usuarioProjeto->funcao,
             'status' => $customStatus ?? $usuarioProjeto->status,
-            'carga_horaria_semanal' => $usuarioProjeto->carga_horaria_semanal,
+            'carga_horaria' => $usuarioProjeto->carga_horaria,
             'data_inicio' => $usuarioProjeto->data_inicio,
             'data_fim' => $usuarioProjeto->data_fim,
         ]);
