@@ -444,9 +444,9 @@ test('coordenador não pode atualizar vínculo com carga horária inválida', fu
         'status' => StatusVinculoProjeto::PENDENTE,
     ]);
 
-    // Teste com carga horária muito alta (acima do máximo de 40)
+    // Teste com carga horária muito alta
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
-        'carga_horaria' => 50
+        'carga_horaria' => 233
     ]);
 
     $response->assertSessionHasErrors(['carga_horaria']);
