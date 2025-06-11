@@ -117,6 +117,14 @@ class ProjetosController extends Controller
     $usuarioAutenticado = Auth::user();
     $usuarioVinculo = $projeto->getUsuarioVinculo($usuarioAutenticado->id);
 
+    if (
+      !$usuarioVinculo ||
+      $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value ||
+      $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value
+    ) {
+      $projeto->makeHidden(['campos_extras', 'meses_execucao', 'valor_total']);
+    }
+
     $vinculosDoUsuarioLogadoNoProjeto = UsuarioProjeto::where('usuario_id', $usuarioAutenticado->id)
       ->with('projeto') // Eager load project data
       ->orderBy('data_inicio', 'desc')
