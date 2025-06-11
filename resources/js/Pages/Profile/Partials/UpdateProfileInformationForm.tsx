@@ -1,7 +1,6 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { StatusAlert } from '@/Components/StatusAlert';
 import TextInput from '@/Components/TextInput';
 import { ESTADOS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
@@ -155,11 +154,6 @@ export default function UpdateProfileInformation({
                     Atualize as informações do perfil da sua conta.
                 </p>
             </header>
-            <StatusAlert
-                type="info"
-                title="Atualização de dados indisponivel no momento!"
-                // message="As informações do perfil estão travadas no momento"
-            />
             <form onSubmit={submit} className="mt-6 space-y-6">
                 {/* Grid de 2 colunas para campos básicos */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
