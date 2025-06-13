@@ -4,7 +4,8 @@ namespace App\Enums;
 
 enum TipoHorario: string
 {
-  case AULA = 'AULA';
-  case TRABALHO = 'TRABALHO';
+  case EM_AULA = 'EM_AULA';
+  case TRABALHO_PRESENCIAL = 'TRABALHO_PRESENCIAL';
+  case TRABALHO_REMOTO = 'TRABALHO_REMOTO';
   case AUSENTE = 'AUSENTE';
 }

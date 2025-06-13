@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
 use App\Models\Banco;
+use App\Models\Horario;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,6 +36,9 @@ class DevelopmentSeeder extends Seeder
 
         $this->command->info('🔗 Criando vínculos de teste...');
         $this->createTestVinculos();
+
+        $this->command->info('  Criando salas e baias de teste...');
+        $this->createTestSalasEBaias();
 
         // Exibe estatísticas finais
         $this->showFinalStats();
@@ -62,6 +66,10 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("      - Recusados: {$recusados}");
         $this->command->info("      - Inativos: {$inativos}");
 
+        $totalHorarios = Horario::count();
+        $this->command->info("   ⏰ Horários: {$totalHorarios} total");
+        $this->command->info("   📅 Horários semanais: " . Horario::where('tipo', 'semana')->count());
+
         // Projetos por status temporal
         $totalProjetos = Projeto::count();
         $projetosAtivos = Projeto::where('data_inicio', '<=', now())
@@ -84,6 +92,12 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("      - Aprovados: {$vinculosAprovados}");
         $this->command->info("      - Pendentes: {$vinculosPendentes}");
         $this->command->info("      - Recusados: {$vinculosRecusados}");
+
+        // Salas e baias
+        $totalSalas = \App\Models\Sala::count();
+        $totalBaias = \App\Models\Baia::count();
+        $this->command->info("   🏢 Salas: {$totalSalas} total");
+        $this->command->info("      - Baias: {$totalBaias} total");
     }
 
     /**
@@ -642,6 +656,33 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("✅ Criados {$totalVinculos} vínculos de usuário-projeto");
         $this->command->info("   - {$pendentes} vínculos pendentes");
         $this->command->info("   - {$comTroca} vínculos marcados para troca");
+    }
+
+    private function createTestSalasEBaias(): void
+    {
+        $this->command->info('🏢 Criando salas e baias de teste...');
+
+        $salas = [
+            ['nome' => 'Sala GP', 'baias' => 10],
+            ['nome' => 'Sala Nobel', 'baias' => 10],
+            ['nome' => 'Sala Mundo', 'baias' => 10],
+        ];
+
+        foreach ($salas as $salaData) {
+            $sala = \App\Models\Sala::factory()->create([
+                'nome' => $salaData['nome'],
+                'descricao' => 'Sala de teste para desenvolvimento'
+            ]);
+
+            for ($i = 1; $i <= $salaData['baias']; $i++) {
+                \App\Models\Baia::factory()->create([
+                    'sala_id' => $sala->id,
+                    'nome' => $sala->nome . ' - Baia ' . $i,
+                ]);
+            }
+        }
+
+        $this->command->info('🛋️ Salas e baias de teste criadas com sucesso!');
     }
 
     /**
