@@ -1,38 +1,65 @@
-export type StatusCadastro = 'IMCOMPLETO' | 'PENDENTE' | 'ACEITO' | 'RECUSADO';
+export const STATUS_CADASTRO = ['IMCOMPLETO', 'PENDENTE', 'ACEITO', 'RECUSADO'] as const;
+export type StatusCadastro = (typeof STATUS_CADASTRO)[number];
 
-export type Funcao =
-    | 'COORDENADOR'
-    | 'PESQUISADOR'
-    | 'DESENVOLVEDOR'
-    | 'TECNICO'
-    | 'ALUNO';
+export const FUNCOES = [
+    'COORDENADOR',
+    'PESQUISADOR',
+    'DESENVOLVEDOR',
+    'TECNICO',
+    'ALUNO',
+] as const;
+export type Funcao = (typeof FUNCOES)[number];
 
-export type Genero = 'MASCULINO' | 'FEMININO' | 'OUTRO';
+export const GENEROS = ['MASCULINO', 'FEMININO', 'OUTRO'] as const;
+export type Genero = (typeof GENEROS)[number];
 
-export type TipoVinculo = 'COORDENADOR' | 'COLABORADOR';
+export const TIPOS_VINCULO = [
+    'COORDENADOR',
+    'COLABORADOR'
+] as const;
+export type TipoVinculo = (typeof TIPOS_VINCULO)[number];
 
-export type DiaDaSemana =
-    | 'DOMINGO'
-    | 'SEGUNDA'
-    | 'TERCA'
-    | 'QUARTA'
-    | 'QUINTA'
-    | 'SEXTA'
-    | 'SABADO';
+export const DIA_DA_SEMANA = [
+    'DOMINGO',
+    'SEGUNDA',
+    'TERCA',
+    'QUARTA',
+    'QUINTA',
+    'SEXTA',
+    'SABADO',
+] as const;
+export type DiaDaSemana = (typeof DIA_DA_SEMANA)[number];
 
-export type StatusFolga = 'PENDENTE' | 'APROVADO' | 'REJEITADO';
+export const STATUS_FOLGA = ['PENDENTE', 'APROVADO', 'REJEITADO'] as const;
+export type StatusFolga = (typeof STATUS_FOLGA)[number];
 
-export type StatusVinculoProjeto =
-    | 'APROVADO'
-    | 'PENDENTE'
-    | 'ENCERRADO'
-    | 'RECUSADO';
+export const STATUS_VINCULO_PROJETO = [
+    'APROVADO',
+    'PENDENTE',
+    'ENCERRADO',
+    'RECUSADO',
+] as const;
+export type StatusVinculoProjeto = (typeof STATUS_VINCULO_PROJETO)[number];
 
-export type TipoFolga = 'COLETIVA' | 'INDIVIDUAL';
+export const TIPOS_FOLGA = ['COLETIVA', 'INDIVIDUAL'] as const;
+export type TipoFolga = (typeof TIPOS_FOLGA)[number];
 
-export type TipoHorario = 'AULA' | 'TRABALHO' | 'AUSENTE';
+export const TIPOS_HORARIO = [
+    'EM_AULA',
+    'TRABALHO_PRESENCIAL',
+    'TRABALHO_REMOTO',
+    'AUSENTE',
+] as const;
+export type TipoHorario = (typeof TIPOS_HORARIO)[number];
 
-export type TipoProjeto = 'PDI' | 'TCC' | 'MESTRADO' | 'DOUTORADO' | 'SUPORTE';
+export const TIPOS_PROJETO = [
+    'PDI',
+    'TCC',
+    'MESTRADO',
+    'DOUTORADO',
+    'SUPORTE',
+] as const;
+export type TipoProjeto = (typeof TIPOS_PROJETO)[number];
 
 export interface User {
     id: string;
@@ -96,17 +123,17 @@ export interface Projeto {
     valor_total?: number;
     meses_execucao?: number;
     campos_extras?: Record<string, string>;
-    data_inicio: string; // date format: YYYY-MM-DD
-    data_termino?: string | null; // date format: YYYY-MM-DD
+    data_inicio: string; // YYYY-MM-DD
+    data_termino?: string | null; // YYYY-MM-DD
     cliente: string;
     slack_url?: string | null;
     discord_url?: string | null;
     board_url?: string | null;
     git_url?: string | null;
     tipo: TipoProjeto;
-    created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
 export interface Coordenador {
@@ -117,17 +144,55 @@ export interface Coordenador {
 export interface UsuarioProjeto {
     id: string;
     usuario_id: string;
-    usuario?: User; // must be load eagerly
+    usuario?: User; // precisa de load eagerly
     projeto_id: string;
-    projeto?: Projeto; // must be load eagerly
+    projeto?: Projeto; // precisa de load eagerly
     trocar?: boolean;
     tipo_vinculo: TipoVinculo;
     funcao: Funcao;
     status: StatusVinculoProjeto;
     carga_horaria: number;
-    data_inicio: string; // timestamp format: YYYY-MM-DD HH:MM:SS
-    data_fim?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-    created_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // timestamp format: YYYY-MM-DD HH:MM:SS
+    data_inicio: string; // YYYY-MM-DD HH:MM:SS
+    data_fim?: string | null; // YYYY-MM-DD HH:MM:SS
+    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
+}
+
+export interface Sala {
+    id: string;
+    nome: string;
+    descricao?: string | null;
+    ativa: boolean;
+    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
+}
+
+export interface Baia {
+    id: string;
+    nome: string;
+    descricao?: string | null;
+    ativa: boolean;
+    sala_id: string;
+    sala?: Sala; // precisa de load eagerly
+    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
+}
+
+export interface Horario {
+    id: string;
+    horario: number; // 0 - 23
+    dia_da_semana: DiaDaSemana; 
+    tipo: TipoHorario;
+    usuario_id: string;
+    usuario?: User; // precisa de load eagerly
+    usuario_projeto_id?: string | null; 
+    usuario_projeto?: UsuarioProjeto | null; // precisa de load eagerly
+    baia_id?: string | null;
+    baia?: Baia | null; // precisa de load eagerly
+    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
+    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
