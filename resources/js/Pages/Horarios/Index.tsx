@@ -1,85 +1,105 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { DiaDaSemana, Horario, PageProps } from '@/types';
+import { DiaDaSemana, Horario, PageProps, TipoHorario } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { ChangeEvent, FormEventHandler, useMemo } from 'react';
 
 const DIAS_SEMANA_HORARIO = [
-    { id: 'seg', nome: 'Segunda' },
-    { id: 'ter', nome: 'Terça' },
-    { id: 'qua', nome: 'Quarta' },
-    { id: 'qui', nome: 'Quinta' },
-    { id: 'sex', nome: 'Sexta' },
-];
+    { id: 'SEGUNDA', nome: 'Segunda' },
+    { id: 'TERCA', nome: 'Terça' },
+    { id: 'QUARTA', nome: 'Quarta' },
+    { id: 'QUINTA', nome: 'Quinta' },
+    { id: 'SEXTA', nome: 'Sexta' },
+] as const;
 
 const TIME_SLOTS_HORARIO = [
-    '07:00',
-    '08:00',
-    '09:00',
-    '10:00',
-    '11:00',
-    '12:00',
-    '13:00',
-    '14:00',
-    '15:00',
-    '16:00',
-    '17:00',
-    '18:00',
+    7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 ];
 
-type StatusHorario = 'Ausente' | 'Presente' | 'Em Aula';
-
-const STATUS_OPTIONS_HORARIO: StatusHorario[] = [
-    'Ausente',
-    'Presente',
-    'Em Aula',
+const STATUS_OPTIONS_HORARIO: TipoHorario[] = [
+    'AUSENTE',
+    'EM_AULA',
+    'TRABALHO_PRESENCIAL',
+    'TRABALHO_REMOTO',
 ];
 
 interface HorarioSlotState {
-    [timeSlot: string]: StatusHorario;
+    [timeSlot: number]: TipoHorario;
 }
 
 interface HorariosTableState {
     [dayId: string]: HorarioSlotState;
 }
 
-const getStatusColorClass = (status: StatusHorario | undefined): string => {
+const getStatusColorClass = (status: TipoHorario | undefined): string => {
     if (!status) return 'bg-base-100';
     switch (status) {
-        case 'Ausente':
+        case 'AUSENTE':
             return 'bg-red-200 !text-red-800';
-        case 'Presente':
+        case 'TRABALHO_PRESENCIAL':
             return 'bg-green-200 !text-green-800';
-        case 'Em Aula':
+        case 'TRABALHO_REMOTO':
+            return 'bg-blue-200 !text-blue-800';
+        case 'EM_AULA':
             return 'bg-yellow-200 !text-yellow-800';
         default:
             return 'bg-base-100';
     }
 };
 
-const initialHorarios = DIAS_SEMANA_HORARIO.reduce((acc, dia) => {
-    acc[dia.id] = TIME_SLOTS_HORARIO.reduce((dayAcc, slot) => {
-        dayAcc[slot] = 'Ausente';
+const getStatusDisplayName = (status: TipoHorario): string => {
+    switch (status) {
+        case 'AUSENTE':
+            return 'Ausente';
+        case 'EM_AULA':
+            return 'Em Aula';
+        case 'TRABALHO_PRESENCIAL':
+            return 'Trabalho Presencial';
+        case 'TRABALHO_REMOTO':
+            return 'Trabalho Remoto';
+        default:
+            return status;
+    }
+};
 
-        if (slot === '08:00' || slot === '09:00') {
-            dayAcc[slot] = 'Em Aula';
-        } else if (slot === '10:00' || slot === '11:00') {
-            dayAcc[slot] = 'Presente';
-        } else if (slot === '14:00' || slot === '15:00') {
-            dayAcc[slot] = 'Em Aula';
-        } else if (slot === '16:00' || slot === '17:00') {
-            dayAcc[slot] = 'Presente';
+// Função para converter os horários do backend para a estrutura do frontend
+const convertHorariosToTableState = (
+    horariosFromBackend: Record<DiaDaSemana, Array<Horario>>,
+): HorariosTableState => {
+    const tableState: HorariosTableState = {};
+
+    // Inicializa todos os slots como AUSENTE
+    DIAS_SEMANA_HORARIO.forEach((dia) => {
+        tableState[dia.id] = {};
+        TIME_SLOTS_HORARIO.forEach((slot) => {
+            tableState[dia.id][slot] = 'AUSENTE';
+        });
+    });
+
+    // Preenche com os dados do backend
+    Object.entries(horariosFromBackend).forEach(([dia, horarios]) => {
+        if (tableState[dia]) {
+            horarios.forEach((horario) => {
+                if (TIME_SLOTS_HORARIO.includes(horario.horario)) {
+                    tableState[dia][horario.horario] = horario.tipo;
+                }
+            });
         }
-        return dayAcc;
-    }, {} as HorarioSlotState);
-    return acc;
-}, {} as HorariosTableState);
+    });
 
-export default function MeuHorario(
-    props: PageProps<{
-        horarios: Record<DiaDaSemana, Array<Horario>>;
-    }>,
-) {
-    console.log('Props recebidos:', props);
+    console.log('Estado da tabela convertido:', tableState);
+
+    return tableState;
+};
+
+export default function MeuHorario({
+    horarios,
+}: PageProps<{
+    horarios: Record<DiaDaSemana, Array<Horario>>;
+}>) {
+    const initialHorarios = useMemo(() => {
+        return convertHorariosToTableState(horarios);
+    }, [horarios]);
+
     const { data, setData, processing } = useForm<{
         horarios: HorariosTableState;
     }>({
@@ -88,10 +108,10 @@ export default function MeuHorario(
 
     const handleStatusChange = (
         diaId: string,
-        timeSlot: string,
+        timeSlot: number,
         event: ChangeEvent<HTMLSelectElement>,
     ) => {
-        const newStatus = event.target.value as StatusHorario;
+        const newStatus = event.target.value as TipoHorario;
         const currentDaySchedule = data.horarios[diaId] || {};
         setData('horarios', {
             ...data.horarios,
@@ -110,10 +130,11 @@ export default function MeuHorario(
     };
 
     const statusCounts = useMemo(() => {
-        const counts: Record<StatusHorario, number> = {
-            Ausente: 0,
-            Presente: 0,
-            'Em Aula': 0,
+        const counts: Record<TipoHorario, number> = {
+            AUSENTE: 0,
+            EM_AULA: 0,
+            TRABALHO_PRESENCIAL: 0,
+            TRABALHO_REMOTO: 0,
         };
         DIAS_SEMANA_HORARIO.forEach((dia) => {
             TIME_SLOTS_HORARIO.forEach((slot) => {
@@ -121,7 +142,7 @@ export default function MeuHorario(
                 if (status && status in counts) {
                     counts[status]++;
                 } else if (!status) {
-                    counts.Ausente++;
+                    counts.AUSENTE++;
                 }
             });
         });
@@ -158,18 +179,22 @@ export default function MeuHorario(
                                         </thead>
                                         <tbody>
                                             {TIME_SLOTS_HORARIO.map((slot) => {
-                                                const slotHour = parseInt(
-                                                    slot.split(':')[0],
-                                                );
-                                                const nextHour =
-                                                    (slotHour + 1)
+                                                const nextHour = slot + 1;
+                                                const slotFormatted =
+                                                    slot
                                                         .toString()
                                                         .padStart(2, '0') +
                                                     ':00';
+                                                const nextHourFormatted =
+                                                    nextHour
+                                                        .toString()
+                                                        .padStart(2, '0') +
+                                                    ':00';
+
                                                 return (
                                                     <tr key={slot}>
                                                         <td className="border-base-300 border p-2 font-semibold">
-                                                            {`${slot} - ${nextHour}`}
+                                                            {`${slotFormatted} - ${nextHourFormatted}`}
                                                         </td>
                                                         {DIAS_SEMANA_HORARIO.map(
                                                             (dia) => (
@@ -187,7 +212,7 @@ export default function MeuHorario(
                                                                             ]?.[
                                                                                 slot
                                                                             ] ||
-                                                                            'Ausente'
+                                                                            'AUSENTE'
                                                                         }
                                                                         onChange={(
                                                                             e,
@@ -212,9 +237,9 @@ export default function MeuHorario(
                                                                                         opt
                                                                                     }
                                                                                 >
-                                                                                    {
-                                                                                        opt
-                                                                                    }
+                                                                                    {getStatusDisplayName(
+                                                                                        opt,
+                                                                                    )}
                                                                                 </option>
                                                                             ),
                                                                         )}
@@ -234,7 +259,7 @@ export default function MeuHorario(
                                         <h4 className="card-title mb-3 text-lg font-semibold">
                                             Legenda & Contagem
                                         </h4>
-                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
                                             {STATUS_OPTIONS_HORARIO.map(
                                                 (status) => (
                                                     <div
@@ -245,7 +270,10 @@ export default function MeuHorario(
                                                             className={`border-base-content/20 h-5 w-5 rounded-full border ${getStatusColorClass(status)}`}
                                                         ></span>
                                                         <span className="font-medium">
-                                                            {status}:
+                                                            {getStatusDisplayName(
+                                                                status,
+                                                            )}
+                                                            :
                                                         </span>
                                                         <span className="text-lg font-bold">
                                                             {
