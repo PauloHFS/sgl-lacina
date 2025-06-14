@@ -22,12 +22,6 @@ class HorarioController extends Controller
             ->get()
             ->groupBy('dia_da_semana');
 
-        Log::info('Listando horários do usuário', [
-            'user_id' => $request->user()->id,
-            'horarios_count' => $horarios->count(),
-            'horarios' => $horarios,
-        ]);
-
         return Inertia::render('Horarios/Index', [
             'horarios' => $horarios,
         ]);

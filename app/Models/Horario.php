@@ -4,15 +4,18 @@ namespace App\Models;
 
 use App\Enums\DiaDaSemana;
 use App\Enums\TipoHorario;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Horario extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuids, HasFactory;
 
     protected $fillable = [
+        'id',
         'horario',
         'dia_da_semana',
         'tipo',
@@ -26,6 +29,20 @@ class Horario extends Model
         'tipo' => TipoHorario::class,
         'horario' => 'integer',
     ];
+
+    public function uniqueIds()
+    {
+        return ['id'];
+    }
+
+    /**
+     * Get the value of the model's primary key.
+     * Ensures the UUID is returned as a string to avoid issues with NotificationFake.
+     */
+    public function getKey()
+    {
+        return (string) $this->getAttribute($this->getKeyName());
+    }
 
     // Relacionamentos
     public function usuario(): BelongsTo
