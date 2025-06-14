@@ -229,15 +229,15 @@ export default function Authenticated({
                                 </NavLink>
                             </li>
 
-                            {/* {!isCoordenador && (
+                            {!isCoordenador && (
                                 <li>
                                     <NavLink
-                                        href={route('horarios.meus')}
+                                        href={route('horarios.index')}
                                         active={route().current(
-                                            'horarios.meus',
+                                            'horarios.index',
                                         )}
                                         className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                                            route().current('horarios.meus')
+                                            route().current('horarios.index')
                                                 ? 'bg-primary text-primary-content'
                                                 : 'text-base-content hover:bg-base-200'
                                         }`}
@@ -258,7 +258,7 @@ export default function Authenticated({
                                         Meus Horários
                                     </NavLink>
                                 </li>
-                            )} */}
+                            )}
 
                             {isCoordenador && (
                                 <>

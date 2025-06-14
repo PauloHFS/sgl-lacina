@@ -63,9 +63,6 @@ return new class extends Migration
             $table->index(['baia_id', 'dia_da_semana', 'horario'], 'horarios_baia_conflito_idx')
                 ->where('baia_id', 'IS NOT NULL');
 
-            // Para relatórios de ocupação de salas
-            $table->index(['sala_id', 'dia_da_semana', 'horario'], 'horarios_sala_ocupacao_idx');
-
             // Índice para consultas por projeto
             $table->index(['usuario_projeto_id', 'dia_da_semana'], 'horarios_projeto_dia_idx')
                 ->where('usuario_projeto_id', 'IS NOT NULL');
