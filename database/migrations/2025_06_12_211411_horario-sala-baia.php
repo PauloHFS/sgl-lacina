@@ -42,7 +42,7 @@ return new class extends Migration
 
         Schema::create('horarios', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->integer('horario');
+            $table->integer('horario')->check('horario >= 0 AND horario <= 23');
             $table->enum('dia_da_semana', array_column(DiaDaSemana::cases(), 'value'));
             $table->enum('tipo', array_column(TipoHorario::cases(), 'value'))->default(TipoHorario::AUSENTE->value);
 
@@ -53,7 +53,26 @@ return new class extends Migration
             $table->foreignUuid('usuario_projeto_id')->nullable()->constrained('usuario_projeto')->onDelete('set null');
             $table->foreignUuid('baia_id')->nullable()->constrained('baias')->onDelete('set null');
 
-            $table->index(['usuario_id', 'dia_da_semana', 'horario']);
+            // Índice único composto - evita duplicatas e otimiza consultas por usuário
+            $table->unique(['usuario_id', 'dia_da_semana', 'horario'], 'horarios_usuario_dia_horario_unique');
+
+            // Índice para relatórios por dia da semana
+            $table->index(['dia_da_semana', 'horario', 'tipo'], 'horarios_dia_horario_tipo_idx');
+
+            // Índice para verificação de conflitos de baia
+            $table->index(['baia_id', 'dia_da_semana', 'horario'], 'horarios_baia_conflito_idx')
+                ->where('baia_id', 'IS NOT NULL');
+
+            // Para relatórios de ocupação de salas
+            $table->index(['sala_id', 'dia_da_semana', 'horario'], 'horarios_sala_ocupacao_idx');
+
+            // Índice para consultas por projeto
+            $table->index(['usuario_projeto_id', 'dia_da_semana'], 'horarios_projeto_dia_idx')
+                ->where('usuario_projeto_id', 'IS NOT NULL');
+
+            // Índice para horários de trabalho (presencial/remoto)
+            $table->index(['tipo', 'dia_da_semana', 'horario'], 'horarios_trabalho_idx')
+                ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value]);
         });
     }
 
