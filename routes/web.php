@@ -51,7 +51,9 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 
     Route::prefix("/salas")->group(function () {
         Route::get('/', [\App\Http\Controllers\SalaController::class, 'index'])->name('salas.index');
+        Route::get('/new', [\App\Http\Controllers\SalaController::class, 'create'])->name('salas.create');
         Route::get('/{id}', [\App\Http\Controllers\SalaController::class, 'show'])->name('salas.show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\SalaController::class, 'edit'])->name('salas.edit');
         Route::post('/new', [\App\Http\Controllers\SalaController::class, 'store'])->name('salas.store');
         Route::patch('/{id}', [\App\Http\Controllers\SalaController::class, 'update'])->name('salas.update');
         Route::delete('/{id}', [\App\Http\Controllers\SalaController::class, 'destroy'])->name('salas.destroy');
