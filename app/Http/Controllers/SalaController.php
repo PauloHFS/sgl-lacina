@@ -85,7 +85,9 @@ class SalaController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $sala = Sala::findOrFail($id);
+        $sala = Sala::with(['baias' => function ($query) {
+            $query->orderBy('nome');
+        }])->findOrFail($id);
 
         return Inertia::render('Salas/Edit', [
             'sala' => $sala,
@@ -116,12 +118,51 @@ class SalaController extends Controller
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string|max:1000',
             'ativa' => 'boolean',
+            'baias' => 'array',
+            'baias.*.nome' => 'required|string|max:255',
+            'baias.*.descricao' => 'nullable|string|max:1000',
+            'baias.*.ativa' => 'boolean',
+            'baias_deletadas' => 'array',
+            'baias_deletadas.*' => 'string',
         ]);
 
         $sala = Sala::findOrFail($id);
-        $sala->update($request->all());
 
-        return redirect()->route('salas.index')->with('success', 'Sala atualizada com sucesso!');
+        // Atualizar dados da sala
+        $sala->update($request->only(['nome', 'descricao', 'ativa']));
+
+        // Lidar com baias deletadas
+        if ($request->filled('baias_deletadas')) {
+            $sala->baias()->whereIn('id', $request->baias_deletadas)->delete();
+        }
+
+        // Processar baias (criar novas e atualizar existentes)
+        if ($request->filled('baias')) {
+            foreach ($request->baias as $baiaData) {
+                if (isset($baiaData['id'])) {
+                    // Atualizar baia existente
+                    $baia = $sala->baias()->find($baiaData['id']);
+                    if ($baia) {
+                        $baia->update($baiaData);
+                    }
+                } else {
+                    // Criar nova baia
+                    $sala->baias()->create([
+                        'nome' => $baiaData['nome'],
+                        'descricao' => $baiaData['descricao'] ?? null,
+                        'ativa' => $baiaData['ativa'] ?? true,
+                    ]);
+                }
+            }
+        }
+
+        Log::info('Sala e baias atualizadas', [
+            'user_id' => $request->user()->id,
+            'sala_id' => $sala->id,
+            'data' => $request->all(),
+        ]);
+
+        return redirect()->route('salas.show', $sala->id)->with('success', 'Sala atualizada com sucesso!');
     }
 
     public function destroy(Request $request, $id)
