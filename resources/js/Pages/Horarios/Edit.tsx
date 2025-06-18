@@ -124,12 +124,11 @@ export default function EditarHorario({
     salas: Sala[];
 }>) {
     const { toast } = useToast();
-    const { preferences, updateTrabalhoPresencial, updateTrabalhoRemoto } =
-        useSalaBaiaPreferences();
+    const { preferences, updateTrabalhoPresencial } = useSalaBaiaPreferences();
 
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
-        tipoTrabalho: 'TRABALHO_PRESENCIAL' | 'TRABALHO_REMOTO' | null;
+        tipoTrabalho: 'TRABALHO_PRESENCIAL' | null;
         diaId: string;
         timeSlot: number;
     }>({
@@ -156,11 +155,7 @@ export default function EditarHorario({
     ) => {
         const newStatus = event.target.value as TipoHorario;
 
-        if (
-            newStatus === 'TRABALHO_PRESENCIAL' ||
-            newStatus === 'TRABALHO_REMOTO'
-        ) {
-            // Abrir modal para seleção de sala/baia
+        if (newStatus === 'TRABALHO_PRESENCIAL') {
             setModalState({
                 isOpen: true,
                 tipoTrabalho: newStatus,
@@ -189,14 +184,8 @@ export default function EditarHorario({
 
         if (!tipoTrabalho) return;
 
-        // Salvar preferências no localStorage
-        if (tipoTrabalho === 'TRABALHO_PRESENCIAL') {
-            updateTrabalhoPresencial(salaId, baiaId);
-        } else if (tipoTrabalho === 'TRABALHO_REMOTO') {
-            updateTrabalhoRemoto(salaId);
-        }
+        updateTrabalhoPresencial(salaId, baiaId);
 
-        // Atualizar estado do formulário
         const currentDaySchedule = data.horarios[diaId] || {};
         setData('horarios', {
             ...data.horarios,
@@ -205,15 +194,11 @@ export default function EditarHorario({
                 [timeSlot]: {
                     tipo: tipoTrabalho,
                     salaId,
-                    baiaId:
-                        tipoTrabalho === 'TRABALHO_PRESENCIAL'
-                            ? baiaId
-                            : undefined,
+                    baiaId,
                 },
             },
         });
 
-        // Fechar modal
         setModalState({
             isOpen: false,
             tipoTrabalho: null,
@@ -278,7 +263,10 @@ export default function EditarHorario({
                             (newTipo === 'TRABALHO_PRESENCIAL' ||
                                 originalTipo === 'TRABALHO_PRESENCIAL')
                         ) {
-                            changeData.baia_id = newBaiaId || null;
+                            changeData.baia_id =
+                                newTipo === 'TRABALHO_PRESENCIAL'
+                                    ? newBaiaId || null
+                                    : null;
                         }
 
                         changedHorarios.push(changeData);
@@ -300,8 +288,7 @@ export default function EditarHorario({
             return;
         }
 
-        console.log('Horários alterados:', horariosChanged);
-
+        // TODO: Concertar isso aqui
         const payload: HorarioUpdatePayload = {
             _method: 'patch',
             horarios: horariosChanged,
@@ -566,15 +553,9 @@ export default function EditarHorario({
                                 isOpen={modalState.isOpen}
                                 onClose={handleModalClose}
                                 onConfirm={handleModalConfirm}
-                                tipoTrabalho={
-                                    modalState.tipoTrabalho ||
-                                    'TRABALHO_PRESENCIAL'
-                                }
+                                tipoTrabalho="TRABALHO_PRESENCIAL"
                                 initialSalaId={
-                                    modalState.tipoTrabalho ===
-                                    'TRABALHO_PRESENCIAL'
-                                        ? preferences.trabalhoPresencial?.salaId
-                                        : preferences.trabalhoRemoto?.salaId
+                                    preferences.trabalhoPresencial?.salaId
                                 }
                                 initialBaiaId={
                                     preferences.trabalhoPresencial?.baiaId

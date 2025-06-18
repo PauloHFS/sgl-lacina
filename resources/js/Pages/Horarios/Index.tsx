@@ -109,7 +109,7 @@ export default function MeuHorario({
                             </div>
 
                             <div className="mb-6 overflow-x-auto">
-                                <table className="table-sm table w-full text-center">
+                                <table className="table w-full text-center">
                                     <thead>
                                         <tr className="bg-base-300">
                                             <th className="border-base-300 w-32 border p-2">
@@ -158,9 +158,89 @@ export default function MeuHorario({
                                                                     key={`${dia.id}-${slot}`}
                                                                     className={`border-base-300 border p-3 text-sm font-medium ${getStatusColorClass(status)}`}
                                                                 >
-                                                                    {getStatusDisplayName(
-                                                                        status,
-                                                                    )}
+                                                                    <div className="text-center">
+                                                                        <div className="font-semibold">
+                                                                            {getStatusDisplayName(
+                                                                                status,
+                                                                            )}
+                                                                        </div>
+                                                                        {horario?.baia && (
+                                                                            <div className="mt-1 text-xs">
+                                                                                {horario
+                                                                                    .baia
+                                                                                    .sala
+                                                                                    ?.nome &&
+                                                                                    !horario.baia.sala.nome
+                                                                                        .toLowerCase()
+                                                                                        .includes(
+                                                                                            'sala',
+                                                                                        ) && (
+                                                                                        <div className="flex items-center gap-1">
+                                                                                            <span className="opacity-75">
+                                                                                                Sala:
+                                                                                            </span>
+                                                                                            <span className="font-medium">
+                                                                                                {
+                                                                                                    horario
+                                                                                                        .baia
+                                                                                                        .sala
+                                                                                                        .nome
+                                                                                                }
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                {!horario.baia.nome
+                                                                                    .toLowerCase()
+                                                                                    .includes(
+                                                                                        'baia',
+                                                                                    ) && (
+                                                                                    <div className="flex items-center gap-1">
+                                                                                        <span className="opacity-75">
+                                                                                            Baia:
+                                                                                        </span>
+                                                                                        <span className="font-medium">
+                                                                                            {
+                                                                                                horario
+                                                                                                    .baia
+                                                                                                    .nome
+                                                                                            }
+                                                                                        </span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {horario
+                                                                                    .baia
+                                                                                    .sala
+                                                                                    ?.nome &&
+                                                                                    horario.baia.sala.nome
+                                                                                        .toLowerCase()
+                                                                                        .includes(
+                                                                                            'sala',
+                                                                                        ) && (
+                                                                                        <div className="font-medium">
+                                                                                            {
+                                                                                                horario
+                                                                                                    .baia
+                                                                                                    .sala
+                                                                                                    .nome
+                                                                                            }
+                                                                                        </div>
+                                                                                    )}
+                                                                                {horario.baia.nome
+                                                                                    .toLowerCase()
+                                                                                    .includes(
+                                                                                        'baia',
+                                                                                    ) && (
+                                                                                    <div className="font-medium">
+                                                                                        {
+                                                                                            horario
+                                                                                                .baia
+                                                                                                .nome
+                                                                                        }
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </td>
                                                             );
                                                         },
