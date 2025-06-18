@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjetoVinculoController;
 use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\SalaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,17 +47,18 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 
     Route::prefix("/horarios")->group(function () {
         Route::get('/', [HorarioController::class, 'index'])->name('horarios.index');
+        Route::get('/edit', [HorarioController::class, 'edit'])->name('horarios.edit');
         Route::patch('/', [HorarioController::class, 'update'])->name('horarios.update');
     });
 
     Route::prefix("/salas")->group(function () {
-        Route::get('/', [\App\Http\Controllers\SalaController::class, 'index'])->name('salas.index');
-        Route::get('/new', [\App\Http\Controllers\SalaController::class, 'create'])->name('salas.create');
-        Route::get('/{id}', [\App\Http\Controllers\SalaController::class, 'show'])->name('salas.show');
-        Route::get('/{id}/edit', [\App\Http\Controllers\SalaController::class, 'edit'])->name('salas.edit');
-        Route::post('/new', [\App\Http\Controllers\SalaController::class, 'store'])->name('salas.store');
-        Route::patch('/{id}', [\App\Http\Controllers\SalaController::class, 'update'])->name('salas.update');
-        Route::delete('/{id}', [\App\Http\Controllers\SalaController::class, 'destroy'])->name('salas.destroy');
+        Route::get('/', [SalaController::class, 'index'])->name('salas.index');
+        Route::get('/new', [SalaController::class, 'create'])->name('salas.create');
+        Route::get('/{id}', [SalaController::class, 'show'])->name('salas.show');
+        Route::get('/{id}/edit', [SalaController::class, 'edit'])->name('salas.edit');
+        Route::post('/new', [SalaController::class, 'store'])->name('salas.store');
+        Route::patch('/{id}', [SalaController::class, 'update'])->name('salas.update');
+        Route::delete('/{id}', [SalaController::class, 'destroy'])->name('salas.destroy');
     });
 
     Route::prefix('/projeto')->group(function () {
