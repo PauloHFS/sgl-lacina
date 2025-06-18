@@ -30,6 +30,30 @@ class HorarioController extends Controller
     }
 
     /**
+     * Mostra o formulário para editar horários do usuário.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Inertia\Response
+     */
+    public function edit(Request $request)
+    {
+        $horarios = $request->user()->horarios()
+            ->with([
+                'usuarioProjeto.projeto:id,nome',
+                'baia:id,nome,sala_id',
+                'baia.sala:id,nome'
+            ])
+            ->orderBy('dia_da_semana')
+            ->orderBy('horario', 'asc')
+            ->get()
+            ->groupBy('dia_da_semana');
+
+        return Inertia::render('Horarios/Edit', [
+            'horarios' => $horarios,
+        ]);
+    }
+
+    /**
      * Atualiza os horários do usuário com base nos dados validados da requisição.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -47,6 +71,11 @@ class HorarioController extends Controller
             'horarios.*.tipo.in' => 'O tipo de horário deve ser válido.',
             'horarios.*.usuario_projeto_id.exists' => 'O projeto selecionado não existe.',
             'horarios.*.baia_id.exists' => 'A baia selecionada não existe.',
+        ]);
+
+        Log::info('Horários atualizados', [
+            'user_id' => $request->user()->id,
+            'horarios' => $validatedData['horarios'],
         ]);
 
         // Validação customizada para garantir que apenas um campo seja preenchido por vez
@@ -74,10 +103,10 @@ class HorarioController extends Controller
                 continue;
             }
 
-            if (empty($horario['usuario_projeto_id']) && ($oldHorario->tipo == TipoHorario::TRABALHO_PRESENCIAL || $oldHorario->tipo == TipoHorario::TRABALHO_REMOTO)) {
-                $customErrors["horarios.{$index}.usuario_projeto_id"] = 'O projeto deve ser informado para horários presenciais ou híbridos.';
-            } else if ($horario['baia_id'] && $oldHorario->tipo != TipoHorario::TRABALHO_PRESENCIAL) {
-                $customErrors["horarios.{$index}.baia_id"] = 'A baia só pode ser informada para horários presenciais.';
+            if (!empty($horario['usuario_projeto_id']) && !in_array($oldHorario->tipo, [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])) {
+                $customErrors["horarios.{$index}.usuario_projeto_id"] = 'O projeto só pode ser informado para horários de trabalho presencial ou remoto.';
+            } else if (!empty($horario['baia_id']) && $oldHorario->tipo !== TipoHorario::TRABALHO_PRESENCIAL) {
+                $customErrors["horarios.{$index}.baia_id"] = 'A baia só pode ser informada para horários de trabalho presencial.';
             }
         }
 
