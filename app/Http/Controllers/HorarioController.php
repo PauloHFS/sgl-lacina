@@ -150,7 +150,8 @@ class HorarioController extends Controller
             });
         }
 
-        return redirect()->back()->with('success', 'Horários atualizados com sucesso!');
+        // return redirect()->back()->with('success', 'Horários atualizados com sucesso!');
+        return redirect()->route('horarios.index')->with('success', 'Horários atualizados com sucesso!');
     }
 }
 
