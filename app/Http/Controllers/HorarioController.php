@@ -154,12 +154,3 @@ class HorarioController extends Controller
         return redirect()->route('horarios.index')->with('success', 'Horários atualizados com sucesso!');
     }
 }
-
-/*
-A request vai vir apenas com os horarios que foram alterados
-Vai vir o id do horário (todos os horarios de um usuario já estão cadastrados)
-Ai deve vir apenas 1 dos seguintes campos:
-Pode vir o tipo no do horario (ENUM TipoHorario)
-Pode vir o usuario_projeto_id
-Pode vir o baia_id
-*/
