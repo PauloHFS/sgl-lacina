@@ -1,8 +1,10 @@
+import SalaBaiaModal from '@/Components/SalaBaiaModal';
 import { useToast } from '@/Context/ToastProvider';
+import { useSalaBaiaPreferences } from '@/hooks/useSalaBaiaPreferences';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { DiaDaSemana, Horario, PageProps, TipoHorario } from '@/types';
+import { DiaDaSemana, Horario, PageProps, Sala, TipoHorario } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { ChangeEvent, FormEventHandler, useMemo } from 'react';
+import { ChangeEvent, FormEventHandler, useMemo, useState } from 'react';
 
 const DIAS_SEMANA_HORARIO = [
     { id: 'SEGUNDA', nome: 'Segunda' },
@@ -25,11 +27,26 @@ const STATUS_OPTIONS_HORARIO: TipoHorario[] = [
 ];
 
 interface HorarioSlotState {
-    [timeSlot: number]: TipoHorario;
+    tipo: TipoHorario;
+    salaId?: string;
+    baiaId?: string;
 }
 
 interface HorariosTableState {
-    [dayId: string]: HorarioSlotState;
+    [dayId: string]: {
+        [timeSlot: number]: HorarioSlotState;
+    };
+}
+
+interface HorarioChangeData {
+    id: string;
+    tipo?: TipoHorario;
+    baia_id?: string | null;
+}
+
+interface HorarioUpdatePayload {
+    _method: string;
+    horarios: HorarioChangeData[];
 }
 
 const getStatusColorClass = (status: TipoHorario | undefined): string => {
@@ -73,7 +90,11 @@ const convertHorariosToTableState = (
     DIAS_SEMANA_HORARIO.forEach((dia) => {
         tableState[dia.id] = {};
         TIME_SLOTS_HORARIO.forEach((slot) => {
-            tableState[dia.id][slot] = 'AUSENTE';
+            tableState[dia.id][slot] = {
+                tipo: 'AUSENTE',
+                salaId: undefined,
+                baiaId: undefined,
+            };
         });
     });
 
@@ -82,7 +103,11 @@ const convertHorariosToTableState = (
         if (tableState[dia]) {
             horarios.forEach((horario) => {
                 if (TIME_SLOTS_HORARIO.includes(horario.horario)) {
-                    tableState[dia][horario.horario] = horario.tipo;
+                    tableState[dia][horario.horario] = {
+                        tipo: horario.tipo,
+                        salaId: horario.baia?.sala?.id,
+                        baiaId: horario.baia?.id,
+                    };
                 }
             });
         }
@@ -93,10 +118,26 @@ const convertHorariosToTableState = (
 
 export default function EditarHorario({
     horarios,
+    salas,
 }: PageProps<{
     horarios: Record<DiaDaSemana, Array<Horario>>;
+    salas: Sala[];
 }>) {
     const { toast } = useToast();
+    const { preferences, updateTrabalhoPresencial, updateTrabalhoRemoto } =
+        useSalaBaiaPreferences();
+
+    const [modalState, setModalState] = useState<{
+        isOpen: boolean;
+        tipoTrabalho: 'TRABALHO_PRESENCIAL' | 'TRABALHO_REMOTO' | null;
+        diaId: string;
+        timeSlot: number;
+    }>({
+        isOpen: false,
+        tipoTrabalho: null,
+        diaId: '',
+        timeSlot: 0,
+    });
 
     const initialHorarios = useMemo(() => {
         return convertHorariosToTableState(horarios);
@@ -114,13 +155,79 @@ export default function EditarHorario({
         event: ChangeEvent<HTMLSelectElement>,
     ) => {
         const newStatus = event.target.value as TipoHorario;
+
+        if (
+            newStatus === 'TRABALHO_PRESENCIAL' ||
+            newStatus === 'TRABALHO_REMOTO'
+        ) {
+            // Abrir modal para seleção de sala/baia
+            setModalState({
+                isOpen: true,
+                tipoTrabalho: newStatus,
+                diaId,
+                timeSlot,
+            });
+        } else {
+            // Para outros tipos, atualizar diretamente
+            const currentDaySchedule = data.horarios[diaId] || {};
+            setData('horarios', {
+                ...data.horarios,
+                [diaId]: {
+                    ...currentDaySchedule,
+                    [timeSlot]: {
+                        tipo: newStatus,
+                        salaId: undefined,
+                        baiaId: undefined,
+                    },
+                },
+            });
+        }
+    };
+
+    const handleModalConfirm = (salaId: string, baiaId: string) => {
+        const { tipoTrabalho, diaId, timeSlot } = modalState;
+
+        if (!tipoTrabalho) return;
+
+        // Salvar preferências no localStorage
+        if (tipoTrabalho === 'TRABALHO_PRESENCIAL') {
+            updateTrabalhoPresencial(salaId, baiaId);
+        } else if (tipoTrabalho === 'TRABALHO_REMOTO') {
+            updateTrabalhoRemoto(salaId);
+        }
+
+        // Atualizar estado do formulário
         const currentDaySchedule = data.horarios[diaId] || {};
         setData('horarios', {
             ...data.horarios,
             [diaId]: {
                 ...currentDaySchedule,
-                [timeSlot]: newStatus,
+                [timeSlot]: {
+                    tipo: tipoTrabalho,
+                    salaId,
+                    baiaId:
+                        tipoTrabalho === 'TRABALHO_PRESENCIAL'
+                            ? baiaId
+                            : undefined,
+                },
             },
+        });
+
+        // Fechar modal
+        setModalState({
+            isOpen: false,
+            tipoTrabalho: null,
+            diaId: '',
+            timeSlot: 0,
+        });
+    };
+
+    const handleModalClose = () => {
+        setModalState({
+            isOpen: false,
+            tipoTrabalho: null,
+            diaId: '',
+            timeSlot: 0,
         });
     };
 
@@ -129,10 +236,7 @@ export default function EditarHorario({
         frontendData: HorariosTableState,
         originalHorarios: Record<DiaDaSemana, Array<Horario>>,
     ) => {
-        const changedHorarios: Array<{
-            id: string;
-            tipo: TipoHorario;
-        }> = [];
+        const changedHorarios: Array<HorarioChangeData> = [];
 
         // Criar um mapa dos horários originais para facilitar a comparação
         const originalHorariosMap = new Map<string, Horario>();
@@ -145,15 +249,40 @@ export default function EditarHorario({
 
         // Comparar dados do frontend com os originais
         Object.entries(frontendData).forEach(([dia, slots]) => {
-            Object.entries(slots).forEach(([slot, tipo]) => {
+            Object.entries(slots).forEach(([slot, slotData]) => {
                 const key = `${dia}-${parseInt(slot)}`;
                 const originalHorario = originalHorariosMap.get(key);
 
-                if (originalHorario && originalHorario.tipo !== tipo) {
-                    changedHorarios.push({
-                        id: originalHorario.id,
-                        tipo: tipo,
-                    });
+                if (originalHorario) {
+                    const originalTipo = originalHorario.tipo;
+                    const originalBaiaId = originalHorario.baia?.id;
+
+                    const newTipo = slotData.tipo;
+                    const newBaiaId = slotData.baiaId;
+
+                    // Verificar se houve mudanças
+                    const tipoChanged = originalTipo !== newTipo;
+                    const baiaChanged = originalBaiaId !== newBaiaId;
+
+                    if (tipoChanged || baiaChanged) {
+                        const changeData: HorarioChangeData = {
+                            id: originalHorario.id,
+                        };
+
+                        if (tipoChanged) {
+                            changeData.tipo = newTipo;
+                        }
+
+                        if (
+                            baiaChanged &&
+                            (newTipo === 'TRABALHO_PRESENCIAL' ||
+                                originalTipo === 'TRABALHO_PRESENCIAL')
+                        ) {
+                            changeData.baia_id = newBaiaId || null;
+                        }
+
+                        changedHorarios.push(changeData);
+                    }
                 }
             });
         });
@@ -173,25 +302,26 @@ export default function EditarHorario({
 
         console.log('Horários alterados:', horariosChanged);
 
-        router.patch(
-            route('horarios.update'),
-            {
-                horarios: horariosChanged,
+        const payload: HorarioUpdatePayload = {
+            _method: 'patch',
+            horarios: horariosChanged,
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        router.post(route('horarios.update'), payload as any, {
+            preserveScroll: true,
+            preserveState: false,
+            onSuccess: () => {
+                toast('Horários atualizados com sucesso!', 'success');
             },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast('Horários atualizados com sucesso!', 'success');
-                },
-                onError: (errors: Record<string, string>) => {
-                    toast(
-                        'Erro ao atualizar horários. Verifique os dados informados.',
-                        'error',
-                    );
-                    console.error('Erro ao atualizar horários:', errors);
-                },
+            onError: (errors: Record<string, string>) => {
+                toast(
+                    'Erro ao atualizar horários. Verifique os dados informados.',
+                    'error',
+                );
+                console.error('Erro ao atualizar horários:', errors);
             },
-        );
+        });
     };
 
     const statusCounts = useMemo(() => {
@@ -203,11 +333,10 @@ export default function EditarHorario({
         };
         DIAS_SEMANA_HORARIO.forEach((dia) => {
             TIME_SLOTS_HORARIO.forEach((slot) => {
-                const status = data.horarios[dia.id]?.[slot];
-                if (status && status in counts) {
+                const slotData = data.horarios[dia.id]?.[slot];
+                const status = slotData?.tipo || 'AUSENTE';
+                if (status in counts) {
                     counts[status]++;
-                } else if (!status) {
-                    counts.AUSENTE++;
                 }
             });
         });
@@ -323,7 +452,7 @@ export default function EditarHorario({
                                                             (dia) => (
                                                                 <td
                                                                     key={`${dia.id}-${slot}`}
-                                                                    className={`border-base-300 border p-1 ${getStatusColorClass(data.horarios[dia.id]?.[slot])}`}
+                                                                    className={`border-base-300 border p-1 ${getStatusColorClass(data.horarios[dia.id]?.[slot]?.tipo)}`}
                                                                 >
                                                                     <select
                                                                         name={`${dia.id}-${slot}-status`}
@@ -334,7 +463,8 @@ export default function EditarHorario({
                                                                                     .id
                                                                             ]?.[
                                                                                 slot
-                                                                            ] ||
+                                                                            ]
+                                                                                ?.tipo ||
                                                                             'AUSENTE'
                                                                         }
                                                                         onChange={(
@@ -430,6 +560,27 @@ export default function EditarHorario({
                                     </button>
                                 </div>
                             </form>
+
+                            {/* Modal para seleção de sala e baia */}
+                            <SalaBaiaModal
+                                isOpen={modalState.isOpen}
+                                onClose={handleModalClose}
+                                onConfirm={handleModalConfirm}
+                                tipoTrabalho={
+                                    modalState.tipoTrabalho ||
+                                    'TRABALHO_PRESENCIAL'
+                                }
+                                initialSalaId={
+                                    modalState.tipoTrabalho ===
+                                    'TRABALHO_PRESENCIAL'
+                                        ? preferences.trabalhoPresencial?.salaId
+                                        : preferences.trabalhoRemoto?.salaId
+                                }
+                                initialBaiaId={
+                                    preferences.trabalhoPresencial?.baiaId
+                                }
+                                salas={salas}
+                            />
                         </div>
                     </div>
                 </div>

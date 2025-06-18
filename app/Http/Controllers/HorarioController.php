@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TipoHorario;
+use App\Models\Baia;
+use App\Models\Sala;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -48,8 +50,16 @@ class HorarioController extends Controller
             ->get()
             ->groupBy('dia_da_semana');
 
+        $salas = Sala::ativas()
+            ->with(['baias' => function ($query) {
+                $query->ativas()->orderBy('nome');
+            }])
+            ->orderBy('nome')
+            ->get(['id', 'nome']);
+
         return Inertia::render('Horarios/Edit', [
             'horarios' => $horarios,
+            'salas' => $salas,
         ]);
     }
 
@@ -80,15 +90,15 @@ class HorarioController extends Controller
 
         // Validação customizada para garantir que apenas um campo seja preenchido por vez
         $customErrors = [];
-        foreach ($validatedData['horarios'] as $index => $horario) {
-            $fieldsPresent = collect(['tipo', 'usuario_projeto_id', 'baia_id'])
-                ->filter(fn($field) => !empty($horario[$field]))
-                ->count();
+        // foreach ($validatedData['horarios'] as $index => $horario) {
+        //     $fieldsPresent = collect(['tipo', 'usuario_projeto_id', 'baia_id'])
+        //         ->filter(fn($field) => !empty($horario[$field]))
+        //         ->count();
 
-            if ($fieldsPresent !== 1) {
-                $customErrors["horarios.{$index}"] = 'Deve ser informado apenas um campo: tipo, projeto ou baia.';
-            }
-        }
+        //     if ($fieldsPresent !== 1) {
+        //         $customErrors["horarios.{$index}"] = 'Deve ser informado apenas um campo: tipo, projeto ou baia.';
+        //     }
+        // }
 
         // pega os horarios do usuário que estão sendo atualizados
         $horarios = $request->user()->horarios()
@@ -105,9 +115,10 @@ class HorarioController extends Controller
 
             if (!empty($horario['usuario_projeto_id']) && !in_array($oldHorario->tipo, [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])) {
                 $customErrors["horarios.{$index}.usuario_projeto_id"] = 'O projeto só pode ser informado para horários de trabalho presencial ou remoto.';
-            } else if (!empty($horario['baia_id']) && $oldHorario->tipo !== TipoHorario::TRABALHO_PRESENCIAL) {
-                $customErrors["horarios.{$index}.baia_id"] = 'A baia só pode ser informada para horários de trabalho presencial.';
             }
+            // else if (!empty($horario['baia_id']) && $oldHorario->tipo !== TipoHorario::TRABALHO_PRESENCIAL) {
+            //     $customErrors["horarios.{$index}.baia_id"] = 'A baia só pode ser informada para horários de trabalho presencial.';
+            // }
         }
 
         if (!empty($customErrors)) {
@@ -117,25 +128,24 @@ class HorarioController extends Controller
         if (!empty($validatedData['horarios'])) {
             DB::transaction(function () use ($validatedData, $request) {
                 foreach ($validatedData['horarios'] as $horarioData) {
-                    if (!empty($horarioData['tipo'])) {
-                        $request->user()->horarios()
-                            ->where('id', $horarioData['id'])
-                            ->update([
-                                'tipo' => $horarioData['tipo'],
-                            ]);
-                    } elseif (!empty($horarioData['usuario_projeto_id'])) {
-                        $request->user()->horarios()
-                            ->where('id', $horarioData['id'])
-                            ->update([
-                                'usuario_projeto_id' => $horarioData['usuario_projeto_id'],
-                            ]);
-                    } elseif (!empty($horarioData['baia_id'])) {
-                        $request->user()->horarios()
-                            ->where('id', $horarioData['id'])
-                            ->update([
-                                'baia_id' => $horarioData['baia_id'],
-                            ]);
+
+                    // Se o tipo for ausente ou aula, limpa a baia_id e usuario_projeto_id
+                    if (in_array($horarioData['tipo'], [TipoHorario::AUSENTE->value, TipoHorario::EM_AULA->value])) {
+                        $horarioData['baia_id'] = null;
+                        $horarioData['usuario_projeto_id'] = null;
                     }
+
+                    if ($horarioData['tipo'] === TipoHorario::TRABALHO_REMOTO->value) {
+                        $horarioData['baia_id'] = null;
+                    }
+
+                    $request->user()->horarios()
+                        ->where('id', $horarioData['id'])
+                        ->update([
+                            'tipo' => $horarioData['tipo'],
+                            'usuario_projeto_id' => $horarioData['usuario_projeto_id'] ?? null,
+                            'baia_id' => $horarioData['baia_id'] ?? null,
+                        ]);
                 }
             });
         }

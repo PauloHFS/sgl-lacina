@@ -164,6 +164,7 @@ export interface Sala {
     nome: string;
     descricao?: string | null;
     ativa: boolean;
+    baias?: Baia[]; // precisa de load eagerly
     created_at?: string | null; // YYYY-MM-DD HH:MM:SS
     updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
     deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
