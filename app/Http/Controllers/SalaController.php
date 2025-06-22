@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Models\Sala;
 use App\Models\Baia;
@@ -179,8 +180,6 @@ class SalaController extends Controller
     {
         $sala = Sala::findOrFail($id);
 
-        // Deletar as baias primeiro devido ao relacionamento
-        $sala->baias()->delete();
         $sala->delete();
 
         return redirect()->route('salas.index')->with('success', 'Sala excluída com sucesso!');
