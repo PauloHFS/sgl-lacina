@@ -274,7 +274,7 @@ export default function MeuHorario({
                                                         :
                                                     </span>
                                                     <span className="text-lg font-bold">
-                                                        {count}
+                                                        {Math.abs(count)}
                                                     </span>
                                                 </div>
                                             ),

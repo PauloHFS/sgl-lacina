@@ -262,10 +262,10 @@ export default function Show({ sala, canEdit }: ShowProps) {
                                 <h2 className="text-base-content text-xl font-semibold">
                                     Baias da Sala
                                 </h2>
-                                <div className="badge badge-outline">
+                                {/* <div className="badge badge-outline">
                                     {sala.baias.length}{' '}
                                     {sala.baias.length === 1 ? 'baia' : 'baias'}
-                                </div>
+                                </div> */}
                             </div>
 
                             {sala.baias.length > 0 ? (
@@ -273,7 +273,7 @@ export default function Show({ sala, canEdit }: ShowProps) {
                                     {/* Baias Ativas */}
                                     {baiasAtivas.length > 0 && (
                                         <div>
-                                            <h3 className="text-success mb-3 flex items-center gap-2 text-lg font-medium">
+                                            {/* <h3 className="text-success mb-3 flex items-center gap-2 text-lg font-medium">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-4 w-4"
@@ -290,7 +290,7 @@ export default function Show({ sala, canEdit }: ShowProps) {
                                                 </svg>
                                                 Baias Ativas (
                                                 {baiasAtivas.length})
-                                            </h3>
+                                            </h3> */}
                                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                                 {baiasAtivas.map((baia) => (
                                                     <div

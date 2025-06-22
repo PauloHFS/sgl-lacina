@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use App\Models\Sala;
+use App\Models\Baia;
 
 class SalaController extends Controller
 {
@@ -100,16 +101,25 @@ class SalaController extends Controller
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string|max:1000',
             'ativa' => 'boolean',
+            'baias' => 'array',
+            'baias.*.nome' => 'required|string|max:255',
+            'baias.*.descricao' => 'nullable|string|max:1000',
+            'baias.*.ativa' => 'boolean',
         ]);
 
-        Sala::create($request->all());
+        $sala = Sala::create($request->only(['nome', 'descricao', 'ativa']));
 
-        Log::info('Criando nova sala', [
-            'user_id' => $request->user()->id,
-            'data' => $request->all(),
-        ]);
+        if ($request->filled('baias')) {
+            foreach ($request->baias as $baiaData) {
+                $sala->baias()->create([
+                    'nome' => $baiaData['nome'],
+                    'descricao' => $baiaData['descricao'] ?? null,
+                    'ativa' => $baiaData['ativa'] ?? true,
+                ]);
+            }
+        }
 
-        return redirect()->route('salas.index')->with('success', 'Sala criada com sucesso!');
+        return redirect()->route('salas.show', $sala->id)->with('success', 'Sala criada com sucesso!');
     }
 
     public function update(Request $request, $id)

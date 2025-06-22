@@ -124,11 +124,10 @@ Para cada feature, gere exatamente **6 cards** na seguinte ordem:
 - Depende de: [Card anterior ou recurso]
 - Bloqueia: [Card posterior ou recurso]
 
-```
-
 ## Diretrizes Específicas
 
 ### Para Backend (Laravel):
+
 - Usar enums existentes do projeto
 - Implementar FormRequests para validação
 - Aplicar policies para autorização
@@ -136,6 +135,7 @@ Para cada feature, gere exatamente **6 cards** na seguinte ordem:
 - Seguir padrão de nomenclatura do projeto
 
 ### Para Frontend (React + Inertia):
+
 - Componentes funcionais com TypeScript
 - useForm hook do Inertia para formulários
 - daisyUI classes prioritárias sobre Tailwind customizado
@@ -143,12 +143,14 @@ Para cada feature, gere exatamente **6 cards** na seguinte ordem:
 - Responsividade mobile-first
 
 ### Para Testes:
+
 - Pest PHP com descrições em português
 - Cobertura mínima: happy path + edge cases
 - Testes de autorização obrigatórios
 - Factory/Seeder para dados de teste
 
 ### Para Segurança:
+
 - Validação server-side obrigatória
 - Autorização em todas as rotas
 - Sanitização de inputs
@@ -174,6 +176,7 @@ Contexto adicional: [INFORMAÇÕES ESPECÍFICAS DO DOMÍNIO]
 ```
 
 **Exemplo de uso:**
+
 ```
 
 Gere os 6 cards de implementação para a feature: "Gestão de Folgas dos Colaboradores"
@@ -202,6 +205,7 @@ Contexto adicional: Integração com sistema de projetos existente, notificaçõ
 ## Padrões do Projeto
 
 ### Nomenclatura:
+
 - **Controllers**: `{Entidade}Controller` (ex: `ProjetosController`)
 - **Models**: Singular em PascalCase (ex: `User`, `Projeto`)
 - **Routes**: Usar resource routes quando possível
@@ -209,6 +213,7 @@ Contexto adicional: Integração com sistema de projetos existente, notificaçõ
 - **Testes**: Descrições em português, usar `test()` ou `it()`
 
 ### Regras Importantes:
+
 - ✅ **SEMPRE** usar enums existentes (StatusCadastro, TipoVinculo, etc.)
 - ✅ **SEMPRE** validar permissões antes de operações sensíveis
 - ✅ **SEMPRE** usar transações DB para operações complexas
@@ -220,9 +225,9 @@ Contexto adicional: Integração com sistema de projetos existente, notificaçõ
 ## Contexto Acadêmico
 
 Este é um sistema interno para o **Laboratório de Computação Inteligente Aplicada (LaCInA) da UFCG**, focado em:
+
 - Gestão de colaboradores (discentes, externos, docentes)
 - Administração de projetos e vínculos
 - Processos de RH digitalizados
 - Relatórios para comprovação acadêmica
 - Autorização baseada em tipos de vínculo e status
-```
