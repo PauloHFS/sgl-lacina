@@ -1,24 +1,8 @@
-import Paggination, { Paginated } from '@/Components/Paggination';
+import { Paginated } from '@/Components/Paggination';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
+import { Sala } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import React, { useState } from 'react';
-
-interface Baia {
-    id: string;
-    nome: string;
-    descricao?: string;
-    ativa: boolean;
-}
-
-interface Sala {
-    id: string;
-    nome: string;
-    descricao?: string;
-    ativa: boolean;
-    baias: Baia[];
-    created_at: string;
-    updated_at: string;
-}
+import React, { useRef, useState } from 'react';
 
 interface IndexProps {
     salas: Paginated<Sala>;
@@ -38,6 +22,8 @@ export default function Index({
     filters,
 }: IndexProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [salaToDelete, setSalaToDelete] = useState<Sala | null>(null);
+    const deleteModalRef = useRef<HTMLDialogElement>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,9 +34,20 @@ export default function Index({
         );
     };
 
-    const handleDelete = (salaId: string) => {
-        if (confirm('Tem certeza que deseja excluir esta sala?')) {
-            router.delete(route('salas.destroy', salaId));
+    const openDeleteModal = (sala: Sala) => {
+        setSalaToDelete(sala);
+        deleteModalRef.current?.showModal();
+    };
+
+    const handleDelete = () => {
+        if (salaToDelete) {
+            router.delete(route('salas.destroy', salaToDelete.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    deleteModalRef.current?.close();
+                    setSalaToDelete(null);
+                },
+            });
         }
     };
 
@@ -201,24 +198,21 @@ export default function Index({
                                                     <td>
                                                         <div className="flex items-center gap-2">
                                                             <span className="badge badge-outline">
-                                                                {
-                                                                    sala.baias
-                                                                        .length
-                                                                }{' '}
+                                                                {sala.baias
+                                                                    ?.length ??
+                                                                    0}{' '}
                                                                 baias
                                                             </span>
-                                                            {sala.baias.length >
+                                                            {(sala.baias
+                                                                ?.length ?? 0) >
                                                                 0 && (
                                                                 <div className="text-base-content/60 text-xs">
                                                                     (
-                                                                    {
-                                                                        sala.baias.filter(
-                                                                            (
-                                                                                b,
-                                                                            ) =>
-                                                                                b.ativa,
-                                                                        ).length
-                                                                    }{' '}
+                                                                    {sala.baias?.filter(
+                                                                        (b) =>
+                                                                            b.ativa,
+                                                                    ).length ??
+                                                                        0}{' '}
                                                                     ativas)
                                                                 </div>
                                                             )}
@@ -226,11 +220,13 @@ export default function Index({
                                                     </td>
                                                     <td>
                                                         <div className="text-base-content/70 text-sm">
-                                                            {new Date(
-                                                                sala.created_at,
-                                                            ).toLocaleDateString(
-                                                                'pt-BR',
-                                                            )}
+                                                            {sala.created_at
+                                                                ? new Date(
+                                                                      sala.created_at,
+                                                                  ).toLocaleDateString(
+                                                                      'pt-BR',
+                                                                  )
+                                                                : '-'}
                                                         </div>
                                                     </td>
                                                     <td>
@@ -296,32 +292,15 @@ export default function Index({
                                                                     Editar
                                                                 </Link>
                                                             )}
-
                                                             {canDelete && (
                                                                 <button
                                                                     onClick={() =>
-                                                                        handleDelete(
-                                                                            sala.id,
+                                                                        openDeleteModal(
+                                                                            sala,
                                                                         )
                                                                     }
-                                                                    className="btn btn-sm btn-outline btn-error"
+                                                                    className="btn btn-ghost btn-xs text-error"
                                                                 >
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        className="h-4 w-4"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        stroke="currentColor"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth={
-                                                                                2
-                                                                            }
-                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                                        />
-                                                                    </svg>
                                                                     Excluir
                                                                 </button>
                                                             )}
@@ -384,40 +363,59 @@ export default function Index({
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Pagination */}
-                            {salas.data.length > 0 && (
-                                <div className="mt-6 flex justify-center">
-                                    <Paggination
-                                        paginated={salas}
-                                        onPageChange={(page) => {
-                                            const queryParams: {
-                                                page: number;
-                                                search?: string;
-                                            } = { page };
-
-                                            if (searchTerm) {
-                                                queryParams.search = searchTerm;
-                                            }
-
-                                            router.get(
-                                                route('salas.index'),
-                                                queryParams,
-                                                {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                },
-                                            );
-                                        }}
-                                        preserveScroll={true}
-                                        preserveState={true}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            <dialog ref={deleteModalRef} id="delete_modal" className="modal">
+                <div className="modal-box">
+                    <h3 className="text-lg font-bold">
+                        Confirmar Exclusão de Sala
+                    </h3>
+                    <p className="py-4">
+                        Você tem certeza que deseja excluir a sala{' '}
+                        <span className="text-error font-bold">
+                            {salaToDelete?.nome}
+                        </span>
+                        ?
+                    </p>
+                    <div className="prose prose-sm max-w-none">
+                        <p>
+                            Esta ação é <strong>irreversível</strong> e
+                            resultará no seguinte:
+                        </p>
+                        <ul>
+                            <li>
+                                Todas as baias associadas a esta sala serão
+                                permanentemente removidas.
+                            </li>
+                            <li>
+                                Vínculos de equipamentos com as baias desta sala
+                                serão perdidos.
+                            </li>
+                            <li>
+                                O histórico de alocação de usuários a estas
+                                baias será perdido.
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn">Cancelar</button>
+                        </form>
+                        <button
+                            className="btn btn-error"
+                            onClick={handleDelete}
+                        >
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button />
+                </form>
+            </dialog>
         </Authenticated>
     );
 }
