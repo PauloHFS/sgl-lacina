@@ -136,7 +136,7 @@ class ProjetosController extends Controller
       ->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR->value)
       ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
       ->orderBy('name')
-      ->get(['users.id', 'users.name']);
+      ->get(['users.id', 'users.name', 'users.foto_url']);
 
 
     $participantesProjeto = null;

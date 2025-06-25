@@ -472,15 +472,27 @@ export default function Show({
                                                         key={coordenador.id}
                                                         className="bg-base-200/50 hover:bg-base-200 flex items-center gap-3 rounded-lg p-3 transition-colors"
                                                     >
-                                                        <div className="avatar placeholder">
-                                                            <div className="bg-neutral text-neutral-content h-10 w-10 rounded-full">
-                                                                <span className="text-xs">
-                                                                    {coordenador.name
-                                                                        .charAt(
-                                                                            0,
-                                                                        )
-                                                                        .toUpperCase()}
-                                                                </span>
+                                                        <div className="avatar">
+                                                            <div className="h-10 w-10 rounded-full">
+                                                                {coordenador.foto_url ? (
+                                                                    <img
+                                                                        src={
+                                                                            coordenador.foto_url
+                                                                        }
+                                                                        alt={`Foto de ${coordenador.name}`}
+                                                                        className="h-full w-full rounded-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="bg-neutral text-neutral-content flex h-full w-full items-center justify-center rounded-full">
+                                                                        <span className="text-xs font-medium">
+                                                                            {coordenador.name
+                                                                                .charAt(
+                                                                                    0,
+                                                                                )
+                                                                                .toUpperCase()}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1">

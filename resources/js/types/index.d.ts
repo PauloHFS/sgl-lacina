@@ -139,6 +139,7 @@ export interface Projeto {
 export interface Coordenador {
     id: string;
     name: string;
+    foto_url?: string | null;
 }
 
 export interface UsuarioProjeto {
