@@ -1,6 +1,6 @@
 import { useToast } from '@/Context/ToastProvider';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
 interface Baia {
@@ -54,7 +54,7 @@ export default function Edit({ sala }: EditProps) {
         })),
     );
 
-    const { data, setData, patch, processing, errors } = useForm<FormData>({
+    const { data, setData, processing, errors } = useForm<FormData>({
         nome: sala.nome,
         descricao: sala.descricao || '',
         ativa: sala.ativa,
@@ -144,12 +144,12 @@ export default function Edit({ sala }: EditProps) {
                 .filter(Boolean) as string[],
         };
 
-        patch(route('salas.update', sala.id), {
-            data: dadosParaEnvio,
+        // Usar o router diretamente para enviar os dados
+        router.patch(route('salas.update', sala.id), dadosParaEnvio, {
             onSuccess: () => {
                 toast('Sala atualizada com sucesso!', 'success');
             },
-            onError: (formErrors) => {
+            onError: (formErrors: Record<string, string>) => {
                 console.error('Erro ao atualizar sala:', formErrors);
                 toast('Erro ao atualizar sala. Verifique os campos.', 'error');
             },
