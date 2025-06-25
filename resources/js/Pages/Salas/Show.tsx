@@ -75,8 +75,9 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
     // Função para obter cor baseada na quantidade de pessoas
     const getCountColor = (count: number) => {
         if (count === 0) return 'bg-base-200 text-base-content';
-        if (count <= 2) return 'bg-success text-success-content';
-        if (count <= 4) return 'bg-warning text-warning-content';
+        if (count <= 3) return 'bg-success text-success-content';
+        if (count <= 6) return 'bg-info text-info-content';
+        if (count <= 10) return 'bg-warning text-warning-content';
         return 'bg-error text-error-content';
     };
 
@@ -661,15 +662,19 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="bg-success h-4 w-4 rounded"></div>
-                                                <span>1-2 pessoas</span>
+                                                <span>1-3 pessoas</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-info h-4 w-4 rounded"></div>
+                                                <span>4-6 pessoas</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="bg-warning h-4 w-4 rounded"></div>
-                                                <span>3-4 pessoas</span>
+                                                <span>7-10 pessoas</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="bg-error h-4 w-4 rounded"></div>
-                                                <span>5+ pessoas</span>
+                                                <span>11+ pessoas</span>
                                             </div>
                                         </div>
                                     </div>
