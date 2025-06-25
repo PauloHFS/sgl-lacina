@@ -1,6 +1,6 @@
 import { useToast } from '@/Context/ToastProvider';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
 interface Baia {

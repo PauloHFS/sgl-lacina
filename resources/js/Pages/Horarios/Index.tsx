@@ -164,6 +164,33 @@ export default function MeuHorario({
                                                                                 status,
                                                                             )}
                                                                         </div>
+                                                                        {horario
+                                                                            ?.usuario_projeto
+                                                                            ?.projeto && (
+                                                                            <div className="mt-1 text-xs">
+                                                                                <div
+                                                                                    className="truncate font-medium"
+                                                                                    title={
+                                                                                        horario
+                                                                                            .usuario_projeto
+                                                                                            .projeto
+                                                                                            .nome
+                                                                                    }
+                                                                                >
+                                                                                    {horario
+                                                                                        .usuario_projeto
+                                                                                        .projeto
+                                                                                        .nome
+                                                                                        .length >
+                                                                                    30 // numero de caracteres para truncar
+                                                                                        ? `${horario.usuario_projeto.projeto.nome.substring(0, 30)}...`
+                                                                                        : horario
+                                                                                              .usuario_projeto
+                                                                                              .projeto
+                                                                                              .nome}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
                                                                         {horario?.baia && (
                                                                             <div className="mt-1 text-xs">
                                                                                 {horario

@@ -117,7 +117,7 @@ test('pode criar novas baias ao atualizar sala', function () {
 
     // Verificar que as novas baias foram criadas
     expect($sala->baias()->count())->toBe(2);
-    
+
     $baias = $sala->baias()->orderBy('nome')->get();
     expect($baias[0]->nome)->toBe('Nova Baia 1');
     expect($baias[0]->ativa)->toBeTrue();
