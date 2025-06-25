@@ -1,8 +1,17 @@
-import SalaBaiaModal from '@/Components/SalaBaiaModal';
+import HorarioTrabalhoModal from '@/Components/HorarioTrabalhoModal';
 import { useToast } from '@/Context/ToastProvider';
+import { useProjetoPreferences } from '@/hooks/useProjetoPreferences';
 import { useSalaBaiaPreferences } from '@/hooks/useSalaBaiaPreferences';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { DiaDaSemana, Horario, PageProps, Sala, TipoHorario } from '@/types';
+import {
+    DiaDaSemana,
+    Horario,
+    PageProps,
+    ProjetoAtivo,
+    Sala,
+    SalaDisponivel,
+    TipoHorario,
+} from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ChangeEvent, FormEventHandler, useMemo, useState } from 'react';
 
@@ -30,6 +39,7 @@ interface HorarioSlotState {
     tipo: TipoHorario;
     salaId?: string;
     baiaId?: string;
+    usuarioProjetoId?: string;
 }
 
 interface HorariosTableState {
@@ -42,6 +52,8 @@ interface HorarioChangeData {
     id: string;
     tipo?: TipoHorario;
     baia_id?: string | null;
+    usuario_projeto_id?: string | null;
+    baia_updated_at?: string;
 }
 
 interface HorarioUpdatePayload {
@@ -94,6 +106,7 @@ const convertHorariosToTableState = (
                 tipo: 'AUSENTE',
                 salaId: undefined,
                 baiaId: undefined,
+                usuarioProjetoId: undefined,
             };
         });
     });
@@ -107,6 +120,8 @@ const convertHorariosToTableState = (
                         tipo: horario.tipo,
                         salaId: horario.baia?.sala?.id,
                         baiaId: horario.baia?.id,
+                        usuarioProjetoId:
+                            horario.usuario_projeto_id || undefined,
                     };
                 }
             });
@@ -118,17 +133,18 @@ const convertHorariosToTableState = (
 
 export default function EditarHorario({
     horarios,
-    salas,
 }: PageProps<{
     horarios: Record<DiaDaSemana, Array<Horario>>;
     salas: Sala[];
 }>) {
     const { toast } = useToast();
     const { preferences, updateTrabalhoPresencial } = useSalaBaiaPreferences();
+    const { updateUltimoProjetoSelecionado, getUltimoProjetoSelecionado } =
+        useProjetoPreferences();
 
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
-        tipoTrabalho: 'TRABALHO_PRESENCIAL' | null;
+        tipoTrabalho: 'TRABALHO_PRESENCIAL' | 'TRABALHO_REMOTO' | null;
         diaId: string;
         timeSlot: number;
     }>({
@@ -137,6 +153,12 @@ export default function EditarHorario({
         diaId: '',
         timeSlot: 0,
     });
+
+    const [salasDisponiveis, setSalasDisponiveis] = useState<SalaDisponivel[]>(
+        [],
+    );
+    const [projetosAtivos, setProjetosAtivos] = useState<ProjetoAtivo[]>([]);
+    const [isLoadingModal, setIsLoadingModal] = useState(false);
 
     const initialHorarios = useMemo(() => {
         return convertHorariosToTableState(horarios);
@@ -155,13 +177,17 @@ export default function EditarHorario({
     ) => {
         const newStatus = event.target.value as TipoHorario;
 
-        if (newStatus === 'TRABALHO_PRESENCIAL') {
+        if (
+            newStatus === 'TRABALHO_PRESENCIAL' ||
+            newStatus === 'TRABALHO_REMOTO'
+        ) {
             setModalState({
                 isOpen: true,
                 tipoTrabalho: newStatus,
                 diaId,
                 timeSlot,
             });
+            fetchModalData(diaId, timeSlot, newStatus);
         } else {
             // Para outros tipos, atualizar diretamente
             const currentDaySchedule = data.horarios[diaId] || {};
@@ -173,18 +199,72 @@ export default function EditarHorario({
                         tipo: newStatus,
                         salaId: undefined,
                         baiaId: undefined,
+                        usuarioProjetoId: undefined,
                     },
                 },
             });
         }
     };
 
-    const handleModalConfirm = (salaId: string, baiaId: string) => {
+    const fetchModalData = async (
+        diaId: string,
+        timeSlot: number,
+        tipoTrabalho: 'TRABALHO_PRESENCIAL' | 'TRABALHO_REMOTO',
+    ) => {
+        setIsLoadingModal(true);
+
+        try {
+            // Busca projetos ativos sempre
+            const projetosResponse = await fetch(
+                route('horarios.projetos-ativos'),
+            );
+            const projetosData = await projetosResponse.json();
+            setProjetosAtivos(projetosData.projetos || []);
+
+            // Busca salas disponíveis apenas para trabalho presencial
+            if (tipoTrabalho === 'TRABALHO_PRESENCIAL') {
+                const salasResponse = await fetch(
+                    route('horarios.salas-disponiveis', {
+                        dia_da_semana: diaId,
+                        horario: timeSlot,
+                    }),
+                );
+                const salasData = await salasResponse.json();
+                setSalasDisponiveis(salasData.salas || []);
+            } else {
+                setSalasDisponiveis([]);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar dados do modal:', error);
+            toast('Erro ao carregar dados. Tente novamente.', 'error');
+            setModalState({
+                isOpen: false,
+                tipoTrabalho: null,
+                diaId: '',
+                timeSlot: 0,
+            });
+        } finally {
+            setIsLoadingModal(false);
+        }
+    };
+
+    const handleModalConfirm = (
+        salaId?: string,
+        baiaId?: string,
+        projetoId?: string,
+    ) => {
         const { tipoTrabalho, diaId, timeSlot } = modalState;
 
         if (!tipoTrabalho) return;
 
-        updateTrabalhoPresencial(salaId, baiaId);
+        // Salva as preferências
+        if (tipoTrabalho === 'TRABALHO_PRESENCIAL' && salaId && baiaId) {
+            updateTrabalhoPresencial(salaId, baiaId);
+        }
+
+        if (projetoId) {
+            updateUltimoProjetoSelecionado(projetoId);
+        }
 
         const currentDaySchedule = data.horarios[diaId] || {};
         setData('horarios', {
@@ -193,8 +273,15 @@ export default function EditarHorario({
                 ...currentDaySchedule,
                 [timeSlot]: {
                     tipo: tipoTrabalho,
-                    salaId,
-                    baiaId,
+                    salaId:
+                        tipoTrabalho === 'TRABALHO_PRESENCIAL'
+                            ? salaId
+                            : undefined,
+                    baiaId:
+                        tipoTrabalho === 'TRABALHO_PRESENCIAL'
+                            ? baiaId
+                            : undefined,
+                    usuarioProjetoId: projetoId,
                 },
             },
         });
@@ -241,15 +328,20 @@ export default function EditarHorario({
                 if (originalHorario) {
                     const originalTipo = originalHorario.tipo;
                     const originalBaiaId = originalHorario.baia?.id;
+                    const originalUsuarioProjetoId =
+                        originalHorario.usuario_projeto_id;
 
                     const newTipo = slotData.tipo;
                     const newBaiaId = slotData.baiaId;
+                    const newUsuarioProjetoId = slotData.usuarioProjetoId;
 
                     // Verificar se houve mudanças
                     const tipoChanged = originalTipo !== newTipo;
                     const baiaChanged = originalBaiaId !== newBaiaId;
+                    const projetoChanged =
+                        originalUsuarioProjetoId !== newUsuarioProjetoId;
 
-                    if (tipoChanged || baiaChanged) {
+                    if (tipoChanged || baiaChanged || projetoChanged) {
                         const changeData: HorarioChangeData = {
                             id: originalHorario.id,
                         };
@@ -266,6 +358,26 @@ export default function EditarHorario({
                             changeData.baia_id =
                                 newTipo === 'TRABALHO_PRESENCIAL'
                                     ? newBaiaId || null
+                                    : null;
+
+                            // Adiciona o timestamp da baia para locking otimista
+                            if (newBaiaId && originalHorario.baia?.updated_at) {
+                                changeData.baia_updated_at =
+                                    originalHorario.baia.updated_at;
+                            }
+                        }
+
+                        if (
+                            projetoChanged &&
+                            (newTipo === 'TRABALHO_PRESENCIAL' ||
+                                newTipo === 'TRABALHO_REMOTO' ||
+                                originalTipo === 'TRABALHO_PRESENCIAL' ||
+                                originalTipo === 'TRABALHO_REMOTO')
+                        ) {
+                            changeData.usuario_projeto_id =
+                                newTipo === 'TRABALHO_PRESENCIAL' ||
+                                newTipo === 'TRABALHO_REMOTO'
+                                    ? newUsuarioProjetoId || null
                                     : null;
                         }
 
@@ -548,19 +660,31 @@ export default function EditarHorario({
                                 </div>
                             </form>
 
-                            {/* Modal para seleção de sala e baia */}
-                            <SalaBaiaModal
+                            {/* Modal para seleção de sala/baia/projeto */}
+                            <HorarioTrabalhoModal
                                 isOpen={modalState.isOpen}
                                 onClose={handleModalClose}
                                 onConfirm={handleModalConfirm}
-                                tipoTrabalho="TRABALHO_PRESENCIAL"
+                                tipoTrabalho={
+                                    modalState.tipoTrabalho ||
+                                    'TRABALHO_PRESENCIAL'
+                                }
                                 initialSalaId={
-                                    preferences.trabalhoPresencial?.salaId
+                                    modalState.tipoTrabalho ===
+                                    'TRABALHO_PRESENCIAL'
+                                        ? preferences.trabalhoPresencial?.salaId
+                                        : undefined
                                 }
                                 initialBaiaId={
-                                    preferences.trabalhoPresencial?.baiaId
+                                    modalState.tipoTrabalho ===
+                                    'TRABALHO_PRESENCIAL'
+                                        ? preferences.trabalhoPresencial?.baiaId
+                                        : undefined
                                 }
-                                salas={salas}
+                                initialProjetoId={getUltimoProjetoSelecionado()}
+                                salasDisponiveis={salasDisponiveis}
+                                projetosAtivos={projetosAtivos}
+                                isLoading={isLoadingModal}
                             />
                         </div>
                     </div>

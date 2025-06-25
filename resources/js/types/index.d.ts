@@ -197,3 +197,21 @@ export interface Horario {
     updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
     deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
+
+export interface ProjetoAtivo {
+    id: string; // ID do vínculo usuario_projeto
+    projeto_id: string;
+    projeto_nome: string;
+}
+
+export interface SalaDisponivel {
+    id: string;
+    nome: string;
+    baias: BaiaDisponivel[];
+}
+
+export interface BaiaDisponivel {
+    id: string;
+    nome: string;
+    updated_at: string;
+}

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoHorario;
 use App\Models\Baia;
+use App\Models\Horario;
 use App\Models\Sala;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -133,7 +135,9 @@ class HorarioController extends Controller
                 }
             }
 
-            if (!empty($horario['usuario_projeto_id']) && !in_array($oldHorario->tipo, [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])) {
+            $tipoAtual = $horario['tipo'] ?? $oldHorario->tipo->value;
+
+            if (!empty($horario['usuario_projeto_id']) && !in_array($tipoAtual, [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value])) {
                 $customErrors["horarios.{$index}.usuario_projeto_id"] = 'O projeto só pode ser informado para horários de trabalho presencial ou remoto.';
             }
             // else if (!empty($horario['baia_id']) && $oldHorario->tipo !== TipoHorario::TRABALHO_PRESENCIAL) {
@@ -148,14 +152,17 @@ class HorarioController extends Controller
         if (!empty($validatedData['horarios'])) {
             DB::transaction(function () use ($validatedData, $request) {
                 foreach ($validatedData['horarios'] as $horarioData) {
+                    // Busca o horário atual para obter o tipo se não for fornecido
+                    $horarioAtual = $request->user()->horarios()->find($horarioData['id']);
+                    $tipo = $horarioData['tipo'] ?? $horarioAtual->tipo->value;
 
                     // Se o tipo for ausente ou aula, limpa a baia_id e usuario_projeto_id
-                    if (in_array($horarioData['tipo'], [TipoHorario::AUSENTE->value, TipoHorario::EM_AULA->value])) {
+                    if (in_array($tipo, [TipoHorario::AUSENTE->value, TipoHorario::EM_AULA->value])) {
                         $horarioData['baia_id'] = null;
                         $horarioData['usuario_projeto_id'] = null;
                     }
 
-                    if ($horarioData['tipo'] === TipoHorario::TRABALHO_REMOTO->value) {
+                    if ($tipo === TipoHorario::TRABALHO_REMOTO->value) {
                         $horarioData['baia_id'] = null;
                     }
 
@@ -177,18 +184,103 @@ class HorarioController extends Controller
                         $baia->touch();
                     }
 
+                    // Prepara os campos para atualização
+                    $updateData = ['tipo' => $tipo];
+
+                    // Se mudou para tipo que limpa campos, força limpeza
+                    if (in_array($tipo, [TipoHorario::AUSENTE->value, TipoHorario::EM_AULA->value])) {
+                        $updateData['baia_id'] = null;
+                        $updateData['usuario_projeto_id'] = null;
+                    } elseif ($tipo === TipoHorario::TRABALHO_REMOTO->value) {
+                        $updateData['baia_id'] = null;
+                        // Só atualiza projeto se foi enviado
+                        if (isset($horarioData['usuario_projeto_id'])) {
+                            $updateData['usuario_projeto_id'] = $horarioData['usuario_projeto_id'];
+                        }
+                    } else {
+                        // Para outros tipos, só atualiza campos que foram enviados
+                        if (isset($horarioData['usuario_projeto_id'])) {
+                            $updateData['usuario_projeto_id'] = $horarioData['usuario_projeto_id'];
+                        }
+
+                        if (isset($horarioData['baia_id'])) {
+                            $updateData['baia_id'] = $horarioData['baia_id'];
+                        }
+                    }
+
                     $request->user()->horarios()
                         ->where('id', $horarioData['id'])
-                        ->update([
-                            'tipo' => $horarioData['tipo'],
-                            'usuario_projeto_id' => $horarioData['usuario_projeto_id'] ?? null,
-                            'baia_id' => $horarioData['baia_id'] ?? null,
-                        ]);
+                        ->update($updateData);
                 }
             });
         }
 
         // return redirect()->back()->with('success', 'Horários atualizados com sucesso!');
         return redirect()->route('horarios.index')->with('success', 'Horários atualizados com sucesso!');
+    }
+
+    /**
+     * Busca salas e baias disponíveis para um horário específico.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSalasDisponiveis(Request $request)
+    {
+        $validatedData = $request->validate([
+            'dia_da_semana' => 'required|string|in:SEGUNDA,TERCA,QUARTA,QUINTA,SEXTA,SABADO,DOMINGO',
+            'horario' => 'required|integer|min:0|max:23',
+        ]);
+
+        $diaDaSemana = $validatedData['dia_da_semana'];
+        $horario = $validatedData['horario'];
+
+        // Buscar baias ocupadas neste horário
+        $baiasOcupadas = Horario::where('dia_da_semana', $diaDaSemana)
+            ->where('horario', $horario)
+            ->where('tipo', TipoHorario::TRABALHO_PRESENCIAL)
+            ->whereNotNull('baia_id')
+            ->where('usuario_id', '!=', $request->user()->id) // Exclui o próprio usuário
+            ->pluck('baia_id')
+            ->toArray();
+
+        // Buscar salas ativas com baias não ocupadas
+        $salas = Sala::ativas()
+            ->with(['baias' => function ($query) use ($baiasOcupadas) {
+                $query->ativas()
+                    ->whereNotIn('id', $baiasOcupadas)
+                    ->orderBy('nome');
+            }])
+            ->whereHas('baias', function ($query) use ($baiasOcupadas) {
+                $query->ativas()->whereNotIn('id', $baiasOcupadas);
+            })
+            ->orderBy('nome')
+            ->get(['id', 'nome']);
+
+        return response()->json(['salas' => $salas]);
+    }
+
+    /**
+     * Busca projetos ativos do usuário.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProjetosAtivos(Request $request)
+    {
+        $projetos = $request->user()->vinculos()
+            ->with('projeto:id,nome')
+            ->where('status', StatusVinculoProjeto::APROVADO)
+            ->whereNull('data_fim')
+            ->get()
+            ->map(function ($vinculo) {
+                return [
+                    'id' => $vinculo->id,
+                    'projeto_id' => $vinculo->projeto->id,
+                    'projeto_nome' => $vinculo->projeto->nome,
+                ];
+            });
+
+        return response()->json(['projetos' => $projetos]);
     }
 }

@@ -59,10 +59,6 @@ return new class extends Migration
             // Índice para relatórios por dia da semana
             $table->index(['dia_da_semana', 'horario', 'tipo'], 'horarios_dia_horario_tipo_idx');
 
-            // Índice para verificação de conflitos de baia
-            $table->index(['baia_id', 'dia_da_semana', 'horario'], 'horarios_baia_conflito_idx')
-                ->where('baia_id', 'IS NOT NULL');
-
             // Índice para consultas por projeto
             $table->index(['usuario_projeto_id', 'dia_da_semana'], 'horarios_projeto_dia_idx')
                 ->where('usuario_projeto_id', 'IS NOT NULL');
@@ -71,6 +67,12 @@ return new class extends Migration
             $table->index(['tipo', 'dia_da_semana', 'horario'], 'horarios_trabalho_idx')
                 ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value]);
         });
+
+        DB::statement("
+            CREATE UNIQUE INDEX horarios_baia_dia_horario_unique
+            ON horarios (baia_id, dia_da_semana, horario)
+            WHERE baia_id IS NOT NULL AND deleted_at IS NULL
+        ");
     }
 
     /**
@@ -78,6 +80,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement("DROP INDEX IF EXISTS horarios_baia_dia_horario_unique");
         Schema::dropIfExists('horarios');
         Schema::dropIfExists('baias');
         Schema::dropIfExists('salas');
