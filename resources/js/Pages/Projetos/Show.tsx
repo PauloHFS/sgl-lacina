@@ -1,9 +1,13 @@
+import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
+    Baia,
     Coordenador,
+    DiaDaSemana,
     Funcao,
+    Horario,
     PageProps,
     Projeto,
     StatusVinculoProjeto,
@@ -14,7 +18,20 @@ import {
 import { Head, Link, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import React from 'react';
+import React, { useState } from 'react';
+
+const DIAS_SEMANA_HORARIO = [
+    { id: 'SEGUNDA', nome: 'Segunda' },
+    { id: 'TERCA', nome: 'Terça' },
+    { id: 'QUARTA', nome: 'Quarta' },
+    { id: 'QUINTA', nome: 'Quinta' },
+    { id: 'SEXTA', nome: 'Sexta' },
+    { id: 'SABADO', nome: 'Sábado' },
+] as const;
+
+const TIME_SLOTS_HORARIO = [
+    7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+];
 
 type ParticipanteProjeto = Pick<User, 'id' | 'name' | 'email' | 'foto_url'> & {
     funcao: Funcao;
@@ -32,6 +49,7 @@ interface ShowPageProps extends PageProps {
     temVinculosPendentes: boolean;
     jaTemTrocaEmAndamento: boolean;
     coordenadoresDoProjeto: Coordenador[];
+    horariosDosProjetos?: Record<DiaDaSemana, Array<Horario>>;
 }
 
 type VinculoCreateForm = {
@@ -53,8 +71,80 @@ export default function Show({
     participantesProjeto,
     temVinculosPendentes,
     coordenadoresDoProjeto,
+    horariosDosProjetos,
 }: ShowPageProps) {
     const { toast } = useToast();
+    const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
+        'colaboradores',
+    );
+    const [modalState, setModalState] = useState<{
+        isOpen: boolean;
+        dia: string;
+        horario: string;
+        usuarios: Array<{
+            id: string;
+            name: string;
+            email: string;
+            foto_url?: string | null;
+            baia?: Baia | null;
+        }>;
+    }>({
+        isOpen: false,
+        dia: '',
+        horario: '',
+        usuarios: [],
+    });
+
+    // Função para contar quantas pessoas estão em cada slot de horário
+    const countUsuariosInSlot = (dia: DiaDaSemana, slot: number): number => {
+        if (!horariosDosProjetos || !horariosDosProjetos[dia]) return 0;
+        return horariosDosProjetos[dia].filter(
+            (h) =>
+                h.horario === slot &&
+                (h.tipo === 'TRABALHO_PRESENCIAL' ||
+                    h.tipo === 'TRABALHO_REMOTO'),
+        ).length;
+    };
+
+    // Função para abrir o modal com os usuários de um horário específico
+    const openHorarioModal = (dia: DiaDaSemana, slot: number) => {
+        if (!horariosDosProjetos || !horariosDosProjetos[dia]) return;
+
+        const usuariosNoHorario = horariosDosProjetos[dia]
+            .filter(
+                (h) =>
+                    h.horario === slot &&
+                    (h.tipo === 'TRABALHO_PRESENCIAL' ||
+                        h.tipo === 'TRABALHO_REMOTO'),
+            )
+            .map((h) => ({
+                id: h.usuario?.id || h.usuario_id,
+                name: h.usuario?.name || 'Nome não disponível',
+                email: h.usuario?.email || 'Email não disponível',
+                foto_url: h.usuario?.foto_url,
+                baia: h.baia,
+            }));
+
+        const diaFormatted =
+            DIAS_SEMANA_HORARIO.find((d) => d.id === dia)?.nome || dia;
+        const slotFormatted = `${slot.toString().padStart(2, '0')}:00 - ${(slot + 1).toString().padStart(2, '0')}:00`;
+
+        setModalState({
+            isOpen: true,
+            dia: diaFormatted,
+            horario: slotFormatted,
+            usuarios: usuariosNoHorario,
+        });
+    };
+
+    const closeModal = () => {
+        setModalState({
+            isOpen: false,
+            dia: '',
+            horario: '',
+            usuarios: [],
+        });
+    };
 
     const form = useForm<VinculoCreateForm>({
         projeto_id: projeto.id,
@@ -1090,118 +1180,288 @@ export default function Show({
                         </>
                     )}
 
-                    {/* Project Participants List */}
+                    {/* Tabs Section */}
                     {(isCoordenadorDoProjetoAtual ||
-                        usuarioVinculo?.status === 'APROVADO') &&
-                        participantesProjeto &&
-                        participantesProjeto.data.length > 0 && (
-                            <div className="card bg-base-100 shadow-xl">
-                                <div className="card-body">
-                                    <h3 className="card-title mb-4 text-xl">
-                                        Participantes do Projeto
-                                    </h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="table-zebra table w-full">
-                                            <thead>
-                                                <tr>
-                                                    <th>Nome</th>
-                                                    <th>Email</th>
-                                                    <th>Função</th>
-                                                    {/* <th>Vínculo</th> */}
-                                                    <th>Início</th>
-                                                    <th>Ações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {participantesProjeto.data.map(
-                                                    (
-                                                        participante: ParticipanteProjeto,
-                                                    ) => (
-                                                        <tr
-                                                            key={
-                                                                participante.id
-                                                            }
-                                                        >
-                                                            <td>
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="avatar">
-                                                                        <div className="mask mask-squircle h-12 w-12">
-                                                                            <img
-                                                                                src={
-                                                                                    participante.foto_url ||
-                                                                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
-                                                                                }
-                                                                                alt={`Foto de ${participante.name}`}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="font-bold">
-                                                                            {
-                                                                                participante.name
-                                                                            }
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                {
-                                                                    participante.email
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                <span className="badge badge-primary badge-sm">
-                                                                    {
-                                                                        participante.funcao
-                                                                    }
-                                                                </span>
-                                                            </td>
-                                                            {/* <td>
-                                                                <span className="badge badge-outline badge-sm">
-                                                                    {
-                                                                        participante.tipo_vinculo
-                                                                    }
-                                                                </span>
-                                                            </td> */}
-                                                            <td>
-                                                                {format(
-                                                                    new Date(
-                                                                        participante.data_inicio,
-                                                                    ),
-                                                                    'dd/MM/yyyy',
-                                                                    {
-                                                                        locale: ptBR,
-                                                                    },
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                <Link
-                                                                    href={route(
-                                                                        'colaboradores.show',
-                                                                        participante.id,
-                                                                    )}
-                                                                    className="btn btn-ghost btn-xs"
-                                                                >
-                                                                    Detalhes
-                                                                </Link>
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    {/* Pagination */}
-                                    {participantesProjeto &&
-                                        participantesProjeto.data.length >
-                                            0 && (
-                                            <Pagination
-                                                paginated={participantesProjeto}
-                                            />
-                                        )}
+                        usuarioVinculo?.status === 'APROVADO') && (
+                        <div className="card bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                {/* Tabs Navigation */}
+                                <div
+                                    role="tablist"
+                                    className="tabs tabs-bordered mb-6"
+                                >
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'colaboradores' ? 'tab-active' : ''}`}
+                                        onClick={() =>
+                                            setActiveTab('colaboradores')
+                                        }
+                                    >
+                                        Colaboradores
+                                    </button>
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'horarios' ? 'tab-active' : ''}`}
+                                        onClick={() => setActiveTab('horarios')}
+                                    >
+                                        Horários do Projeto
+                                    </button>
                                 </div>
+
+                                {/* Tab Content */}
+                                {activeTab === 'colaboradores' &&
+                                    participantesProjeto &&
+                                    participantesProjeto.data.length > 0 && (
+                                        <div>
+                                            <h3 className="card-title mb-4 text-xl">
+                                                Participantes do Projeto
+                                            </h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="table-zebra table w-full">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nome</th>
+                                                            <th>Email</th>
+                                                            <th>Função</th>
+                                                            <th>Início</th>
+                                                            <th>Ações</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {participantesProjeto.data.map(
+                                                            (
+                                                                participante: ParticipanteProjeto,
+                                                            ) => (
+                                                                <tr
+                                                                    key={
+                                                                        participante.id
+                                                                    }
+                                                                >
+                                                                    <td>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="avatar">
+                                                                                <div className="mask mask-squircle h-12 w-12">
+                                                                                    <img
+                                                                                        src={
+                                                                                            participante.foto_url ||
+                                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
+                                                                                        }
+                                                                                        alt={`Foto de ${participante.name}`}
+                                                                                    />
+                                                                                </div>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="font-bold">
+                                                                                    {
+                                                                                        participante.name
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        {
+                                                                            participante.email
+                                                                        }
+                                                                    </td>
+                                                                    <td>
+                                                                        <span className="badge badge-primary badge-sm">
+                                                                            {
+                                                                                participante.funcao
+                                                                            }
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>
+                                                                        {format(
+                                                                            new Date(
+                                                                                participante.data_inicio,
+                                                                            ),
+                                                                            'dd/MM/yyyy',
+                                                                            {
+                                                                                locale: ptBR,
+                                                                            },
+                                                                        )}
+                                                                    </td>
+                                                                    <td>
+                                                                        <Link
+                                                                            href={route(
+                                                                                'colaboradores.show',
+                                                                                participante.id,
+                                                                            )}
+                                                                            className="btn btn-ghost btn-xs"
+                                                                        >
+                                                                            Detalhes
+                                                                        </Link>
+                                                                    </td>
+                                                                </tr>
+                                                            ),
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {/* Pagination */}
+                                            {participantesProjeto &&
+                                                participantesProjeto.data
+                                                    .length > 0 && (
+                                                    <Pagination
+                                                        paginated={
+                                                            participantesProjeto
+                                                        }
+                                                    />
+                                                )}
+                                        </div>
+                                    )}
+
+                                {activeTab === 'horarios' && (
+                                    <div>
+                                        <h3 className="card-title mb-4 text-xl">
+                                            Horários do Projeto
+                                        </h3>
+                                        {horariosDosProjetos ? (
+                                            <div className="overflow-x-auto">
+                                                <table className="table w-full text-center">
+                                                    <thead>
+                                                        <tr className="bg-base-300">
+                                                            <th className="border-base-300 w-32 border p-2">
+                                                                Horário
+                                                            </th>
+                                                            {DIAS_SEMANA_HORARIO.map(
+                                                                (dia) => (
+                                                                    <th
+                                                                        key={
+                                                                            dia.id
+                                                                        }
+                                                                        className="border-base-300 border p-2"
+                                                                    >
+                                                                        {
+                                                                            dia.nome
+                                                                        }
+                                                                    </th>
+                                                                ),
+                                                            )}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {TIME_SLOTS_HORARIO.map(
+                                                            (slot) => {
+                                                                const nextHour =
+                                                                    slot + 1;
+                                                                const slotFormatted =
+                                                                    slot
+                                                                        .toString()
+                                                                        .padStart(
+                                                                            2,
+                                                                            '0',
+                                                                        ) +
+                                                                    ':00';
+                                                                const nextHourFormatted =
+                                                                    nextHour
+                                                                        .toString()
+                                                                        .padStart(
+                                                                            2,
+                                                                            '0',
+                                                                        ) +
+                                                                    ':00';
+
+                                                                return (
+                                                                    <tr
+                                                                        key={
+                                                                            slot
+                                                                        }
+                                                                    >
+                                                                        <td className="border-base-300 border p-2 font-semibold">
+                                                                            {`${slotFormatted} - ${nextHourFormatted}`}
+                                                                        </td>
+                                                                        {DIAS_SEMANA_HORARIO.map(
+                                                                            (
+                                                                                dia,
+                                                                            ) => {
+                                                                                const count =
+                                                                                    countUsuariosInSlot(
+                                                                                        dia.id as DiaDaSemana,
+                                                                                        slot,
+                                                                                    );
+
+                                                                                return (
+                                                                                    <td
+                                                                                        key={`${dia.id}-${slot}`}
+                                                                                        className="border-base-300 hover:bg-base-200 cursor-pointer border p-3 text-sm font-medium transition-colors"
+                                                                                        onClick={() =>
+                                                                                            openHorarioModal(
+                                                                                                dia.id as DiaDaSemana,
+                                                                                                slot,
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        {count >
+                                                                                        0 ? (
+                                                                                            <div className="text-center">
+                                                                                                <div className="badge badge-primary badge-lg">
+                                                                                                    {
+                                                                                                        count
+                                                                                                    }{' '}
+                                                                                                    {count ===
+                                                                                                    1
+                                                                                                        ? 'pessoa'
+                                                                                                        : 'pessoas'}
+                                                                                                </div>
+                                                                                                <div className="text-base-content/70 mt-1 text-xs">
+                                                                                                    Clique
+                                                                                                    para
+                                                                                                    ver
+                                                                                                    detalhes
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <div className="text-base-content/50 text-center">
+                                                                                                Ninguém
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </td>
+                                                                                );
+                                                                            },
+                                                                        )}
+                                                                    </tr>
+                                                                );
+                                                            },
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="py-8 text-center">
+                                                <div className="text-base-content/60">
+                                                    Nenhum horário cadastrado
+                                                    para este projeto
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'colaboradores' &&
+                                    (!participantesProjeto ||
+                                        participantesProjeto.data.length ===
+                                            0) && (
+                                        <div className="py-8 text-center">
+                                            <div className="text-base-content/60">
+                                                Nenhum participante encontrado
+                                                para este projeto
+                                            </div>
+                                        </div>
+                                    )}
                             </div>
-                        )}
+                        </div>
+                    )}
+
+                    {/* Modal for schedule details */}
+                    <HorarioModal
+                        isOpen={modalState.isOpen}
+                        onClose={closeModal}
+                        dia={modalState.dia}
+                        horario={modalState.horario}
+                        usuarios={modalState.usuarios}
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>
