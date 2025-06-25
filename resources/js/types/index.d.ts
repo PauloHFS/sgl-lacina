@@ -216,3 +216,29 @@ export interface BaiaDisponivel {
     nome: string;
     updated_at: string;
 }
+
+export interface PessoaHorario {
+    id: string;
+    name: string;
+    email: string;
+    foto_url?: string;
+    baia?: {
+        id: string;
+        nome: string;
+    } | null;
+    projeto?: {
+        id: string;
+        nome: string;
+    } | null;
+}
+
+export interface HorarioSlot {
+    count: number;
+    pessoas: PessoaHorario[];
+}
+
+export interface HorariosSala {
+    [dia: string]: {
+        [hora: number]: HorarioSlot;
+    };
+}
