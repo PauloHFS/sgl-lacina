@@ -559,11 +559,11 @@ export default function Show({
                                         onSubmit={submit}
                                         className="space-y-8"
                                     >
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="mx-auto w-full max-w-5xl">
                                             {auth.isVinculoProjetoPendente ? (
                                                 <div
                                                     role="alert"
-                                                    className="alert alert-info md:col-span-2"
+                                                    className="alert alert-info"
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -587,14 +587,14 @@ export default function Show({
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <div className="md:col-span-2">
-                                                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                                                        {vinculosDoUsuarioLogadoNoProjeto &&
-                                                            vinculosDoUsuarioLogadoNoProjeto.length >
-                                                                0 && (
-                                                                <div className="space-y-4">
-                                                                    {/* Informação sobre troca de projeto */}
-                                                                    <div className="alert alert-info">
+                                                <div className="space-y-6">
+                                                    {/* Seção de Troca de Projeto - Aparece apenas se o usuário tem vínculos ativos */}
+                                                    {vinculosDoUsuarioLogadoNoProjeto &&
+                                                        vinculosDoUsuarioLogadoNoProjeto.length >
+                                                            0 && (
+                                                            <div className="alert alert-warning">
+                                                                <div className="w-full">
+                                                                    <div className="mb-4 flex items-start gap-3">
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             fill="none"
@@ -606,17 +606,17 @@ export default function Show({
                                                                                 strokeLinejoin="round"
                                                                                 strokeWidth="2"
                                                                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                            ></path>
+                                                                            />
                                                                         </svg>
-                                                                        <div>
-                                                                            <h4 className="font-medium">
+                                                                        <div className="flex-1">
+                                                                            <h3 className="mb-1 font-semibold">
                                                                                 Você
                                                                                 já
                                                                                 possui
                                                                                 vínculos
                                                                                 ativos
-                                                                            </h4>
-                                                                            <p className="text-sm">
+                                                                            </h3>
+                                                                            <p className="text-sm opacity-80">
                                                                                 Para
                                                                                 participar
                                                                                 deste
@@ -643,10 +643,10 @@ export default function Show({
                                                                     {/* Toggle para troca de projeto */}
                                                                     <div className="form-control">
                                                                         <label className="cursor-pointer">
-                                                                            <div className="border-base-300 hover:bg-base-50 flex items-center space-x-3 rounded-lg border p-4 transition-colors">
+                                                                            <div className="bg-base-100 border-warning/30 hover:border-warning/50 flex items-center gap-4 rounded-lg border p-4 transition-colors">
                                                                                 <input
                                                                                     type="checkbox"
-                                                                                    className="toggle toggle-primary"
+                                                                                    className="toggle toggle-warning"
                                                                                     checked={
                                                                                         form
                                                                                             .data
@@ -709,12 +709,12 @@ export default function Show({
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Seleção do projeto a ser trocado - aparece apenas quando toggle está ativo */}
+                                                                    {/* Seleção do projeto a ser trocado */}
                                                                     {form.data
                                                                         .trocar && (
-                                                                        <div className="form-control">
+                                                                        <div className="form-control bg-base-200 border-warning/20 mt-4 rounded-lg border p-4">
                                                                             <label className="label">
-                                                                                <span className="label-text font-medium">
+                                                                                <span className="label-text text-base-content font-medium">
                                                                                     Selecione
                                                                                     o
                                                                                     vínculo
@@ -727,12 +727,12 @@ export default function Show({
                                                                                 </span>
                                                                             </label>
                                                                             <select
-                                                                                className={`select select-bordered w-full ${
+                                                                                className={`select select-bordered bg-base-100 text-base-content w-full ${
                                                                                     form
                                                                                         .errors
                                                                                         .usuario_projeto_trocado_id
                                                                                         ? 'select-error'
-                                                                                        : ''
+                                                                                        : 'border-base-300 focus:border-warning'
                                                                                 }`}
                                                                                 value={
                                                                                     form
@@ -827,86 +827,46 @@ export default function Show({
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                            )}
+                                                            </div>
+                                                        )}
 
-                                                        {/* Tipo de Vínculo */}
-                                                        {/* <div className="form-control">
-                                                            <label className="label">
-                                                                <span className="label-text font-medium">
-                                                                    Tipo de
-                                                                    Vínculo
-                                                                    <span className="text-error ml-1">
-                                                                        *
-                                                                    </span>
-                                                                </span>
-                                                            </label>
-                                                            <select
-                                                                className={`select select-bordered w-full ${
-                                                                    form.errors
-                                                                        .tipo_vinculo
-                                                                        ? 'select-error'
-                                                                        : ''
-                                                                }`}
-                                                                value={
-                                                                    form.data
-                                                                        .tipo_vinculo
-                                                                }
-                                                                onChange={(e) =>
-                                                                    form.setData(
-                                                                        'tipo_vinculo',
-                                                                        e.target
-                                                                            .value as TipoVinculo,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <option
-                                                                    value=""
-                                                                    disabled
-                                                                >
-                                                                    Selecione o
-                                                                    tipo de
-                                                                    vínculo
-                                                                </option>
-                                                                {tiposVinculo.map(
-                                                                    (tipo) => (
-                                                                        <option
-                                                                            key={
-                                                                                tipo
-                                                                            }
-                                                                            value={
-                                                                                tipo
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                tipo
-                                                                            }
-                                                                        </option>
-                                                                    ),
-                                                                )}
-                                                            </select>
-                                                            {form.errors
-                                                                .tipo_vinculo && (
-                                                                <div className="label">
-                                                                    <span className="label-text-alt text-error">
-                                                                        {
-                                                                            form
-                                                                                .errors
-                                                                                .tipo_vinculo
+                                                    {/* Seção Principal do Formulário */}
+                                                    <div className="card card-bordered bg-base-100">
+                                                        <div className="card-body">
+                                                            <div className="mb-6 flex items-center gap-3">
+                                                                <div className="badge badge-primary badge-lg">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        fill="none"
+                                                                        viewBox="0 0 24 24"
+                                                                        strokeWidth={
+                                                                            2
                                                                         }
-                                                                    </span>
+                                                                        stroke="currentColor"
+                                                                        className="h-4 w-4"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                                                                        />
+                                                                    </svg>
                                                                 </div>
-                                                            )}
-                                                        </div> */}
+                                                                <h3 className="text-base-content text-xl font-semibold">
+                                                                    Dados da
+                                                                    Solicitação
+                                                                </h3>
+                                                            </div>
 
-                                                        {/* Campos do Formulário */}
-                                                        <div className="col-span-full">
-                                                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 xl:grid-cols-3">
                                                                 {/* Função */}
                                                                 <div className="form-control">
                                                                     <label className="label">
-                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                        <span className="label-text font-medium">
                                                                             Função
-                                                                            <span className="text-error">
+                                                                            no
+                                                                            Projeto
+                                                                            <span className="text-error ml-1">
                                                                                 *
                                                                             </span>
                                                                         </span>
@@ -942,8 +902,6 @@ export default function Show({
                                                                             Selecione
                                                                             sua
                                                                             função
-                                                                            no
-                                                                            projeto
                                                                         </option>
                                                                         {funcoes.map(
                                                                             (
@@ -967,7 +925,7 @@ export default function Show({
                                                                     {form.errors
                                                                         .funcao && (
                                                                         <div className="label">
-                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                            <span className="label-text-alt text-error">
                                                                                 {
                                                                                     form
                                                                                         .errors
@@ -981,11 +939,11 @@ export default function Show({
                                                                 {/* Carga Horária */}
                                                                 <div className="form-control">
                                                                     <label className="label">
-                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                        <span className="label-text font-medium">
                                                                             Carga
                                                                             Horária
                                                                             Mensal
-                                                                            <span className="text-error">
+                                                                            <span className="text-error ml-1">
                                                                                 *
                                                                             </span>
                                                                         </span>
@@ -1026,13 +984,13 @@ export default function Show({
                                                                             max="192"
                                                                         />
                                                                         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                                                                            <span className="text-base-content/60 text-xs">
+                                                                            <span className="text-base-content/60 text-xs font-medium">
                                                                                 hrs
                                                                             </span>
                                                                         </div>
                                                                     </div>
                                                                     <div className="label">
-                                                                        <span className="label-text-alt text-base-content/70 flex items-center gap-1">
+                                                                        <span className="label-text-alt text-base-content/70">
                                                                             ≈{' '}
                                                                             {(
                                                                                 form
@@ -1048,7 +1006,7 @@ export default function Show({
                                                                     {form.errors
                                                                         .carga_horaria && (
                                                                         <div className="label">
-                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                            <span className="label-text-alt text-error">
                                                                                 {
                                                                                     form
                                                                                         .errors
@@ -1062,11 +1020,11 @@ export default function Show({
                                                                 {/* Data de Início */}
                                                                 <div className="form-control">
                                                                     <label className="label">
-                                                                        <span className="label-text flex items-center gap-2 font-medium">
+                                                                        <span className="label-text font-medium">
                                                                             Data
                                                                             de
                                                                             Início
-                                                                            <span className="text-error">
+                                                                            <span className="text-error ml-1">
                                                                                 *
                                                                             </span>
                                                                         </span>
@@ -1103,11 +1061,10 @@ export default function Show({
                                                                             )
                                                                         }
                                                                     />
-
                                                                     {form.errors
                                                                         .data_inicio && (
                                                                         <div className="label">
-                                                                            <span className="label-text-alt text-error flex items-center gap-1">
+                                                                            <span className="label-text-alt text-error">
                                                                                 {
                                                                                     form
                                                                                         .errors
@@ -1119,13 +1076,27 @@ export default function Show({
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    {/* Submit Button */}
-                                                    <div className="col-span-full">
-                                                        <div className="border-base-300 flex flex-col gap-4 border-t pt-8 sm:flex-row">
-                                                            <div className="flex-1">
+                                                        {/* Seção dos Botões - dentro do mesmo card */}
+                                                        <div className="card-body border-base-300 border-t pt-6">
+                                                            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                                                                 <div className="text-base-content/70 flex items-center gap-2 text-sm">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        fill="none"
+                                                                        viewBox="0 0 24 24"
+                                                                        strokeWidth={
+                                                                            1.5
+                                                                        }
+                                                                        stroke="currentColor"
+                                                                        className="h-4 w-4"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                                                                        />
+                                                                    </svg>
                                                                     Sua
                                                                     solicitação
                                                                     será
@@ -1134,52 +1105,52 @@ export default function Show({
                                                                     coordenadores
                                                                     do projeto
                                                                 </div>
-                                                            </div>
-                                                            <div className="flex gap-3">
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-ghost"
-                                                                    onClick={() =>
-                                                                        window.history.back()
-                                                                    }
-                                                                >
-                                                                    Cancelar
-                                                                </button>
-                                                                <button
-                                                                    type="submit"
-                                                                    className="btn btn-primary px-8"
-                                                                    disabled={
-                                                                        form.processing
-                                                                    }
-                                                                >
-                                                                    {form.processing ? (
-                                                                        <>
-                                                                            <span className="loading loading-spinner loading-sm"></span>
-                                                                            Enviando...
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <svg
-                                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                                fill="none"
-                                                                                viewBox="0 0 20 20"
-                                                                                strokeWidth={
-                                                                                    1.5
-                                                                                }
-                                                                                stroke="currentColor"
-                                                                                className="h-4 w-4"
-                                                                            >
-                                                                                <path
-                                                                                    strokeLinecap="round"
-                                                                                    strokeLinejoin="round"
-                                                                                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-                                                                                />
-                                                                            </svg>
-                                                                            Solicitar
-                                                                            Vínculo
-                                                                        </>
-                                                                    )}
-                                                                </button>
+                                                                <div className="flex gap-3">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-ghost"
+                                                                        onClick={() =>
+                                                                            window.history.back()
+                                                                        }
+                                                                    >
+                                                                        Cancelar
+                                                                    </button>
+                                                                    <button
+                                                                        type="submit"
+                                                                        className="btn btn-primary px-8"
+                                                                        disabled={
+                                                                            form.processing
+                                                                        }
+                                                                    >
+                                                                        {form.processing ? (
+                                                                            <>
+                                                                                <span className="loading loading-spinner loading-sm"></span>
+                                                                                Enviando...
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    fill="none"
+                                                                                    viewBox="0 0 20 20"
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
+                                                                                    stroke="currentColor"
+                                                                                    className="h-4 w-4"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+                                                                                    />
+                                                                                </svg>
+                                                                                Solicitar
+                                                                                Vínculo
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
