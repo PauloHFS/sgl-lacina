@@ -203,6 +203,7 @@ export interface ProjetoAtivo {
     id: string; // ID do vínculo usuario_projeto
     projeto_id: string;
     projeto_nome: string;
+    carga_horaria: number; // Carga horária semanal do projeto
 }
 
 export interface SalaDisponivel {

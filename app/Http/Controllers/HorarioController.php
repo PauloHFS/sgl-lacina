@@ -278,6 +278,7 @@ class HorarioController extends Controller
                     'id' => $vinculo->id,
                     'projeto_id' => $vinculo->projeto->id,
                     'projeto_nome' => $vinculo->projeto->nome,
+                    'carga_horaria' => $vinculo->carga_horaria,
                 ];
             });
 
