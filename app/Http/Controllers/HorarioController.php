@@ -87,10 +87,6 @@ class HorarioController extends Controller
             'horarios.*.baia_id.exists' => 'A baia selecionada não existe.',
         ]);
 
-        Log::info('Horários atualizados', [
-            'user_id' => $request->user()->id,
-            'horarios' => $validatedData['horarios'],
-        ]);
 
         // Validação customizada para garantir que apenas um campo seja preenchido por vez
         $customErrors = [];

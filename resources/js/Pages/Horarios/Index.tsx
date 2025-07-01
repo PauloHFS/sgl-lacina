@@ -18,7 +18,6 @@ const getStatusColorClass = (
     horario?: Horario,
 ): string => {
     if (!status) return 'bg-base-100';
-    console.log('getStatusColorClass', status, horario);
     switch (status) {
         case 'AUSENTE':
             return 'bg-red-200 !text-red-800';
