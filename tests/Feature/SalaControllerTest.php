@@ -12,32 +12,43 @@ beforeEach(function () {
     $this->actingAs($this->user);
 });
 
+function createSalaWithBaias($salaData, $baiasData) {
+    $sala = Sala::factory()->create($salaData);
+    $baias = collect($baiasData)->map(function ($baiaData) use ($sala) {
+        return Baia::factory()->create(array_merge($baiaData, ['sala_id' => $sala->id]));
+    });
+    return [$sala, $baias];
+}
+
+function assertSalaAndBaiasUpdated($sala, $expectedSalaData, $baias, $expectedBaiasData, $deletedBaiaIds) {
+    $sala->refresh();
+    expect($sala->nome)->toBe($expectedSalaData['nome']);
+    expect($sala->descricao)->toBe($expectedSalaData['descricao']);
+
+    foreach ($baias as $index => $baia) {
+        $baia->refresh();
+        expect($baia->nome)->toBe($expectedBaiasData[$index]['nome']);
+        expect($baia->descricao)->toBe($expectedBaiasData[$index]['descricao']);
+        expect($baia->ativa)->toBe($expectedBaiasData[$index]['ativa']);
+    }
+
+    foreach ($deletedBaiaIds as $deletedBaiaId) {
+        expect(Baia::find($deletedBaiaId))->toBeNull();
+    }
+
+    expect($sala->baias()->count())->toBe(count($baias));
+}
+
 test('pode atualizar sala e deletar baias', function () {
     // Criar uma sala com baias
-    $sala = Sala::factory()->create([
-        'nome' => 'Sala Teste',
-        'descricao' => 'Descrição teste',
-        'ativa' => true,
-    ]);
-
-    $baia1 = Baia::factory()->create([
-        'sala_id' => $sala->id,
-        'nome' => 'Baia 1',
-        'ativa' => true,
-    ]);
-
-    $baia2 = Baia::factory()->create([
-        'sala_id' => $sala->id,
-        'nome' => 'Baia 2',
-        'ativa' => true,
-    ]);
-
-    $baia3 = Baia::factory()->create([
-        'sala_id' => $sala->id,
-        'nome' => 'Baia 3',
-        'ativa' => true,
-    ]);
-
+    [$sala, $baias] = createSalaWithBaias(
+        ['nome' => 'Sala Teste', 'descricao' => 'Descrição teste', 'ativa' => true],
+        [
+            ['nome' => 'Baia 1', 'ativa' => true],
+            ['nome' => 'Baia 2', 'ativa' => true],
+            ['nome' => 'Baia 3', 'ativa' => true],
+        ]
+    );
     // Dados para atualização - manter baias 1 e 2, deletar baia 3
     $dadosUpdate = [
         'nome' => 'Sala Teste Atualizada',
