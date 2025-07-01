@@ -66,8 +66,6 @@ class ProfileController extends Controller
             return $value !== null && $value !== '';
         });
 
-        Log::info('Dados filtrados para fill:', $fillData);
-
         $user->fill($fillData);
 
         if ($user->isDirty('email')) {

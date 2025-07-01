@@ -5,6 +5,8 @@ use App\Http\Controllers\ConfiguracaoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjetoVinculoController;
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\SalaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,15 +43,25 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // Rotas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Rota para a página de horários (mock)
-    Route::get('/meus-horarios', function () {
-        return Inertia::render('Horarios/MeuHorario');
-    })->name('horarios.meus');
-
-
-    // TODO: Mergear essas duas rotas ??????????????????????????????????????????????
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::prefix("/horarios")->group(function () {
+        Route::get('/', [HorarioController::class, 'index'])->name('horarios.index');
+        Route::get('/edit', [HorarioController::class, 'edit'])->name('horarios.edit');
+        Route::patch('/', [HorarioController::class, 'update'])->name('horarios.update');
+        Route::get('/salas-disponiveis', [HorarioController::class, 'getSalasDisponiveis'])->name('horarios.salas-disponiveis');
+        Route::get('/projetos-ativos', [HorarioController::class, 'getProjetosAtivos'])->name('horarios.projetos-ativos');
+    });
+
+    Route::prefix("/salas")->group(function () {
+        Route::get('/', [SalaController::class, 'index'])->name('salas.index');
+        Route::get('/new', [SalaController::class, 'create'])->name('salas.create');
+        Route::get('/{id}', [SalaController::class, 'show'])->name('salas.show');
+        Route::get('/{id}/edit', [SalaController::class, 'edit'])->name('salas.edit');
+        Route::post('/new', [SalaController::class, 'store'])->name('salas.store');
+        Route::patch('/{id}', [SalaController::class, 'update'])->name('salas.update');
+        Route::delete('/{id}', [SalaController::class, 'destroy'])->name('salas.destroy');
+    });
 
     Route::prefix('/projeto')->group(function () {
         Route::get('/', [ProjetosController::class, 'index'])->name('projetos.index');

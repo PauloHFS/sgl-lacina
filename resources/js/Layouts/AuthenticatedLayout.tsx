@@ -229,15 +229,15 @@ export default function Authenticated({
                                 </NavLink>
                             </li>
 
-                            {/* {!isCoordenador && (
+                            {!isCoordenador && (
                                 <li>
                                     <NavLink
-                                        href={route('horarios.meus')}
+                                        href={route('horarios.index')}
                                         active={route().current(
-                                            'horarios.meus',
+                                            'horarios.index',
                                         )}
                                         className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                                            route().current('horarios.meus')
+                                            route().current('horarios.index')
                                                 ? 'bg-primary text-primary-content'
                                                 : 'text-base-content hover:bg-base-200'
                                         }`}
@@ -258,7 +258,7 @@ export default function Authenticated({
                                         Meus Horários
                                     </NavLink>
                                 </li>
-                            )} */}
+                            )}
 
                             {isCoordenador && (
                                 <>
@@ -292,6 +292,32 @@ export default function Authenticated({
                                                 />
                                             </svg>
                                             Colaboradores
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            href={route('salas.index')}
+                                            active={route().current('salas.*')}
+                                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                                                route().current('salas.*')
+                                                    ? 'bg-primary text-primary-content'
+                                                    : 'text-base-content hover:bg-base-200'
+                                            }`}
+                                        >
+                                            <svg
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0h3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                                />
+                                            </svg>
+                                            Salas
                                         </NavLink>
                                     </li>
                                     <li>

@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
+use App\Models\Horario;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoHorario;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -134,7 +136,7 @@ class ProjetosController extends Controller
       ->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR->value)
       ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
       ->orderBy('name')
-      ->get(['users.id', 'users.name']);
+      ->get(['users.id', 'users.name', 'users.foto_url']);
 
 
     $participantesProjeto = null;
@@ -166,6 +168,32 @@ class ProjetosController extends Controller
         ->exists();
     }
 
+    // Buscar horários dos colaboradores do projeto (somente trabalho presencial e remoto)
+    $horariosDosProjetos = null;
+    if (
+      $usuarioVinculo &&
+      (($usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
+        $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value) ||
+        $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value)
+    ) {
+
+      $horariosDosProjetos = Horario::query()
+        ->whereHas('usuarioProjeto', function ($query) use ($projeto) {
+          $query->where('projeto_id', $projeto->id)
+            ->where('status', StatusVinculoProjeto::APROVADO);
+        })
+        ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])
+        ->with([
+          'usuario:id,name,email,foto_url',
+          'baia:id,nome,sala_id',
+          'baia.sala:id,nome'
+        ])
+        ->orderBy('dia_da_semana')
+        ->orderBy('horario')
+        ->get()
+        ->groupBy('dia_da_semana');
+    }
+
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'funcoes' => array_column(Funcao::cases(), 'value'),
@@ -174,6 +202,7 @@ class ProjetosController extends Controller
       'participantesProjeto' => $participantesProjeto,
       'temVinculosPendentes' => $temVinculosPendentes,
       'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
+      'horariosDosProjetos' => $horariosDosProjetos,
     ]);
   }
 

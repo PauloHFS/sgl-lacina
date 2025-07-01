@@ -107,6 +107,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Banco::class, 'banco_id');
     }
 
+    public function horarios(): HasMany
+    {
+        return $this->hasMany(Horario::class, 'usuario_id');
+    }
+
     public function isCoordenador(?Projeto $projeto = null)
     {
         if ($projeto === null) {

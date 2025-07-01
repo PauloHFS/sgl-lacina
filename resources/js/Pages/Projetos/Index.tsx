@@ -87,26 +87,6 @@ export default function Projetos({
         return barColors[tipo] || 'bg-neutral';
     };
 
-    // const getStatusBadgeColor = (status: StatusVinculoProjeto | null) => {
-    //     if (!status) return 'badge-ghost';
-    //     const statusColors: { [key in StatusVinculoProjeto]: string } = {
-    //         APROVADO: 'badge-success',
-    //         PENDENTE: 'badge-warning',
-    //         RECUSADO: 'badge-error',
-    //         ENCERRADO: 'badge-neutral',
-    //     };
-    //     return statusColors[status] || 'badge-ghost';
-    // };
-
-    // const getTipoVinculoBadgeColor = (tipoVinculo: TipoVinculo | null) => {
-    //     if (!tipoVinculo) return 'badge-ghost';
-    //     const tipoVinculoColors: { [key in TipoVinculo]: string } = {
-    //         COLABORADOR: 'badge-primary',
-    //         COORDENADOR: 'badge-accent',
-    //     };
-    //     return tipoVinculoColors[tipoVinculo] || 'badge-ghost';
-    // };
-
     return (
         <AuthenticatedLayout>
             <Head title="Projetos" />
@@ -218,40 +198,6 @@ export default function Projetos({
                                                     </span>{' '}
                                                     {projeto.cliente}
                                                 </p>
-
-                                                {/* {projeto.user_status && (
-                                                    <div className="mb-1">
-                                                        <span className="text-sm font-semibold">
-                                                            Meu Status:
-                                                        </span>{' '}
-                                                        <span
-                                                            className={`badge ${getStatusBadgeColor(
-                                                                projeto.user_status,
-                                                            )}`}
-                                                        >
-                                                            {
-                                                                projeto.user_status
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {projeto.user_tipo_vinculo && (
-                                                    <div className="mb-4">
-                                                        <span className="text-sm font-semibold">
-                                                            Meu Vínculo:
-                                                        </span>{' '}
-                                                        <span
-                                                            className={`badge ${getTipoVinculoBadgeColor(
-                                                                projeto.user_tipo_vinculo,
-                                                            )}`}
-                                                        >
-                                                            {
-                                                                projeto.user_tipo_vinculo
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                )} */}
 
                                                 <div className="card-actions border-base-300/50 mt-auto items-center justify-start border-t pt-4">
                                                     {/* Placeholder for future actions */}

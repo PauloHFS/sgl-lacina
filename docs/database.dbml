@@ -121,7 +121,6 @@ Table "projetos" {
   "id" uuid [pk, not null]
   "nome" varchar(255) [not null]
   "descricao" text
-  "campos_extras" jsonb [not null, default: `{}`]
   "data_inicio" date [not null]
   "data_termino" date
   "cliente" varchar(255) [not null]
@@ -133,6 +132,9 @@ Table "projetos" {
   "created_at" timestamp
   "updated_at" timestamp
   "deleted_at" timestamp
+  "valor_total" int4 [not null, default: 0]
+  "meses_execucao" float8 [not null, default: '0']
+  "campos_extras" jsonb [not null, default: `{}`]
 }
 
 Table "usuario_projeto" {
@@ -143,7 +145,7 @@ Table "usuario_projeto" {
   "tipo_vinculo" varchar(255) [not null]
   "funcao" varchar(255) [not null]
   "status" varchar(255) [not null]
-  "carga_horaria_mensal" int4 [not null]
+  "carga_horaria" int4 [not null]
   "data_inicio" timestamp [not null]
   "data_fim" timestamp
   "created_at" timestamp
@@ -217,9 +219,67 @@ Table "configuracao_sistemas" {
   "updated_at" timestamp
 }
 
+Table "salas" {
+  "id" uuid [pk, not null, default: `gen_random_uuid()`]
+  "nome" varchar(255) [unique, not null]
+  "descricao" text
+  "ativa" bool [not null, default: true]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+
+  Indexes {
+    (ativa, created_at) [type: btree, name: "salas_ativa_created_at_index"]
+  }
+}
+
+Table "baias" {
+  "id" uuid [pk, not null, default: `gen_random_uuid()`]
+  "nome" varchar(255) [unique, not null]
+  "descricao" text
+  "ativa" bool [not null, default: true]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+  "sala_id" uuid [not null]
+
+  Indexes {
+    (ativa, created_at) [type: btree, name: "baias_ativa_created_at_index"]
+  }
+}
+
+Table "horarios" {
+  "id" uuid [pk, not null, default: `gen_random_uuid()`]
+  "horario" int4 [not null]
+  "dia_da_semana" varchar(255) [not null]
+  "tipo" varchar(255) [not null, default: 'AUSENTE']
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+  "usuario_id" uuid [not null]
+  "usuario_projeto_id" uuid
+  "baia_id" uuid
+
+  Indexes {
+    (baia_id, dia_da_semana, horario) [type: btree, name: "horarios_baia_dia_horario_unique"]
+    (usuario_id, dia_da_semana, horario) [type: btree, name: "horarios_usuario_dia_horario_unique"]
+    (dia_da_semana, horario, tipo) [type: btree, name: "horarios_dia_horario_tipo_idx"]
+    (usuario_projeto_id, dia_da_semana) [type: btree, name: "horarios_projeto_dia_idx"]
+    (tipo, dia_da_semana, horario) [type: btree, name: "horarios_trabalho_idx"]
+  }
+}
+
+Ref "baias_sala_id_foreign":"salas"."id" < "baias"."sala_id" [delete: cascade]
+
 Ref "historico_usuario_projeto_projeto_id_foreign":"projetos"."id" < "historico_usuario_projeto"."projeto_id"
 
 Ref "historico_usuario_projeto_usuario_id_foreign":"users"."id" < "historico_usuario_projeto"."usuario_id"
+
+Ref "horarios_baia_id_foreign":"baias"."id" < "horarios"."baia_id" [delete: set null]
+
+Ref "horarios_usuario_id_foreign":"users"."id" < "horarios"."usuario_id" [delete: cascade]
+
+Ref "horarios_usuario_projeto_id_foreign":"usuario_projeto"."id" < "horarios"."usuario_projeto_id" [delete: set null]
 
 Ref "telescope_entries_tags_entry_uuid_foreign":"telescope_entries"."uuid" < "telescope_entries_tags"."entry_uuid" [delete: cascade]
 
