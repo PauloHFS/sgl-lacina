@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         Route::patch('/', [HorarioController::class, 'update'])->name('horarios.update');
         Route::get('/salas-disponiveis', [HorarioController::class, 'getSalasDisponiveis'])->name('horarios.salas-disponiveis');
         Route::get('/projetos-ativos', [HorarioController::class, 'getProjetosAtivos'])->name('horarios.projetos-ativos');
+        Route::get('/colaborador/{colaborador}/projeto/{projeto}', [HorarioController::class, 'show'])->name('horarios.show');
     });
 
     Route::prefix("/salas")->group(function () {

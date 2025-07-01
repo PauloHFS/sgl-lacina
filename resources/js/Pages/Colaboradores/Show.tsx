@@ -782,58 +782,212 @@ export default function Show({
                                     <div className="divider">
                                         Projeto(s) Ativos
                                     </div>
-                                    <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2">
-                                        {colaborador.projetos.filter(
-                                            (p) =>
-                                                p.vinculo.status === 'APROVADO',
-                                        ).length > 0 ? (
-                                            colaborador.projetos
-                                                .filter(
-                                                    (p) =>
-                                                        p.vinculo.status ===
-                                                        'APROVADO',
-                                                )
-                                                .map((projeto) => (
-                                                    <div
-                                                        key={projeto.id}
-                                                        className="flex items-center justify-between"
-                                                    >
-                                                        <InfoItem
-                                                            label="Projeto"
-                                                            className="flex-grow"
-                                                        >
-                                                            <Link
-                                                                href={route(
-                                                                    'projetos.show',
-                                                                    projeto.id,
-                                                                )}
-                                                                className="input input-bordered hover:bg-base-200 flex h-auto min-h-10 w-full items-center py-2 break-words whitespace-normal"
+
+                                    {colaborador.projetos.filter(
+                                        (p) => p.vinculo.status === 'APROVADO',
+                                    ).length > 0 ? (
+                                        <div className="overflow-x-auto">
+                                            <table className="table-zebra table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Projeto</th>
+                                                        <th>Cliente</th>
+                                                        <th>Função</th>
+                                                        <th>Carga Horária</th>
+                                                        <th>Data Início</th>
+                                                        <th>Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {colaborador.projetos
+                                                        .filter(
+                                                            (p) =>
+                                                                p.vinculo
+                                                                    .status ===
+                                                                'APROVADO',
+                                                        )
+                                                        .map((projeto) => (
+                                                            <tr
+                                                                key={projeto.id}
                                                             >
-                                                                {projeto.nome}
-                                                            </Link>
-                                                        </InfoItem>
-                                                        {can_update_colaborador && (
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleEditVinculoClick(
-                                                                        projeto.vinculo,
-                                                                    )
-                                                                }
-                                                                className="btn btn-ghost btn-sm ml-2"
-                                                                aria-label="Editar Vínculo"
-                                                            >
-                                                                Editar
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))
-                                        ) : (
-                                            <p className="text-base-content/70">
-                                                Nenhum projeto com vínculo
-                                                aprovado.
+                                                                <td>
+                                                                    <div className="font-medium">
+                                                                        {
+                                                                            projeto.nome
+                                                                        }
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="text-sm opacity-70">
+                                                                        {
+                                                                            projeto.cliente
+                                                                        }
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="badge badge-outline">
+                                                                        {
+                                                                            projeto
+                                                                                .vinculo
+                                                                                .funcao
+                                                                        }
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="text-sm">
+                                                                        {
+                                                                            projeto
+                                                                                .vinculo
+                                                                                .carga_horaria
+                                                                        }
+                                                                        h/mês
+                                                                        <div className="text-xs opacity-60">
+                                                                            (
+                                                                            {Math.round(
+                                                                                projeto
+                                                                                    .vinculo
+                                                                                    .carga_horaria /
+                                                                                    4,
+                                                                            )}
+                                                                            h/semana)
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="text-sm">
+                                                                        {new Date(
+                                                                            projeto.vinculo.data_inicio,
+                                                                        ).toLocaleDateString(
+                                                                            'pt-BR',
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="join">
+                                                                        <Link
+                                                                            href={route(
+                                                                                'projetos.show',
+                                                                                projeto.id,
+                                                                            )}
+                                                                            className="btn btn-ghost btn-xs join-item"
+                                                                            title="Ver Projeto"
+                                                                        >
+                                                                            <svg
+                                                                                className="h-4 w-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={
+                                                                                        2
+                                                                                    }
+                                                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                                />
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={
+                                                                                        2
+                                                                                    }
+                                                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                                />
+                                                                            </svg>
+                                                                        </Link>
+
+                                                                        <Link
+                                                                            href={route(
+                                                                                'horarios.show',
+                                                                                {
+                                                                                    colaborador:
+                                                                                        colaborador.id,
+                                                                                    projeto:
+                                                                                        projeto.id,
+                                                                                },
+                                                                            )}
+                                                                            className="btn btn-ghost btn-xs join-item"
+                                                                            title="Ver Horários"
+                                                                        >
+                                                                            <svg
+                                                                                className="h-4 w-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={
+                                                                                        2
+                                                                                    }
+                                                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                                />
+                                                                            </svg>
+                                                                        </Link>
+
+                                                                        {can_update_colaborador && (
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleEditVinculoClick(
+                                                                                        projeto.vinculo,
+                                                                                    )
+                                                                                }
+                                                                                className="btn btn-ghost btn-xs join-item"
+                                                                                title="Editar Vínculo"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-4 w-4"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth={
+                                                                                            2
+                                                                                        }
+                                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 text-center">
+                                            <div className="text-base-content/50 mb-2">
+                                                <svg
+                                                    className="mx-auto mb-4 h-12 w-12"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1}
+                                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <p className="text-base-content/70 text-lg font-medium">
+                                                Nenhum projeto ativo
                                             </p>
-                                        )}
-                                    </div>
+                                            <p className="text-base-content/50 text-sm">
+                                                Este colaborador não está
+                                                vinculado a nenhum projeto
+                                                aprovado no momento.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

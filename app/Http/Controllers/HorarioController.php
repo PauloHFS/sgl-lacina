@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class HorarioController extends Controller
@@ -279,5 +280,103 @@ class HorarioController extends Controller
             });
 
         return response()->json(['projetos' => $projetos]);
+    }
+
+    /**
+     * Exibe os horários de um colaborador em um projeto específico.
+     *
+     * @param  string  $colaboradorId
+     * @param  string  $projetoId
+     * @return \Inertia\Response
+     */
+    public function show(string $colaboradorId, string $projetoId)
+    {
+        // Verificar se o usuário atual tem permissão para ver os horários
+        $currentUser = Auth::user();
+
+        // Se não for coordenador, só pode ver seus próprios horários
+        if (!$currentUser->isCoordenador() && $currentUser->id !== $colaboradorId) {
+            abort(403, 'Você não tem permissão para visualizar estes horários.');
+        }
+
+        // Buscar o colaborador
+        $colaborador = \App\Models\User::findOrFail($colaboradorId);
+
+        // Buscar o vínculo ativo do colaborador com o projeto
+        $vinculo = \App\Models\UsuarioProjeto::where('usuario_id', $colaboradorId)
+            ->where('projeto_id', $projetoId)
+            ->where('status', StatusVinculoProjeto::APROVADO)
+            ->whereNull('data_fim')
+            ->with('projeto:id,nome,cliente')
+            ->first();
+
+        if (!$vinculo) {
+            abort(404, 'Colaborador não possui vínculo ativo com este projeto.');
+        }
+
+        // Buscar os horários do colaborador para este projeto
+        $horarios = Horario::where('usuario_id', $colaboradorId)
+            ->where('usuario_projeto_id', $vinculo->id)
+            ->with([
+                'baia:id,nome,sala_id',
+                'baia.sala:id,nome'
+            ])
+            ->orderBy('dia_da_semana')
+            ->orderBy('horario', 'asc')
+            ->get()
+            ->groupBy('dia_da_semana');
+
+        // Estruturar dados para o frontend
+        $diasSemana = [
+            'SEGUNDA' => 'Segunda-feira',
+            'TERCA' => 'Terça-feira',
+            'QUARTA' => 'Quarta-feira',
+            'QUINTA' => 'Quinta-feira',
+            'SEXTA' => 'Sexta-feira',
+            'SABADO' => 'Sábado',
+            'DOMINGO' => 'Domingo'
+        ];
+
+        $horariosFormatados = [];
+        foreach ($diasSemana as $dia => $diaFormatado) {
+            $horariosFormatados[$dia] = [
+                'nome' => $diaFormatado,
+                'horarios' => $horarios->get($dia, collect())->map(function ($horario) {
+                    return [
+                        'id' => $horario->id,
+                        'horario' => $horario->horario,
+                        'tipo' => $horario->tipo,
+                        'baia' => $horario->baia ? [
+                            'id' => $horario->baia->id,
+                            'nome' => $horario->baia->nome,
+                            'sala' => $horario->baia->sala ? [
+                                'id' => $horario->baia->sala->id,
+                                'nome' => $horario->baia->sala->nome
+                            ] : null
+                        ] : null
+                    ];
+                })
+            ];
+        }
+
+        return Inertia::render('Horarios/Show', [
+            'colaborador' => [
+                'id' => $colaborador->id,
+                'name' => $colaborador->name,
+                'email' => $colaborador->email
+            ],
+            'projeto' => [
+                'id' => $vinculo->projeto->id,
+                'nome' => $vinculo->projeto->nome,
+                'cliente' => $vinculo->projeto->cliente
+            ],
+            'vinculo' => [
+                'id' => $vinculo->id,
+                'funcao' => $vinculo->funcao,
+                'carga_horaria' => $vinculo->carga_horaria,
+                'data_inicio' => $vinculo->data_inicio
+            ],
+            'horarios' => $horariosFormatados,
+        ]);
     }
 }
