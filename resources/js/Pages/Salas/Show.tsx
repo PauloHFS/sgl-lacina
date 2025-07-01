@@ -71,13 +71,63 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
         modalRef.current?.close();
     };
 
-    // Função para obter cor baseada na quantidade de pessoas
+    // Calcular capacidade baseada nas baias ativas
+    const capacidadeTotal = baiasAtivas.length;
+
+    // Função para obter cor baseada na quantidade de pessoas e capacidade da sala
     const getCountColor = (count: number) => {
         if (count === 0) return 'bg-base-200 text-base-content';
-        if (count <= 3) return 'bg-success text-success-content';
-        if (count <= 6) return 'bg-info text-info-content';
-        if (count <= 10) return 'bg-warning text-warning-content';
+
+        const percentualOcupacao =
+            capacidadeTotal > 0 ? (count / capacidadeTotal) * 100 : 0;
+
+        if (percentualOcupacao <= 50) return 'bg-success text-success-content';
+        if (percentualOcupacao <= 75) return 'bg-info text-info-content';
+        // 76% a 100% = ocupação alta/completa
         return 'bg-error text-error-content';
+    };
+
+    // Função para gerar as faixas da legenda baseadas na capacidade real
+    const getLegendaFaixas = () => {
+        if (capacidadeTotal === 0) {
+            return [{ color: 'bg-base-200', label: 'Sem baias ativas' }];
+        }
+
+        const faixa50 = Math.max(1, Math.ceil(capacidadeTotal * 0.5));
+        const faixa75 = Math.max(1, Math.ceil(capacidadeTotal * 0.75));
+        const faixa100 = capacidadeTotal;
+
+        const faixas = [
+            { color: 'bg-base-200', label: 'Vazio (0 pessoas)' },
+            {
+                color: 'bg-success',
+                label: `Baixa ocupação (1-${faixa50} pessoas)`,
+            },
+        ];
+
+        // Adiciona faixa média apenas se houver diferença significativa
+        if (faixa75 > faixa50) {
+            faixas.push({
+                color: 'bg-info',
+                label: `Média ocupação (${faixa50 + 1}-${faixa75} pessoas)`,
+            });
+        }
+
+        // Adiciona faixa alta apenas se houver diferença da anterior
+        if (faixa100 > faixa75) {
+            faixas.push({
+                color: 'bg-error',
+                label: `Alta ocupação (${faixa75 + 1}-${faixa100} pessoas)`,
+            });
+        } else if (faixa100 > faixa50) {
+            // Se não há faixa média, mas há diferença entre baixa e máxima
+            faixas.push({
+                color: 'bg-error',
+                label: `Alta ocupação (${faixa50 + 1}-${faixa100} pessoas)`,
+            });
+        }
+
+        return faixas;
     };
 
     return (
@@ -351,9 +401,8 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
                                                                 }
                                                             </div>
                                                             <div className="stat-desc">
-                                                                Baias
-                                                                disponíveis para
-                                                                uso
+                                                                Capacidade atual
+                                                                de ocupação
                                                             </div>
                                                         </div>
 
@@ -656,26 +705,54 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
                                         </div>
 
                                         {/* Legenda */}
-                                        <div className="mt-4 flex flex-wrap gap-4 text-sm">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-base-200 h-4 w-4 rounded"></div>
-                                                <span>Vazio</span>
+                                        <div className="mt-4 space-y-3">
+                                            <div className="flex items-center gap-2 text-sm font-medium">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                                <span>
+                                                    Ocupação por horário
+                                                </span>
+                                                <span className="text-base-content/60">
+                                                    (Capacidade:{' '}
+                                                    {capacidadeTotal}{' '}
+                                                    {capacidadeTotal === 1
+                                                        ? 'baia'
+                                                        : 'baias'}{' '}
+                                                    ativa
+                                                    {capacidadeTotal === 1
+                                                        ? ''
+                                                        : 's'}
+                                                    )
+                                                </span>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-success h-4 w-4 rounded"></div>
-                                                <span>1-3 pessoas</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-info h-4 w-4 rounded"></div>
-                                                <span>4-6 pessoas</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-warning h-4 w-4 rounded"></div>
-                                                <span>7-10 pessoas</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-error h-4 w-4 rounded"></div>
-                                                <span>11+ pessoas</span>
+                                            <div className="flex flex-wrap gap-4 text-sm">
+                                                {getLegendaFaixas().map(
+                                                    (faixa, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center gap-2"
+                                                        >
+                                                            <div
+                                                                className={`${faixa.color} h-4 w-4 rounded`}
+                                                            ></div>
+                                                            <span>
+                                                                {faixa.label}
+                                                            </span>
+                                                        </div>
+                                                    ),
+                                                )}
                                             </div>
                                         </div>
                                     </div>
