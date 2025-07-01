@@ -1,5 +1,6 @@
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
+import { TIME_SLOTS_HORARIO } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -28,10 +29,6 @@ const DIAS_SEMANA_HORARIO = [
     { id: 'SEXTA', nome: 'Sexta' },
     { id: 'SABADO', nome: 'Sábado' },
 ] as const;
-
-const TIME_SLOTS_HORARIO = [
-    7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-];
 
 type ParticipanteProjeto = Pick<User, 'id' | 'name' | 'email' | 'foto_url'> & {
     funcao: Funcao;

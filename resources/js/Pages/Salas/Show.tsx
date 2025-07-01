@@ -1,4 +1,5 @@
 import HorarioPessoasModal from '@/Components/HorarioPessoasModal';
+import { TIME_SLOTS_HORARIO } from '@/constants';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { HorariosSala, PessoaHorario } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -52,10 +53,6 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
         { id: 'SABADO', nome: 'Sábado' },
     ];
 
-    const TIME_SLOTS = [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        20, 21, 22, 23,
-    ];
     // Função para abrir modal com informações das pessoas de um horário
     const openHorarioModal = (
         pessoas: PessoaHorario[],
@@ -579,79 +576,81 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {TIME_SLOTS.map((hora) => (
-                                                        <tr key={hora}>
-                                                            <td className="text-center font-medium">
-                                                                {String(
-                                                                    hora,
-                                                                ).padStart(
-                                                                    2,
-                                                                    '0',
-                                                                )}
-                                                                :00
-                                                            </td>
-                                                            {DIAS_SEMANA.map(
-                                                                (dia) => {
-                                                                    const slot =
-                                                                        horarios[
-                                                                            dia
-                                                                                .id
-                                                                        ]?.[
-                                                                            hora
-                                                                        ];
-                                                                    const count =
-                                                                        slot?.count ||
-                                                                        0;
+                                                    {TIME_SLOTS_HORARIO.map(
+                                                        (hora) => (
+                                                            <tr key={hora}>
+                                                                <td className="text-center font-medium">
+                                                                    {String(
+                                                                        hora,
+                                                                    ).padStart(
+                                                                        2,
+                                                                        '0',
+                                                                    )}
+                                                                    :00
+                                                                </td>
+                                                                {DIAS_SEMANA.map(
+                                                                    (dia) => {
+                                                                        const slot =
+                                                                            horarios[
+                                                                                dia
+                                                                                    .id
+                                                                            ]?.[
+                                                                                hora
+                                                                            ];
+                                                                        const count =
+                                                                            slot?.count ||
+                                                                            0;
 
-                                                                    return (
-                                                                        <td
-                                                                            key={`${dia.id}-${hora}`}
-                                                                            className="p-1 text-center"
-                                                                        >
-                                                                            <button
-                                                                                className={`btn btn-sm w-full ${getCountColor(
-                                                                                    count,
-                                                                                )} ${
-                                                                                    count >
-                                                                                    0
-                                                                                        ? 'cursor-pointer transition-transform hover:scale-105'
-                                                                                        : 'cursor-default'
-                                                                                }`}
-                                                                                onClick={() => {
-                                                                                    if (
-                                                                                        count >
-                                                                                            0 &&
-                                                                                        slot?.pessoas
-                                                                                    ) {
-                                                                                        openHorarioModal(
-                                                                                            slot.pessoas,
-                                                                                            dia.nome,
-                                                                                            hora,
-                                                                                        );
-                                                                                    }
-                                                                                }}
-                                                                                disabled={
-                                                                                    count ===
-                                                                                    0
-                                                                                }
-                                                                                title={
-                                                                                    count >
-                                                                                    0
-                                                                                        ? `${count} pessoa(s) trabalhando - Clique para ver detalhes`
-                                                                                        : 'Ninguém trabalhando neste horário'
-                                                                                }
+                                                                        return (
+                                                                            <td
+                                                                                key={`${dia.id}-${hora}`}
+                                                                                className="p-1 text-center"
                                                                             >
-                                                                                {count >
-                                                                                0
-                                                                                    ? count
-                                                                                    : '-'}
-                                                                            </button>
-                                                                        </td>
-                                                                    );
-                                                                },
-                                                            )}
-                                                        </tr>
-                                                    ))}
+                                                                                <button
+                                                                                    className={`btn btn-sm w-full ${getCountColor(
+                                                                                        count,
+                                                                                    )} ${
+                                                                                        count >
+                                                                                        0
+                                                                                            ? 'cursor-pointer transition-transform hover:scale-105'
+                                                                                            : 'cursor-default'
+                                                                                    }`}
+                                                                                    onClick={() => {
+                                                                                        if (
+                                                                                            count >
+                                                                                                0 &&
+                                                                                            slot?.pessoas
+                                                                                        ) {
+                                                                                            openHorarioModal(
+                                                                                                slot.pessoas,
+                                                                                                dia.nome,
+                                                                                                hora,
+                                                                                            );
+                                                                                        }
+                                                                                    }}
+                                                                                    disabled={
+                                                                                        count ===
+                                                                                        0
+                                                                                    }
+                                                                                    title={
+                                                                                        count >
+                                                                                        0
+                                                                                            ? `${count} pessoa(s) trabalhando - Clique para ver detalhes`
+                                                                                            : 'Ninguém trabalhando neste horário'
+                                                                                    }
+                                                                                >
+                                                                                    {count >
+                                                                                    0
+                                                                                        ? count
+                                                                                        : '-'}
+                                                                                </button>
+                                                                            </td>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </tr>
+                                                        ),
+                                                    )}
                                                 </tbody>
                                             </table>
                                         </div>
