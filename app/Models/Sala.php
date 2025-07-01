@@ -40,6 +40,20 @@ class Sala extends Model
         return (string) $this->getAttribute($this->getKeyName());
     }
 
+    protected static function booted()
+    {
+        static::deleting(function ($sala) {
+            // Deletar cada baia individualmente para disparar os eventos
+            $sala->baias->each(function ($baia) {
+                $baia->delete();
+            });
+        });
+
+        static::restoring(function ($sala) {
+            $sala->baias()->withTrashed()->restore();
+        });
+    }
+
     // Relacionamentos
     public function baias()
     {

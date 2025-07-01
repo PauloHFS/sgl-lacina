@@ -13,15 +13,24 @@ const DIAS_SEMANA_HORARIO = [
 ] as const;
 
 const TIME_SLOTS_HORARIO = [
-    7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23,
 ];
 
-const getStatusColorClass = (status: TipoHorario | undefined): string => {
+const getStatusColorClass = (
+    status: TipoHorario | undefined,
+    horario?: Horario,
+): string => {
     if (!status) return 'bg-base-100';
+    console.log('getStatusColorClass', status, horario);
     switch (status) {
         case 'AUSENTE':
             return 'bg-red-200 !text-red-800';
         case 'TRABALHO_PRESENCIAL':
+            // Se é trabalho presencial mas não tem baia, usar laranja para alertar
+            if (horario && !horario.baia_id) {
+                return 'bg-orange-200 !text-orange-800';
+            }
             return 'bg-green-200 !text-green-800';
         case 'TRABALHO_REMOTO':
             return 'bg-blue-200 !text-blue-800';
@@ -47,24 +56,37 @@ const getStatusDisplayName = (status: TipoHorario): string => {
     }
 };
 
+const getNeedsBaiaAlert = (status: TipoHorario, horario?: Horario): boolean => {
+    return status === 'TRABALHO_PRESENCIAL' && !!horario && !horario.baia_id;
+};
+
 export default function MeuHorario({
     horarios,
 }: PageProps<{
     horarios: Record<DiaDaSemana, Array<Horario>>;
 }>) {
     const statusCounts = useMemo(() => {
-        const counts: Record<TipoHorario, number> = {
+        const counts: Record<
+            TipoHorario | 'TRABALHO_PRESENCIAL_SEM_BAIA',
+            number
+        > = {
             AUSENTE: 0,
             EM_AULA: 0,
             TRABALHO_PRESENCIAL: 0,
+            TRABALHO_PRESENCIAL_SEM_BAIA: 0,
             TRABALHO_REMOTO: 0,
         };
 
         // Contar status de todos os horários
         Object.entries(horarios).forEach(([, horariosArray]) => {
             horariosArray.forEach((horario) => {
-                if (horario.tipo in counts) {
-                    counts[horario.tipo]++;
+                if (
+                    horario.tipo === 'TRABALHO_PRESENCIAL' &&
+                    !horario.baia_id
+                ) {
+                    counts.TRABALHO_PRESENCIAL_SEM_BAIA++;
+                } else if (horario.tipo in counts) {
+                    counts[horario.tipo as TipoHorario]++;
                 }
             });
         });
@@ -107,6 +129,40 @@ export default function MeuHorario({
                                     Editar Horários
                                 </Link>
                             </div>
+
+                            {statusCounts.TRABALHO_PRESENCIAL_SEM_BAIA > 0 && (
+                                <div className="alert alert-warning mb-6">
+                                    <div className="flex items-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-6 w-6 shrink-0 stroke-current"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z"
+                                            />
+                                        </svg>
+                                        <div>
+                                            <strong>Atenção!</strong> Você tem{' '}
+                                            {
+                                                statusCounts.TRABALHO_PRESENCIAL_SEM_BAIA
+                                            }{' '}
+                                            horário(s) de trabalho presencial
+                                            sem baia definida.
+                                            <br />
+                                            <span className="text-sm">
+                                                Defina uma baia para esses
+                                                horários editando seu
+                                                cronograma.
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="mb-6 overflow-x-auto">
                                 <table className="table w-full text-center">
@@ -156,7 +212,7 @@ export default function MeuHorario({
                                                             return (
                                                                 <td
                                                                     key={`${dia.id}-${slot}`}
-                                                                    className={`border-base-300 border p-3 text-sm font-medium ${getStatusColorClass(status)}`}
+                                                                    className={`border-base-300 border p-3 text-sm font-medium ${getStatusColorClass(status, horario)}`}
                                                                 >
                                                                     <div className="text-center">
                                                                         <div className="font-semibold">
@@ -164,6 +220,16 @@ export default function MeuHorario({
                                                                                 status,
                                                                             )}
                                                                         </div>
+                                                                        {getNeedsBaiaAlert(
+                                                                            status,
+                                                                            horario,
+                                                                        ) && (
+                                                                            <div className="mt-1 text-xs font-medium text-orange-700">
+                                                                                ⚠️
+                                                                                Definir
+                                                                                baia
+                                                                            </div>
+                                                                        )}
                                                                         {horario
                                                                             ?.usuario_projeto
                                                                             ?.projeto && (
@@ -284,27 +350,48 @@ export default function MeuHorario({
                                     <h4 className="card-title mb-3 text-lg font-semibold">
                                         Resumo dos Horários
                                     </h4>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5">
                                         {Object.entries(statusCounts).map(
-                                            ([status, count]) => (
-                                                <div
-                                                    key={status}
-                                                    className={`flex items-center space-x-2 rounded-lg p-3 shadow ${getStatusColorClass(status as TipoHorario)}`}
-                                                >
-                                                    <span
-                                                        className={`border-base-content/20 h-5 w-5 rounded-full border ${getStatusColorClass(status as TipoHorario)}`}
-                                                    ></span>
-                                                    <span className="font-medium">
-                                                        {getStatusDisplayName(
-                                                            status as TipoHorario,
-                                                        )}
-                                                        :
-                                                    </span>
-                                                    <span className="text-lg font-bold">
-                                                        {Math.abs(count)}
-                                                    </span>
-                                                </div>
-                                            ),
+                                            ([status, count]) => {
+                                                const isPresencialSemBaia =
+                                                    status ===
+                                                    'TRABALHO_PRESENCIAL_SEM_BAIA';
+                                                const displayName =
+                                                    isPresencialSemBaia
+                                                        ? 'Presencial sem Baia'
+                                                        : getStatusDisplayName(
+                                                              status as TipoHorario,
+                                                          );
+                                                const colorClass =
+                                                    isPresencialSemBaia
+                                                        ? 'bg-orange-200 !text-orange-800'
+                                                        : getStatusColorClass(
+                                                              status as TipoHorario,
+                                                          );
+
+                                                return (
+                                                    <div
+                                                        key={status}
+                                                        className={`flex items-center space-x-2 rounded-lg p-3 shadow ${colorClass}`}
+                                                    >
+                                                        <span
+                                                            className={`border-base-content/20 h-5 w-5 rounded-full border ${colorClass}`}
+                                                        ></span>
+                                                        <span className="font-medium">
+                                                            {displayName}:
+                                                        </span>
+                                                        <span className="text-lg font-bold">
+                                                            {Math.abs(count)}
+                                                        </span>
+                                                        {isPresencialSemBaia &&
+                                                            count > 0 && (
+                                                                <span className="text-xs">
+                                                                    ⚠️
+                                                                </span>
+                                                            )}
+                                                    </div>
+                                                );
+                                            },
                                         )}
                                     </div>
                                 </div>

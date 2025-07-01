@@ -52,8 +52,10 @@ export default function Show({ sala, horarios, canEdit }: ShowProps) {
         { id: 'SABADO', nome: 'Sábado' },
     ];
 
-    const TIME_SLOTS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-
+    const TIME_SLOTS = [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        20, 21, 22, 23,
+    ];
     // Função para abrir modal com informações das pessoas de um horário
     const openHorarioModal = (
         pessoas: PessoaHorario[],

@@ -146,25 +146,20 @@ class SalaController extends Controller
 
         $sala = Sala::findOrFail($id);
 
-        // Atualizar dados da sala
         $sala->update($request->only(['nome', 'descricao', 'ativa']));
 
-        // Lidar com baias deletadas
         if ($request->filled('baias_deletadas')) {
             $sala->baias()->whereIn('id', $request->baias_deletadas)->delete();
         }
 
-        // Processar baias (criar novas e atualizar existentes)
         if ($request->filled('baias')) {
             foreach ($request->baias as $baiaData) {
                 if (isset($baiaData['id'])) {
-                    // Atualizar baia existente
                     $baia = $sala->baias()->find($baiaData['id']);
                     if ($baia) {
                         $baia->update($baiaData);
                     }
                 } else {
-                    // Criar nova baia
                     $sala->baias()->create([
                         'nome' => $baiaData['nome'],
                         'descricao' => $baiaData['descricao'] ?? null,
@@ -173,12 +168,6 @@ class SalaController extends Controller
                 }
             }
         }
-
-        Log::info('Sala e baias atualizadas', [
-            'user_id' => $request->user()->id,
-            'sala_id' => $sala->id,
-            'data' => $request->all(),
-        ]);
 
         return redirect()->route('salas.show', $sala->id)->with('success', 'Sala atualizada com sucesso!');
     }
