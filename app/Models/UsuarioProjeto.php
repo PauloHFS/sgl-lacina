@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
 class UsuarioProjeto extends Model
@@ -53,5 +54,10 @@ class UsuarioProjeto extends Model
     public function projeto(): BelongsTo
     {
         return $this->belongsTo(Projeto::class, 'projeto_id');
+    }
+
+    public function dailies(): HasMany
+    {
+        return $this->hasMany(Daily::class, 'usuario_projeto_id');
     }
 }
