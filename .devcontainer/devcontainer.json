@@ -21,8 +21,7 @@
 				"bradlc.vscode-tailwindcss",
 				"amiralizadeh9480.laravel-extra-intellisense",
 				"ryannaddy.laravel-artisan",
-				"laravel.vscode-laravel",
-				"damms005.devdb"
+				"laravel.vscode-laravel"
 			],
 			"settings": {
 				"php.validate.executablePath": "/usr/bin/php",
@@ -34,12 +33,12 @@
 	"postCreateCommand": "chown -R 1000:1000 /var/www/html 2>/dev/null || true && composer install && npm install",
 	"forwardPorts": [
 		80,
-		5173,
+		5173
 	],
 	"portsAttributes": {
 		"80": {
 			"label": "Laravel App",
-			"onAutoForward": "notify",		
+			"onAutoForward": "notify"
 		},
 		"5173": {
 			"label": "Vite Dev Server",
