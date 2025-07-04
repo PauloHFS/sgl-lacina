@@ -22,6 +22,7 @@ class Projeto extends Model
         'id',
         'nome',
         'descricao',
+        'numero_convenio',
         'valor_total',
         'meses_execucao',
         'campos_extras',
@@ -65,5 +66,10 @@ class Projeto extends Model
         }
 
         return $vinculo->pivot;
+    }
+
+    public function intervenienteFinanceiro()
+    {
+        return $this->belongsTo(IntervenienteFinanceiro::class, 'interveniente_financeiro_id', 'id');
     }
 }
