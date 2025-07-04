@@ -8,19 +8,24 @@ use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoProjeto;
 use App\Enums\StatusCadastro;
 use App\Enums\Genero;
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
 use App\Models\Banco;
+use App\Models\Baia;
+use App\Models\HistoricoUsuarioProjeto;
 use App\Models\Horario;
+use App\Models\Projeto;
+use App\Models\Sala;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 
 class DevelopmentSeeder extends Seeder
 {
     /**
      * Executa os seeders para o ambiente de desenvolvimento.
-     * 
+     *
      * Inclui dados de teste, usuários ficcionais e exemplos
      * para facilitar o desenvolvimento e testes.
      */
@@ -37,7 +42,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('🔗 Criando vínculos de teste...');
         $this->createTestVinculos();
 
-        $this->command->info('  Criando salas e baias de teste...');
+        $this->command->info('🏢 Criando salas e baias de teste...');
         $this->createTestSalasEBaias();
 
         // Exibe estatísticas finais
@@ -88,14 +93,17 @@ class DevelopmentSeeder extends Seeder
         $vinculosPendentes = UsuarioProjeto::where('status', StatusVinculoProjeto::PENDENTE)->count();
         $vinculosRecusados = UsuarioProjeto::where('status', StatusVinculoProjeto::RECUSADO)->count();
 
-        $this->command->info("   🔗 Vínculos: {$totalVinculos} total");
+        $this->command->info("   🔗 Vínculos Ativos: {$totalVinculos} total");
         $this->command->info("      - Aprovados: {$vinculosAprovados}");
         $this->command->info("      - Pendentes: {$vinculosPendentes}");
         $this->command->info("      - Recusados: {$vinculosRecusados}");
 
+        $this->command->info("   📜 Histórico de Vínculos: " . HistoricoUsuarioProjeto::count() . " registros");
+
+
         // Salas e baias
-        $totalSalas = \App\Models\Sala::count();
-        $totalBaias = \App\Models\Baia::count();
+        $totalSalas = Sala::count();
+        $totalBaias = Baia::count();
         $this->command->info("   🏢 Salas: {$totalSalas} total");
         $this->command->info("      - Baias: {$totalBaias} total");
     }
@@ -205,7 +213,6 @@ class DevelopmentSeeder extends Seeder
                 'github_url' => 'https://github.com/maxwell-oliveira',
                 'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123456',
                 'website_url' => 'https://sites.google.com/maxwell-oliveira',
-                'is_coordenador' => true,
             ],
             // Campelo - Coordenador
             [
@@ -233,7 +240,6 @@ class DevelopmentSeeder extends Seeder
                 'github_url' => 'https://github.com/claudio-campelo',
                 'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123457',
                 'website_url' => 'https://sites.google.com/claudio-campelo',
-                'is_coordenador' => true,
             ],
             // Paulo Hernane - Colaborador
             [
@@ -258,39 +264,20 @@ class DevelopmentSeeder extends Seeder
                 'area_atuacao' => 'Computação Gráfica, Visualização de Dados, Interface Humano-Computador',
                 'tecnologias' => 'JavaScript, React, D3.js, Three.js, OpenGL, WebGL',
                 'linkedin_url' => 'https://linkedin.com/in/paulo-hernane',
-                'github_url' => 'https://github.com/paulo-hernane',
-                'curriculo_lattes_url' => 'http://lattes.cnpq.br/1234567890123458',
-                'website_url' => 'https://sites.google.com/paulo-hernane',
-                'is_coordenador' => false,
             ],
         ];
 
         foreach ($docentes as $docenteData) {
-            $isCoordernador = $docenteData['is_coordenador'];
-            unset($docenteData['is_coordenador']); // Remove esse campo personalizado
-
-            // Força a atualização dos dados dos docentes
-            $user = User::where('email', $docenteData['email'])->first();
-
-            $updateData = array_merge($docenteData, [
-                'password' => Hash::make('Ab@12312'),
-                'status_cadastro' => StatusCadastro::ACEITO,
-                'email_verified_at' => now(),
-            ]);
-
-            if ($user) {
-                // Atualiza usuário existente - forçar update campo por campo
-                foreach ($updateData as $key => $value) {
-                    $user->$key = $value;
-                }
-                $user->save();
-                $this->command->info("👨‍🏫 Atualizado docente: {$user->name} (" . ($isCoordernador ? 'Coordenador' : 'Colaborador') . ")");
-            } else {
-                // Cria novo usuário
-                $user = User::create($updateData);
-                $this->command->info("👨‍🏫 Criado docente: {$user->name} (" . ($isCoordernador ? 'Coordenador' : 'Colaborador') . ")");
-            }
+            User::updateOrCreate(
+                ['email' => $docenteData['email']],
+                array_merge($docenteData, [
+                    'password' => Hash::make('password'),
+                    'status_cadastro' => StatusCadastro::ACEITO,
+                    'email_verified_at' => now(),
+                ])
+            );
         }
+        $this->command->info("👨‍🏫 Docentes principais criados/atualizados.");
     }
 
     /**
@@ -309,7 +296,7 @@ class DevelopmentSeeder extends Seeder
 
         $projetosRestantes = $targetTotal - $projetosExistentes;
 
-        // Distribuição por status temporal:
+        // Distribuição:
         // 40% - Projetos ativos (em andamento)
         // 35% - Projetos finalizados (histórico)
         // 15% - Projetos futuros (planejados)
@@ -323,344 +310,249 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("Criando {$ativos} projetos ativos, {$finalizados} finalizados, {$futuros} futuros, {$cancelados} cancelados...");
 
         // Tipos de projeto para variedade
-        $tipos = [
-            TipoProjeto::PDI,
-            TipoProjeto::TCC,
-            TipoProjeto::MESTRADO,
-            TipoProjeto::DOUTORADO,
-            TipoProjeto::SUPORTE,
-        ];
+        $tipos = TipoProjeto::cases();
 
         // Projetos ativos (em andamento)
         if ($ativos > 0) {
-            foreach (range(1, $ativos) as $i) {
-                Projeto::factory()->create([
-                    'tipo' => $tipos[array_rand($tipos)],
-                    'data_inicio' => now()->subMonths(rand(1, 12)),
-                    'data_termino' => now()->addMonths(rand(3, 18)),
-                ]);
-            }
+            Projeto::factory()->count($ativos)->create([
+                'data_inicio' => fn() => now()->subMonths(rand(1, 12)),
+                'data_termino' => fn() => now()->addMonths(rand(6, 24)),
+                'tipo' => $tipos[array_rand($tipos)],
+            ]);
         }
 
         // Projetos finalizados
         if ($finalizados > 0) {
-            foreach (range(1, $finalizados) as $i) {
-                $dataInicio = now()->subMonths(rand(12, 36));
-                Projeto::factory()->create([
-                    'tipo' => $tipos[array_rand($tipos)],
-                    'data_inicio' => $dataInicio,
-                    'data_termino' => $dataInicio->copy()->addMonths(rand(6, 24)),
-                ]);
-            }
+            Projeto::factory()->count($finalizados)->create([
+                'data_inicio' => fn() => now()->subMonths(rand(12, 36)),
+                'data_termino' => fn() => now()->subMonths(rand(1, 11)),
+                'tipo' => $tipos[array_rand($tipos)],
+            ]);
         }
 
         // Projetos futuros
         if ($futuros > 0) {
-            foreach (range(1, $futuros) as $i) {
-                $dataInicio = now()->addMonths(rand(1, 6));
-                Projeto::factory()->create([
-                    'tipo' => $tipos[array_rand($tipos)],
-                    'data_inicio' => $dataInicio,
-                    'data_termino' => $dataInicio->copy()->addMonths(rand(6, 24)),
-                ]);
-            }
+            Projeto::factory()->count($futuros)->create([
+                'data_inicio' => fn() => now()->addMonths(rand(1, 6)),
+                'data_termino' => fn() => now()->addMonths(rand(7, 30)),
+                'tipo' => $tipos[array_rand($tipos)],
+            ]);
         }
 
         // Projetos cancelados/suspensos (com data de término no passado e curta duração)
         if ($cancelados > 0) {
-            foreach (range(1, $cancelados) as $i) {
-                $dataInicio = now()->subMonths(rand(6, 24));
-                Projeto::factory()->create([
-                    'tipo' => $tipos[array_rand($tipos)],
-                    'data_inicio' => $dataInicio,
-                    'data_termino' => $dataInicio->copy()->addMonths(rand(1, 3)),
-                ]);
-            }
+            Projeto::factory()->count($cancelados)->create([
+                'data_inicio' => fn() => now()->subMonths(rand(2, 6)),
+                'data_termino' => fn() => now()->subMonths(rand(1, 2)),
+                'tipo' => $tipos[array_rand($tipos)],
+                'deleted_at' => now(), // Soft delete para simular cancelamento
+            ]);
         }
 
         // Projeto específico para demonstração (sempre criar)
         Projeto::firstOrCreate(
-            ['nome' => 'Sistema RH LaCInA'],
+            ['nome' => 'Sistema de Gestão Lacina'],
             [
-                'descricao' => 'Sistema de gestão de recursos humanos do laboratório para gerenciar colaboradores, projetos e vínculos de participação.',
-                'cliente' => 'LaCInA - UFCG',
+                'descricao' => 'Projeto para gerenciar os recursos humanos e projetos do laboratório.',
+                'data_inicio' => now()->subYear(),
+                'data_termino' => now()->addYear(),
+                'cliente' => 'Laboratório Lacina',
                 'tipo' => TipoProjeto::PDI,
-                'valor_total' => 500990,
-                'meses_execucao' => 18.4,
-                'campos_extras' => [
-                    'tecnologias' => 'Laravel, Vue.js, PostgreSQL, Docker',
-                    'requisitos' => 'Gerenciamento de usuários, projetos, vínculos e histórico de participação.',
-                ],
-                'data_inicio' => now()->subMonths(6),
-                'data_termino' => now()->addMonths(12),
-                'slack_url' => 'https://lacina.slack.com/channels/rh-sistema',
-                'discord_url' => 'https://discord.gg/lacina-rh',
-                'board_url' => 'https://trello.com/b/lacina-rh-sistema',
-                'git_url' => 'https://github.com/lacina/rh-sistema',
+                'valor_total' => 50000,
+                'meses_execucao' => 24,
             ]
         );
     }
 
     /**
-     * Cria vínculos de teste entre usuários e projetos
+     * Orquestra a criação de vínculos de teste.
      */
     private function createTestVinculos(): void
     {
-        $usuariosAtivos = User::where('status_cadastro', StatusCadastro::ACEITO)
-            ->whereNull('deleted_at')
-            ->get();
+        $this->command->info('🔗 Iniciando criação de vínculos de teste...');
 
+        // Limpa tabelas para evitar inconsistências
+        UsuarioProjeto::truncate();
+        HistoricoUsuarioProjeto::truncate();
+
+        $usuarios = User::where('status_cadastro', StatusCadastro::ACEITO)->whereNull('deleted_at')->get();
         $projetos = Projeto::all();
 
-        if ($usuariosAtivos->count() === 0 || $projetos->count() === 0) {
-            $this->command->warn('Não há usuários ativos ou projetos suficientes para criar vínculos.');
+        if ($usuarios->count() < 3 || $projetos->isEmpty()) {
+            $this->command->warn('⚠️  Não há usuários ou projetos suficientes para criar vínculos realistas. Abortando.');
             return;
         }
 
-        // Limpa vínculos existentes para evitar duplicatas
-        UsuarioProjeto::truncate();
+        // --- Separação de Atores ---
+        $maxwell = $usuarios->firstWhere('email', 'maxwell@computacao.ufcg.edu.br');
+        $campelo = $usuarios->firstWhere('email', 'campelo@computacao.ufcg.edu.br');
+        $paulo = $usuarios->firstWhere('email', 'paulo.hernane.silva@ccc.ufcg.edu.br');
+        $coordenadores = collect([$maxwell, $campelo])->filter();
+        $outrosColaboradores = $usuarios->diff(collect([$maxwell, $campelo, $paulo])->filter());
 
-        $this->command->info("Criando vínculos entre {$usuariosAtivos->count()} usuários e {$projetos->count()} projetos...");
-
-        // Busca os docentes específicos
-        $maxwell = User::where('email', 'maxwell@computacao.ufcg.edu.br')->first();
-        $campelo = User::where('email', 'campelo@computacao.ufcg.edu.br')->first();
-        $paulo = User::where('email', 'paulo.hernane.silva@ccc.ufcg.edu.br')->first();
-
-        // Categoriza os projetos por status temporal
-        $projetosAtivos = $projetos->filter(function ($projeto) {
-            return $projeto->data_inicio <= now() && $projeto->data_termino >= now();
-        });
-
-        $projetosFinalizados = $projetos->filter(function ($projeto) {
-            return $projeto->data_termino < now();
-        });
-
-        $projetosFuturos = $projetos->filter(function ($projeto) {
-            return $projeto->data_inicio > now();
-        });
-
-        // Separa usuários que irão ter vínculos pendentes como último vínculo
-        $outrosUsuarios = $usuariosAtivos->filter(function ($user) use ($maxwell, $campelo, $paulo) {
-            return !in_array($user->id ?? '', [$maxwell->id ?? '', $campelo->id ?? '', $paulo->id ?? '']);
-        });
-
-        $usuariosComVinculoPendente = $outrosUsuarios->random(min(8, $outrosUsuarios->count()));
-        $usuariosRestantes = $outrosUsuarios->diff($usuariosComVinculoPendente);
-
-        // Vínculos para projetos ativos
-        foreach ($projetosAtivos as $index => $projeto) {
-            // Define coordenador do projeto alternando entre Maxwell e Campelo
-            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
-
-            if ($coordenador) {
-                $this->createVinculo(
-                    $coordenador,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    $projeto->data_inicio,
-                    null,
-                    Funcao::COORDENADOR,
-                    TipoVinculo::COORDENADOR
-                );
-            }
-
-            // Paulo sempre como colaborador em projetos ativos (100% de chance)
-            if ($paulo) {
-                $this->createVinculo(
-                    $paulo,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    $projeto->data_inicio,
-                    null,
-                    Funcao::PESQUISADOR,
-                    TipoVinculo::COLABORADOR
-                );
-            }
-
-            // Outros participantes aprovados
-            $numParticipantes = rand(2, 5);
-            if ($usuariosRestantes->count() > 0) {
-                $participantes = $usuariosRestantes->random(min($numParticipantes, $usuariosRestantes->count()));
-
-                foreach ($participantes as $usuario) {
-                    // 25% chance de querer trocar para projetos ativos
-                    $this->createVinculo(
-                        $usuario,
-                        $projeto,
-                        StatusVinculoProjeto::APROVADO,
-                        $projeto->data_inicio,
-                        null,
-                        null,
-                        null,
-                        rand(1, 100) <= 25 // 25% chance de trocar
-                    );
-                }
-            }
-
-            // Adiciona solicitações pendentes com maior realismo
-            if (rand(1, 100) <= 40) { // 40% chance de ter solicitações pendentes
-                $numSolicitacoes = rand(1, 2);
-                $candidatos = $outrosUsuarios->diff($projeto->usuarios ?? collect())->shuffle();
-
-                if ($candidatos->count() > 0) {
-                    $solicitantes = $candidatos->take($numSolicitacoes);
-                    foreach ($solicitantes as $solicitante) {
-                        $this->createVinculo($solicitante, $projeto, StatusVinculoProjeto::PENDENTE, now());
-                    }
-                }
-            }
+        if ($coordenadores->count() < 2 || !$paulo) {
+            $this->command->warn('⚠️  Coordenadores principais ou Paulo Hernane não encontrados. O seeder pode não funcionar como esperado.');
         }
 
-        // Vínculos para projetos finalizados
-        foreach ($projetosFinalizados as $index => $projeto) {
-            // Define coordenador do projeto alternando entre Maxwell e Campelo
-            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
-
-            if ($coordenador) {
-                $this->createVinculo(
-                    $coordenador,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    $projeto->data_inicio,
-                    $projeto->data_termino,
-                    Funcao::COORDENADOR,
-                    TipoVinculo::COORDENADOR
-                );
-            }
-
-            // Paulo sempre como colaborador em projetos finalizados
-            if ($paulo) {
-                $this->createVinculo(
-                    $paulo,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    $projeto->data_inicio,
-                    $projeto->data_termino,
-                    Funcao::PESQUISADOR,
-                    TipoVinculo::COLABORADOR
-                );
-            }
-
-            // Outros participantes em projetos finalizados
-            $numParticipantes = rand(1, 4);
-            if ($usuariosRestantes->count() > 0) {
-                $participantes = $usuariosRestantes->random(min($numParticipantes, $usuariosRestantes->count()));
-
-                foreach ($participantes as $usuario) {
-                    // 15% chance de ter marcado para trocar (menos para projetos finalizados)
-                    $this->createVinculo(
-                        $usuario,
-                        $projeto,
-                        StatusVinculoProjeto::APROVADO,
-                        $projeto->data_inicio,
-                        $projeto->data_termino,
-                        null,
-                        null,
-                        rand(1, 100) <= 15 // 15% chance de trocar
-                    );
-                }
-            }
+        // --- Geração de Histórico ---
+        $this->command->info('⏳ Gerando histórico de 3 anos para todos os colaboradores...');
+        foreach ($usuarios as $usuario) {
+            $this->generateUserHistory($usuario, $projetos);
         }
 
-        // Vínculos para projetos futuros
-        foreach ($projetosFuturos as $index => $projeto) {
-            // Define coordenador do projeto alternando entre Maxwell e Campelo
-            $coordenador = $index % 2 === 0 ? $maxwell : $campelo;
+        // --- Ajustes e Vínculos Especiais ---
+        $this->adjustCoordenadoresProjetosAtivos($maxwell, $campelo, $projetos);
+        $this->createSpecialVinculos($outrosColaboradores, $projetos);
 
-            if ($coordenador) {
-                $this->createVinculo(
-                    $coordenador,
-                    $projeto,
-                    StatusVinculoProjeto::APROVADO,
-                    now(),
-                    null,
-                    Funcao::COORDENADOR,
-                    TipoVinculo::COORDENADOR
-                );
-            }
 
-            // Outras solicitações para projetos futuros
-            $numSolicitacoes = rand(1, 3);
-            if ($usuariosRestantes->count() > 0) {
-                $solicitantes = $usuariosRestantes->random(min($numSolicitacoes, $usuariosRestantes->count()));
-
-                foreach ($solicitantes as $solicitante) {
-                    // 80% pendente, 20% já aprovado para projetos futuros
-                    $status = rand(1, 100) <= 80 ? StatusVinculoProjeto::PENDENTE : StatusVinculoProjeto::APROVADO;
-                    $this->createVinculo($solicitante, $projeto, $status, now());
-                }
-            }
-        }
-
-        // Criar vínculos pendentes como último vínculo para usuários selecionados
-        foreach ($usuariosComVinculoPendente as $usuario) {
-            // Escolhe um projeto ativo aleatório para solicitar vínculo
-            if ($projetosAtivos->count() > 0) {
-                $projetoEscolhido = $projetosAtivos->random();
-
-                // Verifica se o usuário já não tem vínculo neste projeto
-                $jaTemVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
-                    ->where('projeto_id', $projetoEscolhido->id)
-                    ->exists();
-
-                if (!$jaTemVinculo) {
-                    // 40% chance de ser uma troca de projeto
-                    $isTroca = rand(1, 100) <= 40;
-
-                    if ($isTroca) {
-                        // Busca um vínculo aprovado existente para marcar como troca
-                        $vinculoAnterior = UsuarioProjeto::where('usuario_id', $usuario->id)
-                            ->where('status', StatusVinculoProjeto::APROVADO)
-                            ->whereNull('data_fim')
-                            ->first();
-
-                        if ($vinculoAnterior) {
-                            // Marca o vínculo anterior para troca
-                            $vinculoAnterior->update(['trocar' => true]);
-                        }
-                    }
-
-                    // Cria o vínculo pendente
-                    $this->createVinculo(
-                        $usuario,
-                        $projetoEscolhido,
-                        StatusVinculoProjeto::PENDENTE,
-                        now()->addDays(rand(1, 7))
-                    );
-                }
-            }
-        }
-
-        // Cria algumas solicitações recusadas para realismo
-        for ($i = 0; $i < 6; $i++) {
-            if ($usuariosRestantes->count() > 0) {
-                $usuario = $usuariosRestantes->random();
-                $projeto = $projetos->random();
-
-                // Verifica se já não existe vínculo
-                $jaTemVinculo = UsuarioProjeto::where('usuario_id', $usuario->id)
-                    ->where('projeto_id', $projeto->id)
-                    ->exists();
-
-                if (!$jaTemVinculo) {
-                    $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subDays(rand(1, 30)));
-                }
-            }
-        }
-
+        // --- Relatório Final ---
         $totalVinculos = UsuarioProjeto::count();
         $pendentes = UsuarioProjeto::where('status', StatusVinculoProjeto::PENDENTE)->count();
         $comTroca = UsuarioProjeto::where('trocar', true)->count();
+        $historicoCount = HistoricoUsuarioProjeto::count();
 
-        $this->command->info("✅ Criados {$totalVinculos} vínculos de usuário-projeto");
-        $this->command->info("   - {$pendentes} vínculos pendentes");
-        $this->command->info("   - {$comTroca} vínculos marcados para troca");
+        $this->command->info("✅ Concluído: {$totalVinculos} vínculos ativos e {$historicoCount} registros de histórico criados.");
+        $this->command->info("   - {$pendentes} vínculos pendentes.");
+        $this->command->info("   - {$comTroca} vínculos marcados para troca.");
+    }
+
+    /**
+     * Gera um histórico de participação em projetos para um usuário nos últimos 3 anos.
+     */
+    private function generateUserHistory(User $user, Collection $allProjects): void
+    {
+        $currentDate = now()->subYears(3);
+        $endDate = now();
+
+        while ($currentDate->lessThan($endDate)) {
+            $activeVinculos = UsuarioProjeto::where('usuario_id', $user->id)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->whereNull('data_fim')
+                ->get();
+
+            // Chance de sair de um projeto
+            if ($activeVinculos->isNotEmpty() && rand(1, 100) <= 15) { // 15% de chance de sair
+                $vinculoParaSair = $activeVinculos->random();
+                $vinculoParaSair->update(['data_fim' => $currentDate]);
+                $this->moveToHistory($vinculoParaSair);
+            }
+
+            // Chance de entrar em um novo projeto
+            $activeVinculosCount = UsuarioProjeto::where('usuario_id', $user->id)->whereNull('data_fim')->count();
+            if ($activeVinculosCount < 2 && rand(1, 100) <= 10) { // 10% de chance de entrar
+                $projetosDisponiveis = $allProjects->where('data_inicio', '<=', $currentDate)
+                    ->where('data_termino', '>=', $currentDate)
+                    ->whereNotIn('id', $user->projetos->pluck('id'));
+
+                if ($projetosDisponiveis->isNotEmpty()) {
+                    $projetoDisponivel = $projetosDisponiveis->random();
+                    $this->createVinculo(
+                        $user,
+                        $projetoDisponivel,
+                        StatusVinculoProjeto::APROVADO,
+                        $currentDate,
+                        null, // Fica em aberto
+                        null,
+                        null,
+                        false
+                    );
+                }
+            }
+            $currentDate->addMonths(rand(1, 4));
+        }
+    }
+
+    /**
+     * Garante que os coordenadores tenham 2 projetos ativos cada, 1 em comum.
+     */
+    private function adjustCoordenadoresProjetosAtivos(?User $maxwell, ?User $campelo, Collection $projetos): void
+    {
+        if (!$maxwell || !$campelo) {
+            return;
+        }
+
+        $projetosAtivos = $projetos->filter(fn($p) => $p->data_termino >= now() && $p->data_inicio <= now());
+
+        // Limpa todos os vínculos de coordenação ativos para recomeçar
+        UsuarioProjeto::whereIn('usuario_id', [$maxwell->id, $campelo->id])
+            ->where('funcao', Funcao::COORDENADOR)
+            ->whereNull('data_fim')
+            ->get()->each(fn($v) => $this->moveToHistory($v->fresh()));
+
+        // 1. Projeto em comum
+        $projetoComum = $projetosAtivos->pop();
+        if ($projetoComum) {
+            $this->createVinculo($maxwell, $projetoComum, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
+            $this->createVinculo($campelo, $projetoComum, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
+        }
+
+        // 2. Projeto solo para Maxwell
+        $projetoMaxwell = $projetosAtivos->pop();
+        if ($projetoMaxwell) {
+            $this->createVinculo($maxwell, $projetoMaxwell, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
+        }
+
+        // 3. Projeto solo para Campelo
+        $projetoCampelo = $projetosAtivos->pop();
+        if ($projetoCampelo) {
+            $this->createVinculo($campelo, $projetoCampelo, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
+        }
+    }
+
+    /**
+     * Cria vínculos pendentes e recusados para dar mais realismo.
+     */
+    private function createSpecialVinculos(Collection $usuarios, Collection $projetos): void
+    {
+        $projetosAtivos = $projetos->where('data_termino', '>=', now());
+
+        // Criar vínculos pendentes
+        if ($usuarios->count() >= 5) {
+            $usuariosParaPendente = $usuarios->random(5);
+            foreach ($usuariosParaPendente as $usuario) {
+                if ($usuario->projetos()->whereNull('data_fim')->count() < 2) {
+                    $projetosDisponiveis = $projetosAtivos->whereNotIn('id', $usuario->projetos->pluck('id'));
+                    if ($projetosDisponiveis->isNotEmpty()) {
+                        $projeto = $projetosDisponiveis->random();
+                        $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::PENDENTE, now());
+                    }
+                }
+            }
+        }
+
+
+        // Criar vínculos recusados no passado
+        if ($usuarios->count() >= 3) {
+            $usuariosParaRecusado = $usuarios->random(3);
+            foreach ($usuariosParaRecusado as $usuario) {
+                if ($projetos->isNotEmpty()) {
+                    $projeto = $projetos->random();
+                    $vinculo = $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subMonths(rand(1, 6)));
+                    if ($vinculo) {
+                        $vinculo->update(['data_fim' => $vinculo->data_inicio->addDays(rand(1, 5))]);
+                        $this->moveToHistory($vinculo);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Move um vínculo para a tabela de histórico e o deleta da tabela ativa.
+     */
+    private function moveToHistory(UsuarioProjeto $vinculo): void
+    {
+        if ($vinculo->data_fim === null) {
+            $vinculo->data_fim = now();
+        }
+
+        HistoricoUsuarioProjeto::create($vinculo->getAttributes());
+        $vinculo->delete();
     }
 
     private function createTestSalasEBaias(): void
     {
-        $this->command->info('🏢 Criando salas e baias de teste...');
+        $this->command->info('Criando salas e baias de teste...');
 
         $salas = [
             ['nome' => 'Sala GP', 'baias' => 10],
@@ -669,20 +561,20 @@ class DevelopmentSeeder extends Seeder
         ];
 
         foreach ($salas as $salaData) {
-            $sala = \App\Models\Sala::factory()->create([
+            $sala = Sala::factory()->create([
                 'nome' => $salaData['nome'],
                 'descricao' => 'Sala de teste para desenvolvimento'
             ]);
 
             for ($i = 1; $i <= $salaData['baias']; $i++) {
-                \App\Models\Baia::factory()->create([
+                Baia::factory()->create([
                     'sala_id' => $sala->id,
                     'nome' => $sala->nome . ' - Baia ' . $i,
                 ]);
             }
         }
 
-        $this->command->info('🛋️ Salas e baias de teste criadas com sucesso!');
+        $this->command->info('Salas e baias de teste criadas com sucesso!');
     }
 
     /**
@@ -697,14 +589,15 @@ class DevelopmentSeeder extends Seeder
         ?Funcao $funcao = null,
         ?TipoVinculo $tipoVinculo = null,
         bool $trocar = false
-    ): void {
-        // Evita vínculos duplicados
+    ): ?UsuarioProjeto {
+        // Evita vínculos duplicados (mesmo usuário, mesmo projeto, sem data de fim)
         $vinculoExistente = UsuarioProjeto::where('usuario_id', $usuario->id)
             ->where('projeto_id', $projeto->id)
+            ->whereNull('data_fim')
             ->first();
 
         if ($vinculoExistente) {
-            return;
+            return null;
         }
 
         $funcoes = Funcao::cases();
@@ -717,12 +610,21 @@ class DevelopmentSeeder extends Seeder
             $trocar = rand(1, 100) <= 10; // 10% chance de querer trocar para aprovados
         }
 
-        UsuarioProjeto::create([
+        // Define função e tipo de vínculo padrão se não especificado
+        $funcaoFinal = $funcao ?? $funcoes[array_rand($funcoes)];
+        if ($funcaoFinal === Funcao::COORDENADOR) {
+            $tipoVinculoFinal = TipoVinculo::COORDENADOR;
+        } else {
+            $tipoVinculoFinal = $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)];
+        }
+
+
+        return UsuarioProjeto::create([
             'usuario_id' => $usuario->id,
             'projeto_id' => $projeto->id,
             'status' => $status,
-            'funcao' => $funcao ?? $funcoes[array_rand($funcoes)],
-            'tipo_vinculo' => $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)],
+            'funcao' => $funcaoFinal,
+            'tipo_vinculo' => $tipoVinculoFinal,
             'carga_horaria' => rand(10, 40),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
