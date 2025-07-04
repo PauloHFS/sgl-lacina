@@ -25,6 +25,18 @@ const tiposProjeto: TipoProjeto[] = [
 ];
 
 export default function Edit({ projeto }: EditPageProps) {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .split('T')[0];
+    const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+    )
+        .toISOString()
+        .split('T')[0];
+
     const { data, setData, patch, processing, errors } = useForm<
         Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
     >({
@@ -35,10 +47,10 @@ export default function Edit({ projeto }: EditPageProps) {
         campos_extras: projeto.campos_extras || {},
         data_inicio: projeto.data_inicio
             ? projeto.data_inicio.substring(0, 10)
-            : '',
+            : firstDayOfMonth,
         data_termino: projeto.data_termino
             ? projeto.data_termino.substring(0, 10)
-            : '',
+            : lastDayOfMonth,
         cliente: projeto.cliente,
         slack_url: projeto.slack_url || '',
         discord_url: projeto.discord_url || '',
@@ -165,7 +177,7 @@ export default function Edit({ projeto }: EditPageProps) {
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Cliente *
+                                                Parceiro/Cliente*
                                             </span>
                                         </label>
                                         <input
@@ -198,7 +210,7 @@ export default function Edit({ projeto }: EditPageProps) {
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Data de Início *
+                                                Data de Início*
                                             </span>
                                         </label>
                                         <input
@@ -261,7 +273,7 @@ export default function Edit({ projeto }: EditPageProps) {
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Tipo do Projeto *
+                                                Tipo do Projeto*
                                             </span>
                                         </label>
                                         <select
@@ -358,14 +370,14 @@ export default function Edit({ projeto }: EditPageProps) {
                                     </div>
                                 </div>
 
-                                {/* Meses de Execução */}
+                                {/* Duração da execução */}
                                 <div>
                                     <label
                                         htmlFor="meses_execucao"
                                         className="label"
                                     >
                                         <span className="label-text text-base-content">
-                                            Meses de Execução*
+                                            Duração da execução*
                                         </span>
                                     </label>
                                     <input

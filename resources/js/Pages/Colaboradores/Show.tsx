@@ -242,8 +242,14 @@ export default function Show({
                     observacao: observacao || null,
                 },
                 {
-                    onSuccess: () =>
-                        toast('Cadastro aceito com sucesso.', 'success'),
+                    onSuccess: () => {
+                        router.get(
+                            route('colaboradores.index', {
+                                status: 'cadastro_pendente',
+                            }),
+                        );
+                        toast('Cadastro aceito com sucesso.', 'success');
+                    },
                     onError: () => toast('Erro ao aceitar cadastro.', 'error'),
                 },
             );
@@ -259,8 +265,14 @@ export default function Show({
                     observacao: observacao || null,
                 },
                 {
-                    onSuccess: () =>
-                        toast('Cadastro recusado com sucesso.', 'success'),
+                    onSuccess: () => {
+                        router.get(
+                            route('colaboradores.index', {
+                                status: 'cadastro_pendente',
+                            }),
+                        );
+                        toast('Cadastro recusado com sucesso.', 'success');
+                    },
                     onError: () => toast('Erro ao recusar cadastro.', 'error'),
                 },
             );
@@ -285,6 +297,11 @@ export default function Show({
             data: dataToUpdate,
             preserveScroll: true,
             onSuccess: () => {
+                router.get(
+                    route('colaboradores.index', {
+                        status: 'vinculo_pendente',
+                    }),
+                );
                 toast('Status do vínculo atualizado.', 'success');
             },
             onError: (err: Record<string, string>) => {

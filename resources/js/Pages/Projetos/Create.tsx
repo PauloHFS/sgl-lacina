@@ -22,13 +22,25 @@ const tiposProjeto: TipoProjeto[] = [
 
 export default function CreateProjeto() {
     const { toast } = useToast();
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .split('T')[0];
+    const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+    )
+        .toISOString()
+        .split('T')[0];
+
     const { data, setData, post, errors, processing } = useForm<
         Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
     >('create-project', {
         nome: '',
         descricao: '',
-        data_inicio: '',
-        data_termino: '',
+        data_inicio: firstDayOfMonth,
+        data_termino: lastDayOfMonth,
         cliente: '',
         slack_url: '',
         discord_url: '',
@@ -155,7 +167,7 @@ export default function CreateProjeto() {
                                             className="label"
                                         >
                                             <span className="label-text text-base-content">
-                                                Cliente*
+                                                Parceiro/Cliente*
                                             </span>
                                         </label>
                                         <input
@@ -333,14 +345,14 @@ export default function CreateProjeto() {
                                         )}
                                     </div>
 
-                                    {/* Meses de Execução */}
+                                    {/* Duração da execução */}
                                     <div>
                                         <label
                                             htmlFor="meses_execucao"
                                             className="label"
                                         >
                                             <span className="label-text text-base-content">
-                                                Meses de Execução*
+                                                Duração da execução*
                                             </span>
                                         </label>
                                         <input
