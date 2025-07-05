@@ -22,7 +22,7 @@ class LogScheduledTaskFinishedToDiscord
      */
     public function handle(ScheduledTaskFinished $event): void
     {
-        $taskName = $event->task->description ?? $event->task->command;
+        $taskName = $event->task->getSummaryForDisplay() ?? $event->task->command;
         $exitCode = $event->task->exitCode;
         $runtime = round($event->runtime / 1000, 2); // em segundos
 
