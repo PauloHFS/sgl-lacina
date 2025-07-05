@@ -73,8 +73,7 @@ class DiscordLogHandler extends AbstractProcessingHandler
         }
 
         $payload = [
-            'username' => 'LaCInA Sistema',
-            'avatar_url' => 'https://cdn.discordapp.com/attachments/YOUR_AVATAR_URL.png',
+            'username' => 'SGL - LaCInA',
             'embeds' => [$embed]
         ];
 
