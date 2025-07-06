@@ -159,6 +159,58 @@ export default function MeuHorario({
                                 </div>
                             )}
 
+                            <div className="card card-bordered bg-base-200 mt-6 shadow">
+                                <div className="card-body">
+                                    <h4 className="card-title mb-3 text-lg font-semibold">
+                                        Resumo dos Horários
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5">
+                                        {Object.entries(statusCounts).map(
+                                            ([status, count]) => {
+                                                const isPresencialSemBaia =
+                                                    status ===
+                                                    'TRABALHO_PRESENCIAL_SEM_BAIA';
+                                                const displayName =
+                                                    isPresencialSemBaia
+                                                        ? 'Presencial sem Baia'
+                                                        : getStatusDisplayName(
+                                                              status as TipoHorario,
+                                                          );
+                                                const colorClass =
+                                                    isPresencialSemBaia
+                                                        ? 'bg-orange-200 !text-orange-800'
+                                                        : getStatusColorClass(
+                                                              status as TipoHorario,
+                                                          );
+
+                                                return (
+                                                    <div
+                                                        key={status}
+                                                        className={`flex items-center space-x-2 rounded-lg p-3 shadow ${colorClass}`}
+                                                    >
+                                                        <span
+                                                            className={`border-base-content/20 h-5 w-5 rounded-full border ${colorClass}`}
+                                                        ></span>
+                                                        <span className="font-medium">
+                                                            {displayName}:
+                                                        </span>
+                                                        <span className="text-lg font-bold">
+                                                            {Math.abs(count)}
+                                                        </span>
+                                                        {isPresencialSemBaia &&
+                                                            count > 0 && (
+                                                                <span className="text-xs">
+                                                                    ⚠️
+                                                                </span>
+                                                            )}
+                                                    </div>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="mb-6 overflow-x-auto">
                                 <table className="table w-full text-center">
                                     <thead>
@@ -338,58 +390,6 @@ export default function MeuHorario({
                                         })}
                                     </tbody>
                                 </table>
-                            </div>
-
-                            <div className="card card-bordered bg-base-200 mt-6 shadow">
-                                <div className="card-body">
-                                    <h4 className="card-title mb-3 text-lg font-semibold">
-                                        Resumo dos Horários
-                                    </h4>
-                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-5">
-                                        {Object.entries(statusCounts).map(
-                                            ([status, count]) => {
-                                                const isPresencialSemBaia =
-                                                    status ===
-                                                    'TRABALHO_PRESENCIAL_SEM_BAIA';
-                                                const displayName =
-                                                    isPresencialSemBaia
-                                                        ? 'Presencial sem Baia'
-                                                        : getStatusDisplayName(
-                                                              status as TipoHorario,
-                                                          );
-                                                const colorClass =
-                                                    isPresencialSemBaia
-                                                        ? 'bg-orange-200 !text-orange-800'
-                                                        : getStatusColorClass(
-                                                              status as TipoHorario,
-                                                          );
-
-                                                return (
-                                                    <div
-                                                        key={status}
-                                                        className={`flex items-center space-x-2 rounded-lg p-3 shadow ${colorClass}`}
-                                                    >
-                                                        <span
-                                                            className={`border-base-content/20 h-5 w-5 rounded-full border ${colorClass}`}
-                                                        ></span>
-                                                        <span className="font-medium">
-                                                            {displayName}:
-                                                        </span>
-                                                        <span className="text-lg font-bold">
-                                                            {Math.abs(count)}
-                                                        </span>
-                                                        {isPresencialSemBaia &&
-                                                            count > 0 && (
-                                                                <span className="text-xs">
-                                                                    ⚠️
-                                                                </span>
-                                                            )}
-                                                    </div>
-                                                );
-                                            },
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

@@ -145,7 +145,7 @@ class ProjetosController extends Controller
 
     if (
       $usuarioVinculo &&
-      $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
+      // $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
       $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
     ) {
       $participantesQuery = $projeto->usuarios()
