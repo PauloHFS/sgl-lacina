@@ -19,6 +19,12 @@ class IntervenienteFinanceiro extends Model
 
     public $incrementing = false;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'intervenientes_financeiros';
 
     /**
      * The attributes that are mass assignable.
