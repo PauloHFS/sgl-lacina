@@ -353,7 +353,7 @@ class DevelopmentSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => $docenteData['email']],
                 array_merge($docenteData, [
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make('Ab@12312'),
                     'status_cadastro' => StatusCadastro::ACEITO,
                     'email_verified_at' => now(),
                 ])
