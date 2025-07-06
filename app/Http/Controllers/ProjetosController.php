@@ -12,6 +12,7 @@ use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoHorario;
+use App\Models\IntervenienteFinanceiro;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -110,7 +111,7 @@ class ProjetosController extends Controller
 
   public function show()
   {
-    $projeto = Projeto::findOrFail(request()->route('projeto'));
+    $projeto = Projeto::with('intervenienteFinanceiro')->findOrFail(request()->route('projeto'));
 
     if (!$projeto) {
       return Redirect::route('projetos.index')->with('error', 'Projeto não encontrado.');
@@ -208,7 +209,11 @@ class ProjetosController extends Controller
 
   public function create()
   {
-    return Inertia::render('Projetos/Create');
+    $interveniente = IntervenienteFinanceiro::all();
+
+    return Inertia::render('Projetos/Create', [
+      'intervenientes_financeiros' => $interveniente,
+    ]);
   }
 
   public function edit(Projeto $projeto)
@@ -218,8 +223,11 @@ class ProjetosController extends Controller
       return Redirect::route('projetos.show', $projeto->id)->with('error', 'Você não tem permissão para editar este projeto.');
     }
 
+    $interveniente = IntervenienteFinanceiro::all();
+
     return Inertia::render('Projetos/Edit', [
       'projeto' => $projeto,
+      'intervenientes_financeiros' => $interveniente,
     ]);
   }
 
@@ -240,7 +248,13 @@ class ProjetosController extends Controller
       'board_url' => 'nullable|url|max:255',
       'git_url' => 'nullable|url|max:255',
       'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
+      'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
+      'numero_convenio' => 'nullable|string|max:255',
     ]);
+
+    if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
+      $validatedData['interveniente_financeiro_id'] = null;
+    }
 
     try {
       DB::transaction(function () use ($validatedData) {
@@ -291,6 +305,18 @@ class ProjetosController extends Controller
       'board_url' => 'nullable|url|max:255',
       'git_url' => 'nullable|url|max:255',
       'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
+      'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
+      'numero_convenio' => 'nullable|string|max:255',
+    ]);
+
+    // Convert empty string to null for UUID foreign key fields
+    if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
+      $validatedData['interveniente_financeiro_id'] = null;
+    }
+
+    Log::info('Atualizando projeto:', [
+      'projeto_id' => $projeto->id,
+      'dados' => $validatedData,
     ]);
 
     try {

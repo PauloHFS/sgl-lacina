@@ -33,7 +33,8 @@ class Projeto extends Model
         'discord_url',
         'board_url',
         'git_url',
-        'tipo'
+        'tipo',
+        'interveniente_financeiro_id'
     ];
 
     protected $casts = [

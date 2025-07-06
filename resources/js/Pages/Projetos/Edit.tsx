@@ -3,7 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Projeto, TipoProjeto } from '@/types';
+import { IntervenienteFinanceiro, Projeto, TipoProjeto } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
@@ -14,6 +14,7 @@ interface CampoExtra {
 
 interface EditPageProps {
     projeto: Projeto;
+    intervenientes_financeiros: Array<IntervenienteFinanceiro>;
 }
 
 const tiposProjeto: TipoProjeto[] = [
@@ -24,7 +25,10 @@ const tiposProjeto: TipoProjeto[] = [
     'SUPORTE',
 ];
 
-export default function Edit({ projeto }: EditPageProps) {
+export default function Edit({
+    projeto,
+    intervenientes_financeiros,
+}: EditPageProps) {
     const today = new Date();
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
         .toISOString()
@@ -38,7 +42,24 @@ export default function Edit({ projeto }: EditPageProps) {
         .split('T')[0];
 
     const { data, setData, patch, processing, errors } = useForm<
-        Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+        Pick<
+            Projeto,
+            | 'nome'
+            | 'descricao'
+            | 'valor_total'
+            | 'meses_execucao'
+            | 'campos_extras'
+            | 'data_inicio'
+            | 'data_termino'
+            | 'cliente'
+            | 'slack_url'
+            | 'discord_url'
+            | 'board_url'
+            | 'git_url'
+            | 'tipo'
+            | 'interveniente_financeiro_id'
+            | 'numero_convenio'
+        >
     >({
         nome: projeto.nome,
         descricao: projeto.descricao || '',
@@ -57,6 +78,8 @@ export default function Edit({ projeto }: EditPageProps) {
         board_url: projeto.board_url || '',
         git_url: projeto.git_url || '',
         tipo: projeto.tipo,
+        interveniente_financeiro_id: projeto.interveniente_financeiro_id || '',
+        numero_convenio: projeto.numero_convenio || '',
     });
 
     const { toast } = useToast();
@@ -206,6 +229,37 @@ export default function Edit({ projeto }: EditPageProps) {
                                         )}
                                     </div>
 
+                                    {/* Número do Acordo / Contrato / Convênio  */}
+                                    <div>
+                                        <label
+                                            htmlFor="numero_convenio"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Número do
+                                                Acordo/Contrato/Convênio
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="numero_convenio"
+                                            type="text"
+                                            value={data.numero_convenio || ''}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'numero_convenio',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="input input-bordered w-full"
+                                            placeholder="Número do Acordo/Contrato/Convênio"
+                                        />
+                                        {errors.numero_convenio && (
+                                            <span className="text-error text-xs">
+                                                {errors.numero_convenio}
+                                            </span>
+                                        )}
+                                    </div>
+
                                     {/* Data de Início */}
                                     <div className="form-control">
                                         <label className="label">
@@ -266,6 +320,48 @@ export default function Edit({ projeto }: EditPageProps) {
                                                     {errors.data_termino}
                                                 </span>
                                             </div>
+                                        )}
+                                    </div>
+
+                                    {/* Interveniente Financeiro */}
+                                    <div>
+                                        <label htmlFor="tipo" className="label">
+                                            <span className="label-text text-base-content">
+                                                Interveniente Financeiro
+                                            </span>
+                                        </label>
+                                        <select
+                                            id="tipo"
+                                            value={
+                                                data.interveniente_financeiro_id ||
+                                                ''
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'interveniente_financeiro_id',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="select select-bordered w-full"
+                                        >
+                                            <option value="" disabled>
+                                                Selecione um interveniente
+                                                financeiro
+                                            </option>
+                                            {intervenientes_financeiros.map(
+                                                ({ id, nome }) => (
+                                                    <option key={id} value={id}>
+                                                        {nome}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
+                                        {errors.interveniente_financeiro_id && (
+                                            <span className="text-error text-xs">
+                                                {
+                                                    errors.interveniente_financeiro_id
+                                                }
+                                            </span>
                                         )}
                                     </div>
 

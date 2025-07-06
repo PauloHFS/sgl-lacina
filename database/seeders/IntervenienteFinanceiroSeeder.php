@@ -12,8 +12,17 @@ class IntervenienteFinanceiroSeeder extends Seeder
      */
     public function run(): void
     {
-        IntervenienteFinanceiro::firstOrCreate(
-            ['nome' => 'Fundação Parque Tecnológico da Paraíba (PaqTcPB)']
-        );
+        $intervenientes = [
+            ['nome' => 'Nenhum'],
+            ['nome' => 'Fundação Parque Tecnológico da Paraíba (PaqTcPB)'],
+            // ['nome' => 'Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq)'],
+            // ['nome' => 'Coordenação de Aperfeiçoamento de Pessoal de Nível Superior (CAPES)'],
+            // ['nome' => 'Financiadora de Estudos e Projetos (FINEP)'],
+            // ['nome' => 'Fundação de Apoio à Pesquisa do Estado da Paraíba (FAPESQ)'],
+        ];
+
+        foreach ($intervenientes as $interveniente) {
+            IntervenienteFinanceiro::firstOrCreate($interveniente);
+        }
     }
 }
