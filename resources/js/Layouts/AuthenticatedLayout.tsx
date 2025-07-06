@@ -59,7 +59,7 @@ export default function Authenticated({
                                         <img
                                             src={
                                                 user.foto_url
-                                                    ? `/storage/${user.foto_url}`
+                                                    ? user.foto_url
                                                     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
                                             }
                                             alt={`Foto de ${user.name}`}
@@ -370,7 +370,7 @@ export default function Authenticated({
                                     <img
                                         src={
                                             user.foto_url
-                                                ? `/storage/${user.foto_url}`
+                                                ? user.foto_url
                                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff`
                                         }
                                         alt={`Foto de ${user.name}`}

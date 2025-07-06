@@ -210,7 +210,7 @@ export default function UpdateProfileInformation({
                                                                   'http',
                                                               )
                                                                 ? data.foto_url
-                                                                : `/storage/${data.foto_url}`
+                                                                : data.foto_url
                                                             : URL.createObjectURL(
                                                                   data.foto_url,
                                                               )

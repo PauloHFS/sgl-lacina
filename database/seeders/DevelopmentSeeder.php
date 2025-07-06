@@ -153,10 +153,6 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("      - Recusados: {$recusados}");
         $this->command->info("      - Inativos: {$inativos}");
 
-        $totalHorarios = Horario::count();
-        $this->command->info("   ⏰ Horários: {$totalHorarios} total");
-        $this->command->info("   📅 Horários semanais: " . Horario::where('tipo', 'semana')->count());
-
         // Projetos por status temporal
         $totalProjetos = Projeto::count();
         $projetosAtivos = Projeto::where('data_inicio', '<=', now())
@@ -168,6 +164,24 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("      - Ativos: {$projetosAtivos}");
         $this->command->info("      - Finalizados: {$projetosFinalizados}");
         $this->command->info("      - Futuros: {$projetosFuturos}");
+
+        // Estatísticas de coordenadores
+        $projetosComCoordenador = Projeto::whereHas('usuarios', function ($query) {
+            $query->where('usuario_projeto.funcao', Funcao::COORDENADOR)
+                ->where('usuario_projeto.status', StatusVinculoProjeto::APROVADO);
+        })->count();
+
+        $projetosComCoordenadorHistorico = Projeto::whereHas('historicoUsuarioProjeto', function ($query) {
+            $query->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO);
+        })->count();
+
+        $totalComCoordenador = $projetosComCoordenador + $projetosComCoordenadorHistorico;
+
+        $this->command->info("   👑 Coordenadores:");
+        $this->command->info("      - Projetos com coordenador ativo: {$projetosComCoordenador}");
+        $this->command->info("      - Projetos com coordenador (histórico): {$projetosComCoordenadorHistorico}");
+        $this->command->info("      - Total projetos com coordenador: {$totalComCoordenador}");
 
         // Vínculos por status
         $totalVinculos = UsuarioProjeto::count();
@@ -182,12 +196,15 @@ class DevelopmentSeeder extends Seeder
 
         $this->command->info("   📜 Histórico de Vínculos: " . HistoricoUsuarioProjeto::count() . " registros");
 
-
         // Salas e baias
         $totalSalas = Sala::count();
         $totalBaias = Baia::count();
         $this->command->info("   🏢 Salas: {$totalSalas} total");
         $this->command->info("      - Baias: {$totalBaias} total");
+
+        // Horários
+        $totalHorarios = Horario::count();
+        $this->command->info("   ⏰ Horários: {$totalHorarios} total");
     }
 
     /**
@@ -476,16 +493,21 @@ class DevelopmentSeeder extends Seeder
             $this->command->warn('⚠️  Coordenadores principais ou Paulo Hernane não encontrados. O seeder pode não funcionar como esperado.');
         }
 
-        // --- Geração de Histórico ---
+        // --- PRIMEIRO: Garante que todos os projetos tenham coordenadores ---
+        $this->command->info('👑 Garantindo que todos os projetos tenham coordenadores...');
+        $this->ensureAllProjectsHaveCoordinators($projetos, $coordenadores, $usuarios);
+
+        // --- SEGUNDO: Geração de Histórico ---
         $this->command->info('⏳ Gerando histórico de 3 anos para todos os colaboradores...');
         foreach ($usuarios as $usuario) {
             $this->generateUserHistory($usuario, $projetos);
         }
 
-        // --- Ajustes e Vínculos Especiais ---
-        $this->adjustCoordenadoresProjetosAtivos($maxwell, $campelo, $projetos);
+        // --- TERCEIRO: Vínculos Especiais ---
         $this->createSpecialVinculos($outrosColaboradores, $projetos);
 
+        // --- QUARTO: Validação final ---
+        $this->validateProjectCoordinators($projetos);
 
         // --- Relatório Final ---
         $totalVinculos = UsuarioProjeto::count();
@@ -506,6 +528,12 @@ class DevelopmentSeeder extends Seeder
         $currentDate = now()->subYears(3);
         $endDate = now();
 
+        // Evita criar histórico para coordenadores principais (eles têm lógica especial)
+        $coordenadoresPrincipais = ['maxwell@computacao.ufcg.edu.br', 'campelo@computacao.ufcg.edu.br'];
+        if (in_array($user->email, $coordenadoresPrincipais)) {
+            return;
+        }
+
         while ($currentDate->lessThan($endDate)) {
             $activeVinculos = UsuarioProjeto::where('usuario_id', $user->id)
                 ->where('status', StatusVinculoProjeto::APROVADO)
@@ -522,9 +550,11 @@ class DevelopmentSeeder extends Seeder
             // Chance de entrar em um novo projeto
             $activeVinculosCount = UsuarioProjeto::where('usuario_id', $user->id)->whereNull('data_fim')->count();
             if ($activeVinculosCount < 2 && rand(1, 100) <= 10) { // 10% de chance de entrar
-                $projetosDisponiveis = $allProjects->where('data_inicio', '<=', $currentDate)
-                    ->where('data_termino', '>=', $currentDate)
-                    ->whereNotIn('id', $user->projetos->pluck('id'));
+                $projetosDisponiveis = $allProjects->filter(function ($projeto) use ($currentDate, $user) {
+                    return $projeto->data_inicio <= $currentDate
+                        && $projeto->data_termino >= $currentDate
+                        && !$user->projetos->contains('id', $projeto->id);
+                });
 
                 if ($projetosDisponiveis->isNotEmpty()) {
                     $projetoDisponivel = $projetosDisponiveis->random();
@@ -545,55 +575,21 @@ class DevelopmentSeeder extends Seeder
     }
 
     /**
-     * Garante que os coordenadores tenham 2 projetos ativos cada, 1 em comum.
-     */
-    private function adjustCoordenadoresProjetosAtivos(?User $maxwell, ?User $campelo, Collection $projetos): void
-    {
-        if (!$maxwell || !$campelo) {
-            return;
-        }
-
-        $projetosAtivos = $projetos->filter(fn($p) => $p->data_termino >= now() && $p->data_inicio <= now());
-
-        // Limpa todos os vínculos de coordenação ativos para recomeçar
-        UsuarioProjeto::whereIn('usuario_id', [$maxwell->id, $campelo->id])
-            ->where('funcao', Funcao::COORDENADOR)
-            ->whereNull('data_fim')
-            ->get()->each(fn($v) => $this->moveToHistory($v->fresh()));
-
-        // 1. Projeto em comum
-        $projetoComum = $projetosAtivos->pop();
-        if ($projetoComum) {
-            $this->createVinculo($maxwell, $projetoComum, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
-            $this->createVinculo($campelo, $projetoComum, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
-        }
-
-        // 2. Projeto solo para Maxwell
-        $projetoMaxwell = $projetosAtivos->pop();
-        if ($projetoMaxwell) {
-            $this->createVinculo($maxwell, $projetoMaxwell, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
-        }
-
-        // 3. Projeto solo para Campelo
-        $projetoCampelo = $projetosAtivos->pop();
-        if ($projetoCampelo) {
-            $this->createVinculo($campelo, $projetoCampelo, StatusVinculoProjeto::APROVADO, now()->subMonth(), null, Funcao::COORDENADOR, TipoVinculo::COORDENADOR);
-        }
-    }
-
-    /**
      * Cria vínculos pendentes e recusados para dar mais realismo.
      */
     private function createSpecialVinculos(Collection $usuarios, Collection $projetos): void
     {
-        $projetosAtivos = $projetos->where('data_termino', '>=', now());
+        $projetosAtivos = $projetos->filter(fn($p) => $p->data_termino >= now());
 
         // Criar vínculos pendentes
         if ($usuarios->count() >= 5) {
-            $usuariosParaPendente = $usuarios->random(5);
+            $usuariosParaPendente = $usuarios->random(min(5, $usuarios->count()));
             foreach ($usuariosParaPendente as $usuario) {
                 if ($usuario->projetos()->whereNull('data_fim')->count() < 2) {
-                    $projetosDisponiveis = $projetosAtivos->whereNotIn('id', $usuario->projetos->pluck('id'));
+                    $projetosDisponiveis = $projetosAtivos->filter(function ($projeto) use ($usuario) {
+                        return !$usuario->projetos->contains('id', $projeto->id);
+                    });
+
                     if ($projetosDisponiveis->isNotEmpty()) {
                         $projeto = $projetosDisponiveis->random();
                         $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::PENDENTE, now());
@@ -602,10 +598,9 @@ class DevelopmentSeeder extends Seeder
             }
         }
 
-
         // Criar vínculos recusados no passado
         if ($usuarios->count() >= 3) {
-            $usuariosParaRecusado = $usuarios->random(3);
+            $usuariosParaRecusado = $usuarios->random(min(3, $usuarios->count()));
             foreach ($usuariosParaRecusado as $usuario) {
                 if ($projetos->isNotEmpty()) {
                     $projeto = $projetos->random();
@@ -614,6 +609,45 @@ class DevelopmentSeeder extends Seeder
                         $vinculo->update(['data_fim' => $vinculo->data_inicio->addDays(rand(1, 5))]);
                         $this->moveToHistory($vinculo);
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * Garante que todos os projetos tenham pelo menos um coordenador
+     */
+    private function ensureAllProjectsHaveCoordinators(Collection $projetos, Collection $coordenadores, Collection $usuarios): void
+    {
+        foreach ($projetos as $projeto) {
+            // Verifica se o projeto já tem coordenador ativo
+            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
+
+            if (!$temCoordenador) {
+                // Verifica se tem coordenador no histórico
+                $temCoordenadorHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
+                    ->where('funcao', Funcao::COORDENADOR)
+                    ->where('status', StatusVinculoProjeto::APROVADO)
+                    ->exists();
+
+                if (!$temCoordenadorHistorico) {
+                    // Atribui um coordenador para o projeto
+                    $coordenador = $coordenadores->random();
+
+                    $this->createVinculo(
+                        $coordenador,
+                        $projeto,
+                        StatusVinculoProjeto::APROVADO,
+                        $projeto->data_inicio,
+                        null,
+                        Funcao::COORDENADOR,
+                        TipoVinculo::COORDENADOR
+                    );
+
+                    $this->command->info("   👑 Coordenador {$coordenador->name} atribuído ao projeto {$projeto->nome}");
                 }
             }
         }
@@ -643,16 +677,20 @@ class DevelopmentSeeder extends Seeder
         ];
 
         foreach ($salas as $salaData) {
-            $sala = Sala::factory()->create([
-                'nome' => $salaData['nome'],
-                'descricao' => 'Sala de teste para desenvolvimento'
-            ]);
+            $sala = Sala::firstOrCreate(
+                ['nome' => $salaData['nome']],
+                ['descricao' => 'Sala de teste para desenvolvimento']
+            );
 
-            for ($i = 1; $i <= $salaData['baias']; $i++) {
-                Baia::factory()->create([
-                    'sala_id' => $sala->id,
-                    'nome' => $sala->nome . ' - Baia ' . $i,
-                ]);
+            // Verifica se as baias já existem
+            $baiasExistentes = Baia::where('sala_id', $sala->id)->count();
+            if ($baiasExistentes == 0) {
+                for ($i = 1; $i <= $salaData['baias']; $i++) {
+                    Baia::firstOrCreate(
+                        ['nome' => $sala->nome . ' - Baia ' . $i],
+                        ['sala_id' => $sala->id]
+                    );
+                }
             }
         }
 
@@ -682,6 +720,11 @@ class DevelopmentSeeder extends Seeder
             return null;
         }
 
+        // Validação básica: data de início não pode ser posterior à data de término do projeto
+        if ($dataInicio > $projeto->data_termino) {
+            return null;
+        }
+
         $funcoes = Funcao::cases();
         $tiposVinculo = TipoVinculo::cases();
 
@@ -700,6 +743,10 @@ class DevelopmentSeeder extends Seeder
             $tipoVinculoFinal = $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)];
         }
 
+        // Garante que data de fim não seja anterior à data de início
+        if ($dataFim && $dataFim < $dataInicio) {
+            $dataFim = null;
+        }
 
         return UsuarioProjeto::create([
             'usuario_id' => $usuario->id,
@@ -716,34 +763,38 @@ class DevelopmentSeeder extends Seeder
 
     private function createUser(array $data, StatusCadastro $status = StatusCadastro::ACEITO): User
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'email_verified_at' => now(),
-            'password' => Hash::make('Ab@12312'),
-            'status_cadastro' => $status,
-            'cpf' => $data['cpf'],
-            'data_nascimento' => $data['data_nascimento'],
-            'telefone' => $data['telefone'],
-            'rg' => $data['rg'],
-            'uf_rg' => $data['uf_rg'] ?? 'PB',
-            'orgao_emissor_rg' => $data['orgao_emissor_rg'] ?? 'SSP-PB',
-            'conta_bancaria' => $data['conta_bancaria'],
-        ]);
+        return User::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'name' => $data['name'],
+                'email_verified_at' => now(),
+                'password' => Hash::make('Ab@12312'),
+                'status_cadastro' => $status,
+                'cpf' => $data['cpf'],
+                'data_nascimento' => $data['data_nascimento'],
+                'telefone' => $data['telefone'],
+                'rg' => $data['rg'],
+                'uf_rg' => $data['uf_rg'] ?? 'PB',
+                'orgao_emissor_rg' => $data['orgao_emissor_rg'] ?? 'SSP-PB',
+                'conta_bancaria' => $data['conta_bancaria'],
+            ]
+        );
     }
 
     private function createProject(array $data): Projeto
     {
-        return Projeto::create([
-            'nome' => $data['nome'],
-            'descricao' => $data['descricao'],
-            'valor_total' => $data['valor_total'] ?? 50500430,
-            'meses_execucao' => $data['meses_execucao'] ?? 12.3,
-            'data_inicio' => $data['data_inicio'],
-            'data_termino' => $data['data_termino'],
-            'cliente' => $data['cliente'],
-            'tipo' => $data['tipo'],
-        ]);
+        return Projeto::firstOrCreate(
+            ['nome' => $data['nome']],
+            [
+                'descricao' => $data['descricao'],
+                'valor_total' => $data['valor_total'] ?? 50500430,
+                'meses_execucao' => $data['meses_execucao'] ?? 12.3,
+                'data_inicio' => $data['data_inicio'],
+                'data_termino' => $data['data_termino'],
+                'cliente' => $data['cliente'],
+                'tipo' => $data['tipo'],
+            ]
+        );
     }
 
     private function createProjectLink(array $data): UsuarioProjeto
@@ -757,5 +808,97 @@ class DevelopmentSeeder extends Seeder
             'data_inicio' => $data['data_inicio'],
             'status' => $data['status'],
         ]);
+    }
+
+    /**
+     * Garante que todos os projetos tenham pelo menos um coordenador
+     */
+    private function ensureAllProjectsHaveCoordenators(Collection $projetos, Collection $coordenadores, Collection $usuarios): void
+    {
+        foreach ($projetos as $projeto) {
+            // Verifica se o projeto já tem coordenador ativo
+            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
+
+            if (!$temCoordenador) {
+                // Verifica se tem coordenador no histórico
+                $temCoordenadorHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
+                    ->where('funcao', Funcao::COORDENADOR)
+                    ->where('status', StatusVinculoProjeto::APROVADO)
+                    ->exists();
+
+                if (!$temCoordenadorHistorico) {
+                    // Atribui um coordenador para o projeto
+                    $coordenador = $coordenadores->random();
+
+                    $this->createVinculo(
+                        $coordenador,
+                        $projeto,
+                        StatusVinculoProjeto::APROVADO,
+                        $projeto->data_inicio,
+                        null,
+                        Funcao::COORDENADOR,
+                        TipoVinculo::COORDENADOR
+                    );
+
+                    $this->command->info("   👑 Coordenador {$coordenador->name} atribuído ao projeto {$projeto->nome}");
+                }
+            }
+        }
+    }
+
+    /**
+     * Valida se todos os projetos têm coordenadores após a criação dos vínculos.
+     */
+    private function validateProjectCoordinators(Collection $projetos): void
+    {
+        $this->command->info('🔍 Validação final: verificando se todos os projetos têm coordenadores...');
+
+        $projetosSemCoordenador = collect();
+        $projetosAtivos = 0;
+        $projetosComCoordenador = 0;
+
+        foreach ($projetos as $projeto) {
+            $isAtivo = $projeto->data_inicio <= now() && $projeto->data_termino >= now();
+            if ($isAtivo) {
+                $projetosAtivos++;
+            }
+
+            // Verifica coordenadores ativos
+            $coordenadoresAtivos = UsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->whereNull('data_fim')
+                ->count();
+
+            // Verifica coordenadores no histórico (projetos finalizados)
+            $coordenadoresHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->count();
+
+            if ($coordenadoresAtivos > 0 || $coordenadoresHistorico > 0) {
+                $projetosComCoordenador++;
+            } else {
+                $projetosSemCoordenador->push($projeto);
+            }
+        }
+
+        // Relatório da validação
+        $this->command->info("📊 Validação concluída:");
+        $this->command->info("   - Projetos totais: {$projetos->count()}");
+        $this->command->info("   - Projetos ativos: {$projetosAtivos}");
+        $this->command->info("   - Projetos com coordenador: {$projetosComCoordenador}");
+
+        if ($projetosSemCoordenador->isNotEmpty()) {
+            $this->command->error("❌ ATENÇÃO: {$projetosSemCoordenador->count()} projetos ainda estão sem coordenador:");
+            foreach ($projetosSemCoordenador as $projeto) {
+                $this->command->error("   - {$projeto->nome} (ID: {$projeto->id})");
+            }
+        } else {
+            $this->command->info("✅ Todos os projetos têm coordenadores!");
+        }
     }
 }

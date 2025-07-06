@@ -197,4 +197,27 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->campos_extra = array_merge($this->campos_extra ?? [], $data);
     }
+
+    /**
+     * Accessor para foto_url - retorna URL completa da foto
+     */
+    public function getFotoUrlAttribute($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Se já é uma URL completa, retorna como está
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        // Se já começa com /storage/, retorna como está
+        if (str_starts_with($value, '/storage/')) {
+            return $value;
+        }
+
+        // Se é um caminho relativo, adiciona /storage/
+        return '/storage/' . $value;
+    }
 }

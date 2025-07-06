@@ -73,4 +73,9 @@ class Projeto extends Model
     {
         return $this->belongsTo(IntervenienteFinanceiro::class, 'interveniente_financeiro_id', 'id');
     }
+
+    public function historicoUsuarioProjeto()
+    {
+        return $this->hasMany(HistoricoUsuarioProjeto::class, 'projeto_id', 'id');
+    }
 }
