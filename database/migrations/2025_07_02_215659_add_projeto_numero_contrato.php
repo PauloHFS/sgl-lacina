@@ -30,6 +30,14 @@ return new class extends Migration
                 ->comment('ID do interveniente financeiro responsável pelo projeto.')
                 ->constrained('intervenientes_financeiros');
         });
+
+        Schema::table('usuario_projeto', function (Blueprint $table) {
+            $table->integer('valor_bolsa')->default(0)->after('carga_horaria')->comment('Valor da bolsa');
+        });
+
+        Schema::table('historico_usuario_projeto', function (Blueprint $table) {
+            $table->integer('valor_bolsa')->default(0)->after('carga_horaria')->comment('Valor da bolsa');
+        });
     }
 
     /**
@@ -37,6 +45,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('historico_usuario_projeto', function (Blueprint $table) {
+            $table->dropColumn('valor_bolsa');
+        });
+
+        Schema::table('usuario_projeto', function (Blueprint $table) {
+            $table->dropColumn('valor_bolsa');
+        });
+
         Schema::table('projetos', function (Blueprint $table) {
             $table->dropForeign(['interveniente_financeiro_id']);
             $table->dropColumn(['numero_convenio', 'interveniente_financeiro_id']);

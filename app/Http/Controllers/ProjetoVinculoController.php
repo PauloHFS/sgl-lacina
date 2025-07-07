@@ -22,6 +22,7 @@ class ProjetoVinculoController extends Controller
       'projeto_id' => 'required|exists:projetos,id',
       'data_inicio' => 'required|date',
       'carga_horaria' => 'required|integer|min:1|max:200',
+      'valor_bolsa' => 'sometimes|nullable|integer|min:0',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
       'trocar' => 'sometimes|boolean',
@@ -67,6 +68,7 @@ class ProjetoVinculoController extends Controller
           'funcao' => $request->funcao,
           'status' => StatusVinculoProjeto::PENDENTE,
           'carga_horaria' => $request->carga_horaria,
+          'valor_bolsa' => $request->valor_bolsa ?? 0,
           'data_inicio' => $request->data_inicio,
         ]);
       });
@@ -78,6 +80,7 @@ class ProjetoVinculoController extends Controller
         'funcao' => $request->funcao,
         'status' => StatusVinculoProjeto::PENDENTE,
         'carga_horaria' => $request->carga_horaria,
+        'valor_bolsa' => $request->valor_bolsa ?? 0,
         'data_inicio' => $request->data_inicio,
       ]);
     }
@@ -90,6 +93,7 @@ class ProjetoVinculoController extends Controller
     $validatedData = $request->validate([
       'status' => ['sometimes', 'required', Rule::enum(StatusVinculoProjeto::class)],
       'carga_horaria' => 'sometimes|nullable|integer|min:1|max:200',
+      'valor_bolsa' => 'sometimes|nullable|integer|min:0',
       'funcao' => ['sometimes', 'nullable', Rule::enum(Funcao::class)],
       'tipo_vinculo' => ['sometimes', 'nullable', Rule::enum(TipoVinculo::class)],
       'data_inicio' => 'sometimes|nullable|date',
@@ -132,6 +136,10 @@ class ProjetoVinculoController extends Controller
 
     if ($request->filled('carga_horaria')) {
       $usuarioProjeto->carga_horaria = $validatedData['carga_horaria'];
+    }
+
+    if ($request->has('valor_bolsa')) {
+      $usuarioProjeto->valor_bolsa = $validatedData['valor_bolsa'];
     }
 
     if ($request->filled('funcao')) {

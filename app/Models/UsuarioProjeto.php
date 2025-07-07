@@ -32,6 +32,7 @@ class UsuarioProjeto extends Model
         'funcao',
         'status',
         'carga_horaria',
+        'valor_bolsa',
         'data_inicio',
         'data_fim',
     ];
@@ -41,6 +42,7 @@ class UsuarioProjeto extends Model
         'funcao' => Funcao::class,
         'status' => StatusVinculoProjeto::class,
         'carga_horaria' => 'integer',
+        'valor_bolsa' => 'integer',
         'data_inicio' => 'datetime',
         'data_fim' => 'datetime',
     ];

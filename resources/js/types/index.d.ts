@@ -156,6 +156,7 @@ export interface UsuarioProjeto {
     funcao: Funcao;
     status: StatusVinculoProjeto;
     carga_horaria: number;
+    valor_bolsa: number;
     data_inicio: string; // YYYY-MM-DD HH:MM:SS
     data_fim?: string | null; // YYYY-MM-DD HH:MM:SS
     created_at?: string | null; // YYYY-MM-DD HH:MM:SS
