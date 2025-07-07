@@ -61,7 +61,7 @@ class HorarioService
         }
 
         // Insere em lotes para melhor performance
-        $chunks = array_chunk($horarios, 50);
+        $chunks = array_chunk($horarios, 500);
 
         foreach ($chunks as $chunk) {
             Horario::insert($chunk);
