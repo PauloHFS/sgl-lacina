@@ -325,13 +325,13 @@ export default function Edit({
 
                                     {/* Interveniente Financeiro */}
                                     <div>
-                                        <label htmlFor="tipo" className="label">
+                                        <label htmlFor="interveniente_financeiro_id" className="label">
                                             <span className="label-text text-base-content">
                                                 Interveniente Financeiro
                                             </span>
                                         </label>
                                         <select
-                                            id="tipo"
+                                            id="interveniente_financeiro_id"
                                             value={
                                                 data.interveniente_financeiro_id ||
                                                 ''
