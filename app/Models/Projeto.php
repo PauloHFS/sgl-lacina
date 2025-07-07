@@ -22,6 +22,7 @@ class Projeto extends Model
         'id',
         'nome',
         'descricao',
+        'numero_convenio',
         'valor_total',
         'meses_execucao',
         'campos_extras',
@@ -32,7 +33,8 @@ class Projeto extends Model
         'discord_url',
         'board_url',
         'git_url',
-        'tipo'
+        'tipo',
+        'interveniente_financeiro_id'
     ];
 
     protected $casts = [
@@ -50,7 +52,7 @@ class Projeto extends Model
     public function usuarios(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'usuario_projeto', 'projeto_id', 'usuario_id')
-            ->withPivot('tipo_vinculo', 'funcao', 'status', 'carga_horaria', 'data_inicio', 'data_fim')
+            ->withPivot('id', 'tipo_vinculo', 'funcao', 'status', 'carga_horaria', 'valor_bolsa', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }
 
@@ -65,5 +67,15 @@ class Projeto extends Model
         }
 
         return $vinculo->pivot;
+    }
+
+    public function intervenienteFinanceiro()
+    {
+        return $this->belongsTo(IntervenienteFinanceiro::class, 'interveniente_financeiro_id', 'id');
+    }
+
+    public function historicoUsuarioProjeto()
+    {
+        return $this->hasMany(HistoricoUsuarioProjeto::class, 'projeto_id', 'id');
     }
 }

@@ -79,6 +79,7 @@ export interface ColaboradorData {
             funcao: Funcao;
             status: StatusVinculoProjeto;
             carga_horaria: number;
+            valor_bolsa: number;
             data_inicio: string;
             data_fim?: string | null;
             created_at: string;
@@ -101,7 +102,8 @@ export interface ShowPageProps extends PageProps {
 
 interface VinculoEditFormData {
     funcao: Funcao | '';
-    carga_horaria: number | string;
+    carga_horaria: number;
+    valor_bolsa: number;
     data_inicio: string | null | undefined;
     data_fim: string | null | undefined;
 }
@@ -128,12 +130,14 @@ export default function Show({
         funcao?: Funcao;
         tipo_vinculo?: TipoVinculo;
         carga_horaria?: number;
+        valor_bolsa?: number;
         data_inicio?: string;
     }>({
         status: ultimo_vinculo?.status,
         funcao: ultimo_vinculo?.funcao,
         tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
         carga_horaria: ultimo_vinculo?.carga_horaria,
+        valor_bolsa: ultimo_vinculo?.valor_bolsa,
         data_inicio: ultimo_vinculo?.data_inicio
             ? ultimo_vinculo.data_inicio.substring(0, 10)
             : undefined,
@@ -189,7 +193,8 @@ export default function Show({
 
     const vinculoEditForm = useForm<VinculoEditFormData>({
         funcao: '',
-        carga_horaria: '',
+        carga_horaria: 0,
+        valor_bolsa: 0,
         data_inicio: null,
         data_fim: null,
     });
@@ -199,6 +204,7 @@ export default function Show({
         vinculoEditForm.setData({
             funcao: vinculo.funcao,
             carga_horaria: vinculo.carga_horaria,
+            valor_bolsa: vinculo.valor_bolsa || 0,
             data_inicio: vinculo.data_inicio
                 ? new Date(vinculo.data_inicio).toISOString().split('T')[0]
                 : null,
@@ -208,17 +214,17 @@ export default function Show({
         });
     };
 
-    const handleCancelEditVinculo = () => {
+    const handleCancelEditVinculo = useCallback(() => {
         setEditingVinculo(null);
         vinculoEditForm.reset();
         vinculoEditForm.clearErrors();
-    };
+    }, [vinculoEditForm]);
 
     const handleSubmitEditVinculo = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!editingVinculo) return;
 
-        vinculoEditForm.patch(route('vinculo.update', editingVinculo.id), {
+        vinculoEditForm.patch(`/vinculo/${editingVinculo.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast('Sucesso! Vínculo com projeto atualizado.');
@@ -242,8 +248,14 @@ export default function Show({
                     observacao: observacao || null,
                 },
                 {
-                    onSuccess: () =>
-                        toast('Cadastro aceito com sucesso.', 'success'),
+                    onSuccess: () => {
+                        router.get(
+                            route('colaboradores.index', {
+                                status: 'cadastro_pendente',
+                            }),
+                        );
+                        toast('Cadastro aceito com sucesso.', 'success');
+                    },
                     onError: () => toast('Erro ao aceitar cadastro.', 'error'),
                 },
             );
@@ -259,8 +271,14 @@ export default function Show({
                     observacao: observacao || null,
                 },
                 {
-                    onSuccess: () =>
-                        toast('Cadastro recusado com sucesso.', 'success'),
+                    onSuccess: () => {
+                        router.get(
+                            route('colaboradores.index', {
+                                status: 'cadastro_pendente',
+                            }),
+                        );
+                        toast('Cadastro recusado com sucesso.', 'success');
+                    },
                     onError: () => toast('Erro ao recusar cadastro.', 'error'),
                 },
             );
@@ -278,6 +296,7 @@ export default function Show({
             funcao: vinculoData.funcao,
             tipo_vinculo: vinculoData.tipo_vinculo,
             carga_horaria: vinculoData.carga_horaria,
+            valor_bolsa: vinculoData.valor_bolsa || 0,
             data_inicio: vinculoData.data_inicio,
         };
 
@@ -285,6 +304,11 @@ export default function Show({
             data: dataToUpdate,
             preserveScroll: true,
             onSuccess: () => {
+                router.get(
+                    route('colaboradores.index', {
+                        status: 'vinculo_pendente',
+                    }),
+                );
                 toast('Status do vínculo atualizado.', 'success');
             },
             onError: (err: Record<string, string>) => {
@@ -298,6 +322,7 @@ export default function Show({
         vinculoData.funcao,
         vinculoData.tipo_vinculo,
         vinculoData.carga_horaria,
+        vinculoData.valor_bolsa,
         vinculoData.data_inicio,
         putVinculo,
         toast,
@@ -310,6 +335,80 @@ export default function Show({
     const handleRecusarVinculo = useCallback(() => {
         setVinculoData('status', 'RECUSADO');
     }, [setVinculoData]);
+
+    // Estados para o modal de encerramento de vínculo
+    const [showEncerrarModal, setShowEncerrarModal] = useState(false);
+    const [dataFimVinculo, setDataFimVinculo] = useState('');
+    const [processingEncerrar, setProcessingEncerrar] = useState(false);
+
+    // Handlers para encerrar vínculo
+    const handleEncerrarVinculo = useCallback(() => {
+        if (!editingVinculo) return;
+
+        // Definir data atual como padrão
+        const today = new Date().toISOString().split('T')[0];
+        setDataFimVinculo(today);
+        setShowEncerrarModal(true);
+    }, [editingVinculo]);
+
+    const handleConfirmarEncerramento = useCallback(() => {
+        if (!editingVinculo || !dataFimVinculo) return;
+
+        setProcessingEncerrar(true);
+
+        router.patch(
+            `/vinculo/${editingVinculo.id}`,
+            {
+                data_fim: dataFimVinculo,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowEncerrarModal(false);
+                    setDataFimVinculo('');
+                    setProcessingEncerrar(false);
+                    handleCancelEditVinculo();
+                    toast('Vínculo encerrado com sucesso!', 'success');
+                },
+                onError: (errors) => {
+                    setProcessingEncerrar(false);
+                    console.error(errors);
+                    toast('Erro ao encerrar vínculo.', 'error');
+                },
+            },
+        );
+    }, [editingVinculo, dataFimVinculo, toast, handleCancelEditVinculo]);
+
+    const handleDesfazerEncerramento = useCallback(() => {
+        if (!editingVinculo) return;
+
+        setProcessingEncerrar(true);
+
+        router.patch(
+            `/vinculo/${editingVinculo.id}`,
+            {
+                data_fim: null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setProcessingEncerrar(false);
+                    handleCancelEditVinculo();
+                    toast('Encerramento desfeito com sucesso!', 'success');
+                },
+                onError: (errors) => {
+                    setProcessingEncerrar(false);
+                    console.error(errors);
+                    toast('Erro ao desfazer encerramento.', 'error');
+                },
+            },
+        );
+    }, [editingVinculo, toast, handleCancelEditVinculo]);
+
+    const handleCancelarEncerramento = useCallback(() => {
+        setShowEncerrarModal(false);
+        setDataFimVinculo('');
+    }, []);
 
     useEffect(() => {
         if (
@@ -330,6 +429,7 @@ export default function Show({
             funcao: ultimo_vinculo?.funcao,
             tipo_vinculo: ultimo_vinculo?.tipo_vinculo,
             carga_horaria: ultimo_vinculo?.carga_horaria,
+            valor_bolsa: ultimo_vinculo?.valor_bolsa,
             data_inicio: ultimo_vinculo?.data_inicio
                 ? ultimo_vinculo.data_inicio.substring(0, 10)
                 : undefined,
@@ -343,6 +443,8 @@ export default function Show({
                 originalVinculoDisplayValues.tipo_vinculo ||
             vinculoData.carga_horaria !==
                 originalVinculoDisplayValues.carga_horaria ||
+            vinculoData.valor_bolsa !==
+                originalVinculoDisplayValues.valor_bolsa ||
             vinculoData.data_inicio !==
                 originalVinculoDisplayValues.data_inicio,
         [vinculoData, originalVinculoDisplayValues],
@@ -377,6 +479,7 @@ export default function Show({
             funcao: originalVinculoDisplayValues.funcao,
             tipo_vinculo: originalVinculoDisplayValues.tipo_vinculo,
             carga_horaria: originalVinculoDisplayValues.carga_horaria,
+            valor_bolsa: originalVinculoDisplayValues.valor_bolsa,
             data_inicio: originalVinculoDisplayValues.data_inicio,
         });
     }, [setVinculoData, ultimo_vinculo, originalVinculoDisplayValues]);
@@ -639,6 +742,93 @@ export default function Show({
                                                     <div>
                                                         <label
                                                             className="label"
+                                                            htmlFor="valor_bolsa"
+                                                        >
+                                                            <span className="label-text font-semibold">
+                                                                Valor da Bolsa:
+                                                            </span>
+                                                        </label>
+                                                        <input
+                                                            id="valor_bolsa"
+                                                            type="text"
+                                                            className={`input input-bordered w-full ${
+                                                                ultimo_vinculo?.valor_bolsa !==
+                                                                    vinculoData.valor_bolsa &&
+                                                                vinculoData.valor_bolsa !==
+                                                                    undefined
+                                                                    ? 'input-warning'
+                                                                    : ''
+                                                            } ${vinculoErrors.valor_bolsa ? 'input-error' : ''}`}
+                                                            value={(
+                                                                (vinculoData.valor_bolsa ||
+                                                                    0) / 100
+                                                            ).toLocaleString(
+                                                                'pt-BR',
+                                                                {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                },
+                                                            )}
+                                                            onChange={(e) => {
+                                                                const apenasNumeros =
+                                                                    e.target.value.replace(
+                                                                        /\D/g,
+                                                                        '',
+                                                                    );
+                                                                const centavos =
+                                                                    parseInt(
+                                                                        apenasNumeros ||
+                                                                            '0',
+                                                                    );
+                                                                setVinculoData(
+                                                                    'valor_bolsa',
+                                                                    centavos,
+                                                                );
+                                                            }}
+                                                            onFocus={(e) => {
+                                                                e.target.value =
+                                                                    (
+                                                                        (vinculoData.valor_bolsa ||
+                                                                            0) /
+                                                                        100
+                                                                    ).toFixed(
+                                                                        2,
+                                                                    );
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                e.target.value =
+                                                                    (
+                                                                        (vinculoData.valor_bolsa ||
+                                                                            0) /
+                                                                        100
+                                                                    ).toLocaleString(
+                                                                        'pt-BR',
+                                                                        {
+                                                                            minimumFractionDigits: 2,
+                                                                            maximumFractionDigits: 2,
+                                                                        },
+                                                                    );
+                                                            }}
+                                                            disabled={
+                                                                processingVinculo ||
+                                                                processingDetalhes ||
+                                                                ultimo_vinculo?.status !==
+                                                                    'PENDENTE'
+                                                            }
+                                                            placeholder="0,00"
+                                                        />
+                                                        {vinculoErrors.valor_bolsa && (
+                                                            <p className="text-error mt-1 text-xs">
+                                                                {
+                                                                    vinculoErrors.valor_bolsa
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label
+                                                            className="label"
                                                             htmlFor="data_inicio"
                                                         >
                                                             <span className="label-text font-semibold">
@@ -794,6 +984,7 @@ export default function Show({
                                                         <th>Cliente</th>
                                                         <th>Função</th>
                                                         <th>Carga Horária</th>
+                                                        <th>Valor da Bolsa</th>
                                                         <th>Data Início</th>
                                                         <th>Ações</th>
                                                     </tr>
@@ -851,6 +1042,15 @@ export default function Show({
                                                                             )}
                                                                             h/semana)
                                                                         </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="text-sm font-medium">
+                                                                        {projeto
+                                                                            .vinculo
+                                                                            .valor_bolsa
+                                                                            ? `R$ ${(projeto.vinculo.valor_bolsa / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                            : 'R$ 0,00'}
                                                                     </div>
                                                                 </td>
                                                                 <td>
@@ -1069,7 +1269,7 @@ export default function Show({
                                 onChange={(e) =>
                                     vinculoEditForm.setData(
                                         'carga_horaria',
-                                        parseInt(e.target.value) || '',
+                                        parseInt(e.target.value) || 0,
                                     )
                                 }
                                 min="1"
@@ -1081,6 +1281,61 @@ export default function Show({
                             </span>
                             <InputError
                                 message={vinculoEditForm.errors.carga_horaria}
+                                className="mt-2"
+                            />
+                        </div>
+
+                        <div className="mt-4">
+                            <label
+                                htmlFor="valor_bolsa_modal"
+                                className="label"
+                            >
+                                <span className="label-text">
+                                    Valor da Bolsa
+                                </span>
+                            </label>
+                            <TextInput
+                                id="valor_bolsa_modal"
+                                name="valor_bolsa"
+                                type="text"
+                                className="mt-1 block w-full"
+                                value={(
+                                    (vinculoEditForm.data.valor_bolsa || 0) /
+                                    100
+                                ).toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}
+                                onChange={(e) => {
+                                    const apenasNumeros =
+                                        e.target.value.replace(/\D/g, '');
+                                    const centavos = parseInt(
+                                        apenasNumeros || '0',
+                                    );
+                                    vinculoEditForm.setData(
+                                        'valor_bolsa',
+                                        centavos,
+                                    );
+                                }}
+                                onFocus={(e) => {
+                                    e.target.value = (
+                                        (vinculoEditForm.data.valor_bolsa ||
+                                            0) / 100
+                                    ).toFixed(2);
+                                }}
+                                onBlur={(e) => {
+                                    e.target.value = (
+                                        (vinculoEditForm.data.valor_bolsa ||
+                                            0) / 100
+                                    ).toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    });
+                                }}
+                                placeholder="0,00"
+                            />
+                            <InputError
+                                message={vinculoEditForm.errors.valor_bolsa}
                                 className="mt-2"
                             />
                         </div>
@@ -1111,15 +1366,29 @@ export default function Show({
                         </div>
 
                         <div className="mt-6 flex justify-end">
-                            <DangerButton
-                                type="button"
-                                // onClick={handleEncerrarVinculo}
-                                // disabled={vinculoEditForm.processing}
-                                className="mr-3"
-                                disabled
-                            >
-                                Encerrar Vinculo
-                            </DangerButton>
+                            {editingVinculo?.data_fim ? (
+                                // Se já tem data_fim, mostra botão para desfazer
+                                <DangerButton
+                                    type="button"
+                                    onClick={handleDesfazerEncerramento}
+                                    disabled={processingEncerrar}
+                                    className="mr-3"
+                                >
+                                    {processingEncerrar
+                                        ? 'Processando...'
+                                        : 'Desfazer Encerramento'}
+                                </DangerButton>
+                            ) : (
+                                // Se não tem data_fim, mostra botão para encerrar
+                                <DangerButton
+                                    type="button"
+                                    onClick={handleEncerrarVinculo}
+                                    disabled={vinculoEditForm.processing}
+                                    className="mr-3"
+                                >
+                                    Encerrar Vínculo
+                                </DangerButton>
+                            )}
                             <SecondaryButton
                                 type="button"
                                 onClick={handleCancelEditVinculo}
@@ -1134,6 +1403,64 @@ export default function Show({
                             </PrimaryButton>
                         </div>
                     </form>
+                </Modal>
+            )}
+
+            {/* Modal de confirmação de encerramento */}
+            {showEncerrarModal && (
+                <Modal
+                    show={showEncerrarModal}
+                    onClose={handleCancelarEncerramento}
+                >
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            Encerrar Vínculo
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Defina a data de encerramento do vínculo. O status
+                            será atualizado automaticamente pelo sistema.
+                        </p>
+
+                        <div className="mt-6">
+                            <label
+                                htmlFor="data_fim_encerramento"
+                                className="label"
+                            >
+                                <span className="label-text">
+                                    Data de Encerramento
+                                </span>
+                            </label>
+                            <TextInput
+                                id="data_fim_encerramento"
+                                type="date"
+                                className="mt-1 block w-full"
+                                value={dataFimVinculo}
+                                onChange={(e) =>
+                                    setDataFimVinculo(e.target.value)
+                                }
+                                required
+                            />
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <SecondaryButton
+                                type="button"
+                                onClick={handleCancelarEncerramento}
+                                disabled={processingEncerrar}
+                            >
+                                Cancelar
+                            </SecondaryButton>
+                            <DangerButton
+                                className="ml-3"
+                                onClick={handleConfirmarEncerramento}
+                                disabled={processingEncerrar || !dataFimVinculo}
+                            >
+                                {processingEncerrar
+                                    ? 'Processando...'
+                                    : 'Confirmar Encerramento'}
+                            </DangerButton>
+                        </div>
+                    </div>
                 </Modal>
             )}
         </AuthenticatedLayout>

@@ -98,7 +98,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Projeto::class, 'usuario_projeto', 'usuario_id', 'projeto_id')
             ->as('vinculo')
-            ->withPivot('id', 'tipo_vinculo', 'funcao', 'status', 'carga_horaria', 'data_inicio', 'data_fim') // Added 'id' to withPivot
+            ->withPivot('id', 'tipo_vinculo', 'funcao', 'status', 'carga_horaria', 'valor_bolsa', 'data_inicio', 'data_fim')
             ->withTimestamps();
     }
 
@@ -196,5 +196,28 @@ class User extends Authenticatable implements MustVerifyEmail
     public function mergeCamposExtra(array $data): void
     {
         $this->campos_extra = array_merge($this->campos_extra ?? [], $data);
+    }
+
+    /**
+     * Accessor para foto_url - retorna URL completa da foto
+     */
+    public function getFotoUrlAttribute($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Se já é uma URL completa, retorna como está
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        // Se já começa com /storage/, retorna como está
+        if (str_starts_with($value, '/storage/')) {
+            return $value;
+        }
+
+        // Se é um caminho relativo, adiciona /storage/
+        return '/storage/' . $value;
     }
 }

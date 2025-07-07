@@ -24,6 +24,7 @@ class HistoricoUsuarioProjeto extends Model
         'funcao',
         'status',
         'carga_horaria',
+        'valor_bolsa',
         'data_inicio',
         'data_fim',
     ];
@@ -39,6 +40,8 @@ class HistoricoUsuarioProjeto extends Model
         'tipo_vinculo' => TipoVinculo::class,
         'funcao' => Funcao::class,
         'status' => StatusVinculoProjeto::class,
+        'carga_horaria' => 'integer',
+        'valor_bolsa' => 'integer',
     ];
 
     public function usuario()

@@ -3,7 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Projeto, TipoProjeto } from '@/types';
+import { IntervenienteFinanceiro, Projeto, TipoProjeto } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 
@@ -20,20 +20,55 @@ const tiposProjeto: TipoProjeto[] = [
     'SUPORTE',
 ];
 
-export default function CreateProjeto() {
+export default function CreateProjeto({
+    intervenientes_financeiros,
+}: {
+    intervenientes_financeiros: Array<IntervenienteFinanceiro>;
+}) {
     const { toast } = useToast();
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .split('T')[0];
+    const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+    )
+        .toISOString()
+        .split('T')[0];
+
     const { data, setData, post, errors, processing } = useForm<
-        Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+        Pick<
+            Projeto,
+            | 'nome'
+            | 'descricao'
+            | 'data_inicio'
+            | 'data_termino'
+            | 'cliente'
+            | 'slack_url'
+            | 'discord_url'
+            | 'board_url'
+            | 'git_url'
+            | 'interveniente_financeiro_id'
+            | 'tipo'
+            | 'valor_total'
+            | 'meses_execucao'
+            | 'campos_extras'
+            | 'numero_convenio'
+        >
     >('create-project', {
         nome: '',
         descricao: '',
-        data_inicio: '',
-        data_termino: '',
+        data_inicio: firstDayOfMonth,
+        data_termino: lastDayOfMonth,
         cliente: '',
         slack_url: '',
         discord_url: '',
         board_url: '',
         git_url: '',
+        interveniente_financeiro_id: null, // Inicialmente nulo
+        numero_convenio: '',
         tipo: '' as TipoProjeto,
         valor_total: 0,
         meses_execucao: 0,
@@ -155,7 +190,7 @@ export default function CreateProjeto() {
                                             className="label"
                                         >
                                             <span className="label-text text-base-content">
-                                                Cliente*
+                                                Parceiro/Cliente*
                                             </span>
                                         </label>
                                         <input
@@ -175,6 +210,37 @@ export default function CreateProjeto() {
                                         {errors.cliente && (
                                             <span className="text-error text-xs">
                                                 {errors.cliente}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Número do Acordo / Contrato / Convênio  */}
+                                    <div>
+                                        <label
+                                            htmlFor="numero_convenio"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Número do
+                                                Acordo/Contrato/Convênio
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="numero_convenio"
+                                            type="text"
+                                            value={data.numero_convenio || ''}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'numero_convenio',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="input input-bordered w-full"
+                                            placeholder="Número do Acordo/Contrato/Convênio"
+                                        />
+                                        {errors.numero_convenio && (
+                                            <span className="text-error text-xs">
+                                                {errors.numero_convenio}
                                             </span>
                                         )}
                                     </div>
@@ -234,6 +300,51 @@ export default function CreateProjeto() {
                                         {errors.data_termino && (
                                             <span className="text-error text-xs">
                                                 {errors.data_termino}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Interveniente Financeiro */}
+                                    <div>
+                                        <label
+                                            htmlFor="interveniente_financeiro_id"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Interveniente Financeiro
+                                            </span>
+                                        </label>
+                                        <select
+                                            id="interveniente_financeiro_id"
+                                            value={
+                                                data.interveniente_financeiro_id ||
+                                                ''
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'interveniente_financeiro_id',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="select select-bordered w-full"
+                                        >
+                                            <option value="" disabled>
+                                                Selecione um interveniente
+                                                financeiro
+                                            </option>
+                                            {intervenientes_financeiros.map(
+                                                ({ id, nome }) => (
+                                                    <option key={id} value={id}>
+                                                        {nome}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
+                                        {errors.interveniente_financeiro_id && (
+                                            <span className="text-error text-xs">
+                                                {
+                                                    errors.interveniente_financeiro_id
+                                                }
                                             </span>
                                         )}
                                     </div>
@@ -333,14 +444,14 @@ export default function CreateProjeto() {
                                         )}
                                     </div>
 
-                                    {/* Meses de Execução */}
+                                    {/* Duração da execução */}
                                     <div>
                                         <label
                                             htmlFor="meses_execucao"
                                             className="label"
                                         >
                                             <span className="label-text text-base-content">
-                                                Meses de Execução*
+                                                Duração da execução*
                                             </span>
                                         </label>
                                         <input

@@ -3,7 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Projeto, TipoProjeto } from '@/types';
+import { IntervenienteFinanceiro, Projeto, TipoProjeto } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
@@ -14,6 +14,7 @@ interface CampoExtra {
 
 interface EditPageProps {
     projeto: Projeto;
+    intervenientes_financeiros: Array<IntervenienteFinanceiro>;
 }
 
 const tiposProjeto: TipoProjeto[] = [
@@ -24,9 +25,41 @@ const tiposProjeto: TipoProjeto[] = [
     'SUPORTE',
 ];
 
-export default function Edit({ projeto }: EditPageProps) {
+export default function Edit({
+    projeto,
+    intervenientes_financeiros,
+}: EditPageProps) {
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .split('T')[0];
+    const lastDayOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+    )
+        .toISOString()
+        .split('T')[0];
+
     const { data, setData, patch, processing, errors } = useForm<
-        Omit<Projeto, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+        Pick<
+            Projeto,
+            | 'nome'
+            | 'descricao'
+            | 'valor_total'
+            | 'meses_execucao'
+            | 'campos_extras'
+            | 'data_inicio'
+            | 'data_termino'
+            | 'cliente'
+            | 'slack_url'
+            | 'discord_url'
+            | 'board_url'
+            | 'git_url'
+            | 'tipo'
+            | 'interveniente_financeiro_id'
+            | 'numero_convenio'
+        >
     >({
         nome: projeto.nome,
         descricao: projeto.descricao || '',
@@ -35,16 +68,18 @@ export default function Edit({ projeto }: EditPageProps) {
         campos_extras: projeto.campos_extras || {},
         data_inicio: projeto.data_inicio
             ? projeto.data_inicio.substring(0, 10)
-            : '',
+            : firstDayOfMonth,
         data_termino: projeto.data_termino
             ? projeto.data_termino.substring(0, 10)
-            : '',
+            : lastDayOfMonth,
         cliente: projeto.cliente,
         slack_url: projeto.slack_url || '',
         discord_url: projeto.discord_url || '',
         board_url: projeto.board_url || '',
         git_url: projeto.git_url || '',
         tipo: projeto.tipo,
+        interveniente_financeiro_id: projeto.interveniente_financeiro_id || '',
+        numero_convenio: projeto.numero_convenio || '',
     });
 
     const { toast } = useToast();
@@ -165,7 +200,7 @@ export default function Edit({ projeto }: EditPageProps) {
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Cliente *
+                                                Parceiro/Cliente*
                                             </span>
                                         </label>
                                         <input
@@ -194,11 +229,42 @@ export default function Edit({ projeto }: EditPageProps) {
                                         )}
                                     </div>
 
+                                    {/* Número do Acordo / Contrato / Convênio  */}
+                                    <div>
+                                        <label
+                                            htmlFor="numero_convenio"
+                                            className="label"
+                                        >
+                                            <span className="label-text text-base-content">
+                                                Número do
+                                                Acordo/Contrato/Convênio
+                                            </span>
+                                        </label>
+                                        <input
+                                            id="numero_convenio"
+                                            type="text"
+                                            value={data.numero_convenio || ''}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'numero_convenio',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="input input-bordered w-full"
+                                            placeholder="Número do Acordo/Contrato/Convênio"
+                                        />
+                                        {errors.numero_convenio && (
+                                            <span className="text-error text-xs">
+                                                {errors.numero_convenio}
+                                            </span>
+                                        )}
+                                    </div>
+
                                     {/* Data de Início */}
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Data de Início *
+                                                Data de Início*
                                             </span>
                                         </label>
                                         <input
@@ -257,11 +323,53 @@ export default function Edit({ projeto }: EditPageProps) {
                                         )}
                                     </div>
 
+                                    {/* Interveniente Financeiro */}
+                                    <div>
+                                        <label htmlFor="interveniente_financeiro_id" className="label">
+                                            <span className="label-text text-base-content">
+                                                Interveniente Financeiro
+                                            </span>
+                                        </label>
+                                        <select
+                                            id="interveniente_financeiro_id"
+                                            value={
+                                                data.interveniente_financeiro_id ||
+                                                ''
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'interveniente_financeiro_id',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="select select-bordered w-full"
+                                        >
+                                            <option value="" disabled>
+                                                Selecione um interveniente
+                                                financeiro
+                                            </option>
+                                            {intervenientes_financeiros.map(
+                                                ({ id, nome }) => (
+                                                    <option key={id} value={id}>
+                                                        {nome}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
+                                        {errors.interveniente_financeiro_id && (
+                                            <span className="text-error text-xs">
+                                                {
+                                                    errors.interveniente_financeiro_id
+                                                }
+                                            </span>
+                                        )}
+                                    </div>
+
                                     {/* Tipo do Projeto */}
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text font-medium">
-                                                Tipo do Projeto *
+                                                Tipo do Projeto*
                                             </span>
                                         </label>
                                         <select
@@ -358,14 +466,14 @@ export default function Edit({ projeto }: EditPageProps) {
                                     </div>
                                 </div>
 
-                                {/* Meses de Execução */}
+                                {/* Duração da execução */}
                                 <div>
                                     <label
                                         htmlFor="meses_execucao"
                                         className="label"
                                     >
                                         <span className="label-text text-base-content">
-                                            Meses de Execução*
+                                            Duração da execução*
                                         </span>
                                     </label>
                                     <input

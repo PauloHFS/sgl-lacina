@@ -131,6 +131,9 @@ export interface Projeto {
     board_url?: string | null;
     git_url?: string | null;
     tipo: TipoProjeto;
+    numero_convenio?: string | null;
+    interveniente_financeiro_id?: string | null; // precisa de load eagerly
+    interveniente_financeiro?: IntervenienteFinanceiro | null; // precisa de load eagerly 
     created_at?: string | null; // YYYY-MM-DD HH:MM:SS
     updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
     deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
@@ -153,6 +156,7 @@ export interface UsuarioProjeto {
     funcao: Funcao;
     status: StatusVinculoProjeto;
     carga_horaria: number;
+    valor_bolsa: number;
     data_inicio: string; // YYYY-MM-DD HH:MM:SS
     data_fim?: string | null; // YYYY-MM-DD HH:MM:SS
     created_at?: string | null; // YYYY-MM-DD HH:MM:SS
@@ -242,4 +246,10 @@ export interface HorariosSala {
     [dia: string]: {
         [hora: number]: HorarioSlot;
     };
+}
+export interface IntervenienteFinanceiro {
+    id: string;
+    nome: string;
+    created_at?: string | null;
+    updated_at?: string | null;
 }

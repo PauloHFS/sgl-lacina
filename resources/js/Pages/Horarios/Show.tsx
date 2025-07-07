@@ -184,6 +184,53 @@ export default function Show({
                                 </div>
                             </div>
 
+                            {/* Resumo de Horas */}
+                            <div className="divider">Resumo Semanal</div>
+
+                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                {Object.entries({
+                                    TRABALHO_PRESENCIAL: 'success',
+                                    TRABALHO_REMOTO: 'primary',
+                                    EM_AULA: 'info',
+                                    AUSENTE: 'error',
+                                }).map(([tipo, color]) => {
+                                    const totalHoras = diasOrdem.reduce(
+                                        (total, dia) => {
+                                            const diaHorarios = horarios[dia];
+                                            if (!diaHorarios) return total;
+                                            return (
+                                                total +
+                                                diaHorarios.horarios.filter(
+                                                    (h) => h.tipo === tipo,
+                                                ).length
+                                            );
+                                        },
+                                        0,
+                                    );
+
+                                    return (
+                                        <div
+                                            key={tipo}
+                                            className={`stats stats-vertical shadow bg-${color}/10`}
+                                        >
+                                            <div className="stat">
+                                                <div className="stat-title">
+                                                    {getTipoLabel(tipo)}
+                                                </div>
+                                                <div
+                                                    className={`stat-value text-2xl text-${color}`}
+                                                >
+                                                    {totalHoras}h
+                                                </div>
+                                                <div className="stat-desc">
+                                                    na semana
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
                             <div className="divider">Horários da Semana</div>
 
                             {/* Grade de Horários */}
@@ -276,53 +323,6 @@ export default function Show({
                                                         </p>
                                                     </div>
                                                 )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Resumo de Horas */}
-                            <div className="divider">Resumo Semanal</div>
-
-                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                                {Object.entries({
-                                    TRABALHO_PRESENCIAL: 'success',
-                                    TRABALHO_REMOTO: 'primary',
-                                    EM_AULA: 'info',
-                                    AUSENTE: 'error',
-                                }).map(([tipo, color]) => {
-                                    const totalHoras = diasOrdem.reduce(
-                                        (total, dia) => {
-                                            const diaHorarios = horarios[dia];
-                                            if (!diaHorarios) return total;
-                                            return (
-                                                total +
-                                                diaHorarios.horarios.filter(
-                                                    (h) => h.tipo === tipo,
-                                                ).length
-                                            );
-                                        },
-                                        0,
-                                    );
-
-                                    return (
-                                        <div
-                                            key={tipo}
-                                            className={`stats stats-vertical shadow bg-${color}/10`}
-                                        >
-                                            <div className="stat">
-                                                <div className="stat-title">
-                                                    {getTipoLabel(tipo)}
-                                                </div>
-                                                <div
-                                                    className={`stat-value text-2xl text-${color}`}
-                                                >
-                                                    {totalHoras}h
-                                                </div>
-                                                <div className="stat-desc">
-                                                    na semana
-                                                </div>
                                             </div>
                                         </div>
                                     );

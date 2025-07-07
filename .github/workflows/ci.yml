@@ -1,0 +1,77 @@
+name: CI - Build and Test
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      # Define o serviço de banco de dados para o job
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: laravel
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_pgsql, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Copiar .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Instalar dependências do Composer
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Gerar chave da aplicação
+        run: php artisan key:generate
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências NPM
+        run: npm install
+
+      - name: Construir assets com Vite
+        run: npm run build
+
+      - name: Executar migrações do banco
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: laravel
+          DB_USERNAME: sail
+          DB_PASSWORD: password
+        run: php artisan migrate --force
+
+      # - name: Executar testes (Pest)
+      #   env:
+      #     DB_CONNECTION: pgsql
+      #     DB_HOST: 127.0.0.1
+      #     DB_PORT: 5432
+      #     DB_DATABASE: laravel
+      #     DB_USERNAME: sail
+      #     DB_PASSWORD: password
+      #   run: php artisan test

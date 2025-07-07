@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Events\VinculoAceito;
+use Carbon\Carbon;
 
 class ProjetoVinculoController extends Controller
 {
@@ -22,6 +23,7 @@ class ProjetoVinculoController extends Controller
       'projeto_id' => 'required|exists:projetos,id',
       'data_inicio' => 'required|date',
       'carga_horaria' => 'required|integer|min:1|max:200',
+      'valor_bolsa' => 'sometimes|nullable|integer|min:0',
       'tipo_vinculo' => ['required', Rule::enum(TipoVinculo::class)],
       'funcao' => ['required', Rule::enum(Funcao::class)],
       'trocar' => 'sometimes|boolean',
@@ -67,6 +69,7 @@ class ProjetoVinculoController extends Controller
           'funcao' => $request->funcao,
           'status' => StatusVinculoProjeto::PENDENTE,
           'carga_horaria' => $request->carga_horaria,
+          'valor_bolsa' => $request->valor_bolsa ?? 0,
           'data_inicio' => $request->data_inicio,
         ]);
       });
@@ -78,6 +81,7 @@ class ProjetoVinculoController extends Controller
         'funcao' => $request->funcao,
         'status' => StatusVinculoProjeto::PENDENTE,
         'carga_horaria' => $request->carga_horaria,
+        'valor_bolsa' => $request->valor_bolsa ?? 0,
         'data_inicio' => $request->data_inicio,
       ]);
     }
@@ -87,16 +91,34 @@ class ProjetoVinculoController extends Controller
 
   public function update(Request $request, $id)
   {
+    $usuarioProjeto = UsuarioProjeto::with('usuario')->findOrFail($id);
+
     $validatedData = $request->validate([
       'status' => ['sometimes', 'required', Rule::enum(StatusVinculoProjeto::class)],
       'carga_horaria' => 'sometimes|nullable|integer|min:1|max:200',
+      'valor_bolsa' => 'sometimes|nullable|integer|min:0',
       'funcao' => ['sometimes', 'nullable', Rule::enum(Funcao::class)],
       'tipo_vinculo' => ['sometimes', 'nullable', Rule::enum(TipoVinculo::class)],
       'data_inicio' => 'sometimes|nullable|date',
-      'data_fim' => 'sometimes|nullable|date|after_or_equal:data_inicio',
-    ]);
+      'data_fim' => [
+        'sometimes',
+        'nullable',
+        'date',
+        function ($attribute, $value, $fail) use ($request, $usuarioProjeto) {
+          if ($value) {
+            $dataInicio = $request->input('data_inicio', $usuarioProjeto->data_inicio);
 
-    $usuarioProjeto = UsuarioProjeto::with('usuario')->findOrFail($id);
+            // Convert both dates to Carbon instances for proper comparison (date only)
+            $dataInicioCarbon = Carbon::parse($dataInicio)->startOfDay();
+            $dataFimCarbon = Carbon::parse($value)->startOfDay();
+
+            if ($dataFimCarbon->lt($dataInicioCarbon)) {
+              $fail('A data de término deve ser posterior ou igual à data de início.');
+            }
+          }
+        }
+      ],
+    ]);
 
     $statusOriginal = $usuarioProjeto->status;
     $vinculoFoiAceito = false;
@@ -134,6 +156,10 @@ class ProjetoVinculoController extends Controller
       $usuarioProjeto->carga_horaria = $validatedData['carga_horaria'];
     }
 
+    if ($request->has('valor_bolsa')) {
+      $usuarioProjeto->valor_bolsa = $validatedData['valor_bolsa'];
+    }
+
     if ($request->filled('funcao')) {
       $usuarioProjeto->funcao = $validatedData['funcao'];
     }
@@ -146,7 +172,7 @@ class ProjetoVinculoController extends Controller
       $usuarioProjeto->data_inicio = $validatedData['data_inicio'];
     }
 
-    if ($request->filled('data_fim')) {
+    if ($request->has('data_fim')) {
       $usuarioProjeto->data_fim = $validatedData['data_fim'];
     }
 

@@ -352,6 +352,22 @@ export default function Show({
                                     <span className="font-semibold">Tipo:</span>{' '}
                                     {projeto.tipo}
                                 </p>
+                                {projeto.interveniente_financeiro && (
+                                    <p>
+                                        <span className="font-semibold">
+                                            Interveniente Financeiro:
+                                        </span>{' '}
+                                        {projeto.interveniente_financeiro?.nome}
+                                    </p>
+                                )}
+                                {projeto.numero_convenio && (
+                                    <p>
+                                        <span className="font-semibold">
+                                            Número do Acordo/Contrato/Convênio:
+                                        </span>{' '}
+                                        {projeto.numero_convenio}
+                                    </p>
+                                )}
                                 {projeto.valor_total &&
                                     projeto.valor_total > 0 && (
                                         <div className="flex items-center justify-between">

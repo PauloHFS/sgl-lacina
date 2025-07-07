@@ -22,7 +22,7 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                     <img
                         src={
                             colaborador.foto_url
-                                ? `/storage/${colaborador.foto_url}`
+                                ? colaborador.foto_url
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(colaborador.name)}&background=random&color=fff`
                         }
                         alt={`Foto de ${colaborador.name}`}
