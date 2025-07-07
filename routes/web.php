@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjetoVinculoController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\SalaController;
+use App\Http\Controllers\DailyReportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -79,6 +80,10 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     Route::post('/vinculo', [ProjetoVinculoController::class, 'create'])->name('vinculo.create');
 
     Route::post('/relatorio/participacao', [RelatorioController::class, 'enviarRelatorioParticipacao'])->name('relatorio.participacao.enviar');
+
+    // Rotas para Daily Reports
+    Route::resource('daily-reports', DailyReportController::class);
+    Route::post('/daily-reports/calcular-horas', [DailyReportController::class, 'calcularHoras'])->name('daily-reports.calcular-horas');
 
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {

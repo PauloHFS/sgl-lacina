@@ -1,0 +1,316 @@
+/* Tema customizado do Prism.js adaptado para daisyUI */
+
+/* Reset do Prism */
+code[class*="language-"],
+pre[class*="language-"] {
+    color: hsl(var(--bc)) !important;
+    background: none !important;
+    font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+    font-size: 0.875rem !important;
+    text-align: left !important;
+    white-space: pre !important;
+    word-spacing: normal !important;
+    word-break: normal !important;
+    word-wrap: normal !important;
+    line-height: 1.6 !important;
+    tab-size: 4 !important;
+    hyphens: none !important;
+}
+
+/* Tokens - Tema claro (padrão) */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: hsl(var(--bc) / 0.5) !important;
+    font-style: italic !important;
+}
+
+.token.punctuation {
+    color: hsl(var(--bc) / 0.7) !important;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: hsl(var(--er)) !important;
+}
+
+.token.boolean,
+.token.number {
+    color: hsl(var(--ac)) !important;
+    font-weight: 600 !important;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: hsl(var(--su)) !important;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+    color: hsl(var(--wa)) !important;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+    color: hsl(var(--in)) !important;
+    font-weight: 600 !important;
+}
+
+.token.keyword {
+    color: hsl(var(--p)) !important;
+    font-weight: 700 !important;
+}
+
+.token.regex,
+.token.important {
+    color: hsl(var(--s)) !important;
+    font-weight: 600 !important;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold !important;
+}
+
+.token.italic {
+    font-style: italic !important;
+}
+
+.token.entity {
+    cursor: help !important;
+}
+
+/* Tema escuro - sobrescrever cores para temas escuros */
+[data-theme*="dark"] .token.comment,
+[data-theme="business"] .token.comment,
+[data-theme="night"] .token.comment,
+[data-theme="coffee"] .token.comment,
+[data-theme="halloween"] .token.comment,
+[data-theme="forest"] .token.comment,
+[data-theme="black"] .token.comment,
+[data-theme="luxury"] .token.comment,
+[data-theme="dracula"] .token.comment,
+[data-theme="synthwave"] .token.comment,
+[data-theme="cyberpunk"] .token.comment {
+    color: rgba(156, 163, 175, 0.8) !important;
+}
+
+[data-theme*="dark"] .token.string,
+[data-theme="business"] .token.string,
+[data-theme="night"] .token.string,
+[data-theme="coffee"] .token.string,
+[data-theme="halloween"] .token.string,
+[data-theme="forest"] .token.string,
+[data-theme="black"] .token.string,
+[data-theme="luxury"] .token.string,
+[data-theme="dracula"] .token.string,
+[data-theme="synthwave"] .token.string,
+[data-theme="cyberpunk"] .token.string {
+    color: rgb(34, 197, 94) !important;
+}
+
+[data-theme*="dark"] .token.number,
+[data-theme="business"] .token.number,
+[data-theme="night"] .token.number,
+[data-theme="coffee"] .token.number,
+[data-theme="halloween"] .token.number,
+[data-theme="forest"] .token.number,
+[data-theme="black"] .token.number,
+[data-theme="luxury"] .token.number,
+[data-theme="dracula"] .token.number,
+[data-theme="synthwave"] .token.number,
+[data-theme="cyberpunk"] .token.number {
+    color: rgb(251, 146, 60) !important;
+}
+
+[data-theme*="dark"] .token.keyword,
+[data-theme="business"] .token.keyword,
+[data-theme="night"] .token.keyword,
+[data-theme="coffee"] .token.keyword,
+[data-theme="halloween"] .token.keyword,
+[data-theme="forest"] .token.keyword,
+[data-theme="black"] .token.keyword,
+[data-theme="luxury"] .token.keyword,
+[data-theme="dracula"] .token.keyword,
+[data-theme="synthwave"] .token.keyword,
+[data-theme="cyberpunk"] .token.keyword {
+    color: rgb(147, 51, 234) !important;
+}
+
+[data-theme*="dark"] .token.function,
+[data-theme="business"] .token.function,
+[data-theme="night"] .token.function,
+[data-theme="coffee"] .token.function,
+[data-theme="halloween"] .token.function,
+[data-theme="forest"] .token.function,
+[data-theme="black"] .token.function,
+[data-theme="luxury"] .token.function,
+[data-theme="dracula"] .token.function,
+[data-theme="synthwave"] .token.function,
+[data-theme="cyberpunk"] .token.function {
+    color: rgb(59, 130, 246) !important;
+}
+
+/* Destacar linhas de código */
+.wysiwyg-viewer pre[data-line] {
+    position: relative;
+    padding-left: 3em;
+}
+
+.wysiwyg-viewer pre[data-line] .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 3em;
+    letter-spacing: -1px;
+    border-right: 1px solid hsl(var(--b3));
+    user-select: none;
+}
+
+.wysiwyg-viewer pre[data-line] .line-numbers-rows > span {
+    display: block;
+    counter-increment: linenumber;
+}
+
+.wysiwyg-viewer pre[data-line] .line-numbers-rows > span:before {
+    content: counter(linenumber);
+    color: hsl(var(--bc) / 0.4);
+    display: block;
+    padding-right: 0.8em;
+    text-align: right;
+}
+
+/* Destaque de linha específica */
+.wysiwyg-viewer pre .highlight-line {
+    background: hsl(var(--p) / 0.1) !important;
+    display: block;
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+    border-left: 3px solid hsl(var(--p));
+}
+
+/* Cópia de código */
+.wysiwyg-viewer .code-block-wrapper {
+    position: relative;
+    margin: 1.5rem 0;
+}
+
+.wysiwyg-viewer .code-block-wrapper .copy-button {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: hsl(var(--b3));
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: hsl(var(--bc));
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0;
+    z-index: 10;
+}
+
+.wysiwyg-viewer .code-block-wrapper:hover .copy-button {
+    opacity: 1;
+}
+
+.wysiwyg-viewer .code-block-wrapper .copy-button:hover {
+    background: hsl(var(--p));
+    color: hsl(var(--pc));
+    transform: scale(1.05);
+}
+
+.wysiwyg-viewer .code-block-wrapper .copy-button.copied {
+    background: hsl(var(--su));
+    color: hsl(var(--suc));
+}
+
+/* Melhorar aparência dos tokens específicos */
+.token.attr-name {
+    color: hsl(var(--in)) !important;
+    font-style: italic !important;
+}
+
+.token.namespace {
+    color: hsl(var(--er)) !important;
+    opacity: 0.8 !important;
+}
+
+.token.interpolation {
+    color: hsl(var(--wa)) !important;
+}
+
+.token.template-string {
+    color: hsl(var(--su)) !important;
+}
+
+.token.template-punctuation {
+    color: hsl(var(--p)) !important;
+}
+
+/* Tokens específicos para PHP */
+.token.php.tag {
+    color: hsl(var(--p)) !important;
+    font-weight: 700 !important;
+}
+
+.token.variable {
+    color: hsl(var(--in)) !important;
+}
+
+/* Tokens específicos para JavaScript/TypeScript */
+.token.arrow {
+    color: hsl(var(--p)) !important;
+}
+
+.token.spread {
+    color: hsl(var(--wa)) !important;
+}
+
+/* Tokens específicos para CSS */
+.token.css.property {
+    color: hsl(var(--ac)) !important;
+}
+
+.token.css.selector {
+    color: hsl(var(--p)) !important;
+    font-weight: 600 !important;
+}
+
+/* Tokens específicos para SQL */
+.token.sql.keyword {
+    color: hsl(var(--p)) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+}
+
+.token.sql.function {
+    color: hsl(var(--in)) !important;
+    font-weight: 600 !important;
+}
+
+/* Animação suave para syntax highlighting */
+code[class*="language-"],
+pre[class*="language-"] {
+    transition: color 0.2s ease;
+}
+
+.token {
+    transition: color 0.2s ease;
+}
