@@ -214,17 +214,17 @@ export default function Show({
         });
     };
 
-    const handleCancelEditVinculo = () => {
+    const handleCancelEditVinculo = useCallback(() => {
         setEditingVinculo(null);
         vinculoEditForm.reset();
         vinculoEditForm.clearErrors();
-    };
+    }, [vinculoEditForm]);
 
     const handleSubmitEditVinculo = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!editingVinculo) return;
 
-        vinculoEditForm.patch(route('vinculo.update', editingVinculo.id), {
+        vinculoEditForm.patch(`/vinculo/${editingVinculo.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast('Sucesso! Vínculo com projeto atualizado.');
@@ -335,6 +335,80 @@ export default function Show({
     const handleRecusarVinculo = useCallback(() => {
         setVinculoData('status', 'RECUSADO');
     }, [setVinculoData]);
+
+    // Estados para o modal de encerramento de vínculo
+    const [showEncerrarModal, setShowEncerrarModal] = useState(false);
+    const [dataFimVinculo, setDataFimVinculo] = useState('');
+    const [processingEncerrar, setProcessingEncerrar] = useState(false);
+
+    // Handlers para encerrar vínculo
+    const handleEncerrarVinculo = useCallback(() => {
+        if (!editingVinculo) return;
+
+        // Definir data atual como padrão
+        const today = new Date().toISOString().split('T')[0];
+        setDataFimVinculo(today);
+        setShowEncerrarModal(true);
+    }, [editingVinculo]);
+
+    const handleConfirmarEncerramento = useCallback(() => {
+        if (!editingVinculo || !dataFimVinculo) return;
+
+        setProcessingEncerrar(true);
+
+        router.patch(
+            `/vinculo/${editingVinculo.id}`,
+            {
+                data_fim: dataFimVinculo,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowEncerrarModal(false);
+                    setDataFimVinculo('');
+                    setProcessingEncerrar(false);
+                    handleCancelEditVinculo();
+                    toast('Vínculo encerrado com sucesso!', 'success');
+                },
+                onError: (errors) => {
+                    setProcessingEncerrar(false);
+                    console.error(errors);
+                    toast('Erro ao encerrar vínculo.', 'error');
+                },
+            },
+        );
+    }, [editingVinculo, dataFimVinculo, toast, handleCancelEditVinculo]);
+
+    const handleDesfazerEncerramento = useCallback(() => {
+        if (!editingVinculo) return;
+
+        setProcessingEncerrar(true);
+
+        router.patch(
+            `/vinculo/${editingVinculo.id}`,
+            {
+                data_fim: null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setProcessingEncerrar(false);
+                    handleCancelEditVinculo();
+                    toast('Encerramento desfeito com sucesso!', 'success');
+                },
+                onError: (errors) => {
+                    setProcessingEncerrar(false);
+                    console.error(errors);
+                    toast('Erro ao desfazer encerramento.', 'error');
+                },
+            },
+        );
+    }, [editingVinculo, toast, handleCancelEditVinculo]);
+
+    const handleCancelarEncerramento = useCallback(() => {
+        setShowEncerrarModal(false);
+        setDataFimVinculo('');
+    }, []);
 
     useEffect(() => {
         if (
@@ -1292,15 +1366,29 @@ export default function Show({
                         </div>
 
                         <div className="mt-6 flex justify-end">
-                            <DangerButton
-                                type="button"
-                                // onClick={handleEncerrarVinculo}
-                                // disabled={vinculoEditForm.processing}
-                                className="mr-3"
-                                disabled
-                            >
-                                Encerrar Vinculo
-                            </DangerButton>
+                            {editingVinculo?.data_fim ? (
+                                // Se já tem data_fim, mostra botão para desfazer
+                                <DangerButton
+                                    type="button"
+                                    onClick={handleDesfazerEncerramento}
+                                    disabled={processingEncerrar}
+                                    className="mr-3"
+                                >
+                                    {processingEncerrar
+                                        ? 'Processando...'
+                                        : 'Desfazer Encerramento'}
+                                </DangerButton>
+                            ) : (
+                                // Se não tem data_fim, mostra botão para encerrar
+                                <DangerButton
+                                    type="button"
+                                    onClick={handleEncerrarVinculo}
+                                    disabled={vinculoEditForm.processing}
+                                    className="mr-3"
+                                >
+                                    Encerrar Vínculo
+                                </DangerButton>
+                            )}
                             <SecondaryButton
                                 type="button"
                                 onClick={handleCancelEditVinculo}
@@ -1315,6 +1403,64 @@ export default function Show({
                             </PrimaryButton>
                         </div>
                     </form>
+                </Modal>
+            )}
+
+            {/* Modal de confirmação de encerramento */}
+            {showEncerrarModal && (
+                <Modal
+                    show={showEncerrarModal}
+                    onClose={handleCancelarEncerramento}
+                >
+                    <div className="p-6">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            Encerrar Vínculo
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Defina a data de encerramento do vínculo. O status
+                            será atualizado automaticamente pelo sistema.
+                        </p>
+
+                        <div className="mt-6">
+                            <label
+                                htmlFor="data_fim_encerramento"
+                                className="label"
+                            >
+                                <span className="label-text">
+                                    Data de Encerramento
+                                </span>
+                            </label>
+                            <TextInput
+                                id="data_fim_encerramento"
+                                type="date"
+                                className="mt-1 block w-full"
+                                value={dataFimVinculo}
+                                onChange={(e) =>
+                                    setDataFimVinculo(e.target.value)
+                                }
+                                required
+                            />
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <SecondaryButton
+                                type="button"
+                                onClick={handleCancelarEncerramento}
+                                disabled={processingEncerrar}
+                            >
+                                Cancelar
+                            </SecondaryButton>
+                            <DangerButton
+                                className="ml-3"
+                                onClick={handleConfirmarEncerramento}
+                                disabled={processingEncerrar || !dataFimVinculo}
+                            >
+                                {processingEncerrar
+                                    ? 'Processando...'
+                                    : 'Confirmar Encerramento'}
+                            </DangerButton>
+                        </div>
+                    </div>
                 </Modal>
             )}
         </AuthenticatedLayout>
