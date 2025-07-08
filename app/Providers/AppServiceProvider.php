@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Baia;
+use App\Models\Horario;
 use App\Models\UsuarioProjeto;
 use App\Observers\BaiaObserver;
+use App\Observers\HorarioObserver;
 use App\Observers\UsuarioProjetoObserver;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -30,5 +32,6 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
         UsuarioProjeto::observe(UsuarioProjetoObserver::class);
         Baia::observe(BaiaObserver::class);
+        Horario::observe(HorarioObserver::class);
     }
 }

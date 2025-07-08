@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 
 class DailyReport extends Model
 {
@@ -53,6 +54,7 @@ class DailyReport extends Model
 
     /**
      * Calcula automaticamente as horas baseado no horário cadastrado para o dia da semana
+     * Cada registro na tabela 'horarios' representa 1 hora de trabalho
      */
     public function calcularHorasTrabalhadasAutomaticamente(): int
     {
@@ -72,6 +74,12 @@ class DailyReport extends Model
         $diaDaSemanaEnum = $mapeamentoDias[$diaDaSemana] ?? null;
 
         if (!$diaDaSemanaEnum) {
+            Log::warning("Dia da semana não mapeado: {$diaDaSemana}");
+            return 0;
+        }
+
+        if (!$this->usuario) {
+            Log::warning("Usuário não encontrado para o daily report");
             return 0;
         }
 
@@ -80,6 +88,8 @@ class DailyReport extends Model
             ->where('dia_da_semana', $diaDaSemanaEnum)
             ->whereIn('tipo', ['TRABALHO_PRESENCIAL', 'TRABALHO_REMOTO'])
             ->count();
+
+        Log::info("Calculando horas para usuário {$this->usuario_id}, dia {$diaDaSemanaEnum}: {$horariosTrabalho} horas");
 
         return $horariosTrabalho;
     }

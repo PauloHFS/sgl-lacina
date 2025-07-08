@@ -75,6 +75,12 @@ class HorarioController extends Controller
      */
     public function update(Request $request)
     {
+        // Log para debug
+        Log::info('HorarioController::update - Dados recebidos:', [
+            'user_id' => $request->user()->id,
+            'request_data' => $request->all()
+        ]);
+
         $validatedData = $request->validate([
             'horarios' => 'required|array',
             'horarios.*.id' => 'required|exists:horarios,id',
@@ -208,9 +214,17 @@ class HorarioController extends Controller
                     $request->user()->horarios()
                         ->where('id', $horarioData['id'])
                         ->update($updateData);
+
+                    Log::info('Horário atualizado:', [
+                        'horario_id' => $horarioData['id'],
+                        'update_data' => $updateData,
+                        'affected_rows' => $request->user()->horarios()->where('id', $horarioData['id'])->count()
+                    ]);
                 }
             });
         }
+
+        Log::info('HorarioController::update - Finalizado com sucesso');
 
         // return redirect()->back()->with('success', 'Horários atualizados com sucesso!');
         return redirect()->route('horarios.index')->with('success', 'Horários atualizados com sucesso!');

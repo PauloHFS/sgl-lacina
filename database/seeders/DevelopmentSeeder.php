@@ -8,6 +8,7 @@ use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoProjeto;
 use App\Enums\StatusCadastro;
 use App\Enums\Genero;
+use App\Enums\TipoHorario;
 use App\Models\Banco;
 use App\Models\Baia;
 use App\Models\HistoricoUsuarioProjeto;
@@ -121,8 +122,21 @@ class DevelopmentSeeder extends Seeder
             'status' => StatusVinculoProjeto::APROVADO,
         ]);
 
+        // Garantir que Paulo Hernane participe de pelo menos 2 projetos
+        $this->createProjectLink([
+            'usuario_id' => $paulo->id,
+            'projeto_id' => $projetoPDI->id,
+            'tipo_vinculo' => TipoVinculo::COLABORADOR,
+            'funcao' => Funcao::DESENVOLVEDOR,
+            'carga_horaria' => 16,
+            'data_inicio' => '2024-01-15',
+            'status' => StatusVinculoProjeto::APROVADO,
+        ]);
 
         $this->createTestVinculos();
+
+        $this->command->info('⏰ Criando horários de teste...');
+        $this->createTestHorarios($paulo, $maxwell, $campelo);
 
         $this->command->info('🏢 Criando salas e baias de teste...');
         $this->createTestSalasEBaias();
@@ -495,7 +509,7 @@ class DevelopmentSeeder extends Seeder
 
         // --- PRIMEIRO: Garante que todos os projetos tenham coordenadores ---
         $this->command->info('👑 Garantindo que todos os projetos tenham coordenadores...');
-        $this->ensureAllProjectsHaveCoordinators($projetos, $coordenadores, $usuarios);
+        $this->ensureAllProjectsHaveCoordenadores($projetos, $coordenadores, $usuarios);
 
         // --- SEGUNDO: Geração de Histórico ---
         $this->command->info('⏳ Gerando histórico de 3 anos para todos os colaboradores...');
@@ -534,22 +548,29 @@ class DevelopmentSeeder extends Seeder
             return;
         }
 
+        // Paulo Hernane deve sempre ter pelo menos 2 projetos - não gerar histórico que reduza isso
+        $isPauloHernane = $user->email === 'paulo.hernane.silva@ccc.ufcg.edu.br';
+
         while ($currentDate->lessThan($endDate)) {
             $activeVinculos = UsuarioProjeto::where('usuario_id', $user->id)
                 ->where('status', StatusVinculoProjeto::APROVADO)
                 ->whereNull('data_fim')
                 ->get();
 
-            // Chance de sair de um projeto
-            if ($activeVinculos->isNotEmpty() && rand(1, 100) <= 15) { // 15% de chance de sair
+            // Chance de sair de um projeto (Paulo só sai se tiver mais de 2 projetos)
+            $canLeaveProject = $isPauloHernane ? $activeVinculos->count() > 2 : $activeVinculos->isNotEmpty();
+            if ($canLeaveProject && rand(1, 100) <= 15) { // 15% de chance de sair
                 $vinculoParaSair = $activeVinculos->random();
                 $vinculoParaSair->update(['data_fim' => $currentDate]);
                 $this->moveToHistory($vinculoParaSair);
             }
 
-            // Chance de entrar em um novo projeto
+            // Chance de entrar em um novo projeto (Paulo tem prioridade para manter pelo menos 2)
             $activeVinculosCount = UsuarioProjeto::where('usuario_id', $user->id)->whereNull('data_fim')->count();
-            if ($activeVinculosCount < 2 && rand(1, 100) <= 10) { // 10% de chance de entrar
+            $maxProjects = $isPauloHernane ? 3 : 2;
+            $entryChance = $isPauloHernane && $activeVinculosCount < 2 ? 80 : 10; // Paulo: 80% se tem menos de 2, outros: 10%
+
+            if ($activeVinculosCount < $maxProjects && rand(1, 100) <= $entryChance) {
                 $projetosDisponiveis = $allProjects->filter(function ($projeto) use ($currentDate, $user) {
                     return $projeto->data_inicio <= $currentDate
                         && $projeto->data_termino >= $currentDate
@@ -575,6 +596,59 @@ class DevelopmentSeeder extends Seeder
     }
 
     /**
+     * Garante que todos os projetos tenham pelo menos um coordenador
+     */
+    private function ensureAllProjectsHaveCoordenadores(Collection $projetos, Collection $coordenadores, Collection $usuarios): void
+    {
+        foreach ($projetos as $projeto) {
+            // Verifica se o projeto já tem coordenador ativo
+            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
+
+            if (!$temCoordenador) {
+                // Atribuir um coordenador disponível
+                $coordenadorDisponivel = $coordenadores->random();
+
+                $this->createVinculo(
+                    $coordenadorDisponivel,
+                    $projeto,
+                    StatusVinculoProjeto::APROVADO,
+                    $projeto->data_inicio,
+                    null,
+                    TipoVinculo::COORDENADOR,
+                    Funcao::COORDENADOR,
+                    false
+                );
+            }
+        }
+    }
+
+    /**
+     * Valida se todos os projetos têm coordenadores
+     */
+    private function validateProjectCoordinators(Collection $projetos): void
+    {
+        $projetosSemCoordenador = 0;
+
+        foreach ($projetos as $projeto) {
+            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
+                ->where('funcao', Funcao::COORDENADOR)
+                ->where('status', StatusVinculoProjeto::APROVADO)
+                ->exists();
+
+            if (!$temCoordenador) {
+                $projetosSemCoordenador++;
+            }
+        }
+
+        if ($projetosSemCoordenador > 0) {
+            $this->command->warn("⚠️  {$projetosSemCoordenador} projetos ainda sem coordenador.");
+        }
+    }
+
+    /**
      * Cria vínculos pendentes e recusados para dar mais realismo.
      */
     private function createSpecialVinculos(Collection $usuarios, Collection $projetos): void
@@ -591,8 +665,17 @@ class DevelopmentSeeder extends Seeder
                     });
 
                     if ($projetosDisponiveis->isNotEmpty()) {
-                        $projeto = $projetosDisponiveis->random();
-                        $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::PENDENTE, now());
+                        $projetoDisponivel = $projetosDisponiveis->random();
+                        $this->createVinculo(
+                            $usuario,
+                            $projetoDisponivel,
+                            StatusVinculoProjeto::PENDENTE,
+                            now(),
+                            null,
+                            TipoVinculo::COLABORADOR,
+                            Funcao::DESENVOLVEDOR,
+                            false
+                        );
                     }
                 }
             }
@@ -604,50 +687,18 @@ class DevelopmentSeeder extends Seeder
             foreach ($usuariosParaRecusado as $usuario) {
                 if ($projetos->isNotEmpty()) {
                     $projeto = $projetos->random();
-                    $vinculo = $this->createVinculo($usuario, $projeto, StatusVinculoProjeto::RECUSADO, now()->subMonths(rand(1, 6)));
-                    if ($vinculo) {
-                        $vinculo->update(['data_fim' => $vinculo->data_inicio->addDays(rand(1, 5))]);
-                        $this->moveToHistory($vinculo);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Garante que todos os projetos tenham pelo menos um coordenador
-     */
-    private function ensureAllProjectsHaveCoordinators(Collection $projetos, Collection $coordenadores, Collection $usuarios): void
-    {
-        foreach ($projetos as $projeto) {
-            // Verifica se o projeto já tem coordenador ativo
-            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
-                ->where('funcao', Funcao::COORDENADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->exists();
-
-            if (!$temCoordenador) {
-                // Verifica se tem coordenador no histórico
-                $temCoordenadorHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
-                    ->where('funcao', Funcao::COORDENADOR)
-                    ->where('status', StatusVinculoProjeto::APROVADO)
-                    ->exists();
-
-                if (!$temCoordenadorHistorico) {
-                    // Atribui um coordenador para o projeto
-                    $coordenador = $coordenadores->random();
+                    $dataPassado = now()->subMonths(rand(1, 6));
 
                     $this->createVinculo(
-                        $coordenador,
+                        $usuario,
                         $projeto,
-                        StatusVinculoProjeto::APROVADO,
-                        $projeto->data_inicio,
-                        null,
-                        Funcao::COORDENADOR,
-                        TipoVinculo::COORDENADOR
+                        StatusVinculoProjeto::RECUSADO,
+                        $dataPassado,
+                        $dataPassado->copy()->addDays(1), // Recusado rapidamente
+                        TipoVinculo::COLABORADOR,
+                        Funcao::ALUNO,
+                        false
                     );
-
-                    $this->command->info("   👑 Coordenador {$coordenador->name} atribuído ao projeto {$projeto->nome}");
                 }
             }
         }
@@ -660,37 +711,67 @@ class DevelopmentSeeder extends Seeder
     {
         if ($vinculo->data_fim === null) {
             $vinculo->data_fim = now();
+            $vinculo->save();
         }
 
         HistoricoUsuarioProjeto::create($vinculo->getAttributes());
         $vinculo->delete();
     }
 
+    /**
+     * Cria salas e baias de teste
+     */
     private function createTestSalasEBaias(): void
     {
         $this->command->info('Criando salas e baias de teste...');
 
         $salas = [
-            ['nome' => 'Sala GP', 'baias' => 10],
-            ['nome' => 'Sala Nobel', 'baias' => 10],
-            ['nome' => 'Sala Mundo', 'baias' => 10],
+            [
+                'nome' => 'Sala Principal',
+                'descricao' => 'Sala principal do laboratório com estações de trabalho',
+                'baias' => [
+                    'Baia 01',
+                    'Baia 02',
+                    'Baia 03',
+                    'Baia 04',
+                    'Baia 05'
+                ]
+            ],
+            [
+                'nome' => 'Sala de Reuniões',
+                'descricao' => 'Sala para reuniões e apresentações',
+                'baias' => [
+                    'Mesa Central',
+                    'Estação Apresentação'
+                ]
+            ],
+            [
+                'nome' => 'Sala de Servidores',
+                'descricao' => 'Sala com equipamentos de rede e servidores',
+                'baias' => [
+                    'Rack Principal',
+                    'Estação Monitoramento'
+                ]
+            ]
         ];
 
         foreach ($salas as $salaData) {
             $sala = Sala::firstOrCreate(
                 ['nome' => $salaData['nome']],
-                ['descricao' => 'Sala de teste para desenvolvimento']
+                [
+                    'descricao' => $salaData['descricao'],
+                    'ativa' => true
+                ]
             );
 
-            // Verifica se as baias já existem
-            $baiasExistentes = Baia::where('sala_id', $sala->id)->count();
-            if ($baiasExistentes == 0) {
-                for ($i = 1; $i <= $salaData['baias']; $i++) {
-                    Baia::firstOrCreate(
-                        ['nome' => $sala->nome . ' - Baia ' . $i],
-                        ['sala_id' => $sala->id]
-                    );
-                }
+            foreach ($salaData['baias'] as $baiaNome) {
+                Baia::firstOrCreate(
+                    ['nome' => $baiaNome, 'sala_id' => $sala->id],
+                    [
+                        'descricao' => "Baia {$baiaNome} na {$sala->nome}",
+                        'ativa' => true
+                    ]
+                );
             }
         }
 
@@ -698,7 +779,7 @@ class DevelopmentSeeder extends Seeder
     }
 
     /**
-     * Cria um vínculo específico entre usuário e projeto
+     * Cria um vínculo entre usuário e projeto
      */
     private function createVinculo(
         User $usuario,
@@ -706,97 +787,50 @@ class DevelopmentSeeder extends Seeder
         StatusVinculoProjeto $status,
         $dataInicio,
         $dataFim = null,
-        ?Funcao $funcao = null,
-        ?TipoVinculo $tipoVinculo = null,
+        TipoVinculo $tipoVinculo = null,
+        Funcao $funcao = null,
         bool $trocar = false
     ): ?UsuarioProjeto {
-        // Evita vínculos duplicados (mesmo usuário, mesmo projeto, sem data de fim)
-        $vinculoExistente = UsuarioProjeto::where('usuario_id', $usuario->id)
-            ->where('projeto_id', $projeto->id)
-            ->whereNull('data_fim')
-            ->first();
-
-        if ($vinculoExistente) {
-            return null;
-        }
-
-        // Validação básica: data de início não pode ser posterior à data de término do projeto
-        if ($dataInicio > $projeto->data_termino) {
-            return null;
-        }
-
-        $funcoes = Funcao::cases();
-        $tiposVinculo = TipoVinculo::cases();
-
-        // Se não foi especificado explicitamente, ajusta a probabilidade de trocar baseado no status
-        if (!$trocar && $status === StatusVinculoProjeto::PENDENTE) {
-            $trocar = rand(1, 100) <= 35; // 35% chance de ser troca para pendentes
-        } elseif (!$trocar && $status === StatusVinculoProjeto::APROVADO) {
-            $trocar = rand(1, 100) <= 10; // 10% chance de querer trocar para aprovados
-        }
-
-        // Define função e tipo de vínculo padrão se não especificado
-        $funcaoFinal = $funcao ?? $funcoes[array_rand($funcoes)];
-        if ($funcaoFinal === Funcao::COORDENADOR) {
-            $tipoVinculoFinal = TipoVinculo::COORDENADOR;
-        } else {
-            $tipoVinculoFinal = $tipoVinculo ?? $tiposVinculo[array_rand($tiposVinculo)];
-        }
-
-        // Garante que data de fim não seja anterior à data de início
-        if ($dataFim && $dataFim < $dataInicio) {
-            $dataFim = null;
-        }
-
         return UsuarioProjeto::create([
             'usuario_id' => $usuario->id,
             'projeto_id' => $projeto->id,
+            'tipo_vinculo' => $tipoVinculo ?? TipoVinculo::COLABORADOR,
+            'funcao' => $funcao ?? Funcao::ALUNO,
             'status' => $status,
-            'funcao' => $funcaoFinal,
-            'tipo_vinculo' => $tipoVinculoFinal,
-            'carga_horaria' => rand(10, 40),
+            'carga_horaria' => rand(8, 20),
             'data_inicio' => $dataInicio,
             'data_fim' => $dataFim,
             'trocar' => $trocar,
         ]);
     }
 
+    /**
+     * Cria um usuário com dados fornecidos
+     */
     private function createUser(array $data, StatusCadastro $status = StatusCadastro::ACEITO): User
     {
-        return User::updateOrCreate(
-            ['email' => $data['email']],
-            [
-                'name' => $data['name'],
-                'email_verified_at' => now(),
-                'password' => Hash::make('Ab@12312'),
-                'status_cadastro' => $status,
-                'cpf' => $data['cpf'],
-                'data_nascimento' => $data['data_nascimento'],
-                'telefone' => $data['telefone'],
-                'rg' => $data['rg'],
-                'uf_rg' => $data['uf_rg'] ?? 'PB',
-                'orgao_emissor_rg' => $data['orgao_emissor_rg'] ?? 'SSP-PB',
-                'conta_bancaria' => $data['conta_bancaria'],
-            ]
-        );
+        return User::create(array_merge([
+            'password' => Hash::make('Ab@12312'),
+            'status_cadastro' => $status,
+            'email_verified_at' => now(),
+        ], $data));
     }
 
+    /**
+     * Cria um projeto com dados fornecidos
+     */
     private function createProject(array $data): Projeto
     {
-        return Projeto::firstOrCreate(
-            ['nome' => $data['nome']],
-            [
-                'descricao' => $data['descricao'],
-                'valor_total' => $data['valor_total'] ?? 50500430,
-                'meses_execucao' => $data['meses_execucao'] ?? 12.3,
-                'data_inicio' => $data['data_inicio'],
-                'data_termino' => $data['data_termino'],
-                'cliente' => $data['cliente'],
-                'tipo' => $data['tipo'],
-            ]
-        );
+        return Projeto::create(array_merge([
+            'valor_total' => rand(10000, 100000),
+            'meses_execucao' => rand(6, 36),
+            'campos_extras' => [],
+        ], $data));
     }
 
+    /**
+     * Cria um vínculo projeto-usuário usando array de dados
+     */
     private function createProjectLink(array $data): UsuarioProjeto
     {
         return UsuarioProjeto::create([
@@ -811,94 +845,238 @@ class DevelopmentSeeder extends Seeder
     }
 
     /**
-     * Garante que todos os projetos tenham pelo menos um coordenador
+     * Cria horários de teste para usuários principais
      */
-    private function ensureAllProjectsHaveCoordenators(Collection $projetos, Collection $coordenadores, Collection $usuarios): void
+    private function createTestHorarios(User $paulo, User $maxwell, User $campelo): void
     {
-        foreach ($projetos as $projeto) {
-            // Verifica se o projeto já tem coordenador ativo
-            $temCoordenador = UsuarioProjeto::where('projeto_id', $projeto->id)
-                ->where('funcao', Funcao::COORDENADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->exists();
+        $this->command->info('Criando horários para Paulo Hernane Silva...');
 
-            if (!$temCoordenador) {
-                // Verifica se tem coordenador no histórico
-                $temCoordenadorHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
-                    ->where('funcao', Funcao::COORDENADOR)
-                    ->where('status', StatusVinculoProjeto::APROVADO)
-                    ->exists();
+        // Buscar vínculos ativos do Paulo
+        $vinculosTCC = UsuarioProjeto::where('usuario_id', $paulo->id)
+            ->whereHas('projeto', fn($q) => $q->where('nome', 'like', '%Sistema de Gerenciamento%'))
+            ->first();
 
-                if (!$temCoordenadorHistorico) {
-                    // Atribui um coordenador para o projeto
-                    $coordenador = $coordenadores->random();
+        $vinculosPDI = UsuarioProjeto::where('usuario_id', $paulo->id)
+            ->whereHas('projeto', fn($q) => $q->where('nome', 'like', '%TS ETL%'))
+            ->first();
 
-                    $this->createVinculo(
-                        $coordenador,
-                        $projeto,
-                        StatusVinculoProjeto::APROVADO,
-                        $projeto->data_inicio,
-                        null,
-                        Funcao::COORDENADOR,
-                        TipoVinculo::COORDENADOR
-                    );
+        // Primeira baia para testes (criar se não existir)
+        $baia = Baia::first();
+        if (!$baia) {
+            $sala = Sala::firstOrCreate(['nome' => 'Sala Principal'], [
+                'descricao' => 'Sala principal do laboratório',
+                'ativa' => true
+            ]);
+            $baia = Baia::create([
+                'nome' => 'Baia 01',
+                'descricao' => 'Primeira baia da sala principal',
+                'ativa' => true,
+                'sala_id' => $sala->id
+            ]);
+        }
 
-                    $this->command->info("   👑 Coordenador {$coordenador->name} atribuído ao projeto {$projeto->nome}");
+        // Horários de Paulo Hernane - Projeto TCC (Segunda a Sexta, manhã)
+        if ($vinculosTCC) {
+            $diasSemana = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA'];
+            foreach ($diasSemana as $dia) {
+                // Manhã: 8h às 12h para projeto TCC
+                for ($hora = 8; $hora <= 11; $hora++) {
+                    Horario::firstOrCreate([
+                        'usuario_id' => $paulo->id,
+                        'dia_da_semana' => $dia,
+                        'horario' => $hora,
+                    ], [
+                        'tipo' => TipoHorario::TRABALHO_PRESENCIAL,
+                        'usuario_projeto_id' => $vinculosTCC->id,
+                        'baia_id' => $baia->id,
+                    ]);
+                }
+            }
+        }
+
+        // Horários de Paulo Hernane - Projeto PDI (Segunda, Quarta, Sexta - tarde)
+        if ($vinculosPDI) {
+            $diasPDI = ['SEGUNDA', 'QUARTA', 'SEXTA'];
+            foreach ($diasPDI as $dia) {
+                // Tarde: 14h às 18h para projeto PDI
+                for ($hora = 14; $hora <= 17; $hora++) {
+                    Horario::firstOrCreate([
+                        'usuario_id' => $paulo->id,
+                        'dia_da_semana' => $dia,
+                        'horario' => $hora,
+                    ], [
+                        'tipo' => TipoHorario::TRABALHO_REMOTO,
+                        'usuario_projeto_id' => $vinculosPDI->id,
+                        'baia_id' => null, // Remoto não precisa de baia
+                    ]);
+                }
+            }
+        }
+
+        // Horários de aula para Paulo (Terça e Quinta à tarde)
+        $diasAula = ['TERCA', 'QUINTA'];
+        foreach ($diasAula as $dia) {
+            for ($hora = 14; $hora <= 17; $hora++) {
+                Horario::firstOrCreate([
+                    'usuario_id' => $paulo->id,
+                    'dia_da_semana' => $dia,
+                    'horario' => $hora,
+                ], [
+                    'tipo' => TipoHorario::EM_AULA,
+                    'usuario_projeto_id' => null,
+                    'baia_id' => null,
+                ]);
+            }
+        }
+
+        $this->command->info('✅ Horários criados para Paulo Hernane Silva');
+
+        // Criar alguns horários básicos para Maxwell e Campelo
+        $this->createBasicScheduleForUser($maxwell, 'Maxwell');
+        $this->createBasicScheduleForUser($campelo, 'Campelo');
+
+        // Criar horários para outros usuários ativos
+        $outrosUsuarios = User::where('status_cadastro', StatusCadastro::ACEITO)
+            ->whereNull('deleted_at')
+            ->whereNotIn('email', [
+                'paulo.hernane.silva@ccc.ufcg.edu.br',
+                'maxwell@computacao.ufcg.edu.br',
+                'campelo@computacao.ufcg.edu.br'
+            ])
+            ->limit(10) // Apenas 10 usuários para não sobrecarregar
+            ->get();
+
+        foreach ($outrosUsuarios as $usuario) {
+            if (rand(1, 100) <= 60) { // 60% de chance de ter horários definidos
+                $this->createRandomScheduleForUser($usuario);
+            }
+        }
+    }
+
+    /**
+     * Cria horários básicos para coordenadores (Maxwell e Campelo)
+     */
+    private function createBasicScheduleForUser(User $user, string $nome): void
+    {
+        $this->command->info("Criando horários básicos para {$nome}...");
+
+        $vinculosAtivos = UsuarioProjeto::where('usuario_id', $user->id)
+            ->where('status', StatusVinculoProjeto::APROVADO)
+            ->whereNull('data_fim')
+            ->get();
+
+        if ($vinculosAtivos->isEmpty()) {
+            return;
+        }
+
+        $vinculoPrincipal = $vinculosAtivos->first();
+        $diasSemana = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA'];
+
+        foreach ($diasSemana as $dia) {
+            // Horário de trabalho: 9h às 17h
+            for ($hora = 9; $hora <= 16; $hora++) {
+                // Pular horário de almoço (12h às 13h)
+                if ($hora == 12) continue;
+
+                // Coordenadores trabalham remoto para evitar conflitos de baia
+                Horario::firstOrCreate([
+                    'usuario_id' => $user->id,
+                    'dia_da_semana' => $dia,
+                    'horario' => $hora,
+                ], [
+                    'tipo' => TipoHorario::TRABALHO_REMOTO,
+                    'usuario_projeto_id' => $vinculoPrincipal->id,
+                    'baia_id' => null, // Remoto não usa baia
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Cria horários aleatórios para um usuário
+     */
+    private function createRandomScheduleForUser(User $user): void
+    {
+        $vinculos = UsuarioProjeto::where('usuario_id', $user->id)
+            ->where('status', StatusVinculoProjeto::APROVADO)
+            ->whereNull('data_fim')
+            ->get();
+
+        if ($vinculos->isEmpty()) {
+            return;
+        }
+
+        $diasSemana = ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA'];
+        $vinculo = $vinculos->random();
+
+        foreach ($diasSemana as $dia) {
+            // Chance de ter trabalho neste dia
+            if (rand(1, 100) <= 70) { // 70% de chance
+                $horasTrabalho = rand(2, 6); // 2 a 6 horas por dia
+                $horaInicio = rand(8, 14); // Começar entre 8h e 14h
+
+                for ($i = 0; $i < $horasTrabalho; $i++) {
+                    $hora = $horaInicio + $i;
+                    if ($hora > 17) break; // Não passar das 17h
+
+                    $tipoTrabalho = rand(1, 100) <= 50 ? TipoHorario::TRABALHO_PRESENCIAL : TipoHorario::TRABALHO_REMOTO;
+                    $baia = $tipoTrabalho === TipoHorario::TRABALHO_PRESENCIAL ? $this->findAvailableBaia($dia, $hora) : null;
+
+                    Horario::firstOrCreate([
+                        'usuario_id' => $user->id,
+                        'dia_da_semana' => $dia,
+                        'horario' => $hora,
+                    ], [
+                        'tipo' => $tipoTrabalho,
+                        'usuario_projeto_id' => $vinculo->id,
+                        'baia_id' => $baia?->id,
+                    ]);
                 }
             }
         }
     }
 
     /**
-     * Valida se todos os projetos têm coordenadores após a criação dos vínculos.
+     * Encontra uma baia disponível para um usuário em um horário específico
      */
-    private function validateProjectCoordinators(Collection $projetos): void
+    private function findAvailableBaia(string $dia, int $hora): ?Baia
     {
-        $this->command->info('🔍 Validação final: verificando se todos os projetos têm coordenadores...');
+        $baias = Baia::where('ativa', true)->get();
 
-        $projetosSemCoordenador = collect();
-        $projetosAtivos = 0;
-        $projetosComCoordenador = 0;
+        if ($baias->isEmpty()) {
+            // Criar uma baia se não existir nenhuma
+            $sala = Sala::firstOrCreate(['nome' => 'Sala Principal'], [
+                'descricao' => 'Sala principal do laboratório',
+                'ativa' => true
+            ]);
 
-        foreach ($projetos as $projeto) {
-            $isAtivo = $projeto->data_inicio <= now() && $projeto->data_termino >= now();
-            if ($isAtivo) {
-                $projetosAtivos++;
-            }
+            return Baia::create([
+                'nome' => 'Baia ' . (Baia::count() + 1),
+                'descricao' => 'Baia automaticamente criada',
+                'ativa' => true,
+                'sala_id' => $sala->id
+            ]);
+        }
 
-            // Verifica coordenadores ativos
-            $coordenadoresAtivos = UsuarioProjeto::where('projeto_id', $projeto->id)
-                ->where('funcao', Funcao::COORDENADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->whereNull('data_fim')
-                ->count();
+        // Buscar uma baia livre no horário específico
+        foreach ($baias as $baia) {
+            $horariosOcupados = Horario::where('baia_id', $baia->id)
+                ->where('dia_da_semana', $dia)
+                ->where('horario', $hora)
+                ->exists();
 
-            // Verifica coordenadores no histórico (projetos finalizados)
-            $coordenadoresHistorico = HistoricoUsuarioProjeto::where('projeto_id', $projeto->id)
-                ->where('funcao', Funcao::COORDENADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->count();
-
-            if ($coordenadoresAtivos > 0 || $coordenadoresHistorico > 0) {
-                $projetosComCoordenador++;
-            } else {
-                $projetosSemCoordenador->push($projeto);
+            if (!$horariosOcupados) {
+                return $baia;
             }
         }
 
-        // Relatório da validação
-        $this->command->info("📊 Validação concluída:");
-        $this->command->info("   - Projetos totais: {$projetos->count()}");
-        $this->command->info("   - Projetos ativos: {$projetosAtivos}");
-        $this->command->info("   - Projetos com coordenador: {$projetosComCoordenador}");
-
-        if ($projetosSemCoordenador->isNotEmpty()) {
-            $this->command->error("❌ ATENÇÃO: {$projetosSemCoordenador->count()} projetos ainda estão sem coordenador:");
-            foreach ($projetosSemCoordenador as $projeto) {
-                $this->command->error("   - {$projeto->nome} (ID: {$projeto->id})");
-            }
-        } else {
-            $this->command->info("✅ Todos os projetos têm coordenadores!");
-        }
+        // Se todas estão ocupadas, criar uma nova baia
+        $sala = Sala::first();
+        return Baia::create([
+            'nome' => 'Baia ' . (Baia::count() + 1),
+            'descricao' => 'Baia criada para evitar conflitos',
+            'ativa' => true,
+            'sala_id' => $sala->id
+        ]);
     }
 }

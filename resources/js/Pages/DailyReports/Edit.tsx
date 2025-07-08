@@ -28,6 +28,18 @@ interface Projeto {
 interface EditPageProps extends PageProps {
     dailyReport: DailyReport;
     projetosAtivos: Projeto[];
+    horasPorProjetoPorDia: Record<
+        string,
+        {
+            SEGUNDA: number;
+            TERCA: number;
+            QUARTA: number;
+            QUINTA: number;
+            SEXTA: number;
+            SABADO: number;
+            DOMINGO: number;
+        }
+    >;
 }
 
 interface DailyReportForm {
@@ -39,8 +51,14 @@ interface DailyReportForm {
     observacoes: string;
 }
 
-const Edit = ({ dailyReport, projetosAtivos }: EditPageProps) => {
-    const [calculandoHoras, setCalculandoHoras] = useState(false);
+const Edit = ({
+    dailyReport,
+    projetosAtivos,
+    horasPorProjetoPorDia,
+}: EditPageProps) => {
+    console.log({
+        horasPorProjetoPorDia,
+    });
     const [horasCalculadas, setHorasCalculadas] = useState<number | null>(null);
 
     const { data, setData, put, processing, errors } = useForm<DailyReportForm>(
@@ -54,54 +72,79 @@ const Edit = ({ dailyReport, projetosAtivos }: EditPageProps) => {
         },
     );
 
-    const calcularHoras = async () => {
-        if (!data.data) return;
+    // Mapear dias da semana em português para inglês
+    const mapearDiaDaSemana = (
+        data: string,
+    ):
+        | 'SEGUNDA'
+        | 'TERCA'
+        | 'QUARTA'
+        | 'QUINTA'
+        | 'SEXTA'
+        | 'SABADO'
+        | 'DOMINGO' => {
+        const dataObj = new Date(data + 'T00:00:00');
+        const diaDaSemanaIngles = dataObj.toLocaleDateString('en-US', {
+            weekday: 'long',
+        });
 
-        setCalculandoHoras(true);
+        const mapeamento: Record<
+            string,
+            | 'SEGUNDA'
+            | 'TERCA'
+            | 'QUARTA'
+            | 'QUINTA'
+            | 'SEXTA'
+            | 'SABADO'
+            | 'DOMINGO'
+        > = {
+            Monday: 'SEGUNDA',
+            Tuesday: 'TERCA',
+            Wednesday: 'QUARTA',
+            Thursday: 'QUINTA',
+            Friday: 'SEXTA',
+            Saturday: 'SABADO',
+            Sunday: 'DOMINGO',
+        };
+
+        return mapeamento[diaDaSemanaIngles] || 'SEGUNDA';
+    };
+
+    const calcularHorasAutomaticamente = () => {
+        if (!data.data || !data.projeto_id) {
+            setHorasCalculadas(null);
+            return;
+        }
+
         try {
-            const response = await fetch(
-                route('daily-reports.calcular-horas'),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN':
-                            document
-                                .querySelector('meta[name="csrf-token"]')
-                                ?.getAttribute('content') || '',
-                    },
-                    body: JSON.stringify({ data: data.data }),
-                },
-            );
+            const diaDaSemana = mapearDiaDaSemana(data.data);
+            const horasProjeto = horasPorProjetoPorDia[data.projeto_id];
 
-            if (response.ok) {
-                const result = await response.json();
-                setHorasCalculadas(result.horas_trabalhadas);
+            if (horasProjeto) {
+                const horas = horasProjeto[diaDaSemana] || 0;
+                setHorasCalculadas(horas);
+                // Só atualiza se for diferente da data original (usuário mudou a data)
+                if (data.data !== dailyReport.data.substring(0, 10)) {
+                    setData('horas_trabalhadas', horas);
+                }
+            } else {
+                setHorasCalculadas(0);
             }
         } catch (error) {
             console.error('Erro ao calcular horas:', error);
-        } finally {
-            setCalculandoHoras(false);
+            setHorasCalculadas(null);
         }
     };
 
-    // Calcular horas automaticamente quando a data mudar
+    // Calcular horas automaticamente quando a data ou projeto mudarem
     useEffect(() => {
-        if (data.data && data.data !== dailyReport.data) {
-            calcularHoras();
-        }
+        calcularHorasAutomaticamente();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data.data]);
+    }, [data.data, data.projeto_id]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         put(route('daily-reports.update', dailyReport.id));
-    };
-
-    const aplicarHorasCalculadas = () => {
-        if (horasCalculadas !== null) {
-            setData('horas_trabalhadas', horasCalculadas);
-        }
     };
 
     return (
@@ -216,66 +259,39 @@ const Edit = ({ dailyReport, projetosAtivos }: EditPageProps) => {
                                                 Horas Trabalhadas
                                             </span>
                                         </label>
-                                        <div className="join w-full">
-                                            <input
-                                                id="horas_trabalhadas"
-                                                type="number"
-                                                min="0"
-                                                max="24"
-                                                step="0.5"
-                                                className={`input input-bordered join-item w-full ${
-                                                    errors.horas_trabalhadas
-                                                        ? 'input-error'
-                                                        : ''
-                                                }`}
-                                                value={
-                                                    data.horas_trabalhadas || ''
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'horas_trabalhadas',
-                                                        e.target.value
-                                                            ? Number(
-                                                                  e.target
-                                                                      .value,
-                                                              )
-                                                            : null,
-                                                    )
-                                                }
-                                                placeholder="Ex: 8"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={calcularHoras}
-                                                className="btn btn-outline join-item"
-                                                disabled={
-                                                    calculandoHoras ||
-                                                    !data.data
-                                                }
-                                            >
-                                                {calculandoHoras ? (
-                                                    <span className="loading loading-spinner"></span>
-                                                ) : (
-                                                    'Calcular'
-                                                )}
-                                            </button>
-                                        </div>
+                                        <input
+                                            id="horas_trabalhadas"
+                                            type="number"
+                                            min="0"
+                                            max="24"
+                                            step="0.5"
+                                            className={`input input-bordered w-full ${
+                                                errors.horas_trabalhadas
+                                                    ? 'input-error'
+                                                    : ''
+                                            }`}
+                                            value={data.horas_trabalhadas || ''}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'horas_trabalhadas',
+                                                    e.target.value
+                                                        ? Number(e.target.value)
+                                                        : null,
+                                                )
+                                            }
+                                            placeholder="Ex: 8"
+                                        />
                                         <div className="label justify-start gap-4">
                                             <span className="label-text-alt">
-                                                Deixe em branco ou clique em
-                                                "Calcular" para usar o horário
-                                                cadastrado.
+                                                Valor sugerido automaticamente
+                                                baseado no seu horário
+                                                cadastrado e projeto
+                                                selecionado.
                                             </span>
                                             {horasCalculadas !== null && (
-                                                <button
-                                                    type="button"
-                                                    onClick={
-                                                        aplicarHorasCalculadas
-                                                    }
-                                                    className="badge badge-info cursor-pointer gap-2"
-                                                >
-                                                    Sugestão: {horasCalculadas}h
-                                                </button>
+                                                <span className="badge badge-info gap-2">
+                                                    Sugerido: {horasCalculadas}h
+                                                </span>
                                             )}
                                         </div>
                                         {errors.horas_trabalhadas && (

@@ -6,6 +6,7 @@ use App\Http\Requests\DailyReportRequest;
 use App\Models\DailyReport;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
+use App\Services\HorariosCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,12 @@ use Inertia\Response;
 
 class DailyReportController extends Controller
 {
+    protected HorariosCacheService $horariosCacheService;
+
+    public function __construct(HorariosCacheService $horariosCacheService)
+    {
+        $this->horariosCacheService = $horariosCacheService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -85,8 +92,12 @@ class DailyReportController extends Controller
                 ];
             });
 
+        // Obter horas trabalhadas por projeto e dia da semana do cache
+        $horasPorProjetoPorDia = $this->horariosCacheService->getHorasPorDiaDaSemanaProjetoPorProjeto($user);
+
         return Inertia::render('DailyReports/Create', [
             'projetosAtivos' => $projetosAtivos,
+            'horasPorProjetoPorDia' => $horasPorProjetoPorDia,
         ]);
     }
 
@@ -187,9 +198,13 @@ class DailyReportController extends Controller
                 ];
             });
 
+        // Obter horas trabalhadas por projeto e dia da semana do cache
+        $horasPorProjetoPorDia = $this->horariosCacheService->getHorasPorDiaDaSemanaProjetoPorProjeto($user);
+
         return Inertia::render('DailyReports/Edit', [
             'dailyReport' => $dailyReport,
             'projetosAtivos' => $projetosAtivos,
+            'horasPorProjetoPorDia' => $horasPorProjetoPorDia,
         ]);
     }
 
@@ -272,25 +287,5 @@ class DailyReportController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => 'Erro ao remover daily report. Tente novamente.']);
         }
-    }
-
-    /**
-     * Calcula horas trabalhadas baseado no horário cadastrado
-     */
-    public function calcularHoras(Request $request)
-    {
-        $request->validate([
-            'data' => 'required|date',
-        ]);
-
-        $user = Auth::user();
-        $data = \Carbon\Carbon::parse($request->data);
-
-        $dailyReport = new DailyReport(['data' => $data]);
-        $dailyReport->usuario_id = $user->id;
-
-        $horas = $dailyReport->calcularHorasTrabalhadasAutomaticamente();
-
-        return response()->json(['horas_trabalhadas' => $horas]);
     }
 }
