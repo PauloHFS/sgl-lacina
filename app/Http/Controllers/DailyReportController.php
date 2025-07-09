@@ -190,6 +190,12 @@ class DailyReportController extends Controller
             abort(403, 'Você não tem permissão para editar este daily report.');
         }
 
+        $hoje = now()->startOfDay();
+        $dataReport = $dailyReport->data->startOfDay();
+        if ($dataReport->diffInDays($hoje, false) < 0 || $dataReport->diffInDays($hoje, false) > 1) {
+            abort(403, 'Só é possível editar o daily report no mesmo dia ou no dia seguinte.');
+        }
+
         $user = Auth::user();
 
         // Obter projetos ativos do usuário
@@ -221,9 +227,14 @@ class DailyReportController extends Controller
      */
     public function update(DailyReportRequest $request, DailyReport $dailyReport): RedirectResponse
     {
-        // Verificar se o usuário tem permissão para editar este daily report
         if ($dailyReport->usuario_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para editar este daily report.');
+        }
+
+        $hoje = now()->startOfDay();
+        $dataReport = $dailyReport->data->startOfDay();
+        if ($dataReport->diffInDays($hoje, false) < 0 || $dataReport->diffInDays($hoje, false) > 1) {
+            abort(403, 'Só é possível editar o daily report no mesmo dia ou no dia seguinte.');
         }
 
         $validated = $request->validated();
@@ -284,6 +295,12 @@ class DailyReportController extends Controller
         // Verificar se o usuário tem permissão para deletar este daily report
         if ($dailyReport->usuario_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para deletar este daily report.');
+        }
+
+        $hoje = now()->startOfDay();
+        $dataReport = $dailyReport->data->startOfDay();
+        if ($dataReport->diffInDays($hoje, false) < 0 || $dataReport->diffInDays($hoje, false) > 1) {
+            abort(403, 'Só é possível remover o daily report no mesmo dia ou no dia seguinte.');
         }
 
         try {

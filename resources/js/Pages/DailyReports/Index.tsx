@@ -1,7 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { FormEventHandler, useState } from 'react';
+
+export function podeEditarDailyReport(data: string): boolean {
+    const hoje = new Date();
+    const dataReport = parseISO(data);
+    return differenceInCalendarDays(hoje, dataReport) === 0;
+}
+
+export function podeExcluirDailyReport(data: string): boolean {
+    const hoje = new Date();
+    const dataReport = parseISO(data);
+    const diff = differenceInCalendarDays(hoje, dataReport);
+    return diff === 0 || diff === 1;
+}
 
 interface DailyReport {
     id: string;
@@ -297,25 +311,33 @@ const Index = ({ dailyReports, projetosAtivos, filtros }: IndexPageProps) => {
                                                                     >
                                                                         Ver
                                                                     </Link>
-                                                                    <Link
-                                                                        href={route(
-                                                                            'daily-reports.edit',
-                                                                            report.id,
-                                                                        )}
-                                                                        className="btn btn-warning btn-xs"
-                                                                    >
-                                                                        Editar
-                                                                    </Link>
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            excluirReport(
+                                                                    {podeEditarDailyReport(
+                                                                        report.created_at,
+                                                                    ) && (
+                                                                        <Link
+                                                                            href={route(
+                                                                                'daily-reports.edit',
                                                                                 report.id,
-                                                                            )
-                                                                        }
-                                                                        className="btn btn-error btn-xs"
-                                                                    >
-                                                                        Excluir
-                                                                    </button>
+                                                                            )}
+                                                                            className="btn btn-warning btn-xs"
+                                                                        >
+                                                                            Editar
+                                                                        </Link>
+                                                                    )}
+                                                                    {podeExcluirDailyReport(
+                                                                        report.created_at,
+                                                                    ) && (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                excluirReport(
+                                                                                    report.id,
+                                                                                )
+                                                                            }
+                                                                            className="btn btn-error btn-xs"
+                                                                        >
+                                                                            Excluir
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
