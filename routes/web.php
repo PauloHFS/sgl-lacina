@@ -82,16 +82,18 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
 
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {
-        Route::get('/colaboradores', [ColaboradorController::class, 'index'])->name('colaboradores.index');
+        Route::prefix('/colaboradores')->group(function () {
+            Route::get('/', [ColaboradorController::class, 'index'])->name('colaboradores.index');
+            Route::get('/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
+            Route::get('/{colaborador}/historico', [ColaboradorController::class, 'historico'])->name('colaboradores.historico');
+            Route::put('/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
+            // TODO: Concestrar esse sebozeira aqui mergeando as rotas
+            Route::post('/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
+            Route::post('/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
+        });
 
-        Route::get('/colaboradores/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
-        Route::put('/colaboradores/{colaborador}', [ColaboradorController::class, 'update'])->name('colaboradores.update');
 
         Route::get('/validar-pre-candidato/{id}', [ColaboradorController::class, 'showValidateUsuario'])->name('colaboradores.showValidateUsuario');
-
-        // TODO: Concestrar esse sebozeira aqui mergeando as rotas
-        Route::post('/colaboradores/{colaborador}/aceitar', [ColaboradorController::class, 'aceitar'])->name('colaboradores.aceitar');
-        Route::post('/colaboradores/{colaborador}/recusar', [ColaboradorController::class, 'recusar'])->name('colaboradores.recusar');
 
         // TODO : Concestrar esse sebozeira aqui mergeando as rotas
         Route::patch('/vinculo/{id}', [ProjetoVinculoController::class, 'update'])->name('vinculo.update');

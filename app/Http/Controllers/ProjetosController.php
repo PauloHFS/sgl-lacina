@@ -161,6 +161,9 @@ class ProjetosController extends Controller
           'funcao' => $user->pivot->funcao,
           'tipo_vinculo' => $user->pivot->tipo_vinculo,
           'data_inicio' => $user->pivot->data_inicio,
+          'data_fim' => $user->pivot->data_fim,
+          'carga_horaria' => $user->pivot->carga_horaria,
+          'valor_bolsa' => $user->pivot->valor_bolsa,
         ];
       });
 

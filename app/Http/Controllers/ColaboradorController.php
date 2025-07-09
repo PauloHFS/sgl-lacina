@@ -204,6 +204,21 @@ class ColaboradorController extends Controller
         ]);
     }
 
+    public function historico(Request $request, User $colaborador)
+    {
+        $this->authorize('view', $colaborador);
+
+        $historico = $colaborador->historicoUsuarioProjeto()
+            ->orderBy('created_at', 'desc')
+            ->with(['projeto'])
+            ->paginate(10);
+
+        return inertia('Colaboradores/Historico', [
+            'colaborador' => $colaborador,
+            'historico' => $historico
+        ]);
+    }
+
     public function update(Request $request, User $colaborador)
     {
         $this->authorize('update', $colaborador);
