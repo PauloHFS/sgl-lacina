@@ -16,8 +16,8 @@ return new class extends Migration
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->date('data');
             $table->integer('horas_trabalhadas')->default(0)->comment('Horas trabalhadas no dia');
-            $table->text('o_que_fez_ontem')->nullable()->comment('O que o colaborador fez no dia anterior');
-            $table->text('o_que_vai_fazer_hoje')->nullable()->comment('O que o colaborador vai fazer hoje');
+            $table->text('o_que_fez_ontem')->comment('O que o colaborador fez no dia anterior');
+            $table->text('o_que_vai_fazer_hoje')->comment('O que o colaborador vai fazer hoje');
             $table->text('observacoes')->nullable()->comment('Observações adicionais');
 
             $table->timestamps();

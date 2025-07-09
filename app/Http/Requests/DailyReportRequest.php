@@ -38,11 +38,11 @@ class DailyReportRequest extends FormRequest
                 'max:9',
             ],
             'o_que_fez_ontem' => [
-                'nullable',
+                'required',
                 'string',
             ],
             'o_que_vai_fazer_hoje' => [
-                'nullable',
+                'required',
                 'string',
             ],
             'observacoes' => [

@@ -284,6 +284,9 @@ const Create = ({ projetosAtivos, horasPorProjetoPorDia }: CreatePageProps) => {
                                     <label className="label">
                                         <span className="label-text">
                                             O que fez ontem
+                                            <span className="text-error">
+                                                *
+                                            </span>
                                         </span>
                                     </label>
                                     <RichTextEditor
@@ -307,6 +310,9 @@ const Create = ({ projetosAtivos, horasPorProjetoPorDia }: CreatePageProps) => {
                                     <label className="label">
                                         <span className="label-text">
                                             O que vai fazer hoje
+                                            <span className="text-error">
+                                                *
+                                            </span>
                                         </span>
                                     </label>
                                     <RichTextEditor
