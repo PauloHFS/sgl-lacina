@@ -208,12 +208,6 @@ class HorarioController extends Controller
                     $request->user()->horarios()
                         ->where('id', $horarioData['id'])
                         ->update($updateData);
-
-                    Log::info('Horário atualizado:', [
-                        'horario_id' => $horarioData['id'],
-                        'update_data' => $updateData,
-                        'affected_rows' => $request->user()->horarios()->where('id', $horarioData['id'])->count()
-                    ]);
                 }
             });
         }
