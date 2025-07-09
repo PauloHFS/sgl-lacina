@@ -26,10 +26,18 @@ class UsuarioProjetoObserver
             return;
         }
 
-        // Se carga_horaria foi alterada, encerra histórico anterior e cria novo
-        if ($usuarioProjeto->isDirty('carga_horaria')) {
-            $this->encerrarERecriarHistoricoCargaHoraria($usuarioProjeto);
-            return;
+        $camposVinculo = [
+            'status',
+            'funcao',
+            'carga_horaria',
+            'data_inicio',
+            'data_fim',
+            'tipo_vinculo',
+            'valor_bolsa',
+        ];
+
+        if ($usuarioProjeto->isDirty($camposVinculo)) {
+            $this->finalizarERegistrarNovoHistorico($usuarioProjeto, $camposVinculo);
         }
 
         if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria', 'data_inicio', 'data_fim', 'tipo_vinculo', 'valor_bolsa'])) {
@@ -105,25 +113,24 @@ class UsuarioProjetoObserver
     }
 
     /**
-     * Encerra o último histórico e cria um novo ao alterar carga horária.
+     * Finaliza o histórico anterior e cria um novo ao alterar qualquer característica do vínculo.
      */
-    protected function encerrarERecriarHistoricoCargaHoraria(UsuarioProjeto $usuarioProjeto): void
+    protected function finalizarERegistrarNovoHistorico(UsuarioProjeto $usuarioProjeto, array $camposVinculo): void
     {
         $hoje = now();
 
-        // Encerra o último histórico
         $lastHistory = HistoricoUsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
             ->where('projeto_id', $usuarioProjeto->projeto_id)
             ->orderByDesc('created_at')
             ->first();
 
-        if ($lastHistory) {
+        if ($lastHistory && is_null($lastHistory->data_fim)) {
             $lastHistory->update([
                 'data_fim' => $hoje,
             ]);
         }
 
-        // Cria novo histórico a partir de hoje
+        // Cria novo histórico com data_inicio = agora
         HistoricoUsuarioProjeto::create([
             'usuario_id' => $usuarioProjeto->usuario_id,
             'projeto_id' => $usuarioProjeto->projeto_id,

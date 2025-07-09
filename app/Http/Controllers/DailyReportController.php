@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -112,6 +113,7 @@ class DailyReportController extends Controller
         // Verificar se já existe um daily report para esta data
         $existente = DailyReport::where('usuario_id', $user->id)
             ->where('data', $validated['data'])
+            ->where('projeto_id', $validated['projeto_id'])
             ->first();
 
         if ($existente) {
@@ -149,6 +151,12 @@ class DailyReportController extends Controller
             return redirect()->route('daily-reports.index')
                 ->with('success', 'Daily report criado com sucesso!');
         } catch (\Exception $e) {
+            Log::error('Erro ao criar daily report', [
+                'exception' => $e,
+                'user_id' => $user->id ?? null,
+                'data' => $validated ?? [],
+            ]);
+
             return redirect()->back()
                 ->withErrors(['error' => 'Erro ao criar daily report. Tente novamente.'])
                 ->withInput();
@@ -279,7 +287,7 @@ class DailyReportController extends Controller
         }
 
         try {
-            $dailyReport->delete();
+            $dailyReport->forceDelete();
 
             return redirect()->route('daily-reports.index')
                 ->with('success', 'Daily report removido com sucesso!');

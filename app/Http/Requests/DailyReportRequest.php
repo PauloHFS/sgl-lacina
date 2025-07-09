@@ -34,23 +34,20 @@ class DailyReportRequest extends FormRequest
             'horas_trabalhadas' => [
                 'nullable',
                 'integer',
-                'min:0',
-                'max:24',
+                'min:1',
+                'max:9',
             ],
             'o_que_fez_ontem' => [
                 'nullable',
                 'string',
-                'max:10000',
             ],
             'o_que_vai_fazer_hoje' => [
                 'nullable',
                 'string',
-                'max:10000',
             ],
             'observacoes' => [
                 'nullable',
                 'string',
-                'max:10000',
             ],
         ];
     }
@@ -79,8 +76,7 @@ class DailyReportRequest extends FormRequest
             'data.unique' => 'Você já possui um daily report para esta data.',
             'data.before_or_equal' => 'A data do daily report não pode ser no futuro.',
             'projeto_id.exists' => 'O projeto selecionado não existe.',
-            'horas_trabalhadas.max' => 'As horas trabalhadas não podem exceder 24 horas.',
-            '*.max' => 'O campo :attribute não pode ter mais que :max caracteres.',
+            'horas_trabalhadas.max' => 'As horas trabalhadas não podem exceder 9 horas.',
         ];
     }
 }
