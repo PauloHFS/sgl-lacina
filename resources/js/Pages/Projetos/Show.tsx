@@ -73,8 +73,6 @@ export default function Show({
     coordenadoresDoProjeto,
     horariosDosProjetos,
 }: ShowPageProps) {
-    console.log('porjeto', { participantesProjeto });
-
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
         'colaboradores',

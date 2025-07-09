@@ -37,9 +37,6 @@ interface DailyReportForm {
 }
 
 const Create = ({ projetosAtivos, horasPorProjetoPorDia }: CreatePageProps) => {
-    console.log({
-        horasPorProjetoPorDia,
-    });
     const [horasCalculadas, setHorasCalculadas] = useState<number | null>(null);
 
     const { data, setData, post, processing, errors } =

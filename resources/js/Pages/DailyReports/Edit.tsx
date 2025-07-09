@@ -56,9 +56,6 @@ const Edit = ({
     projetosAtivos,
     horasPorProjetoPorDia,
 }: EditPageProps) => {
-    console.log({
-        horasPorProjetoPorDia,
-    });
     const [horasCalculadas, setHorasCalculadas] = useState<number | null>(null);
 
     const { data, setData, put, processing, errors } = useForm<DailyReportForm>(
