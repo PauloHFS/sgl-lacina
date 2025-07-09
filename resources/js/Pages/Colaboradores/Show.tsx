@@ -101,6 +101,7 @@ export interface ShowPageProps extends PageProps {
 }
 
 interface VinculoEditFormData {
+    skip_history: boolean | undefined;
     funcao: Funcao | '';
     carga_horaria: number;
     valor_bolsa: number;
@@ -197,6 +198,7 @@ export default function Show({
         valor_bolsa: 0,
         data_inicio: null,
         data_fim: null,
+        skip_history: false,
     });
 
     const handleEditVinculoClick = (vinculo: UsuarioProjeto) => {
@@ -211,6 +213,7 @@ export default function Show({
             data_fim: vinculo.data_fim
                 ? new Date(vinculo.data_fim).toISOString().split('T')[0]
                 : null,
+            skip_history: false,
         });
     };
 
@@ -1273,7 +1276,7 @@ export default function Show({
                                     )
                                 }
                                 min="1"
-                                max="40"
+                                max="192"
                                 required
                             />
                             <span className="label-text-alt">
@@ -1363,6 +1366,32 @@ export default function Show({
                                 message={vinculoEditForm.errors.data_inicio}
                                 className="mt-2"
                             />
+                        </div>
+
+                        <div className="mt-4">
+                            <label htmlFor="skip_history" className="label">
+                                <span className="label-text">
+                                    Não salvar no Histórico
+                                </span>
+                            </label>
+                            <div className="flex items-center">
+                                <input
+                                    id="skip_history"
+                                    type="checkbox"
+                                    className="toggle toggle-primary"
+                                    checked={vinculoEditForm.data.skip_history}
+                                    onChange={(e) =>
+                                        vinculoEditForm.setData(
+                                            'skip_history',
+                                            e.target.checked,
+                                        )
+                                    }
+                                />
+                                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                                    Está ação irá apenas editar o a ultima
+                                    operação sobre esse vinculo.
+                                </span>
+                            </div>
                         </div>
 
                         <div className="mt-6 flex justify-end">

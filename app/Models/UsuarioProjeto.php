@@ -47,6 +47,13 @@ class UsuarioProjeto extends Model
         'data_fim' => 'datetime',
     ];
 
+    /**
+     * Indica se o observer deve pular o log de histórico.
+     * @see App\Observers\UsuarioProjetoObserver
+     * @var bool
+     */
+    public bool $skipHistoryLog = false;
+
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');

@@ -118,6 +118,7 @@ class ProjetoVinculoController extends Controller
           }
         }
       ],
+      'skip_history' => 'sometimes|boolean',
     ]);
 
     $statusOriginal = $usuarioProjeto->status;
@@ -176,6 +177,7 @@ class ProjetoVinculoController extends Controller
       $usuarioProjeto->data_fim = $validatedData['data_fim'];
     }
 
+    $usuarioProjeto->skipHistoryLog = $request->boolean('skip_history', false);
     $usuarioProjeto->save();
 
     if ($vinculoFoiAceito) {
