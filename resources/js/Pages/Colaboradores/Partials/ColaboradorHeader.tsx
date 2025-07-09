@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import React from 'react';
 import { ColaboradorData } from '../Show'; // Import ColaboradorData
 import { SocialLinks } from './SocialLinks';
@@ -5,13 +6,15 @@ import { SocialLinks } from './SocialLinks';
 interface ColaboradorHeaderProps {
     colaborador: Pick<
         ColaboradorData,
+        | 'id'
         | 'name'
         | 'email'
         | 'curriculo_lattes_url'
         | 'linkedin_url'
         | 'github_url'
         | 'website_url'
-    > & { foto_url?: string | null };
+        | 'foto_url'
+    >;
 }
 
 export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
@@ -39,6 +42,13 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                     websiteUrl={colaborador.website_url}
                     colaboradorName={colaborador.name}
                 />
+                <Link
+                    href={`/colaboradores/${colaborador.id}/historico`}
+                    className="btn btn-primary mt-2"
+                    data-testid="historico-link"
+                >
+                    Histórico (beta)
+                </Link>
             </div>
         </div>
     ),

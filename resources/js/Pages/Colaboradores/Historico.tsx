@@ -52,6 +52,7 @@ export default function HistoricoPage({
                                 <th>Função</th>
                                 <th>Tipo de Vínculo</th>
                                 <th>Status</th>
+                                <th>Bolsa</th>
                                 <th>Carga Horária</th>
                                 <th>Data Início</th>
                                 <th>Data Fim</th>
@@ -74,6 +75,22 @@ export default function HistoricoPage({
                                             <span className="badge badge-outline">
                                                 {item.status}
                                             </span>
+                                        </td>
+                                        <td>
+                                            {item.valor_bolsa ? (
+                                                <span className="badge badge-success">
+                                                    {(
+                                                        item.valor_bolsa / 100
+                                                    ).toLocaleString('pt-BR', {
+                                                        style: 'currency',
+                                                        currency: 'BRL',
+                                                    })}
+                                                </span>
+                                            ) : (
+                                                <span className="badge badge-secondary">
+                                                    ---
+                                                </span>
+                                            )}
                                         </td>
                                         <td>{item.carga_horaria}h</td>
                                         <td>
