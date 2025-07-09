@@ -210,8 +210,11 @@ class ColaboradorController extends Controller
         // $this->authorize('view', $colaborador);
 
         $historico = $colaborador->historicoUsuarioProjeto()
-            ->orderBy('created_at', 'desc')
+            ->join('projetos', 'historico_usuario_projeto.projeto_id', '=', 'projetos.id')
             ->with(['projeto'])
+            ->orderBy('projetos.nome')
+            ->orderBy('historico_usuario_projeto.data_inicio')
+            ->select('historico_usuario_projeto.*')
             ->paginate(10);
 
         return inertia('Colaboradores/Historico', [
