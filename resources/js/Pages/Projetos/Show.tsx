@@ -34,6 +34,9 @@ type ParticipanteProjeto = Pick<User, 'id' | 'name' | 'email' | 'foto_url'> & {
     funcao: Funcao;
     tipo_vinculo: TipoVinculo;
     data_inicio: string;
+    data_fim?: string | null;
+    carga_horaria: number;
+    valor_bolsa?: number;
 };
 
 interface ShowPageProps extends PageProps {
@@ -70,6 +73,8 @@ export default function Show({
     coordenadoresDoProjeto,
     horariosDosProjetos,
 }: ShowPageProps) {
+    console.log('porjeto', { participantesProjeto });
+
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
         'colaboradores',
@@ -1219,7 +1224,16 @@ export default function Show({
                                                             <th>Nome</th>
                                                             <th>Email</th>
                                                             <th>Função</th>
+                                                            <th>
+                                                                Carga Horária
+                                                                <br />
+                                                                (horas/mês)
+                                                            </th>
+                                                            <th>
+                                                                Valor da Bolsa
+                                                            </th>
                                                             <th>Início</th>
+                                                            <th>Fim</th>
                                                             <th>Ações</th>
                                                         </tr>
                                                     </thead>
@@ -1268,6 +1282,21 @@ export default function Show({
                                                                         </span>
                                                                     </td>
                                                                     <td>
+                                                                        {
+                                                                            participante.carga_horaria
+                                                                        }
+                                                                    </td>
+                                                                    <td>
+                                                                        {participante.valor_bolsa
+                                                                            ? `R$ ${(
+                                                                                  participante.valor_bolsa /
+                                                                                  100
+                                                                              ).toFixed(
+                                                                                  2,
+                                                                              )}`
+                                                                            : '---'}
+                                                                    </td>
+                                                                    <td>
                                                                         {format(
                                                                             new Date(
                                                                                 participante.data_inicio,
@@ -1277,6 +1306,19 @@ export default function Show({
                                                                                 locale: ptBR,
                                                                             },
                                                                         )}
+                                                                    </td>
+                                                                    <td>
+                                                                        {participante.data_fim
+                                                                            ? format(
+                                                                                  new Date(
+                                                                                      participante.data_fim,
+                                                                                  ),
+                                                                                  'dd/MM/yyyy',
+                                                                                  {
+                                                                                      locale: ptBR,
+                                                                                  },
+                                                                              )
+                                                                            : '---'}
                                                                     </td>
                                                                     <td>
                                                                         <div className="join">

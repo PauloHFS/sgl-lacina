@@ -112,6 +112,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Horario::class, 'usuario_id');
     }
 
+    public function historicoUsuarioProjeto(): HasMany
+    {
+        return $this->hasMany(HistoricoUsuarioProjeto::class, 'usuario_id');
+    }
+
     public function isCoordenador(?Projeto $projeto = null)
     {
         if ($projeto === null) {
