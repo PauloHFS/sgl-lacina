@@ -206,7 +206,8 @@ class ColaboradorController extends Controller
 
     public function historico(Request $request, User $colaborador)
     {
-        $this->authorize('view', $colaborador);
+        // TODO: Descomenta isso aqui depois
+        // $this->authorize('view', $colaborador);
 
         $historico = $colaborador->historicoUsuarioProjeto()
             ->orderBy('created_at', 'desc')
