@@ -43,7 +43,9 @@ export const ColaboradorHeader: React.FC<ColaboradorHeaderProps> = React.memo(
                     colaboradorName={colaborador.name}
                 />
                 <Link
-                    href={`/colaboradores/${colaborador.id}/historico`}
+                    href={route('colaboradores.historico', {
+                        colaborador: colaborador.id,
+                    })}
                     className="btn btn-primary mt-2"
                     data-testid="historico-link"
                 >

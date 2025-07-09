@@ -230,34 +230,68 @@ export default function Authenticated({
                             </li>
 
                             {!isCoordenador && (
-                                <li>
-                                    <NavLink
-                                        href={route('horarios.index')}
-                                        active={route().current(
-                                            'horarios.index',
-                                        )}
-                                        className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                                            route().current('horarios.index')
-                                                ? 'bg-primary text-primary-content'
-                                                : 'text-base-content hover:bg-base-200'
-                                        }`}
-                                    >
-                                        <svg
-                                            className="h-5 w-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
+                                <>
+                                    <li>
+                                        <NavLink
+                                            href={route('horarios.index')}
+                                            active={route().current(
+                                                'horarios.index',
+                                            )}
+                                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                                                route().current(
+                                                    'horarios.index',
+                                                )
+                                                    ? 'bg-primary text-primary-content'
+                                                    : 'text-base-content hover:bg-base-200'
+                                            }`}
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
-                                        Meus Horários
-                                    </NavLink>
-                                </li>
+                                            <svg
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                            Meus Horários
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            href={route('daily-reports.index')}
+                                            active={route().current(
+                                                'daily-reports.*',
+                                            )}
+                                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                                                route().current(
+                                                    'daily-reports.*',
+                                                )
+                                                    ? 'bg-primary text-primary-content'
+                                                    : 'text-base-content hover:bg-base-200'
+                                            }`}
+                                        >
+                                            <svg
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                            Daily Reports
+                                        </NavLink>
+                                    </li>
+                                </>
                             )}
 
                             {isCoordenador && (

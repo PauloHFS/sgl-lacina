@@ -444,7 +444,6 @@ export default function EditarHorario({
         e.preventDefault();
 
         const horariosChanged = convertToBackendFormat(data.horarios, horarios);
-
         if (horariosChanged.length === 0) {
             toast('Nenhuma alteração foi feita nos horários.', 'info');
             return;
@@ -557,6 +556,184 @@ export default function EditarHorario({
                                     </div>
                                 </div>
                             )}
+
+                            {/* Card de Controle de Carga Horária por Projeto */}
+                            <div className="card card-bordered bg-base-200 mt-6 shadow">
+                                <div className="card-body">
+                                    <h4 className="card-title mb-3 text-lg font-semibold">
+                                        Controle de Carga Horária Semanal
+                                    </h4>
+                                    {isLoadingProjetos ? (
+                                        <div className="flex items-center justify-center p-6">
+                                            <span className="loading loading-spinner loading-md"></span>
+                                            <span className="ml-2">
+                                                Carregando projetos...
+                                            </span>
+                                        </div>
+                                    ) : projetosAtivos.length === 0 ? (
+                                        <div className="bg-base-300/50 border-base-300 rounded-lg border p-6 text-center">
+                                            <p className="text-base-content font-medium">
+                                                Você não possui projetos ativos.
+                                            </p>
+                                            <p className="mt-1 text-sm opacity-70">
+                                                Os projetos aparecerão aqui após
+                                                serem aprovados.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                            {projetosAtivos.map((projeto) => {
+                                                const horasAlocadas =
+                                                    horasProjetoSemanal[
+                                                        projeto.id
+                                                    ] || 0;
+                                                const horasDefinidas =
+                                                    projeto.carga_horaria / 4;
+                                                const percentual =
+                                                    horasDefinidas > 0
+                                                        ? Math.round(
+                                                              (horasAlocadas /
+                                                                  horasDefinidas) *
+                                                                  100,
+                                                          )
+                                                        : 0;
+
+                                                const isExcesso =
+                                                    horasAlocadas >
+                                                    horasDefinidas;
+                                                const isCompleto =
+                                                    horasAlocadas ===
+                                                    horasDefinidas;
+                                                const isParcial =
+                                                    horasAlocadas > 0 &&
+                                                    horasAlocadas <
+                                                        horasDefinidas;
+
+                                                let statusClass =
+                                                    'border-neutral bg-base-300 text-base-content';
+                                                if (isExcesso) {
+                                                    statusClass =
+                                                        'border-error bg-error/20 text-error-content shadow-md';
+                                                } else if (isCompleto) {
+                                                    statusClass =
+                                                        'border-success bg-success/20 text-success-content shadow-md';
+                                                } else if (isParcial) {
+                                                    statusClass =
+                                                        'border-warning bg-warning/20 text-warning-content shadow-md';
+                                                }
+
+                                                return (
+                                                    <div
+                                                        key={projeto.id}
+                                                        className={`rounded-lg border-2 p-4 transition-colors ${statusClass}`}
+                                                    >
+                                                        <div className="mb-2">
+                                                            <h5
+                                                                className="truncate font-semibold"
+                                                                title={
+                                                                    projeto.projeto_nome
+                                                                }
+                                                            >
+                                                                {
+                                                                    projeto.projeto_nome
+                                                                }
+                                                            </h5>
+                                                        </div>
+
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <span className="text-sm font-medium opacity-80">
+                                                                Horas:
+                                                            </span>
+                                                            <span
+                                                                className={`text-base font-bold ${
+                                                                    isExcesso
+                                                                        ? 'text-error'
+                                                                        : isCompleto
+                                                                          ? 'text-success'
+                                                                          : isParcial
+                                                                            ? 'text-warning'
+                                                                            : ''
+                                                                }`}
+                                                            >
+                                                                {horasAlocadas}h
+                                                                /{' '}
+                                                                {horasDefinidas}
+                                                                h
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="mb-2">
+                                                            <div className="mb-1 flex items-center justify-between">
+                                                                <span className="text-xs font-medium opacity-80">
+                                                                    Progresso
+                                                                </span>
+                                                                <span
+                                                                    className={`text-xs font-bold ${
+                                                                        isExcesso
+                                                                            ? 'text-error'
+                                                                            : isCompleto
+                                                                              ? 'text-success'
+                                                                              : isParcial
+                                                                                ? 'text-warning'
+                                                                                : 'opacity-75'
+                                                                    }`}
+                                                                >
+                                                                    {percentual}
+                                                                    %
+                                                                </span>
+                                                            </div>
+                                                            <progress
+                                                                className={`progress w-full ${
+                                                                    isExcesso
+                                                                        ? 'progress-error'
+                                                                        : isCompleto
+                                                                          ? 'progress-success'
+                                                                          : isParcial
+                                                                            ? 'progress-warning'
+                                                                            : 'progress-neutral'
+                                                                }`}
+                                                                value={Math.min(
+                                                                    percentual,
+                                                                    100,
+                                                                )}
+                                                                max="100"
+                                                            ></progress>
+                                                        </div>
+
+                                                        {isExcesso && (
+                                                            <div className="mt-2 text-xs">
+                                                                <span className="text-error bg-error/10 rounded px-2 py-1 font-bold">
+                                                                    Excesso: +
+                                                                    {horasAlocadas -
+                                                                        horasDefinidas}
+                                                                    h
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {horasAlocadas ===
+                                                            0 && (
+                                                            <div className="mt-2 text-xs opacity-60">
+                                                                Nenhuma hora
+                                                                alocada
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    <div className="bg-info/10 border-info/20 mt-4 rounded-lg border p-3 text-xs">
+                                        <p className="text-info-content">
+                                            💡 <strong>Dica:</strong> As horas
+                                            são contabilizadas apenas para tipos
+                                            "Trabalho Presencial" e "Trabalho
+                                            Remoto" vinculados a projetos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-6 overflow-x-auto">
@@ -687,196 +864,6 @@ export default function EditarHorario({
                                                     </div>
                                                 ),
                                             )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Card de Controle de Carga Horária por Projeto */}
-                                <div className="card card-bordered bg-base-200 mt-6 shadow">
-                                    <div className="card-body">
-                                        <h4 className="card-title mb-3 text-lg font-semibold">
-                                            Controle de Carga Horária Semanal
-                                        </h4>
-                                        {isLoadingProjetos ? (
-                                            <div className="flex items-center justify-center p-6">
-                                                <span className="loading loading-spinner loading-md"></span>
-                                                <span className="ml-2">
-                                                    Carregando projetos...
-                                                </span>
-                                            </div>
-                                        ) : projetosAtivos.length === 0 ? (
-                                            <div className="bg-base-300/50 border-base-300 rounded-lg border p-6 text-center">
-                                                <p className="text-base-content font-medium">
-                                                    Você não possui projetos
-                                                    ativos.
-                                                </p>
-                                                <p className="mt-1 text-sm opacity-70">
-                                                    Os projetos aparecerão aqui
-                                                    após serem aprovados.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                                {projetosAtivos.map(
-                                                    (projeto) => {
-                                                        const horasAlocadas =
-                                                            horasProjetoSemanal[
-                                                                projeto.id
-                                                            ] || 0;
-                                                        const horasDefinidas =
-                                                            projeto.carga_horaria;
-                                                        const percentual =
-                                                            horasDefinidas > 0
-                                                                ? Math.round(
-                                                                      (horasAlocadas /
-                                                                          horasDefinidas) *
-                                                                          100,
-                                                                  )
-                                                                : 0;
-
-                                                        const isExcesso =
-                                                            horasAlocadas >
-                                                            horasDefinidas;
-                                                        const isCompleto =
-                                                            horasAlocadas ===
-                                                            horasDefinidas;
-                                                        const isParcial =
-                                                            horasAlocadas > 0 &&
-                                                            horasAlocadas <
-                                                                horasDefinidas;
-
-                                                        let statusClass =
-                                                            'border-neutral bg-base-300 text-base-content';
-                                                        if (isExcesso) {
-                                                            statusClass =
-                                                                'border-error bg-error/20 text-error-content shadow-md';
-                                                        } else if (isCompleto) {
-                                                            statusClass =
-                                                                'border-success bg-success/20 text-success-content shadow-md';
-                                                        } else if (isParcial) {
-                                                            statusClass =
-                                                                'border-warning bg-warning/20 text-warning-content shadow-md';
-                                                        }
-
-                                                        return (
-                                                            <div
-                                                                key={projeto.id}
-                                                                className={`rounded-lg border-2 p-4 transition-colors ${statusClass}`}
-                                                            >
-                                                                <div className="mb-2">
-                                                                    <h5
-                                                                        className="truncate font-semibold"
-                                                                        title={
-                                                                            projeto.projeto_nome
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            projeto.projeto_nome
-                                                                        }
-                                                                    </h5>
-                                                                </div>
-
-                                                                <div className="mb-2 flex items-center justify-between">
-                                                                    <span className="text-sm font-medium opacity-80">
-                                                                        Horas:
-                                                                    </span>
-                                                                    <span
-                                                                        className={`text-base font-bold ${
-                                                                            isExcesso
-                                                                                ? 'text-error'
-                                                                                : isCompleto
-                                                                                  ? 'text-success'
-                                                                                  : isParcial
-                                                                                    ? 'text-warning'
-                                                                                    : ''
-                                                                        }`}
-                                                                    >
-                                                                        {
-                                                                            horasAlocadas
-                                                                        }
-                                                                        h /{' '}
-                                                                        {
-                                                                            horasDefinidas
-                                                                        }
-                                                                        h
-                                                                    </span>
-                                                                </div>
-
-                                                                <div className="mb-2">
-                                                                    <div className="mb-1 flex items-center justify-between">
-                                                                        <span className="text-xs font-medium opacity-80">
-                                                                            Progresso
-                                                                        </span>
-                                                                        <span
-                                                                            className={`text-xs font-bold ${
-                                                                                isExcesso
-                                                                                    ? 'text-error'
-                                                                                    : isCompleto
-                                                                                      ? 'text-success'
-                                                                                      : isParcial
-                                                                                        ? 'text-warning'
-                                                                                        : 'opacity-75'
-                                                                            }`}
-                                                                        >
-                                                                            {
-                                                                                percentual
-                                                                            }
-                                                                            %
-                                                                        </span>
-                                                                    </div>
-                                                                    <progress
-                                                                        className={`progress w-full ${
-                                                                            isExcesso
-                                                                                ? 'progress-error'
-                                                                                : isCompleto
-                                                                                  ? 'progress-success'
-                                                                                  : isParcial
-                                                                                    ? 'progress-warning'
-                                                                                    : 'progress-neutral'
-                                                                        }`}
-                                                                        value={Math.min(
-                                                                            percentual,
-                                                                            100,
-                                                                        )}
-                                                                        max="100"
-                                                                    ></progress>
-                                                                </div>
-
-                                                                {isExcesso && (
-                                                                    <div className="mt-2 text-xs">
-                                                                        <span className="text-error bg-error/10 rounded px-2 py-1 font-bold">
-                                                                            Excesso:
-                                                                            +
-                                                                            {horasAlocadas -
-                                                                                horasDefinidas}
-                                                                            h
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-
-                                                                {horasAlocadas ===
-                                                                    0 && (
-                                                                    <div className="mt-2 text-xs opacity-60">
-                                                                        Nenhuma
-                                                                        hora
-                                                                        alocada
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    },
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="bg-info/10 border-info/20 mt-4 rounded-lg border p-3 text-xs">
-                                            <p className="text-info-content">
-                                                💡 <strong>Dica:</strong> As
-                                                horas são contabilizadas apenas
-                                                para tipos "Trabalho Presencial"
-                                                e "Trabalho Remoto" vinculados a
-                                                projetos.
-                                            </p>
                                         </div>
                                     </div>
                                 </div>

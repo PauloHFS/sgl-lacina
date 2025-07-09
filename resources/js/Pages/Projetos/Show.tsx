@@ -73,8 +73,6 @@ export default function Show({
     coordenadoresDoProjeto,
     horariosDosProjetos,
 }: ShowPageProps) {
-    console.log('porjeto', { participantesProjeto });
-
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
         'colaboradores',
@@ -374,37 +372,37 @@ export default function Show({
                                     </p>
                                 )}
                                 {projeto.valor_total &&
-                                    projeto.valor_total > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-semibold">
-                                                Valor Total:
-                                            </span>
-                                            <span className="badge badge-success badge-lg">
-                                                {(
-                                                    projeto.valor_total / 100
-                                                ).toLocaleString('pt-BR', {
-                                                    style: 'currency',
-                                                    currency: 'BRL',
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </span>
-                                        </div>
-                                    )}
+                                projeto.valor_total > 0 ? (
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-semibold">
+                                            Valor Total:
+                                        </span>
+                                        <span className="badge badge-success badge-lg">
+                                            {(
+                                                projeto.valor_total / 100
+                                            ).toLocaleString('pt-BR', {
+                                                style: 'currency',
+                                                currency: 'BRL',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    </div>
+                                ) : null}
                                 {projeto.meses_execucao &&
-                                    projeto.meses_execucao > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-semibold">
-                                                Meses de Execução:
-                                            </span>
-                                            <span className="badge badge-info badge-lg">
-                                                {projeto.meses_execucao}{' '}
-                                                {projeto.meses_execucao === 1
-                                                    ? 'mês'
-                                                    : 'meses'}
-                                            </span>
-                                        </div>
-                                    )}
+                                projeto.meses_execucao > 0 ? (
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-semibold">
+                                            Meses de Execução:
+                                        </span>
+                                        <span className="badge badge-info badge-lg">
+                                            {projeto.meses_execucao}{' '}
+                                            {projeto.meses_execucao === 1
+                                                ? 'mês'
+                                                : 'meses'}
+                                        </span>
+                                    </div>
+                                ) : null}
                                 {projeto.campos_extras &&
                                     Object.keys(projeto.campos_extras).length >
                                         0 && (
