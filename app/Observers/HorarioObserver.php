@@ -62,12 +62,6 @@ class HorarioObserver
     {
         if ($horario->usuario) {
             $this->horariosCacheService->invalidarCacheUsuario($horario->usuario);
-            Log::info("Cache invalidado por mudança no horário", [
-                'horario_id' => $horario->id,
-                'usuario_id' => $horario->usuario_id,
-                'dia_da_semana' => $horario->dia_da_semana,
-                'tipo' => $horario->tipo,
-            ]);
         }
     }
 }
