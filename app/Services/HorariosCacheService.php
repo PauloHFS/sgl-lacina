@@ -45,8 +45,6 @@ class HorariosCacheService
 
         Cache::forget($cacheKey);
         Cache::forget($cacheKeyProjetos);
-
-        Log::info("Cache de horários invalidado para usuário {$user->id}");
     }
 
     /**
