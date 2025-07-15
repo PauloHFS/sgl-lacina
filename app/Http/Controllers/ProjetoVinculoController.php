@@ -10,9 +10,9 @@ use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Events\VinculoAceito;
+use App\Events\SolicitacaoVinculoCriada;
 use Carbon\Carbon;
 
 class ProjetoVinculoController extends Controller
@@ -48,7 +48,6 @@ class ProjetoVinculoController extends Controller
     }
 
     if ($request->trocar) {
-
       // checar se ja nao tem um trocar true para esse usuario
       $jaTemTrocar = UsuarioProjeto::where('usuario_id', $user->id)->where('trocar', true)->exists();
 
@@ -56,13 +55,13 @@ class ProjetoVinculoController extends Controller
         return back()->with('error', 'Você já possui uma troca em andamento.');
       }
 
-      DB::transaction(function () use ($request, $user) {
+      $novoVinculo = DB::transaction(function () use ($request, $user) {
         UsuarioProjeto::whereId($request->usuario_projeto_trocado_id)
           ->update([
             'trocar' => true,
           ]);
 
-        UsuarioProjeto::create([
+        $novoVinculo = UsuarioProjeto::create([
           'usuario_id' => $user->id,
           'projeto_id' => $request->projeto_id,
           'tipo_vinculo' => $request->tipo_vinculo,
@@ -72,9 +71,10 @@ class ProjetoVinculoController extends Controller
           'valor_bolsa' => $request->valor_bolsa ?? 0,
           'data_inicio' => $request->data_inicio,
         ]);
+        return $novoVinculo;
       });
     } else {
-      UsuarioProjeto::create([
+      $novoVinculo = UsuarioProjeto::create([
         'usuario_id' => $user->id,
         'projeto_id' => $request->projeto_id,
         'tipo_vinculo' => $request->tipo_vinculo,
@@ -85,6 +85,8 @@ class ProjetoVinculoController extends Controller
         'data_inicio' => $request->data_inicio,
       ]);
     }
+
+    event(new SolicitacaoVinculoCriada($novoVinculo));
 
     return back()->with('success', 'Solicitação de vínculo enviada com sucesso!');
   }

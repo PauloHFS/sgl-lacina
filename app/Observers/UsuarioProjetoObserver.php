@@ -84,7 +84,7 @@ class UsuarioProjetoObserver
             'carga_horaria' => $usuarioProjeto->carga_horaria,
             'data_inicio' => $usuarioProjeto->data_inicio,
             'data_fim' => $usuarioProjeto->data_fim,
-            'valor_bolsa' => $usuarioProjeto->valor_bolsa,
+            'valor_bolsa' => $usuarioProjeto->valor_bolsa ?? 0,
         ]);
     }
 
@@ -107,7 +107,7 @@ class UsuarioProjetoObserver
                 'carga_horaria' => $usuarioProjeto->carga_horaria,
                 'data_inicio' => $usuarioProjeto->data_inicio,
                 'data_fim' => $usuarioProjeto->data_fim,
-                'valor_bolsa' => $usuarioProjeto->valor_bolsa,
+                'valor_bolsa' => $usuarioProjeto->valor_bolsa ?? 0,
             ]);
         }
     }
@@ -141,7 +141,7 @@ class UsuarioProjetoObserver
             'carga_horaria' => $usuarioProjeto->carga_horaria,
             'data_inicio' => $hoje,
             'data_fim' => null,
-            'valor_bolsa' => $usuarioProjeto->valor_bolsa,
+            'valor_bolsa' => $usuarioProjeto->valor_bolsa ?? 0,
         ]);
     }
 }

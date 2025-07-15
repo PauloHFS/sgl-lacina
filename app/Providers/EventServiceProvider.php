@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Listeners\LogJobFailedToDiscord;
 use App\Listeners\LogJobProcessedToDiscord;
 use App\Listeners\LogScheduledTaskFinishedToDiscord;
+use App\Listeners\NotificarCoordenadoresSolicitacaoVinculo;
+use App\Events\SolicitacaoVinculoCriada;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Queue\Events\JobFailed;
