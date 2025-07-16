@@ -1,3 +1,4 @@
+import DailyReportTab, { DailyReport } from '@/Components/DailyReportTab';
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { TIME_SLOTS_HORARIO } from '@/constants';
@@ -16,7 +17,7 @@ import {
     User,
     UsuarioProjeto,
 } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React, { useState } from 'react';
@@ -72,11 +73,67 @@ export default function Show({
     temVinculosPendentes,
     coordenadoresDoProjeto,
     horariosDosProjetos,
-}: ShowPageProps) {
+    diaDaily: initialDiaDaily,
+    dailyReports: initialDailyReports,
+    totalParticipantes: initialTotalParticipantes,
+}: ShowPageProps & {
+    diaDaily?: string;
+    dailyReports?: DailyReport[];
+    totalParticipantes?: number;
+}) {
     const { toast } = useToast();
-    const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
-        'colaboradores',
+    const [activeTab, setActiveTab] = useState<
+        'colaboradores' | 'horarios' | 'dailys'
+    >('colaboradores');
+
+    // Daily Reports State
+    const { url, props } = usePage();
+    const [diaDaily, setDiaDaily] = useState<string>(
+        initialDiaDaily || new Date().toISOString().slice(0, 10),
     );
+    const [loadingDaily, setLoadingDaily] = useState(false);
+    const [dailyReports, setDailyReports] = useState<DailyReport[]>(
+        Array.isArray(initialDailyReports) ? initialDailyReports : [],
+    );
+    const [totalParticipantes, setTotalParticipantes] = useState<number>(
+        typeof initialTotalParticipantes === 'number'
+            ? initialTotalParticipantes
+            : 0,
+    );
+
+    // Atualiza a URL e faz reload dos dados da daily ao trocar o dia
+    const handleChangeDiaDaily = (dia: string) => {
+        setDiaDaily(dia);
+        setLoadingDaily(true);
+        // Garante que queryparams é um objeto
+        const queryParams =
+            props.queryparams && typeof props.queryparams === 'object'
+                ? props.queryparams
+                : {};
+        router.get(
+            url.split('?')[0],
+            { ...queryParams, dia },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['dailyReports', 'diaDaily', 'totalParticipantes'],
+                onSuccess: (page) => {
+                    setDailyReports(
+                        Array.isArray(page.props.dailyReports)
+                            ? page.props.dailyReports
+                            : [],
+                    );
+                    setTotalParticipantes(
+                        typeof page.props.totalParticipantes === 'number'
+                            ? page.props.totalParticipantes
+                            : 0,
+                    );
+                    setLoadingDaily(false);
+                },
+                onError: () => setLoadingDaily(false),
+            },
+        );
+    };
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         dia: string;
@@ -1182,7 +1239,7 @@ export default function Show({
                     {/* Tabs Section */}
                     {(isCoordenadorDoProjetoAtual ||
                         usuarioVinculo?.status === 'APROVADO') && (
-                        <div className="card bg-base-100 shadow-xl">
+                        <div className="card bg-base-100 mt-8 shadow-xl">
                             <div className="card-body">
                                 {/* Tabs Navigation */}
                                 <div
@@ -1204,6 +1261,13 @@ export default function Show({
                                         onClick={() => setActiveTab('horarios')}
                                     >
                                         Horários do Projeto
+                                    </button>
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'dailys' ? 'tab-active' : ''}`}
+                                        onClick={() => setActiveTab('dailys')}
+                                    >
+                                        Daily Reports
                                     </button>
                                 </div>
 
@@ -1534,6 +1598,16 @@ export default function Show({
                                     </div>
                                 )}
 
+                                {activeTab === 'dailys' && (
+                                    <DailyReportTab
+                                        dia={diaDaily}
+                                        onChangeDia={handleChangeDiaDaily}
+                                        loading={loadingDaily}
+                                        dailyReports={dailyReports}
+                                        totalParticipantes={totalParticipantes}
+                                    />
+                                )}
+
                                 {activeTab === 'colaboradores' &&
                                     (!participantesProjeto ||
                                         participantesProjeto.data.length ===
@@ -1549,7 +1623,6 @@ export default function Show({
                         </div>
                     )}
 
-                    {/* Modal for schedule details */}
                     <HorarioModal
                         isOpen={modalState.isOpen}
                         onClose={closeModal}

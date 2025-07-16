@@ -139,7 +139,6 @@ class ProjetosController extends Controller
       ->orderBy('name')
       ->get(['users.id', 'users.name', 'users.foto_url']);
 
-
     $participantesProjeto = null;
     $temVinculosPendentes = false;
 
@@ -201,6 +200,24 @@ class ProjetosController extends Controller
         ->groupBy('dia_da_semana');
     }
 
+    // Daily Reports - Recebe o parâmetro 'dia' (formato: Y-m-d)
+    $diaDaily = request()->input('dia');
+    $dailyReports = null;
+    $totalParticipantes = 0;
+    if ($diaDaily) {
+      // Buscar todos os participantes aprovados do projeto
+      $participantesIds = $projeto->usuarios()
+        ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+        ->pluck('users.id');
+      $totalParticipantes = $participantesIds->count();
+
+      // Buscar dailys desse projeto para o dia informado
+      $dailyReports = \App\Models\DailyReport::whereIn('usuario_id', $participantesIds)
+        ->where('projeto_id', $projeto->id)
+        ->whereDate('data', $diaDaily)
+        ->get();
+    }
+
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'funcoes' => array_column(Funcao::cases(), 'value'),
@@ -210,6 +227,9 @@ class ProjetosController extends Controller
       'temVinculosPendentes' => $temVinculosPendentes,
       'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
       'horariosDosProjetos' => $horariosDosProjetos,
+      'diaDaily' => $diaDaily,
+      'dailyReports' => $dailyReports,
+      'totalParticipantes' => $totalParticipantes,
     ]);
   }
 
