@@ -145,26 +145,29 @@ class ProjetosController extends Controller
 
     if (
       $usuarioVinculo &&
-      // $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
       $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
     ) {
+      $isCoordenador = $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value;
       $participantesQuery = $projeto->usuarios()
         ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
         ->orderBy('name');
 
-      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) {
-        return [
+      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) use ($isCoordenador) {
+        $base = [
           'id' => $user->id,
           'name' => $user->name,
           'email' => $user->email,
           'foto_url' => $user->foto_url,
           'funcao' => $user->pivot->funcao,
           'tipo_vinculo' => $user->pivot->tipo_vinculo,
-          'data_inicio' => $user->pivot->data_inicio,
-          'data_fim' => $user->pivot->data_fim,
-          'carga_horaria' => $user->pivot->carga_horaria,
-          'valor_bolsa' => $user->pivot->valor_bolsa,
         ];
+        if ($isCoordenador) {
+          $base['data_inicio'] = $user->pivot->data_inicio;
+          $base['data_fim'] = $user->pivot->data_fim;
+          $base['carga_horaria'] = $user->pivot->carga_horaria;
+          $base['valor_bolsa'] = $user->pivot->valor_bolsa;
+        }
+        return $base;
       });
 
       $temVinculosPendentes = $projeto->usuarios()

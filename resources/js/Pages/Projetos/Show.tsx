@@ -1222,17 +1222,27 @@ export default function Show({
                                                             <th>Nome</th>
                                                             <th>Email</th>
                                                             <th>Função</th>
-                                                            <th>
-                                                                Carga Horária
-                                                                <br />
-                                                                (horas/mês)
-                                                            </th>
-                                                            <th>
-                                                                Valor da Bolsa
-                                                            </th>
-                                                            <th>Início</th>
-                                                            <th>Fim</th>
-                                                            <th>Ações</th>
+                                                            {isCoordenadorDoProjetoAtual && (
+                                                                <>
+                                                                    <th>
+                                                                        Carga
+                                                                        Horária
+                                                                        <br />
+                                                                        (horas/mês)
+                                                                    </th>
+                                                                    <th>
+                                                                        Valor da
+                                                                        Bolsa
+                                                                    </th>
+                                                                    <th>
+                                                                        Início
+                                                                    </th>
+                                                                    <th>Fim</th>
+                                                                </>
+                                                            )}
+                                                            {isCoordenadorDoProjetoAtual && (
+                                                                <th>Ações</th>
+                                                            )}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1279,102 +1289,105 @@ export default function Show({
                                                                             }
                                                                         </span>
                                                                     </td>
-                                                                    <td>
-                                                                        {
-                                                                            participante.carga_horaria
-                                                                        }
-                                                                    </td>
-                                                                    <td>
-                                                                        {participante.valor_bolsa
-                                                                            ? `R$ ${(
-                                                                                  participante.valor_bolsa /
-                                                                                  100
-                                                                              ).toFixed(
-                                                                                  2,
-                                                                              )}`
-                                                                            : '---'}
-                                                                    </td>
-                                                                    <td>
-                                                                        {format(
-                                                                            new Date(
-                                                                                participante.data_inicio,
-                                                                            ),
-                                                                            'dd/MM/yyyy',
-                                                                            {
-                                                                                locale: ptBR,
-                                                                            },
-                                                                        )}
-                                                                    </td>
-                                                                    <td>
-                                                                        {participante.data_fim
-                                                                            ? format(
-                                                                                  new Date(
-                                                                                      participante.data_fim,
-                                                                                  ),
-                                                                                  'dd/MM/yyyy',
-                                                                                  {
-                                                                                      locale: ptBR,
-                                                                                  },
-                                                                              )
-                                                                            : '---'}
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="join">
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'colaboradores.show',
-                                                                                    participante.id,
-                                                                                )}
-                                                                                className="btn btn-ghost btn-xs join-item"
-                                                                                title="Ver Detalhes do Colaborador"
-                                                                            >
-                                                                                <svg
-                                                                                    className="h-4 w-4"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    viewBox="0 0 24 24"
-                                                                                >
-                                                                                    <path
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth={
-                                                                                            2
-                                                                                        }
-                                                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                                                    />
-                                                                                </svg>
-                                                                            </Link>
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'horarios.show',
-                                                                                    {
-                                                                                        colaborador:
+                                                                    {isCoordenadorDoProjetoAtual && (
+                                                                        <>
+                                                                            <td>
+                                                                                {typeof participante.carga_horaria !==
+                                                                                'undefined'
+                                                                                    ? participante.carga_horaria
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {typeof participante.valor_bolsa !==
+                                                                                'undefined'
+                                                                                    ? `R$ ${(participante.valor_bolsa / 100).toFixed(2)}`
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {participante.data_inicio
+                                                                                    ? format(
+                                                                                          new Date(
+                                                                                              participante.data_inicio,
+                                                                                          ),
+                                                                                          'dd/MM/yyyy',
+                                                                                          {
+                                                                                              locale: ptBR,
+                                                                                          },
+                                                                                      )
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {participante.data_fim
+                                                                                    ? format(
+                                                                                          new Date(
+                                                                                              participante.data_fim,
+                                                                                          ),
+                                                                                          'dd/MM/yyyy',
+                                                                                          {
+                                                                                              locale: ptBR,
+                                                                                          },
+                                                                                      )
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                <div className="join">
+                                                                                    <Link
+                                                                                        href={route(
+                                                                                            'colaboradores.show',
                                                                                             participante.id,
-                                                                                        projeto:
-                                                                                            projeto.id,
-                                                                                    },
-                                                                                )}
-                                                                                className="btn btn-ghost btn-xs join-item"
-                                                                                title="Ver Horários do Colaborador"
-                                                                            >
-                                                                                <svg
-                                                                                    className="h-4 w-4"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    viewBox="0 0 24 24"
-                                                                                >
-                                                                                    <path
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth={
-                                                                                            2
-                                                                                        }
-                                                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                                    />
-                                                                                </svg>
-                                                                            </Link>
-                                                                        </div>
-                                                                    </td>
+                                                                                        )}
+                                                                                        className="btn btn-ghost btn-xs join-item"
+                                                                                        title="Ver Detalhes do Colaborador"
+                                                                                    >
+                                                                                        <svg
+                                                                                            className="h-4 w-4"
+                                                                                            fill="none"
+                                                                                            stroke="currentColor"
+                                                                                            viewBox="0 0 24 24"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                strokeWidth={
+                                                                                                    2
+                                                                                                }
+                                                                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    </Link>
+                                                                                    <Link
+                                                                                        href={route(
+                                                                                            'horarios.show',
+                                                                                            {
+                                                                                                colaborador:
+                                                                                                    participante.id,
+                                                                                                projeto:
+                                                                                                    projeto.id,
+                                                                                            },
+                                                                                        )}
+                                                                                        className="btn btn-ghost btn-xs join-item"
+                                                                                        title="Ver Horários do Colaborador"
+                                                                                    >
+                                                                                        <svg
+                                                                                            className="h-4 w-4"
+                                                                                            fill="none"
+                                                                                            stroke="currentColor"
+                                                                                            viewBox="0 0 24 24"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                strokeWidth={
+                                                                                                    2
+                                                                                                }
+                                                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    </Link>
+                                                                                </div>
+                                                                            </td>
+                                                                        </>
+                                                                    )}
                                                                 </tr>
                                                             ),
                                                         )}
