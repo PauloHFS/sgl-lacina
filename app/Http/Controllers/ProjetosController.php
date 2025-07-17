@@ -139,32 +139,34 @@ class ProjetosController extends Controller
       ->orderBy('name')
       ->get(['users.id', 'users.name', 'users.foto_url']);
 
-
     $participantesProjeto = null;
     $temVinculosPendentes = false;
 
     if (
       $usuarioVinculo &&
-      // $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
       $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
     ) {
+      $isCoordenador = $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value;
       $participantesQuery = $projeto->usuarios()
         ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
         ->orderBy('name');
 
-      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) {
-        return [
+      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) use ($isCoordenador) {
+        $base = [
           'id' => $user->id,
           'name' => $user->name,
           'email' => $user->email,
           'foto_url' => $user->foto_url,
           'funcao' => $user->pivot->funcao,
           'tipo_vinculo' => $user->pivot->tipo_vinculo,
-          'data_inicio' => $user->pivot->data_inicio,
-          'data_fim' => $user->pivot->data_fim,
-          'carga_horaria' => $user->pivot->carga_horaria,
-          'valor_bolsa' => $user->pivot->valor_bolsa,
         ];
+        if ($isCoordenador) {
+          $base['data_inicio'] = $user->pivot->data_inicio;
+          $base['data_fim'] = $user->pivot->data_fim;
+          $base['carga_horaria'] = $user->pivot->carga_horaria;
+          $base['valor_bolsa'] = $user->pivot->valor_bolsa;
+        }
+        return $base;
       });
 
       $temVinculosPendentes = $projeto->usuarios()
@@ -198,6 +200,24 @@ class ProjetosController extends Controller
         ->groupBy('dia_da_semana');
     }
 
+    // Daily Reports - Recebe o parâmetro 'dia' (formato: Y-m-d)
+    $diaDaily = request()->input('dia');
+    $dailyReports = null;
+    $totalParticipantes = 0;
+    if ($diaDaily) {
+      // Buscar todos os participantes aprovados do projeto
+      $participantesIds = $projeto->usuarios()
+        ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+        ->pluck('users.id');
+      $totalParticipantes = $participantesIds->count();
+
+      // Buscar dailys desse projeto para o dia informado
+      $dailyReports = \App\Models\DailyReport::whereIn('usuario_id', $participantesIds)
+        ->where('projeto_id', $projeto->id)
+        ->whereDate('data', $diaDaily)
+        ->get();
+    }
+
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'funcoes' => array_column(Funcao::cases(), 'value'),
@@ -207,6 +227,9 @@ class ProjetosController extends Controller
       'temVinculosPendentes' => $temVinculosPendentes,
       'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
       'horariosDosProjetos' => $horariosDosProjetos,
+      'diaDaily' => $diaDaily,
+      'dailyReports' => $dailyReports,
+      'totalParticipantes' => $totalParticipantes,
     ]);
   }
 

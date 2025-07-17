@@ -1,3 +1,4 @@
+import DailyReportTab, { DailyReport } from '@/Components/DailyReportTab';
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { TIME_SLOTS_HORARIO } from '@/constants';
@@ -16,7 +17,7 @@ import {
     User,
     UsuarioProjeto,
 } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React, { useState } from 'react';
@@ -72,11 +73,67 @@ export default function Show({
     temVinculosPendentes,
     coordenadoresDoProjeto,
     horariosDosProjetos,
-}: ShowPageProps) {
+    diaDaily: initialDiaDaily,
+    dailyReports: initialDailyReports,
+    totalParticipantes: initialTotalParticipantes,
+}: ShowPageProps & {
+    diaDaily?: string;
+    dailyReports?: DailyReport[];
+    totalParticipantes?: number;
+}) {
     const { toast } = useToast();
-    const [activeTab, setActiveTab] = useState<'colaboradores' | 'horarios'>(
-        'colaboradores',
+    const [activeTab, setActiveTab] = useState<
+        'colaboradores' | 'horarios' | 'dailys'
+    >('colaboradores');
+
+    // Daily Reports State
+    const { url, props } = usePage();
+    const [diaDaily, setDiaDaily] = useState<string>(
+        initialDiaDaily || new Date().toISOString().slice(0, 10),
     );
+    const [loadingDaily, setLoadingDaily] = useState(false);
+    const [dailyReports, setDailyReports] = useState<DailyReport[]>(
+        Array.isArray(initialDailyReports) ? initialDailyReports : [],
+    );
+    const [totalParticipantes, setTotalParticipantes] = useState<number>(
+        typeof initialTotalParticipantes === 'number'
+            ? initialTotalParticipantes
+            : 0,
+    );
+
+    // Atualiza a URL e faz reload dos dados da daily ao trocar o dia
+    const handleChangeDiaDaily = (dia: string) => {
+        setDiaDaily(dia);
+        setLoadingDaily(true);
+        // Garante que queryparams é um objeto
+        const queryParams =
+            props.queryparams && typeof props.queryparams === 'object'
+                ? props.queryparams
+                : {};
+        router.get(
+            url.split('?')[0],
+            { ...queryParams, dia },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['dailyReports', 'diaDaily', 'totalParticipantes'],
+                onSuccess: (page) => {
+                    setDailyReports(
+                        Array.isArray(page.props.dailyReports)
+                            ? page.props.dailyReports
+                            : [],
+                    );
+                    setTotalParticipantes(
+                        typeof page.props.totalParticipantes === 'number'
+                            ? page.props.totalParticipantes
+                            : 0,
+                    );
+                    setLoadingDaily(false);
+                },
+                onError: () => setLoadingDaily(false),
+            },
+        );
+    };
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         dia: string;
@@ -1182,7 +1239,7 @@ export default function Show({
                     {/* Tabs Section */}
                     {(isCoordenadorDoProjetoAtual ||
                         usuarioVinculo?.status === 'APROVADO') && (
-                        <div className="card bg-base-100 shadow-xl">
+                        <div className="card bg-base-100 mt-8 shadow-xl">
                             <div className="card-body">
                                 {/* Tabs Navigation */}
                                 <div
@@ -1205,6 +1262,13 @@ export default function Show({
                                     >
                                         Horários do Projeto
                                     </button>
+                                    <button
+                                        role="tab"
+                                        className={`tab ${activeTab === 'dailys' ? 'tab-active' : ''}`}
+                                        onClick={() => setActiveTab('dailys')}
+                                    >
+                                        Daily Reports
+                                    </button>
                                 </div>
 
                                 {/* Tab Content */}
@@ -1222,17 +1286,27 @@ export default function Show({
                                                             <th>Nome</th>
                                                             <th>Email</th>
                                                             <th>Função</th>
-                                                            <th>
-                                                                Carga Horária
-                                                                <br />
-                                                                (horas/mês)
-                                                            </th>
-                                                            <th>
-                                                                Valor da Bolsa
-                                                            </th>
-                                                            <th>Início</th>
-                                                            <th>Fim</th>
-                                                            <th>Ações</th>
+                                                            {isCoordenadorDoProjetoAtual && (
+                                                                <>
+                                                                    <th>
+                                                                        Carga
+                                                                        Horária
+                                                                        <br />
+                                                                        (horas/mês)
+                                                                    </th>
+                                                                    <th>
+                                                                        Valor da
+                                                                        Bolsa
+                                                                    </th>
+                                                                    <th>
+                                                                        Início
+                                                                    </th>
+                                                                    <th>Fim</th>
+                                                                </>
+                                                            )}
+                                                            {isCoordenadorDoProjetoAtual && (
+                                                                <th>Ações</th>
+                                                            )}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1279,102 +1353,105 @@ export default function Show({
                                                                             }
                                                                         </span>
                                                                     </td>
-                                                                    <td>
-                                                                        {
-                                                                            participante.carga_horaria
-                                                                        }
-                                                                    </td>
-                                                                    <td>
-                                                                        {participante.valor_bolsa
-                                                                            ? `R$ ${(
-                                                                                  participante.valor_bolsa /
-                                                                                  100
-                                                                              ).toFixed(
-                                                                                  2,
-                                                                              )}`
-                                                                            : '---'}
-                                                                    </td>
-                                                                    <td>
-                                                                        {format(
-                                                                            new Date(
-                                                                                participante.data_inicio,
-                                                                            ),
-                                                                            'dd/MM/yyyy',
-                                                                            {
-                                                                                locale: ptBR,
-                                                                            },
-                                                                        )}
-                                                                    </td>
-                                                                    <td>
-                                                                        {participante.data_fim
-                                                                            ? format(
-                                                                                  new Date(
-                                                                                      participante.data_fim,
-                                                                                  ),
-                                                                                  'dd/MM/yyyy',
-                                                                                  {
-                                                                                      locale: ptBR,
-                                                                                  },
-                                                                              )
-                                                                            : '---'}
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="join">
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'colaboradores.show',
-                                                                                    participante.id,
-                                                                                )}
-                                                                                className="btn btn-ghost btn-xs join-item"
-                                                                                title="Ver Detalhes do Colaborador"
-                                                                            >
-                                                                                <svg
-                                                                                    className="h-4 w-4"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    viewBox="0 0 24 24"
-                                                                                >
-                                                                                    <path
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth={
-                                                                                            2
-                                                                                        }
-                                                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                                                    />
-                                                                                </svg>
-                                                                            </Link>
-                                                                            <Link
-                                                                                href={route(
-                                                                                    'horarios.show',
-                                                                                    {
-                                                                                        colaborador:
+                                                                    {isCoordenadorDoProjetoAtual && (
+                                                                        <>
+                                                                            <td>
+                                                                                {typeof participante.carga_horaria !==
+                                                                                'undefined'
+                                                                                    ? participante.carga_horaria
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {typeof participante.valor_bolsa !==
+                                                                                'undefined'
+                                                                                    ? `R$ ${(participante.valor_bolsa / 100).toFixed(2)}`
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {participante.data_inicio
+                                                                                    ? format(
+                                                                                          new Date(
+                                                                                              participante.data_inicio,
+                                                                                          ),
+                                                                                          'dd/MM/yyyy',
+                                                                                          {
+                                                                                              locale: ptBR,
+                                                                                          },
+                                                                                      )
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                {participante.data_fim
+                                                                                    ? format(
+                                                                                          new Date(
+                                                                                              participante.data_fim,
+                                                                                          ),
+                                                                                          'dd/MM/yyyy',
+                                                                                          {
+                                                                                              locale: ptBR,
+                                                                                          },
+                                                                                      )
+                                                                                    : '---'}
+                                                                            </td>
+                                                                            <td>
+                                                                                <div className="join">
+                                                                                    <Link
+                                                                                        href={route(
+                                                                                            'colaboradores.show',
                                                                                             participante.id,
-                                                                                        projeto:
-                                                                                            projeto.id,
-                                                                                    },
-                                                                                )}
-                                                                                className="btn btn-ghost btn-xs join-item"
-                                                                                title="Ver Horários do Colaborador"
-                                                                            >
-                                                                                <svg
-                                                                                    className="h-4 w-4"
-                                                                                    fill="none"
-                                                                                    stroke="currentColor"
-                                                                                    viewBox="0 0 24 24"
-                                                                                >
-                                                                                    <path
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth={
-                                                                                            2
-                                                                                        }
-                                                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                                    />
-                                                                                </svg>
-                                                                            </Link>
-                                                                        </div>
-                                                                    </td>
+                                                                                        )}
+                                                                                        className="btn btn-ghost btn-xs join-item"
+                                                                                        title="Ver Detalhes do Colaborador"
+                                                                                    >
+                                                                                        <svg
+                                                                                            className="h-4 w-4"
+                                                                                            fill="none"
+                                                                                            stroke="currentColor"
+                                                                                            viewBox="0 0 24 24"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                strokeWidth={
+                                                                                                    2
+                                                                                                }
+                                                                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    </Link>
+                                                                                    <Link
+                                                                                        href={route(
+                                                                                            'horarios.show',
+                                                                                            {
+                                                                                                colaborador:
+                                                                                                    participante.id,
+                                                                                                projeto:
+                                                                                                    projeto.id,
+                                                                                            },
+                                                                                        )}
+                                                                                        className="btn btn-ghost btn-xs join-item"
+                                                                                        title="Ver Horários do Colaborador"
+                                                                                    >
+                                                                                        <svg
+                                                                                            className="h-4 w-4"
+                                                                                            fill="none"
+                                                                                            stroke="currentColor"
+                                                                                            viewBox="0 0 24 24"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                strokeWidth={
+                                                                                                    2
+                                                                                                }
+                                                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    </Link>
+                                                                                </div>
+                                                                            </td>
+                                                                        </>
+                                                                    )}
                                                                 </tr>
                                                             ),
                                                         )}
@@ -1521,6 +1598,16 @@ export default function Show({
                                     </div>
                                 )}
 
+                                {activeTab === 'dailys' && (
+                                    <DailyReportTab
+                                        dia={diaDaily}
+                                        onChangeDia={handleChangeDiaDaily}
+                                        loading={loadingDaily}
+                                        dailyReports={dailyReports}
+                                        totalParticipantes={totalParticipantes}
+                                    />
+                                )}
+
                                 {activeTab === 'colaboradores' &&
                                     (!participantesProjeto ||
                                         participantesProjeto.data.length ===
@@ -1536,7 +1623,6 @@ export default function Show({
                         </div>
                     )}
 
-                    {/* Modal for schedule details */}
                     <HorarioModal
                         isOpen={modalState.isOpen}
                         onClose={closeModal}
