@@ -27,6 +27,8 @@ export default function DailyReportTab({
     dailyReports,
     totalParticipantes,
 }: DailyReportTabProps) {
+    const today = format(new Date(), 'yyyy-MM-dd');
+
     const handlePrev = () => {
         const [year, month, day] = dia.split('-').map(Number);
         const currentDate = new Date(year, month - 1, day);
@@ -53,8 +55,9 @@ export default function DailyReportTab({
                     className="input input-bordered input-sm w-40 text-center"
                     value={dia}
                     onChange={handleDateChange}
+                    max={today}
                 />
-                <button className="btn btn-sm btn-outline" onClick={handleNext}>
+                <button className="btn btn-sm btn-outline" onClick={handleNext} disabled={dia === today}>
                     &#62;
                 </button>
             </div>
@@ -77,12 +80,13 @@ export default function DailyReportTab({
                     </div>
                 ) : (
                     dailyReports.map((dr) => (
-                        <div
+                        <a
+                            href={route('daily-reports.show', dr.id)}
                             key={dr.id}
-                            className="card card-bordered bg-base-100"
+                            className="card card-bordered bg-base-100 hover:bg-base-200 transition-colors duration-200"
                         >
-                            <div className="card-body">
-                                <div className="mb-2 flex items-center justify-between">
+                            <div className="card-body p-4">
+                                <div className="flex items-center justify-between">
                                     <span className="font-bold">
                                         {dr.usuario_nome}
                                     </span>
@@ -90,40 +94,8 @@ export default function DailyReportTab({
                                         {dr.horas_trabalhadas}h
                                     </span>
                                 </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">
-                                        O que fez ontem:
-                                    </span>
-                                    <div>
-                                        {dr.o_que_fez_ontem || (
-                                            <span className="text-base-content/50">
-                                                Não informado
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">
-                                        O que vai fazer hoje:
-                                    </span>
-                                    <div>
-                                        {dr.o_que_vai_fazer_hoje || (
-                                            <span className="text-base-content/50">
-                                                Não informado
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                {dr.observacoes && (
-                                    <div className="mb-2">
-                                        <span className="font-semibold">
-                                            Observações:
-                                        </span>
-                                        <div>{dr.observacoes}</div>
-                                    </div>
-                                )}
                             </div>
-                        </div>
+                        </a>
                     ))
                 )}
             </div>

@@ -212,8 +212,8 @@ class ColaboradorController extends Controller
         $historico = $colaborador->historicoUsuarioProjeto()
             ->join('projetos', 'historico_usuario_projeto.projeto_id', '=', 'projetos.id')
             ->with(['projeto'])
+            ->orderByDesc('historico_usuario_projeto.data_inicio')
             ->orderBy('projetos.nome')
-            ->orderBy('historico_usuario_projeto.data_inicio')
             ->select('historico_usuario_projeto.*')
             ->paginate(10);
 
