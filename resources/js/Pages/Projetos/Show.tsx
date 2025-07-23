@@ -450,7 +450,7 @@ export default function Show({
                                 projeto.meses_execucao > 0 ? (
                                     <div className="flex items-center justify-between">
                                         <span className="font-semibold">
-                                            Meses de Execução:
+                                            Duração Execução (meses):
                                         </span>
                                         <span className="badge badge-info badge-lg">
                                             {projeto.meses_execucao}{' '}

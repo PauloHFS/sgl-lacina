@@ -325,7 +325,10 @@ export default function Edit({
 
                                     {/* Interveniente Financeiro */}
                                     <div>
-                                        <label htmlFor="interveniente_financeiro_id" className="label">
+                                        <label
+                                            htmlFor="interveniente_financeiro_id"
+                                            className="label"
+                                        >
                                             <span className="label-text text-base-content">
                                                 Interveniente Financeiro
                                             </span>
@@ -473,7 +476,7 @@ export default function Edit({
                                         className="label"
                                     >
                                         <span className="label-text text-base-content">
-                                            Duração da execução*
+                                            Duração da execução (meses)*
                                         </span>
                                     </label>
                                     <input
