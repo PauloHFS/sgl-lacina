@@ -26,21 +26,96 @@ class UsuarioProjetoObserver
             return;
         }
 
+        $original = $usuarioProjeto->getOriginal();
+
+        // Check if only 'data_fim' has changed
+        $onlyDataFimChanged = $usuarioProjeto->isDirty('data_fim') &&
+                              !$usuarioProjeto->isDirty('data_inicio') &&
+                              !$usuarioProjeto->isDirty('status') &&
+                              !$usuarioProjeto->isDirty('funcao') &&
+                              !$usuarioProjeto->isDirty('carga_horaria') &&
+                              !$usuarioProjeto->isDirty('tipo_vinculo') &&
+                              !$usuarioProjeto->isDirty('valor_bolsa') &&
+                              !$usuarioProjeto->isDirty('trocar');
+
+        if ($onlyDataFimChanged) {
+            // If only data_fim changed, update the last history entry's data_fim
+            $lastHistory = HistoricoUsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
+                ->where('projeto_id', $usuarioProjeto->projeto_id)
+                ->orderByDesc('created_at')
+                ->first(); // Get the very last history entry, active or not
+
+            if ($lastHistory) {
+                $lastHistory->update(['data_fim' => $usuarioProjeto->data_fim]);
+            }
+            return; // Exit, as no new history entry is needed
+        }
+
+        // If data_inicio changed, or any other relevant field changed (excluding data_fim alone)
+        $relevantFieldsChanged = false;
         $camposVinculo = [
             'status',
             'funcao',
             'carga_horaria',
             'data_inicio',
-            'data_fim',
             'tipo_vinculo',
             'valor_bolsa',
+            'trocar',
         ];
 
-        if ($usuarioProjeto->isDirty($camposVinculo)) {
-            $this->finalizarERegistrarNovoHistorico($usuarioProjeto, $camposVinculo);
+        foreach ($camposVinculo as $field) {
+            if ($usuarioProjeto->isDirty($field)) {
+                // Special handling for dates: only consider dirty if the date value actually changed
+                if (in_array($field, ['data_inicio'])) {
+                    $currentDate = $usuarioProjeto->$field ? $usuarioProjeto->$field->format('Y-m-d') : null;
+                    $originalDate = isset($original[$field]) ? $original[$field]->format('Y-m-d') : null;
+                    if ($currentDate !== $originalDate) {
+                        $relevantFieldsChanged = true;
+                        break;
+                    }
+                } else {
+                    $relevantFieldsChanged = true;
+                    break;
+                }
+            }
         }
 
-        if ($usuarioProjeto->isDirty(['status', 'funcao', 'carga_horaria', 'data_inicio', 'data_fim', 'tipo_vinculo', 'valor_bolsa'])) {
+        if ($relevantFieldsChanged) {
+            // Find the last active history entry for this user and project
+            $lastActiveHistory = HistoricoUsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
+                ->where('projeto_id', $usuarioProjeto->projeto_id)
+                ->whereNull('data_fim') // Only active history
+                ->orderByDesc('created_at')
+                ->first();
+
+            // Determine the end date for the previous active history entry
+            $previousHistoryEndDate = null;
+
+            if ($usuarioProjeto->isDirty('data_inicio')) {
+                // If data_inicio changed, the previous history should end the day before the new data_inicio
+                if ($usuarioProjeto->data_inicio) {
+                    $previousHistoryEndDate = $usuarioProjeto->data_inicio->copy()->subDay();
+                } else {
+                    // If data_inicio is being set to null (unlikely for a new period), end today.
+                    $previousHistoryEndDate = now();
+                }
+            } else {
+                // If other fields changed, but not data_inicio, end the previous history today.
+                $previousHistoryEndDate = now();
+            }
+
+            // Update the end date of the last active history entry
+            if ($lastActiveHistory) {
+                // Only update if the previousHistoryEndDate is valid and after the history's start date
+                if ($previousHistoryEndDate && $lastActiveHistory->data_inicio->lte($previousHistoryEndDate)) {
+                    $lastActiveHistory->update(['data_fim' => $previousHistoryEndDate]);
+                } else if ($previousHistoryEndDate && $lastActiveHistory->data_inicio->gt($previousHistoryEndDate)) {
+                    // If the calculated end date is before the start date, end on its start date.
+                    $lastActiveHistory->update(['data_fim' => $lastActiveHistory->data_inicio]);
+                }
+            }
+
+            // Create a new history entry with the current state of the UsuarioProjeto
             $this->logHistory($usuarioProjeto);
         }
     }
@@ -115,33 +190,18 @@ class UsuarioProjetoObserver
     /**
      * Finaliza o histórico anterior e cria um novo ao alterar qualquer característica do vínculo.
      */
-    protected function finalizarERegistrarNovoHistorico(UsuarioProjeto $usuarioProjeto, array $camposVinculo): void
+    protected function updateLastHistoryEndDate(UsuarioProjeto $usuarioProjeto, $endDate): void
     {
-        $hoje = now();
-
         $lastHistory = HistoricoUsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
             ->where('projeto_id', $usuarioProjeto->projeto_id)
+            ->whereNull('data_fim') // Only update active history
             ->orderByDesc('created_at')
             ->first();
 
-        if ($lastHistory && is_null($lastHistory->data_fim)) {
+        if ($lastHistory) {
             $lastHistory->update([
-                'data_fim' => $hoje,
+                'data_fim' => $endDate,
             ]);
         }
-
-        // Cria novo histórico com data_inicio = agora
-        HistoricoUsuarioProjeto::create([
-            'usuario_id' => $usuarioProjeto->usuario_id,
-            'projeto_id' => $usuarioProjeto->projeto_id,
-            'trocar' => $usuarioProjeto->trocar ?? false,
-            'tipo_vinculo' => $usuarioProjeto->tipo_vinculo,
-            'funcao' => $usuarioProjeto->funcao,
-            'status' => $usuarioProjeto->status,
-            'carga_horaria' => $usuarioProjeto->carga_horaria,
-            'data_inicio' => $hoje,
-            'data_fim' => null,
-            'valor_bolsa' => $usuarioProjeto->valor_bolsa ?? 0,
-        ]);
     }
 }
