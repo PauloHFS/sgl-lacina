@@ -1,4 +1,4 @@
-import DailyReportTab, { DailyReport } from '@/Components/DailyReportTab';
+import DailyReportTab from '@/Components/DailyReportTab';
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { TIME_SLOTS_HORARIO } from '@/constants';
@@ -7,6 +7,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Baia,
     Coordenador,
+    DailyReport,
     DiaDaSemana,
     Funcao,
     Horario,

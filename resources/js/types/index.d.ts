@@ -30,8 +30,8 @@ export const DIA_DA_SEMANA = [
 ] as const;
 export type DiaDaSemana = (typeof DIA_DA_SEMANA)[number];
 
-export const STATUS_FOLGA = ['PENDENTE', 'APROVADO', 'REJEITADO'] as const;
-export type StatusFolga = (typeof STATUS_FOLGA)[number];
+export const STATUS_AUSENCIA = ['PENDENTE', 'APROVADO', 'REJEITADO'] as const;
+export type StatusAusencia = (typeof STATUS_AUSENCIA)[number];
 
 export const STATUS_VINCULO_PROJETO = [
     'APROVADO',
@@ -61,7 +61,16 @@ export const TIPOS_PROJETO = [
 ] as const;
 export type TipoProjeto = (typeof TIPOS_PROJETO)[number];
 
-export interface User {
+export interface Timestamps {
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
+export interface SoftDeletes extends Timestamps {
+    deleted_at?: string | null;
+}
+
+export interface User extends SoftDeletes {
     id: string;
     name: string;
     email: string;
@@ -94,9 +103,6 @@ export interface User {
     bairro?: string | null;
     cidade?: string | null;
     uf?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    deleted_at?: string | null;
 }
 
 export type PageProps<
@@ -116,7 +122,7 @@ export interface Banco {
     nome: string;
 }
 
-export interface Projeto {
+export interface Projeto extends SoftDeletes {
     id: string;
     nome: string;
     descricao?: string | null;
@@ -134,9 +140,6 @@ export interface Projeto {
     numero_convenio?: string | null;
     interveniente_financeiro_id?: string | null; // precisa de load eagerly
     interveniente_financeiro?: IntervenienteFinanceiro | null; // precisa de load eagerly 
-    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
 export interface Coordenador {
@@ -145,7 +148,7 @@ export interface Coordenador {
     foto_url?: string | null;
 }
 
-export interface UsuarioProjeto {
+export interface UsuarioProjeto extends SoftDeletes {
     id: string;
     usuario_id: string;
     usuario?: User; // precisa de load eagerly
@@ -159,35 +162,26 @@ export interface UsuarioProjeto {
     valor_bolsa: number;
     data_inicio: string; // YYYY-MM-DD HH:MM:SS
     data_fim?: string | null; // YYYY-MM-DD HH:MM:SS
-    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
-export interface Sala {
+export interface Sala extends SoftDeletes {
     id: string;
     nome: string;
     descricao?: string | null;
     ativa: boolean;
     baias?: Baia[]; // precisa de load eagerly
-    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
-export interface Baia {
+export interface Baia extends SoftDeletes {
     id: string;
     nome: string;
     descricao?: string | null;
     ativa: boolean;
     sala_id: string;
     sala?: Sala; // precisa de load eagerly
-    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
-export interface Horario {
+export interface Horario extends SoftDeletes {
     id: string;
     horario: number; // 0 - 23
     dia_da_semana: DiaDaSemana; 
@@ -198,9 +192,6 @@ export interface Horario {
     usuario_projeto?: UsuarioProjeto | null; // precisa de load eagerly
     baia_id?: string | null;
     baia?: Baia | null; // precisa de load eagerly
-    created_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    updated_at?: string | null; // YYYY-MM-DD HH:MM:SS
-    deleted_at?: string | null; // YYYY-MM-DD HH:MM:SS
 }
 
 export interface ProjetoAtivo {
@@ -247,9 +238,44 @@ export interface HorariosSala {
         [hora: number]: HorarioSlot;
     };
 }
-export interface IntervenienteFinanceiro {
+export interface IntervenienteFinanceiro extends Timestamps {
     id: string;
     nome: string;
-    created_at?: string | null;
-    updated_at?: string | null;
+}
+
+export interface CompensacaoHorario {
+    data: string;
+    horario: number[];
+}
+
+export interface Ausencia extends SoftDeletes {
+    id: string;
+    usuario_id: string;
+    usuario?: User; // precisa de load eagerly
+    projeto_id: string;
+    projeto?: Projeto; // precisa de load eagerly
+    titulo: string;
+    data_inicio: string; // YYYY-MM-DD
+    data_fim: string; // YYYY-MM-DD
+    justificativa: string;
+    status: StatusAusencia;
+    horas_a_compensar: number;
+    compensacao_data_inicio: string; // YYYY-MM-DD
+    compensacao_data_fim: string; // YYYY-MM-DD
+    compensacao_horarios: CompensacaoHorario[];
+}
+
+export interface DailyReport {
+    id: string;
+    data: string;
+    horas_trabalhadas: number;
+    o_que_fez_ontem: string | null;
+    o_que_vai_fazer_hoje: string | null;
+    observacoes: string | null;
+    usuario_id: string;
+    projeto_id: string;
+    created_at: string;
+    updated_at: string;
+    usuario?: User; // precisa de load eagerly
+    projeto?: Projeto; // precisa de load eagerly
 }

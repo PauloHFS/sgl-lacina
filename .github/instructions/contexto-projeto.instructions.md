@@ -14,7 +14,7 @@ Sistema de gestão de colaboradores, projetos e recursos humanos para laboratór
 - Gestão de projetos e vínculos de participantes
 - Solicitações de troca entre projetos
 - Relatórios de participação e histórico
-- Gestão de folgas, espaços e equipamentos
+- Gestão de ausencias, espaços e equipamentos
 
 ### Stack Tecnológica
 

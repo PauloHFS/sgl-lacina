@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum StatusFolga: string
+enum StatusAusencia: string
 {
   case PENDENTE = 'PENDENTE';
   case APROVADO = 'APROVADO';
