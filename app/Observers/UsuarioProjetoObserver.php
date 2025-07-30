@@ -21,7 +21,34 @@ class UsuarioProjetoObserver
      */
     public function updated(UsuarioProjeto $usuarioProjeto): void
     {
+        $original = $usuarioProjeto->getOriginal();
+
         if ($usuarioProjeto->skipHistoryLog) {
+            $originalDataInicio = isset($original['data_inicio']) ? $original['data_inicio'] : null;
+            $currentDataInicio = $usuarioProjeto->data_inicio;
+
+            // Check if data_inicio actually changed its value
+            if ($currentDataInicio && $originalDataInicio && $currentDataInicio->format('Y-m-d') !== $originalDataInicio->format('Y-m-d')) {
+                // Find the second to last history entry
+                $secondToLastHistory = HistoricoUsuarioProjeto::where('usuario_id', $usuarioProjeto->usuario_id)
+                    ->where('projeto_id', $usuarioProjeto->projeto_id)
+                    ->orderByDesc('created_at')
+                    ->offset(1) // Get the second one
+                    ->first();
+
+                if ($secondToLastHistory) {
+                    // Calculate the new data_fim for the second to last entry
+                    $newEndDateForSecondToLast = $currentDataInicio->copy()->subDay();
+
+                    // Only update if the new end date is valid and after the second to last history's start date
+                    if ($newEndDateForSecondToLast && $secondToLastHistory->data_inicio->lte($newEndDateForSecondToLast)) {
+                        $secondToLastHistory->update(['data_fim' => $newEndDateForSecondToLast]);
+                    } else if ($newEndDateForSecondToLast && $secondToLastHistory->data_inicio->gt($newEndDateForSecondToLast)) {
+                        // If the calculated end date is before the start date, end on its start date.
+                        $secondToLastHistory->update(['data_fim' => $secondToLastHistory->data_inicio]);
+                    }
+                }
+            }
             $this->updateLastHistory($usuarioProjeto);
             return;
         }

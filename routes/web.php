@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjetoVinculoController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\SalaController;
 use App\Http\Controllers\DailyReportController;
+use App\Http\Controllers\AusenciasController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -84,6 +85,9 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     // Rotas para Daily Reports
     Route::resource('daily-reports', DailyReportController::class);
     Route::post('/daily-reports/calcular-horas', [DailyReportController::class, 'calcularHoras'])->name('daily-reports.calcular-horas');
+
+    Route::patch('ausencias/{ausencia}/status', [AusenciasController::class, 'updateStatus'])->name('ausencias.updateStatus');
+    Route::resource('ausencias', AusenciasController::class);
 
     // Rotas Específicas para Coordenadores
     Route::middleware('validarTipoVinculo:coordenador')->group(function () {

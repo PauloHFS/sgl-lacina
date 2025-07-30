@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
 use App\Models\Horario;
+use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Enums\TipoProjeto;
@@ -212,8 +213,9 @@ class ProjetosController extends Controller
       $totalParticipantes = $participantesIds->count();
 
       // Buscar dailys desse projeto para o dia informado
-      $dailyReports = \App\Models\DailyReport::whereIn('usuario_id', $participantesIds)
+      $dailyReports = DailyReport::whereIn('usuario_id', $participantesIds)
         ->where('projeto_id', $projeto->id)
+        ->with('usuario')
         ->whereDate('data', $diaDaily)
         ->get();
     }

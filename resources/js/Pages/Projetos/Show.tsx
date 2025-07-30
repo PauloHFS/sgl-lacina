@@ -1,4 +1,4 @@
-import DailyReportTab, { DailyReport } from '@/Components/DailyReportTab';
+import DailyReportTab from '@/Components/DailyReportTab';
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
 import { TIME_SLOTS_HORARIO } from '@/constants';
@@ -7,6 +7,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Baia,
     Coordenador,
+    DailyReport,
     DiaDaSemana,
     Funcao,
     Horario,
@@ -450,7 +451,7 @@ export default function Show({
                                 projeto.meses_execucao > 0 ? (
                                     <div className="flex items-center justify-between">
                                         <span className="font-semibold">
-                                            Meses de Execução:
+                                            Duração Execução (meses):
                                         </span>
                                         <span className="badge badge-info badge-lg">
                                             {projeto.meses_execucao}{' '}

@@ -293,7 +293,32 @@ export default function Authenticated({
                                     </li>
                                 </>
                             )}
-
+                            <li>
+                                <NavLink
+                                    href={route('ausencias.index')}
+                                    active={route().current('ausencias.*')}
+                                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                                        route().current('ausencias.*')
+                                            ? 'bg-primary text-primary-content'
+                                            : 'text-base-content hover:bg-base-200'
+                                    }`}
+                                >
+                                    <svg
+                                        className="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    Ausências
+                                </NavLink>
+                            </li>
                             {isCoordenador && (
                                 <>
                                     <li>
@@ -398,7 +423,6 @@ export default function Authenticated({
                     {/* User Section */}
                     <div className="border-base-200 border-t p-4">
                         <div className="mb-4 flex items-center gap-3">
-                            {' '}
                             <div className="avatar">
                                 <div className="mask mask-squircle h-12 w-12">
                                     <img

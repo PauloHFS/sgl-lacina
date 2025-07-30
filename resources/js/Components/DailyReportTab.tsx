@@ -1,16 +1,6 @@
+import { DailyReport } from '@/types';
 import { addDays, format, subDays } from 'date-fns';
 import React from 'react';
-
-export interface DailyReport {
-    id: string;
-    usuario_id: string;
-    usuario_nome: string;
-    data: string;
-    horas_trabalhadas: number;
-    o_que_fez_ontem: string | null;
-    o_que_vai_fazer_hoje: string | null;
-    observacoes: string | null;
-}
 
 interface DailyReportTabProps {
     dia: string; // yyyy-MM-dd
@@ -57,7 +47,11 @@ export default function DailyReportTab({
                     onChange={handleDateChange}
                     max={today}
                 />
-                <button className="btn btn-sm btn-outline" onClick={handleNext} disabled={dia === today}>
+                <button
+                    className="btn btn-sm btn-outline"
+                    onClick={handleNext}
+                    disabled={dia === today}
+                >
                     &#62;
                 </button>
             </div>
@@ -88,7 +82,8 @@ export default function DailyReportTab({
                             <div className="card-body p-4">
                                 <div className="flex items-center justify-between">
                                     <span className="font-bold">
-                                        {dr.usuario_nome}
+                                        {dr.usuario?.name ||
+                                            'Usuário Desconhecido'}
                                     </span>
                                     <span className="badge badge-info">
                                         {dr.horas_trabalhadas}h
