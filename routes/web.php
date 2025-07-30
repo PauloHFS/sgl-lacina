@@ -86,7 +86,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     Route::resource('daily-reports', DailyReportController::class);
     Route::post('/daily-reports/calcular-horas', [DailyReportController::class, 'calcularHoras'])->name('daily-reports.calcular-horas');
 
-    Route::patch('ausencias/{ausencias}/status', [AusenciasController::class, 'updateStatus'])->name('ausencias.updateStatus');
+    Route::patch('ausencias/{ausencia}/status', [AusenciasController::class, 'updateStatus'])->name('ausencias.updateStatus');
     Route::resource('ausencias', AusenciasController::class);
 
     // Rotas Específicas para Coordenadores

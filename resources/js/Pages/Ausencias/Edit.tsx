@@ -4,7 +4,7 @@ import { Ausencia, PageProps, Projeto } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { eachDayOfInterval, format, getDay, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { FormEventHandler, useEffect, useMemo, useState } from 'react';
+import { FormEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 
 type DiaDaSemana =
     | 'DOMINGO'
@@ -84,25 +84,35 @@ const Edit = ({
                   : '[]',
     });
 
+    const parseHorarios = (horarios: any): CompensacaoDia[] => {
+        if (typeof horarios === 'string') {
+            try {
+                const parsed = JSON.parse(horarios);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.error(
+                    'Erro ao fazer parse dos horários de compensação:',
+                    e,
+                );
+                return [];
+            }
+        }
+        return Array.isArray(horarios) ? horarios : [];
+    };
+
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
-        [],
+        parseHorarios(ausencia.compensacao_horarios),
     );
 
-    // Inicializa os dias de compensação vindos do backend
-    useEffect(() => {
-        const horarios = Array.isArray(ausencia.compensacao_horarios)
-            ? ausencia.compensacao_horarios
-            : [];
+    const isInitialMount = useRef(true);
 
-        const diasIniciais = horarios.map((dia) => ({
-            data: dia.data,
-            horario: dia.horario || [],
-        }));
-        setDiasCompensacao(diasIniciais);
-    }, [ausencia.compensacao_horarios]);
-
-    // Calcula horas a compensar automaticamente
+    // Calcula horas a compensar automaticamente, mas pula a execução inicial
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
         if (!data.projeto_id || !data.data_inicio || !data.data_fim) {
             setData('horas_a_compensar', 0);
             return;
@@ -511,6 +521,8 @@ const Edit = ({
                                                                     {hora}h
                                                                 </span>
                                                                 <input
+                                                                    id={`compensacao-${dia.data}-${hora}`}
+                                                                    name={`compensacao-${dia.data}-${hora}`}
                                                                     type="checkbox"
                                                                     className="checkbox checkbox-primary checkbox-sm mt-1"
                                                                     checked={dia.horario.includes(
@@ -559,7 +571,7 @@ const Edit = ({
                                 {/* Botões de Ação */}
                                 <div className="card-actions border-base-300 justify-end border-t pt-6">
                                     <Link
-                                        href={route('Ausencias.index')}
+                                        href={route('ausencias.index')}
                                         className="btn btn-ghost"
                                     >
                                         Cancelar

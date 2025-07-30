@@ -295,10 +295,10 @@ export default function Authenticated({
                             )}
                             <li>
                                 <NavLink
-                                    href={route('ausensias.index')}
-                                    active={route().current('ausensias.*')}
+                                    href={route('ausencias.index')}
+                                    active={route().current('ausencias.*')}
                                     className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                                        route().current('ausensias.*')
+                                        route().current('ausencias.*')
                                             ? 'bg-primary text-primary-content'
                                             : 'text-base-content hover:bg-base-200'
                                     }`}
@@ -316,7 +316,7 @@ export default function Authenticated({
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                         />
                                     </svg>
-                                    Ausênsias
+                                    Ausências
                                 </NavLink>
                             </li>
                             {isCoordenador && (

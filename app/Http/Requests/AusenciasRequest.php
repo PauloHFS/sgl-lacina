@@ -2,110 +2,111 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Ausencia;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class AusenciasRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
-            'usuario_id' => [
-                'required',
-                'uuid',
-                'exists:users,id',
-            ],
-            'projeto_id' => [
-                'required',
-                'uuid',
-                'exists:projetos,id',
-            ],
-            'titulo' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'data_inicio' => [
-                'required',
-                'date',
-            ],
+            'usuario_id' => ['required', 'uuid', 'exists:users,id'],
+            'projeto_id' => ['required', 'uuid', 'exists:projetos,id'],
+            'titulo' => ['required', 'string', 'max:255'],
+            'data_inicio' => ['required', 'date'],
             'data_fim' => [
-                'nullable',
+                'required',
                 'date',
                 'after_or_equal:data_inicio',
+                function ($attribute, $value, $fail) {
+                    $data_inicio = $this->input('data_inicio');
+                    $data_fim = $value;
+                    $usuario_id = Auth::id();
+                    $projeto_id = $this->input('projeto_id');
+                    $ausencia_id = $this->route('ausencia') ? $this->route('ausencia')->id : null;
+
+                    $compensacao_horarios = json_decode($this->input('compensacao_horarios'), true);
+                    $compensacao_data_inicio = null;
+                    $compensacao_data_fim = null;
+
+                    if (!empty($compensacao_horarios)) {
+                        $datas = array_column($compensacao_horarios, 'data');
+                        sort($datas);
+                        $compensacao_data_inicio = $datas[0];
+                        $compensacao_data_fim = end($datas);
+                    }
+
+                    // 1. Ausência vs. Ausência (mesmo projeto)
+                    $this->checkForOverlap(
+                        $fail, $usuario_id, $ausencia_id, $data_inicio, $data_fim, 'data_inicio', 'data_fim',
+                        'O período de ausência se sobrepõe a outra ausência para o mesmo projeto.',
+                        $projeto_id
+                    );
+
+                    if ($compensacao_data_inicio && $compensacao_data_fim) {
+                        // 2. Compensação vs. Compensação (qualquer projeto)
+                        $this->checkForOverlap(
+                            $fail, $usuario_id, $ausencia_id, $compensacao_data_inicio, $compensacao_data_fim, 'compensacao_data_inicio', 'compensacao_data_fim',
+                            'O período de compensação se sobrepõe a outra compensação existente.'
+                        );
+
+                        // 3. Ausência vs. Compensação (qualquer projeto)
+                        $this->checkForOverlap(
+                            $fail, $usuario_id, $ausencia_id, $data_inicio, $data_fim, 'compensacao_data_inicio', 'compensacao_data_fim',
+                            'O período de ausência se sobrepõe a um período de compensação existente.'
+                        );
+
+                        // 4. Compensação vs. Ausência (qualquer projeto)
+                        $this->checkForOverlap(
+                            $fail, $usuario_id, $ausencia_id, $compensacao_data_inicio, $compensacao_data_fim, 'data_inicio', 'data_fim',
+                            'O período de compensação se sobrepõe a um período de ausência existente.'
+                        );
+                    }
+                }
             ],
-            'justificativa' => [
-                'required',
-                'string',
-            ],
-            'horas_a_compensar' => [
-                'nullable',
-                'integer',
-                'min:0',
-            ],
-            'compensacao_data_inicio' => [
-                'nullable',
-                'date',
-            ],
-            'compensacao_data_fim' => [
-                'nullable',
-                'date',
-                'after_or_equal:compensacao_data_inicio',
-            ],
-            'compensacao_horarios' => [
-                'nullable',
-                'string',
-            ],
+            'justificativa' => ['required', 'string'],
+            'horas_a_compensar' => ['required', 'integer', 'min:1'],
+            'compensacao_horarios' => ['required', 'json'],
         ];
     }
 
-    /**
-     * Get custom attribute names for validator errors.
-     */
-    public function attributes(): array
+    protected function prepareForValidation(): void
     {
-        return [
-            'colaborador_id' => 'Colaborador',
-            'projeto_id' => 'Projeto',
-            'titulo' => 'Título',
-            'data_inicio' => 'Data de início',
-            'data_fim' => 'Data de fim',
-            'justificativa' => 'Justificativa',
-            'horas_a_compensar' => 'Horas a compensar',
-            'compensacao_data_inicio' => 'Data início da compensação',
-            'compensacao_data_fim' => 'Data fim da compensação',
-            'compensacao_horarios' => 'Horários de compensação',
-        ];
+        $this->merge(['usuario_id' => Auth::id()]);
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         return [
-            'colaborador_id.required' => 'O colaborador é obrigatório.',
-            'colaborador_id.exists' => 'O colaborador selecionado não existe.',
-            'projeto_id.required' => 'O projeto é obrigatório.',
-            'projeto_id.exists' => 'O projeto selecionado não existe.',
-            'titulo.required' => 'O título é obrigatório.',
-            'data_inicio.required' => 'A data de início é obrigatória.',
-            'data_inicio.before_or_equal' => 'A data de início não pode ser no futuro.',
-            'data_fim.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
-            'justificativa.required' => 'A justificativa é obrigatória.',
-            'horas_a_compensar.integer' => 'As horas a compensar devem ser um número inteiro.',
-            'compensacao_data_fim.after_or_equal' => 'A data fim da compensação deve ser igual ou posterior à data início da compensação.',
+            '*.required' => 'O campo :attribute é obrigatório.',
+            'projeto_id.required' => 'É obrigatório selecionar um projeto.',
+            'horas_a_compensar.min' => 'As horas a compensar devem ser pelo menos 1.',
+            'compensacao_horarios.required' => 'O plano de compensação é obrigatório.',
         ];
+    }
+
+    private function checkForOverlap($fail, $usuario_id, $ausencia_id, $start, $end, $db_start_col, $db_end_col, $message, $projeto_id = null)
+    {
+        $query = Ausencia::where('usuario_id', $usuario_id)
+            ->when($ausencia_id, function ($query) use ($ausencia_id) {
+                return $query->where('id', '!=', $ausencia_id);
+            })
+            ->when($projeto_id, function ($query) use ($projeto_id) {
+                return $query->where('projeto_id', $projeto_id);
+            })
+            ->where(function ($query) use ($start, $end, $db_start_col, $db_end_col) {
+                $query->where($db_start_col, '<=', $end)
+                    ->where($db_end_col, '>=', $start);
+            });
+
+        if ($query->exists()) {
+            $fail($message);
+        }
     }
 }

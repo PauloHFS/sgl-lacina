@@ -35,7 +35,11 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['usuario_id', 'projeto_id', 'titulo'], 'unique_ausencias_usuario_projeto_titulo');
+            $table->index('usuario_id');
+            $table->index('projeto_id');
+            $table->index(['data_inicio', 'data_fim']);
+
+            $table->unique(['usuario_id', 'projeto_id', 'data_inicio'], 'unique_ausencia_por_data_inicio');
         });
     }
 

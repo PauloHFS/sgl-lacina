@@ -2,21 +2,15 @@
 
 namespace App\Policies;
 
+use App\Enums\Funcao;
+use App\Enums\StatusVinculoProjeto;
 use App\Models\Ausencia;
 use App\Models\User;
+use App\Models\UsuarioProjeto;
 use Illuminate\Auth\Access\Response;
 
 class AusenciaPolicy
 {
-    public function before(User $user, string $ability): bool|null
-    {
-        if ($user->isCoordenador()) {
-            return true;
-        }
-
-        return null;
-    }
-
     /**
      * Determine whether the user can view any models.
      */
@@ -30,7 +24,12 @@ class AusenciaPolicy
      */
     public function view(User $user, Ausencia $ausencia): bool
     {
-        return true;
+        // O usuário pode ver a ausência se for o dono ou se for coordenador do projeto.
+        if ($ausencia->usuario_id === $user->id) {
+            return true;
+        }
+
+        return $this->isCoordenadorDoProjeto($user, $ausencia->projeto_id);
     }
 
     /**
@@ -46,7 +45,8 @@ class AusenciaPolicy
      */
     public function update(User $user, Ausencia $ausencia): bool
     {
-        return $ausencia->usuario_id === $user->id;
+        // Apenas o dono pode editar uma ausência PENDENTE.
+        return $ausencia->usuario_id === $user->id && $ausencia->status === \App\Enums\StatusAusencia::PENDENTE->value;
     }
 
     /**
@@ -54,23 +54,8 @@ class AusenciaPolicy
      */
     public function delete(User $user, Ausencia $ausencia): bool
     {
-        return $ausencia->usuario_id === $user->id;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Ausencia $ausencia): bool
-    {
-        return $ausencia->usuario_id === $user->id;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Ausencia $ausencia): bool
-    {
-        return $ausencia->usuario_id === $user->id;
+        // Apenas o dono pode deletar uma ausência PENDENTE.
+        return $ausencia->usuario_id === $user->id && $ausencia->status === \App\Enums\StatusAusencia::PENDENTE->value;
     }
 
     /**
@@ -78,6 +63,19 @@ class AusenciaPolicy
      */
     public function updateStatus(User $user, Ausencia $ausencia): bool
     {
-        return $user->isCoordenador();
+        // Apenas um coordenador do projeto específico pode aprovar ou recusar.
+        return $this->isCoordenadorDoProjeto($user, $ausencia->projeto_id);
+    }
+
+    /**
+     * Helper function to check if a user is a coordinator of a specific project.
+     */
+    protected function isCoordenadorDoProjeto(User $user, string $projeto_id): bool
+    {
+        return UsuarioProjeto::where('usuario_id', $user->id)
+            ->where('projeto_id', $projeto_id)
+            ->where('funcao', Funcao::COORDENADOR)
+            ->where('status', StatusVinculoProjeto::APROVADO)
+            ->exists();
     }
 }

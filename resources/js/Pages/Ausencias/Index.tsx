@@ -152,6 +152,7 @@ const Index = ({ ausencias, projetosAtivos, filtros }: IndexPageProps) => {
                                                     <th>Titulo</th>
                                                     <th>Projeto</th>
                                                     <th>Perido de Ausência</th>
+                                                    <th>Status</th>
                                                     <th>Horas a Compensar</th>
                                                     <th>
                                                         Perido De Compensação
@@ -202,6 +203,22 @@ const Index = ({ ausencias, projetosAtivos, filtros }: IndexPageProps) => {
                                                                 </div>
                                                             </td>
                                                             <td>
+                                                                <span
+                                                                    className={`badge ${
+                                                                        {
+                                                                            PENDENTE:
+                                                                                'badge-warning',
+                                                                            APROVADO:
+                                                                                'badge-success',
+                                                                            REJEITADO:
+                                                                                'badge-error',
+                                                                        }[ausencia.status]
+                                                                    }`}
+                                                                >
+                                                                    {ausencia.status}
+                                                                </span>
+                                                            </td>
+                                                            <td>
                                                                 <div className="font-bold">
                                                                     {ausencia.horas_a_compensar ||
                                                                         '0'}{' '}
@@ -236,7 +253,7 @@ const Index = ({ ausencias, projetosAtivos, filtros }: IndexPageProps) => {
                                                                     </Link>
                                                                     <Link
                                                                         href={route(
-                                                                            'ausenciass.edit',
+                                                                            'ausencias.edit',
                                                                             ausencia.id,
                                                                         )}
                                                                         className="btn btn-warning btn-xs"

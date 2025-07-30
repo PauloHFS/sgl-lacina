@@ -4,6 +4,7 @@ import { Ausencia, PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useMemo } from 'react';
 
 interface ShowPageProps extends PageProps {
     ausencia: Ausencia;
@@ -22,7 +23,17 @@ const formatarDataHora = (data: string | null | undefined): string => {
 };
 
 const Show = ({ ausencia, auth }: ShowPageProps) => {
-    const compensacaoHorarios = ausencia.compensacao_horarios || [];
+    const compensacaoHorarios = useMemo(() => {
+        if (typeof ausencia.compensacao_horarios === 'string') {
+            try {
+                return JSON.parse(ausencia.compensacao_horarios);
+            } catch (e) {
+                console.error("Erro ao fazer parse dos horários de compensação:", e);
+                return [];
+            }
+        }
+        return Array.isArray(ausencia.compensacao_horarios) ? ausencia.compensacao_horarios : [];
+    }, [ausencia.compensacao_horarios]);
 
     return (
         <AuthenticatedLayout
