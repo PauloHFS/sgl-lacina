@@ -1117,7 +1117,7 @@ export default function Show({
                                                                                 .data
                                                                                 .data_inicio
                                                                         }
-                                                                        min={
+                                                                        max={
                                                                             new Date()
                                                                                 .toISOString()
                                                                                 .split(
