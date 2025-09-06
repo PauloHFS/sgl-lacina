@@ -1,4 +1,4 @@
-# SIGL - LaCInA
+# SGL - LaCInA
 
 ## Links
 
