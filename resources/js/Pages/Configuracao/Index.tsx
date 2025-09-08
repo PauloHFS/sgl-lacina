@@ -304,13 +304,13 @@ export default function Index({ configuracoes }: ConfiguracaoIndexProps) {
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-info mb-2 text-base font-semibold">
-                                            Informação importante
+                                            Informação importante!
                                         </h4>
                                         <p className="text-base-content/70 text-sm leading-relaxed">
-                                            A senha do laboratório é utilizado
+                                            A senha do laboratório é utilizada
                                             durante o processo de cadastro de
                                             novos colaboradores. Certifique-se
-                                            de comunicar o novo Senha para os
+                                            de comunicar a nova senha aos
                                             responsáveis pelo recrutamento.
                                         </p>
                                     </div>
