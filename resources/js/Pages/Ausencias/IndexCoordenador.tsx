@@ -28,13 +28,13 @@ const Index = ({ ausencias }: IndexPageProps) => {
                             {ausencias.data.length === 0 ? (
                                 <div className="py-8 text-center">
                                     <p className="mb-4 text-gray-500">
-                                        Nenhuma ausências encontrada.
+                                        Nenhuma ausência encontrada.
                                     </p>
                                     <Link
                                         href={route('ausencias.create')}
                                         className="btn btn-primary"
                                     >
-                                        Registrar Primeira Ausencia
+                                        Registrar primeira ausência.
                                     </Link>
                                 </div>
                             ) : (

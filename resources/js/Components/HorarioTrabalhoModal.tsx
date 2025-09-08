@@ -235,8 +235,11 @@ export default function HorarioTrabalhoModal({
                                     />
                                 </svg>
                                 <span>
-                                    Você estará trabalhando remotamente no
-                                    projeto selecionado.
+                                    ATENÇÃO: Você estará trabalhando remotamente
+                                    no projeto selecionado. Verifique com a
+                                    coordenação do projeto se você poderá
+                                    exercer sua jornada de forma remota ou
+                                    híbrida antes de fazer essa mudança aqui.
                                 </span>
                             </div>
                         )}

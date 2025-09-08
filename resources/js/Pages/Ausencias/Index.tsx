@@ -140,7 +140,7 @@ const Index = ({ ausencias, projetosAtivos, filtros }: IndexPageProps) => {
                                         href={route('ausencias.create')}
                                         className="btn btn-primary"
                                     >
-                                        Registrar Primeira Ausência
+                                        Registrar primeira ausência.
                                     </Link>
                                 </div>
                             ) : (
@@ -212,10 +212,15 @@ const Index = ({ ausencias, projetosAtivos, filtros }: IndexPageProps) => {
                                                                                 'badge-success',
                                                                             REJEITADO:
                                                                                 'badge-error',
-                                                                        }[ausencia.status]
+                                                                        }[
+                                                                            ausencia
+                                                                                .status
+                                                                        ]
                                                                     }`}
                                                                 >
-                                                                    {ausencia.status}
+                                                                    {
+                                                                        ausencia.status
+                                                                    }
                                                                 </span>
                                                             </td>
                                                             <td>

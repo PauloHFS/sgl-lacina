@@ -725,7 +725,7 @@ export default function EditarHorario({
                                     )}
 
                                     <div className="bg-info/10 border-info/20 mt-4 rounded-lg border p-3 text-xs">
-                                        <p className="text-info-content">
+                                        <p className="text-info">
                                             💡 <strong>Dica:</strong> As horas
                                             são contabilizadas apenas para tipos
                                             "Trabalho Presencial" e "Trabalho
