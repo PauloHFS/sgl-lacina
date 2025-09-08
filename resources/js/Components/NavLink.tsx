@@ -9,9 +9,9 @@ export default function NavLink({
     return (
         <Link
             {...props}
-            className={`link rounded-md px-2 py-1 transition-colors duration-200 ${
+            className={`rounded-md px-2 py-1 transition-colors duration-200 ${
                 active
-                    ? 'text-primary font-bold underline underline-offset-4'
+                    ? 'text-primary font-bold'
                     : 'text-base-content hover:text-primary hover:underline hover:underline-offset-4'
             } ${className}`}
         >
