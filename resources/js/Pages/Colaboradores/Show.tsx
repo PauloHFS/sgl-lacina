@@ -1371,7 +1371,7 @@ export default function Show({
                         <div className="mt-4">
                             <label htmlFor="skip_history" className="label">
                                 <span className="label-text">
-                                    Não salvar no Histórico
+                                    Não salvar no histórico?
                                 </span>
                             </label>
                             <div className="flex items-center">
@@ -1388,8 +1388,8 @@ export default function Show({
                                     }
                                 />
                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                                    Está ação irá apenas editar o a ultima
-                                    operação sobre esse vinculo.
+                                    Esta ação editará apenas a última operação
+                                    deste vínculo.
                                 </span>
                             </div>
                         </div>
