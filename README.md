@@ -52,6 +52,27 @@ O SGL foi desenvolvido como uma plataforma web centralizada para atender aos req
 
 A aplicação estará disponível em `http://localhost`.
 
+Adicione a seguinte seção ao `README.md`:
+
+## Gerenciamento
+
+Utilize o `Makefile` para automatizar tarefas comuns de deploy, backup e rollback.
+
+**Uso:**
+
+```bash
+make [comando]
+```
+
+**Comandos principais:**
+
+- `make deploy` - Executa o deploy completo.
+- `make backup` - Cria um backup do banco e arquivos.
+- `make restore` - Restaura a partir de um backup.
+- `make rollback` - Reverte para um commit anterior.
+- `make health-check` - Verifica a saúde da aplicação.
+- `make help` - Exibe a lista completa de comandos e descrições.
+
 ## Desenvolvimento
 
 ### Ambiente
