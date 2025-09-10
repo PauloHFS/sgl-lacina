@@ -14,6 +14,10 @@ interface PosCadastroProps extends PageProps {
 
 const ORGAOS_EMISSORES = [
     {
+        sigla: 'Não se aplica',
+        nome: 'Não se aplica',
+    },
+    {
         sigla: 'SSP',
         nome: 'Secretaria de Segurança Pública',
     },
