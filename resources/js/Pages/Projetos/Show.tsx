@@ -230,6 +230,11 @@ export default function Show({
         });
     };
 
+    const dailyReportTabOnClick = () => {
+        handleChangeDiaDaily(format(new Date(), 'yyyy-MM-dd'));
+        setActiveTab('dailys');
+    };
+
     const renderVinculoStatus = () => {
         if (usuarioVinculo) {
             let statusClass = 'badge-neutral';
@@ -1266,7 +1271,7 @@ export default function Show({
                                     <button
                                         role="tab"
                                         className={`tab ${activeTab === 'dailys' ? 'tab-active' : ''}`}
-                                        onClick={() => setActiveTab('dailys')}
+                                        onClick={dailyReportTabOnClick}
                                     >
                                         Daily Reports
                                     </button>
