@@ -665,8 +665,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                 type="text"
                                                 className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
                                                 value={data.rg}
-                                                minLength={6}
-                                                maxLength={16} // Alterado de 15 para 16
+                                                minLength={2}
+                                                maxLength={16}
                                                 onChange={(e) =>
                                                     setData(
                                                         'rg',
