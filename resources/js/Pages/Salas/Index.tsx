@@ -196,7 +196,7 @@ export default function Index({
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex min-w-32 items-center gap-2">
                                                             <span className="badge badge-outline">
                                                                 {sala.baias
                                                                     ?.length ??
