@@ -28,6 +28,7 @@ const DIAS_SEMANA_HORARIO = [
     { id: 'QUINTA', nome: 'Quinta' },
     { id: 'SEXTA', nome: 'Sexta' },
     { id: 'SABADO', nome: 'Sábado' },
+    { id: 'DOMINGO', nome: 'Domingo' },
 ] as const;
 
 const TIME_SLOTS_HORARIO = [
@@ -650,9 +651,7 @@ export default function EditarHorario({
                                                                         ? 'text-error'
                                                                         : isCompleto
                                                                           ? 'text-success'
-                                                                          : isParcial
-                                                                            ? 'text-warning'
-                                                                            : ''
+                                                                          : ''
                                                                 }`}
                                                             >
                                                                 {horasAlocadas}h
@@ -673,9 +672,7 @@ export default function EditarHorario({
                                                                             ? 'text-error'
                                                                             : isCompleto
                                                                               ? 'text-success'
-                                                                              : isParcial
-                                                                                ? 'text-warning'
-                                                                                : 'opacity-75'
+                                                                              : 'opacity-75'
                                                                     }`}
                                                                 >
                                                                     {percentual}
@@ -731,6 +728,37 @@ export default function EditarHorario({
                                             "Trabalho Presencial" e "Trabalho
                                             Remoto" vinculados a projetos.
                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card card-bordered bg-base-200 mt-6 shadow">
+                                <div className="card-body">
+                                    <h4 className="card-title mb-3 text-lg font-semibold">
+                                        Legenda & Contagem
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                                        {STATUS_OPTIONS_HORARIO.map(
+                                            (status) => (
+                                                <div
+                                                    key={status}
+                                                    className={`flex items-center space-x-2 rounded-lg p-3 shadow ${getStatusColorClass(status)}`}
+                                                >
+                                                    <span
+                                                        className={`border-base-content/20 h-5 w-5 rounded-full border ${getStatusColorClass(status)}`}
+                                                    ></span>
+                                                    <span className="font-medium">
+                                                        {getStatusDisplayName(
+                                                            status,
+                                                        )}
+                                                        :
+                                                    </span>
+                                                    <span className="text-lg font-bold">
+                                                        {statusCounts[status]}
+                                                    </span>
+                                                </div>
+                                            ),
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -831,41 +859,6 @@ export default function EditarHorario({
                                             })}
                                         </tbody>
                                     </table>
-                                </div>
-
-                                <div className="card card-bordered bg-base-200 mt-6 shadow">
-                                    <div className="card-body">
-                                        <h4 className="card-title mb-3 text-lg font-semibold">
-                                            Legenda & Contagem
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
-                                            {STATUS_OPTIONS_HORARIO.map(
-                                                (status) => (
-                                                    <div
-                                                        key={status}
-                                                        className={`flex items-center space-x-2 rounded-lg p-3 shadow ${getStatusColorClass(status)}`}
-                                                    >
-                                                        <span
-                                                            className={`border-base-content/20 h-5 w-5 rounded-full border ${getStatusColorClass(status)}`}
-                                                        ></span>
-                                                        <span className="font-medium">
-                                                            {getStatusDisplayName(
-                                                                status,
-                                                            )}
-                                                            :
-                                                        </span>
-                                                        <span className="text-lg font-bold">
-                                                            {
-                                                                statusCounts[
-                                                                    status
-                                                                ]
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <div className="mt-8 flex justify-between">

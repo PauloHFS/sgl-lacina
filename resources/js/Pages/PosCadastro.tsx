@@ -14,6 +14,10 @@ interface PosCadastroProps extends PageProps {
 
 const ORGAOS_EMISSORES = [
     {
+        sigla: 'Não se aplica',
+        nome: 'Não se aplica',
+    },
+    {
         sigla: 'SSP',
         nome: 'Secretaria de Segurança Pública',
     },
@@ -665,8 +669,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                                 type="text"
                                                 className={`input input-bordered w-full ${errors.rg ? 'input-error' : ''}`}
                                                 value={data.rg}
-                                                minLength={6}
-                                                maxLength={16} // Alterado de 15 para 16
+                                                minLength={2}
+                                                maxLength={16}
                                                 onChange={(e) =>
                                                     setData(
                                                         'rg',

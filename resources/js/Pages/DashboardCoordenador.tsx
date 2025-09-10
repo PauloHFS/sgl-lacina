@@ -71,7 +71,7 @@ export default function Dashboard({
                     <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
                         <div
                             className="tooltip"
-                            data-tip="Número total de projetos atualmente ativos no sistema."
+                            data-tip="Número total de projetos atualmente ativos na plataforma."
                         >
                             <div className="card bg-base-100 shadow">
                                 <div className="card-body items-center text-center">
@@ -79,7 +79,7 @@ export default function Dashboard({
                                         {projetosCount}
                                     </span>
                                     <span className="text-base-content/70">
-                                        Projetos ativos
+                                        Projetos ativos na plataforma
                                     </span>
                                 </div>
                             </div>
@@ -94,14 +94,14 @@ export default function Dashboard({
                                         {usuariosCount}
                                     </span>
                                     <span className="text-base-content/70">
-                                        Usuários cadastrados
+                                        Usuários cadastrados na plataforma
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div
                             className="tooltip"
-                            data-tip="Número de solicitações de cadastro que aguardam aprovação."
+                            data-tip="Número de solicitações de cadastro que aguardam aprovação na plataforma."
                         >
                             <div className="card bg-base-100 shadow">
                                 <div className="card-body items-center text-center">
@@ -109,7 +109,8 @@ export default function Dashboard({
                                         {solicitacoesPendentes}
                                     </span>
                                     <span className="text-base-content/70">
-                                        Solicitações pendentes
+                                        Solicitações pendentes de cadastro na na
+                                        plataforma
                                     </span>
                                 </div>
                             </div>

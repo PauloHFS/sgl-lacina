@@ -12,23 +12,21 @@ export default function HistoricoPage({
     historico,
 }: ShowPageProps) {
     return (
-        <Authenticated>
+        <Authenticated
+            header={
+                <div className="flex items-center justify-between">
+                    <h1 className="text-base-content text-xl leading-tight font-semibold">
+                        Histórico de Participação - {colaborador.name}
+                    </h1>
+                    <button className="btn" onClick={() => history.back()}>
+                        Voltar
+                    </button>
+                </div>
+            }
+        >
             <div className="container mx-auto p-6">
-                <h1 className="mb-4 text-2xl font-bold">
-                    Histórico de Participação - {colaborador.name}
-                </h1>
                 <div className="mb-6">
                     <div className="flex items-center gap-4">
-                        {colaborador.foto_url && (
-                            <div className="avatar">
-                                <div className="w-16 rounded-full">
-                                    <img
-                                        src={colaborador.foto_url}
-                                        alt={colaborador.name}
-                                    />
-                                </div>
-                            </div>
-                        )}
                         <div>
                             <div className="font-semibold">
                                 {colaborador.name}

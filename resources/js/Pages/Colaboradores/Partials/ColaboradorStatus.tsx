@@ -51,7 +51,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                     <StatusAlert
                         type="warning"
                         title="Cadastro pendente de aprovação."
-                        message="Este Usuário aguarda aprovação de cadastro. Revise os dados e aceite ou recuse o cadastro."
+                        message="Este usuário aguarda aprovação de cadastro. Revise os dados e aceite ou recuse o cadastro."
                         actions={
                             <>
                                 <dialog id="my_modal_2" className="modal">
@@ -227,7 +227,7 @@ export const ColaboradorStatus: React.FC<ColaboradorStatusProps> = React.memo(
                                         modal?.showModal();
                                     }}
                                 >
-                                    Avaliar Status
+                                    Avaliar Cadastro
                                 </button>
                             </>
                         }
