@@ -120,5 +120,6 @@ Para utilizar o ambiente de desenvolvimento encapsulado, use a extensão "Remote
 
 ### Documentação Adicional
 
-- **[Guia de Testes](https://www.google.com/search?q=docs/testing.md)**: Como executar e escrever testes.
-- **[Exemplos de JSONB](https://www.google.com/search?q=docs/examples/jsonb_examples.php)**: Manipulação de JSONB no Eloquent.
+- **[Guia de Testes](docs/testing.md)**: Como executar e escrever testes.
+- **[Exemplos de JSONB](docs/examples/jsonb_examples.php)**: Manipulação de JSONB no Eloquent.
+- **[Deploy de Produção](docs/deploy.md)**: Documentação de deploy em produção.
