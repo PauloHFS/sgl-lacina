@@ -81,7 +81,19 @@ export default function DailyReportTab({
                         >
                             <div className="card-body p-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="font-bold">
+                                    <div className="avatar">
+                                        <div className="mask mask-squircle h-12 w-12">
+                                            <img
+                                                src={
+                                                    dr.usuario?.foto_url
+                                                        ? dr.usuario?.foto_url
+                                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(dr.usuario?.name ?? 'Usuário Lacina')}&background=random&color=fff`
+                                                }
+                                                alt={`Foto de ${dr.usuario?.name}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <span className="content-start self-start">
                                         {dr.usuario?.name ||
                                             'Usuário Desconhecido'}
                                     </span>
