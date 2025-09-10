@@ -11,6 +11,7 @@ const DIAS_SEMANA_HORARIO = [
     { id: 'QUINTA', nome: 'Quinta' },
     { id: 'SEXTA', nome: 'Sexta' },
     { id: 'SABADO', nome: 'Sábado' },
+    { id: 'DOMINGO', nome: 'Domingo' },
 ] as const;
 
 const getStatusColorClass = (
