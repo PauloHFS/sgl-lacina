@@ -26,19 +26,20 @@ export default function HistoricoPage({
         >
             <div className="container mx-auto p-6">
                 <div className="mb-6">
-                    <div className="flex items-center gap-4">
-                        <div>
-                            <div className="font-semibold">
-                                {colaborador.name}
-                            </div>
-                            <div className="text-base-content/70 text-sm">
-                                {colaborador.email}
-                            </div>
-                            {colaborador.area_atuacao && (
-                                <div className="text-sm">
-                                    {colaborador.area_atuacao}
-                                </div>
-                            )}
+                    <div className="flex flex-col gap-2">
+                        <div className="font-semibold">{colaborador.name}</div>
+                        <div className="text-base-content/70 text-sm">
+                            {colaborador.email}
+                        </div>
+                        <div className="flex gap-2">
+                            {colaborador.area_atuacao?.map((area) => (
+                                <span
+                                    key={area}
+                                    className="badge badge-soft badge-info"
+                                >
+                                    {area}
+                                </span>
+                            ))}
                         </div>
                     </div>
                 </div>

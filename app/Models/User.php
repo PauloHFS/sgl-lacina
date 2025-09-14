@@ -85,7 +85,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'status_cadastro' => StatusCadastro::class,
             'genero' => Genero::class,
             'data_nascimento' => 'date',
-            'campos_extras' => 'array', // Cast JSONB para array
+            'campos_extras' => 'array',
+            'area_atuacao' => 'array',
+            'tecnologias' => 'array',
         ];
     }
 

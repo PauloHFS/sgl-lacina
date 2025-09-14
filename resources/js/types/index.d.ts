@@ -83,7 +83,7 @@ export interface User extends SoftDeletes {
     linkedin_url?: string | null;
     github_url?: string | null;
     website_url?: string | null;
-    area_atuacao?: string | null;
+    area_atuacao?: string[] | null;
     tecnologias?: string | null;
     cpf?: string | null;
     rg?: string | null;
@@ -184,11 +184,11 @@ export interface Baia extends SoftDeletes {
 export interface Horario extends SoftDeletes {
     id: string;
     horario: number; // 0 - 23
-    dia_da_semana: DiaDaSemana; 
+    dia_da_semana: DiaDaSemana;
     tipo: TipoHorario;
     usuario_id: string;
     usuario?: User; // precisa de load eagerly
-    usuario_projeto_id?: string | null; 
+    usuario_projeto_id?: string | null;
     usuario_projeto?: UsuarioProjeto | null; // precisa de load eagerly
     baia_id?: string | null;
     baia?: Baia | null; // precisa de load eagerly
