@@ -186,8 +186,10 @@ export default function Dashboard({
                                                 className="list-row hover:bg-base-200 flex cursor-pointer items-center justify-between rounded p-3 transition-colors"
                                                 key={projeto.id}
                                             >
-                                                <span>{projeto.nome}</span>
-                                                <span className="text-base-content/60">
+                                                <span className="flex-2/3">
+                                                    {projeto.nome}
+                                                </span>
+                                                <span className="text-base-content/60 flex-1/3">
                                                     {projeto.cliente}
                                                 </span>
                                             </Link>
