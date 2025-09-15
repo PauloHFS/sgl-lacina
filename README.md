@@ -29,7 +29,7 @@ O SGL foi desenvolvido como uma plataforma web centralizada para atender aos req
 3.  **Instalar dependências com Composer:**
 
     ```bash
-    docker compose run --rm app composer install
+    docker run --rm -v $(pwd):/app composer:latest composer install
     ```
 
 4.  **Iniciar os containers:**
@@ -38,23 +38,35 @@ O SGL foi desenvolvido como uma plataforma web centralizada para atender aos req
     ./vendor/bin/sail up -d
     ```
 
+    _A partir daqui recomendo abrir o devcontainer no vscode em vez de executar os comandos pelo docker._
+
 5.  **Gerar a chave da aplicação:**
 
     ```bash
-    ./vendor/bin/sail artisan key:generate
+    docker exec -it sgl-lacina_app_dev php artisan key:generate
     ```
 
 6.  **Executar as migrações do banco de dados:**
 
     ```bash
-    ./vendor/bin/sail artisan migrate
+    docker exec -it sgl-lacina_app_dev php artisan migrate
+    ```
+
+7. **Instale as dependências do Front End**
+
+    ```bash
+    docker exec -it sgl-lacina_app_dev npm install
+    ```
+
+8. **Execute o Front End**
+
+    ```bash
+    docker exec -it sgl-lacina_app_dev npm run dev
     ```
 
 A aplicação estará disponível em `http://localhost`.
 
-Adicione a seguinte seção ao `README.md`:
-
-## Gerenciamento
+## Gerenciamento em Produção
 
 Utilize o `Makefile` para automatizar tarefas comuns de deploy, backup e rollback.
 
@@ -88,8 +100,6 @@ O ambiente de desenvolvimento é gerenciado pelo Laravel Sail. Todos os comandos
 # Abrir um shell no container da aplicação
 ./vendor/bin/sail shell
 ```
-
-Adicione uma seção ao `README.md`.
 
 ### Alias para Sail (Opcional)
 
