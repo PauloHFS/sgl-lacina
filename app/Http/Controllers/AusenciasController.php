@@ -37,10 +37,13 @@ class AusenciasController extends Controller
 
         $user = Auth::user();
 
+        $orderStatement = "CASE status WHEN '".StatusAusencia::PENDENTE->value."' THEN 1 WHEN '".StatusAusencia::APROVADO->value."' THEN 2 WHEN '".StatusAusencia::REJEITADO->value."' THEN 3 ELSE 4 END";
+
         if (Auth::user()->isCoordenador()) {
             return Inertia::render('Ausencias/IndexCoordenador', [
                 'ausencias' => Ausencia::with(['projeto', 'usuario'])
-                    ->orderBy('data_inicio', 'desc', 'status')
+                    ->orderByRaw($orderStatement)
+                    ->orderBy('data_inicio', 'desc')
                     ->paginate(15),
             ]);
         }
@@ -63,15 +66,16 @@ class AusenciasController extends Controller
         // Query base
         $query = Ausencia::with(['projeto'])
             ->where('usuario_id', $user->id)
+            ->orderByRaw($orderStatement)
             ->orderBy('data_inicio', 'desc');
 
         // Aplicar filtros
         if ($filtros['data_inicio']) {
-            $query->where('data', '>=', $filtros['data_inicio']);
+            $query->where('data_inicio', '>=', $filtros['data_inicio']);
         }
 
         if ($filtros['data_fim']) {
-            $query->where('data', '<=', $filtros['data_fim']);
+            $query->where('data_fim', '<=', $filtros['data_fim']);
         }
 
         if ($filtros['projeto_id']) {
@@ -125,7 +129,7 @@ class AusenciasController extends Controller
             Log::error('Erro ao criar Ausencia', [
                 'exception' => $e,
                 'user_id' => Auth::id(),
-                'data' => $request->all(),
+                'data' => $request->validated(),
             ]);
 
             return redirect()->back()

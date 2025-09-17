@@ -7,6 +7,10 @@ interface IndexPageProps extends PageProps {
     ausencias: Paginated<Ausencia>;
 }
 
+const formatarData = (data: string): string => {
+    return new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+};
+
 const Index = ({ ausencias }: IndexPageProps) => {
     return (
         <AuthenticatedLayout
@@ -30,12 +34,6 @@ const Index = ({ ausencias }: IndexPageProps) => {
                                     <p className="mb-4 text-gray-500">
                                         Nenhuma ausência encontrada.
                                     </p>
-                                    <Link
-                                        href={route('ausencias.create')}
-                                        className="btn btn-primary"
-                                    >
-                                        Registrar primeira ausência.
-                                    </Link>
                                 </div>
                             ) : (
                                 <>
@@ -45,42 +43,42 @@ const Index = ({ ausencias }: IndexPageProps) => {
                                                 <tr>
                                                     <th>Colaborador</th>
                                                     <th>Projeto</th>
-                                                    <th>Titulo</th>
+                                                    <th>Período de Ausência</th>
+                                                    <th>
+                                                        Período de Compensação
+                                                    </th>
                                                     <th>Status</th>
                                                     <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {ausencias.data.map(
-                                                    (ausencias) => (
-                                                        <tr key={ausencias.id}>
+                                                    (ausencia) => (
+                                                        <tr key={ausencia.id}>
                                                             <td>
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="avatar">
                                                                         <div className="mask mask-squircle h-12 w-12">
                                                                             <img
                                                                                 src={
-                                                                                    ausencias
+                                                                                    ausencia
                                                                                         .usuario
-                                                                                        ?.foto_url
-                                                                                        ? ausencias
-                                                                                              .usuario
-                                                                                              ?.foto_url
-                                                                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(ausencias.usuario?.name ?? 'User')}&background=random&color=fff`
+                                                                                        ?.foto_url ??
+                                                                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(ausencia.usuario?.name ?? 'U')}&background=random&color=fff`
                                                                                 }
-                                                                                alt={`Foto de ${ausencias.usuario?.name}`}
+                                                                                alt={`Foto de ${ausencia.usuario?.name}`}
                                                                             />
                                                                         </div>
                                                                     </div>
                                                                     <div>
                                                                         <div className="font-bold">
-                                                                            {ausencias
+                                                                            {ausencia
                                                                                 .usuario
                                                                                 ?.name ||
                                                                                 '-'}
                                                                         </div>
                                                                         <div className="text-sm opacity-50">
-                                                                            {ausencias
+                                                                            {ausencia
                                                                                 .usuario
                                                                                 ?.email ||
                                                                                 ''}
@@ -91,13 +89,13 @@ const Index = ({ ausencias }: IndexPageProps) => {
                                                             <td>
                                                                 <div>
                                                                     <div className="font-bold">
-                                                                        {ausencias
+                                                                        {ausencia
                                                                             .projeto
                                                                             ?.nome ||
                                                                             '-'}
                                                                     </div>
                                                                     <div className="text-sm opacity-50">
-                                                                        {ausencias
+                                                                        {ausencia
                                                                             .projeto
                                                                             ?.cliente ||
                                                                             ''}
@@ -107,37 +105,63 @@ const Index = ({ ausencias }: IndexPageProps) => {
                                                             <td>
                                                                 <div>
                                                                     <div className="font-bold">
+                                                                        {formatarData(
+                                                                            ausencia.data_inicio,
+                                                                        )}
+                                                                        {' - '}
+                                                                        {formatarData(
+                                                                            ausencia.data_fim,
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-sm opacity-50">
                                                                         {
-                                                                            ausencias.titulo
+                                                                            ausencia.titulo
                                                                         }
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div>
-                                                                    <span
-                                                                        className={`badge ${
-                                                                            ausencias.status ===
-                                                                            'PENDENTE'
-                                                                                ? 'badge-warning'
-                                                                                : ausencias.status ===
-                                                                                    'APROVADO'
-                                                                                  ? 'badge-success'
-                                                                                  : 'badge-error'
-                                                                        }`}
-                                                                    >
-                                                                        {
-                                                                            ausencias.status
-                                                                        }
-                                                                    </span>
+                                                                <div className="font-bold">
+                                                                    {ausencia.compensacao_data_inicio
+                                                                        ? formatarData(
+                                                                              ausencia.compensacao_data_inicio,
+                                                                          )
+                                                                        : 'N/A'}
+                                                                    {' - '}
+                                                                    {ausencia.compensacao_data_fim
+                                                                        ? formatarData(
+                                                                              ausencia.compensacao_data_fim,
+                                                                          )
+                                                                        : 'N/A'}
                                                                 </div>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    className={`badge ${
+                                                                        {
+                                                                            PENDENTE:
+                                                                                'badge-warning',
+                                                                            APROVADO:
+                                                                                'badge-success',
+                                                                            REJEITADO:
+                                                                                'badge-error',
+                                                                        }[
+                                                                            ausencia
+                                                                                .status
+                                                                        ]
+                                                                    }`}
+                                                                >
+                                                                    {
+                                                                        ausencia.status
+                                                                    }
+                                                                </span>
                                                             </td>
                                                             <td>
                                                                 <div className="flex gap-2">
                                                                     <Link
                                                                         href={route(
                                                                             'ausencias.show',
-                                                                            ausencias.id,
+                                                                            ausencia.id,
                                                                         )}
                                                                         className="btn btn-info btn-xs"
                                                                     >

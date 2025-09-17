@@ -7,7 +7,6 @@ use App\Enums\StatusVinculoProjeto;
 use App\Models\Ausencia;
 use App\Models\User;
 use App\Models\UsuarioProjeto;
-use Illuminate\Auth\Access\Response;
 
 class AusenciaPolicy
 {
@@ -45,8 +44,8 @@ class AusenciaPolicy
      */
     public function update(User $user, Ausencia $ausencia): bool
     {
-        // Apenas o dono pode editar uma ausência PENDENTE.
-        return $ausencia->usuario_id === $user->id && $ausencia->status === \App\Enums\StatusAusencia::PENDENTE->value;
+        // Apenas o dono pode editar uma ausência RECUSADA e PENDENTE.
+        return $ausencia->usuario_id === $user->id && $ausencia->status !== \App\Enums\StatusAusencia::APROVADO->value;
     }
 
     /**
@@ -54,8 +53,8 @@ class AusenciaPolicy
      */
     public function delete(User $user, Ausencia $ausencia): bool
     {
-        // Apenas o dono pode deletar uma ausência PENDENTE.
-        return $ausencia->usuario_id === $user->id && $ausencia->status === \App\Enums\StatusAusencia::PENDENTE->value;
+        // Apenas o dono pode deletar uma ausência RECUSADA e PENDENTE.
+        return $ausencia->usuario_id === $user->id && $ausencia->status !== \App\Enums\StatusAusencia::APROVADO->value;
     }
 
     /**
