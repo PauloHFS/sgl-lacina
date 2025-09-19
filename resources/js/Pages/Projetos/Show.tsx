@@ -1129,16 +1129,25 @@ export default function Show({
                                                                                     'T',
                                                                                 )[0]
                                                                         }
-                                                                        max={
-                                                                            new Date(
-                                                                                projeto.data_termino ||
-                                                                                    '',
+                                                                        max={(() => {
+                                                                            if (
+                                                                                !projeto.data_termino
                                                                             )
+                                                                                return undefined;
+                                                                            const dataAnterior =
+                                                                                new Date(
+                                                                                    projeto.data_termino,
+                                                                                );
+                                                                            dataAnterior.setDate(
+                                                                                dataAnterior.getDate() -
+                                                                                    1,
+                                                                            );
+                                                                            return dataAnterior
                                                                                 .toISOString()
                                                                                 .split(
                                                                                     'T',
-                                                                                )[0]
-                                                                        }
+                                                                                )[0];
+                                                                        })()}
                                                                         onChange={(
                                                                             e: React.ChangeEvent<HTMLInputElement>,
                                                                         ) =>

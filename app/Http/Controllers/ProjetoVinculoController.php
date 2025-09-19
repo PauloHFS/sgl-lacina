@@ -26,7 +26,7 @@ class ProjetoVinculoController extends Controller
 
         if ($projeto) {
             $dataInicioRules[] = 'after_or_equal:'.$projeto->data_inicio;
-            $dataInicioRules[] = 'before_or_equal:'.$projeto->data_termino;
+            $dataInicioRules[] = 'before:'.$projeto->data_termino;
         }
 
         $request->validate([
