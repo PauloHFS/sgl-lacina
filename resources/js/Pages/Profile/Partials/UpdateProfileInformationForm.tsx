@@ -1,8 +1,9 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import MultiSelect from '@/Components/MultiSelect';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { ESTADOS } from '@/constants';
+import { AREAS_ATUACAO, ESTADOS, TECNOLOGIAS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import { Banco, Genero, User } from '@/types';
 import { Transition } from '@headlessui/react';
@@ -24,13 +25,12 @@ export default function UpdateProfileInformation({
     user: User;
     className?: string;
 }) {
-    const { data, setData, patch, errors, recentlySuccessful, processing } =
-        useForm<
-            Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
-        >({
-            ...user,
-            foto_url: user.foto_url ?? null,
-        });
+    const { data, setData, errors, recentlySuccessful, processing } = useForm<
+        Omit<typeof user, 'foto_url'> & { foto_url: string | File | null }
+    >({
+        ...user,
+        foto_url: user.foto_url ?? null,
+    });
 
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -100,48 +100,47 @@ export default function UpdateProfileInformation({
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Verifica se há um arquivo sendo enviado
-        const hasFile = data.foto_url instanceof File;
+        const formData = new FormData();
 
-        if (hasFile) {
-            // Para uploads de arquivo, usar POST com _method
-            const formData = new FormData();
-
-            // Adicionar todos os campos ao FormData
-            Object.entries(data).forEach(([key, value]) => {
-                if (value !== null && value !== undefined && value !== '') {
-                    if (value instanceof File) {
-                        formData.append(key, value);
-                    } else if (typeof value === 'object') {
-                        // Para objetos como campos_extras, converter para JSON
-                        formData.append(key, JSON.stringify(value));
-                    } else {
-                        formData.append(key, String(value));
-                    }
+        Object.entries(data).forEach(([key, value]) => {
+            // Lógica para arrays (area_atuacao, tecnologias)
+            if (Array.isArray(value)) {
+                value.forEach((item) => {
+                    formData.append(`${key}[]`, String(item));
+                });
+                // Adiciona um campo vazio se o array for esvaziado, para garantir que a alteração seja registrada
+                if (value.length === 0) {
+                    formData.append(key, '');
                 }
-            });
+            }
+            // Lógica para a foto
+            else if (key === 'foto_url') {
+                if (value instanceof File) {
+                    formData.append(key, value);
+                } else if (value === null) {
+                    formData.append(key, ''); // Envia string vazia para remoção
+                }
+            } else if (value === null) {
+                formData.append(key, '');
+            } else if (typeof value === 'object' && value !== null) {
+                formData.append(key, JSON.stringify(value));
+            } else if (value !== undefined) {
+                formData.append(key, String(value));
+            }
+        });
 
-            // Adicionar o method override
-            formData.append('_method', 'PATCH');
+        formData.append('_method', 'PATCH');
 
-            // Usar router.post com FormData
-            router.post(route('profile.update'), formData, {
-                preserveScroll: true,
-                onSuccess: () => {},
-                onError: (errors) => {
-                    console.error('Erro ao atualizar perfil:', errors);
-                },
-            });
-        } else {
-            // Para dados sem arquivo, usar patch normal
-            patch(route('profile.update'), {
-                preserveScroll: true,
-                onSuccess: () => {},
-                onError: (errors) => {
-                    console.error('Erro ao atualizar perfil:', errors);
-                },
-            });
-        }
+        router.post(route('profile.update'), formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast('Perfil atualizado com sucesso!', 'success');
+            },
+            onError: (errors) => {
+                console.error('Erro ao atualizar perfil:', errors);
+                toast('Verifique os erros no formulário.', 'error');
+            },
+        });
     };
 
     return (
@@ -815,42 +814,31 @@ export default function UpdateProfileInformation({
                         />
                     </div>
 
-                    {/* TODO converter pra um multiselect */}
+                    {/* Área de Atuação */}
                     <div>
-                        <InputLabel
-                            htmlFor="area_atuacao"
-                            value="Área de Atuação"
-                        />
-                        <TextInput
+                        <MultiSelect
                             id="area_atuacao"
-                            className={`input input-bordered w-full ${errors.area_atuacao ? 'input-error' : ''}`}
-                            value={data.area_atuacao || ''}
-                            onChange={(e) =>
-                                setData('area_atuacao', e.target.value)
-                            }
-                            placeholder="Digite sua área de atuação..."
-                        />
-                        <InputError
-                            className="mt-2"
-                            message={errors.area_atuacao}
+                            label="Área de Atuação"
+                            options={AREAS_ATUACAO}
+                            value={data.area_atuacao ?? []}
+                            onChange={(value) => setData('area_atuacao', value)}
+                            error={errors.area_atuacao}
+                            placeholder="Selecione suas áreas de atuação..."
+                            maxSelections={3}
                         />
                     </div>
 
-                    {/* TODO converter para um multiselect */}
+                    {/* Tecnologias */}
                     <div>
-                        <InputLabel htmlFor="tecnologias" value="Tecnologias" />
-                        <TextInput
+                        <MultiSelect
                             id="tecnologias"
-                            className={`input input-bordered w-full ${errors.tecnologias ? 'input-error' : ''}`}
-                            value={data.tecnologias || ''}
-                            onChange={(e) =>
-                                setData('tecnologias', e.target.value)
-                            }
-                            placeholder="Digite as tecnologias que você domina..."
-                        />
-                        <InputError
-                            className="mt-2"
-                            message={errors.tecnologias}
+                            label="Tecnologias"
+                            options={TECNOLOGIAS}
+                            value={data.tecnologias ?? []}
+                            onChange={(value) => setData('tecnologias', value)}
+                            error={errors.tecnologias}
+                            placeholder="Selecione as tecnologias que você domina..."
+                            maxSelections={5}
                         />
                     </div>
                 </div>

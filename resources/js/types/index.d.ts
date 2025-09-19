@@ -84,7 +84,7 @@ export interface User extends SoftDeletes {
     github_url?: string | null;
     website_url?: string | null;
     area_atuacao?: string[] | null;
-    tecnologias?: string | null;
+    tecnologias?: string[] | null;
     cpf?: string | null;
     rg?: string | null;
     uf_rg?: string | null;
