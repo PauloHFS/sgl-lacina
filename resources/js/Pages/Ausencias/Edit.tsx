@@ -1,11 +1,20 @@
 import RichTextEditor from '@/Components/RichTextEditor';
+import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Ausencia, PageProps, Projeto } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { eachDayOfInterval, format, getDay, isValid, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { FormEventHandler, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    FormEventHandler,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
+// Tipos e Constantes
 type DiaDaSemana =
     | 'DOMINGO'
     | 'SEGUNDA'
@@ -33,7 +42,7 @@ interface AusenciaForm {
     horas_a_compensar: number;
     compensacao_data_inicio?: string;
     compensacao_data_fim?: string;
-    compensacao_horarios?: string; // JSON string
+    compensacao_horarios?: string;
 }
 
 interface CompensacaoDia {
@@ -51,162 +60,188 @@ const DIAS_DA_SEMANA_MAP: DiaDaSemana[] = [
     'SABADO',
 ];
 
-const Edit = ({
+const HORAS_DO_DIA = Array.from({ length: 15 }, (_, i) => i + 7); // 7h às 21h
+
+const safeJsonParse = <T,>(jsonString: unknown): T | null => {
+    if (typeof jsonString !== 'string') {
+        // Se já for um objeto/array, retorna, senão retorna null.
+        return typeof jsonString === 'object' && jsonString !== null
+            ? (jsonString as T)
+            : null;
+    }
+    try {
+        return JSON.parse(jsonString) as T;
+    } catch {
+        return null;
+    }
+};
+
+/**
+ * Hook customizado para encapsular a lógica do formulário de ausência.
+ */
+const useAusenciaForm = ({
     ausencia,
-    projetosAtivos,
     horasPorProjetoPorDia,
 }: EditPageProps) => {
     const { data, setData, put, processing, errors } = useForm<AusenciaForm>({
         titulo: ausencia.titulo,
         projeto_id: ausencia.projeto_id,
-        data_inicio: ausencia.data_inicio
-            ? format(parseISO(ausencia.data_inicio), 'yyyy-MM-dd')
-            : format(new Date(), 'yyyy-MM-dd'),
-        data_fim: ausencia.data_fim
-            ? format(parseISO(ausencia.data_fim), 'yyyy-MM-dd')
-            : format(new Date(), 'yyyy-MM-dd'),
+        data_inicio: ausencia.data_inicio.substring(0, 10),
+        data_fim: ausencia.data_fim.substring(0, 10),
         justificativa: ausencia.justificativa || '',
-        horas_a_compensar:
-            typeof ausencia.horas_a_compensar === 'number'
-                ? ausencia.horas_a_compensar
-                : 0,
+        horas_a_compensar: ausencia.horas_a_compensar || 0,
         compensacao_data_inicio: ausencia.compensacao_data_inicio
-            ? format(parseISO(ausencia.compensacao_data_inicio), 'yyyy-MM-dd')
-            : format(new Date(), 'yyyy-MM-dd'),
+            ? ausencia.compensacao_data_inicio.substring(0, 10)
+            : undefined,
         compensacao_data_fim: ausencia.compensacao_data_fim
-            ? format(parseISO(ausencia.compensacao_data_fim), 'yyyy-MM-dd')
-            : format(new Date(), 'yyyy-MM-dd'),
-        compensacao_horarios:
-            typeof ausencia.compensacao_horarios === 'string'
-                ? ausencia.compensacao_horarios
-                : Array.isArray(ausencia.compensacao_horarios)
-                  ? JSON.stringify(ausencia.compensacao_horarios)
-                  : '[]',
+            ? ausencia.compensacao_data_fim.substring(0, 10)
+            : undefined,
+        compensacao_horarios: JSON.stringify(
+            safeJsonParse<CompensacaoDia[]>(ausencia.compensacao_horarios) ??
+                [],
+        ),
     });
 
-    const parseHorarios = (horarios: any): CompensacaoDia[] => {
-        if (typeof horarios === 'string') {
-            try {
-                const parsed = JSON.parse(horarios);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) {
-                console.error(
-                    'Erro ao fazer parse dos horários de compensação:',
-                    e,
-                );
-                return [];
-            }
-        }
-        return Array.isArray(horarios) ? horarios : [];
-    };
-
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
-        parseHorarios(ausencia.compensacao_horarios),
+        () => safeJsonParse<CompensacaoDia[]>(data.compensacao_horarios) ?? [],
     );
 
     const isInitialMount = useRef(true);
 
-    // Calcula horas a compensar automaticamente, mas pula a execução inicial
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
             return;
         }
+        const { projeto_id, data_inicio, data_fim } = data;
+        if (!projeto_id || !data_inicio || !data_fim) return;
 
-        if (!data.projeto_id || !data.data_inicio || !data.data_fim) {
+        const projetoHorarios = horasPorProjetoPorDia[projeto_id];
+        const inicio = parseISO(data_inicio);
+        const fim = parseISO(data_fim);
+
+        if (
+            !projetoHorarios ||
+            !isValid(inicio) ||
+            !isValid(fim) ||
+            inicio > fim
+        ) {
             setData('horas_a_compensar', 0);
             return;
         }
-        try {
-            const projetoHorarios = horasPorProjetoPorDia[data.projeto_id];
-            if (!projetoHorarios) {
-                setData('horas_a_compensar', 0);
-                return;
-            }
-            const inicio = parseISO(data.data_inicio);
-            const fim = parseISO(data.data_fim);
-            if (!isValid(inicio) || !isValid(fim) || inicio > fim) {
-                setData('horas_a_compensar', 0);
-                return;
-            }
-            const diasNoIntervalo = eachDayOfInterval({
-                start: inicio,
-                end: fim,
-            });
-            const totalHoras = diasNoIntervalo.reduce((acc, dia) => {
-                const diaDaSemana = DIAS_DA_SEMANA_MAP[getDay(dia)];
-                return acc + (projetoHorarios[diaDaSemana] || 0);
-            }, 0);
-            setData('horas_a_compensar', totalHoras);
-        } catch {
-            setData('horas_a_compensar', 0);
-        }
+
+        const totalHoras = eachDayOfInterval({
+            start: inicio,
+            end: fim,
+        }).reduce((acc, dia) => {
+            const diaSemana = DIAS_DA_SEMANA_MAP[getDay(dia)];
+            return acc + (projetoHorarios[diaSemana] || 0);
+        }, 0);
+        setData('horas_a_compensar', totalHoras);
     }, [data.projeto_id, data.data_inicio, data.data_fim]);
 
-    // Atualiza os dias de compensação conforme intervalo, preservando horas do backend
     useEffect(() => {
-        const inicio = parseISO(data.compensacao_data_inicio || '');
-        const fim = parseISO(data.compensacao_data_fim || '');
-        if (isValid(inicio) && isValid(fim) && inicio <= fim) {
-            const diasNoIntervalo = eachDayOfInterval({
-                start: inicio,
-                end: fim,
-            });
-            setDiasCompensacao((diasAtuais) => {
-                return diasNoIntervalo.map((diaDate) => {
-                    const diaFormatado = format(diaDate, 'yyyy-MM-dd');
-                    const diaExistente = diasAtuais.find(
-                        (d) => d.data === diaFormatado,
-                    );
-                    return diaExistente
-                        ? diaExistente
-                        : { data: diaFormatado, horario: [] };
-                });
-            });
-        } else {
+        const { compensacao_data_inicio, compensacao_data_fim } = data;
+        if (!compensacao_data_inicio || !compensacao_data_fim) {
             setDiasCompensacao([]);
+            return;
         }
+        const inicio = parseISO(compensacao_data_inicio);
+        const fim = parseISO(compensacao_data_fim);
+
+        if (!isValid(inicio) || !isValid(fim) || inicio > fim) {
+            setDiasCompensacao([]);
+            return;
+        }
+        const diasIntervalo = eachDayOfInterval({ start: inicio, end: fim });
+        setDiasCompensacao((diasAtuais: CompensacaoDia[]) => {
+            const diasAtuaisMap = new Map(diasAtuais.map((d) => [d.data, d]));
+            return diasIntervalo.map((diaDate) => {
+                const diaFormatado = format(diaDate, 'yyyy-MM-dd');
+                return (
+                    diasAtuaisMap.get(diaFormatado) || {
+                        data: diaFormatado,
+                        horario: [],
+                    }
+                );
+            });
+        });
     }, [data.compensacao_data_inicio, data.compensacao_data_fim]);
 
-    // Sincroniza os dias de compensação com o form
     useEffect(() => {
-        const compensacaoFormatada = diasCompensacao
-            .filter((dia) => dia.horario.length > 0)
-            .map(({ data, horario }) => ({ data, horario }));
-        setData('compensacao_horarios', JSON.stringify(compensacaoFormatada));
-    }, [diasCompensacao, setData]);
-
-    const totalHorasCompensadas = useMemo(() => {
-        return diasCompensacao.reduce(
-            (acc, dia) => acc + dia.horario.length,
-            0,
+        const compensacaoFormatada = diasCompensacao.filter(
+            (dia) => dia.horario.length > 0,
         );
+        setData('compensacao_horarios', JSON.stringify(compensacaoFormatada));
     }, [diasCompensacao]);
 
-    const handleHoraChange = (
-        diaData: string,
-        hora: number,
-        checked: boolean,
-    ) => {
-        setDiasCompensacao((diasAtuais) =>
-            diasAtuais.map((dia) => {
-                if (dia.data === diaData) {
-                    const novosHorarios = checked
-                        ? [...dia.horario, hora].sort((a, b) => a - b)
-                        : dia.horario.filter((h) => h !== hora);
-                    return { ...dia, horario: novosHorarios };
-                }
-                return dia;
-            }),
-        );
-    };
+    const totalHorasCompensadas = useMemo(
+        () => diasCompensacao.reduce((acc, dia) => acc + dia.horario.length, 0),
+        [diasCompensacao],
+    );
+
+    const handleHoraChange = useCallback(
+        (diaData: string, hora: number, checked: boolean) => {
+            setDiasCompensacao((diasAtuais: CompensacaoDia[]) =>
+                diasAtuais.map((dia) =>
+                    dia.data === diaData
+                        ? {
+                              ...dia,
+                              horario: checked
+                                  ? [...dia.horario, hora].sort((a, b) => a - b)
+                                  : dia.horario.filter((h) => h !== hora),
+                          }
+                        : dia,
+                ),
+            );
+        },
+        [],
+    );
+
+    const { toast } = useToast();
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('ausencias.update', ausencia.id));
+        put(route('ausencias.update', ausencia.id), {
+            preserveScroll: true,
+            onError: (errors) => {
+                console.error('Erro ao salvar a ausência:', errors);
+                toast(
+                    'Erro ao salvar a ausência. Verifique os campos.',
+                    'error',
+                );
+            },
+            onSuccess: () => {
+                toast('Ausência atualizada com sucesso!', 'success');
+            },
+        });
     };
 
-    const HORAS_DO_DIA = Array.from({ length: 15 }, (_, i) => i + 7); // 7h às 21h
+    return {
+        data,
+        setData,
+        put,
+        processing,
+        errors,
+        submit,
+        diasCompensacao,
+        totalHorasCompensadas,
+        handleHoraChange,
+    };
+};
+
+const Edit = (props: EditPageProps) => {
+    const { ausencia, projetosAtivos } = props;
+    const {
+        data,
+        setData,
+        processing,
+        errors,
+        submit,
+        diasCompensacao,
+        totalHorasCompensadas,
+        handleHoraChange,
+    } = useAusenciaForm(props);
 
     return (
         <AuthenticatedLayout
@@ -236,7 +271,6 @@ const Edit = ({
                                         Detalhes da Ausência
                                     </h3>
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        {/* Título e Projeto */}
                                         <div className="form-control">
                                             <label
                                                 className="label"
@@ -309,7 +343,6 @@ const Edit = ({
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                        {/* Data Início e Fim */}
                                         <div className="form-control">
                                             <label
                                                 className="label"
@@ -367,7 +400,6 @@ const Edit = ({
                                             )}
                                         </div>
                                     </div>
-                                    {/* Justificativa */}
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text">
@@ -391,14 +423,15 @@ const Edit = ({
                                         )}
                                     </div>
                                 </div>
+
                                 <div className="divider"></div>
+
                                 {/* Seção 2: Plano de Compensação */}
                                 <div className="space-y-6">
                                     <h3 className="text-base-content text-lg font-medium">
                                         Plano de Compensação
                                     </h3>
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                        {/* Horas a Compensar */}
                                         <div className="form-control">
                                             <label
                                                 className="label"
@@ -427,7 +460,6 @@ const Edit = ({
                                                 </p>
                                             )}
                                         </div>
-                                        {/* Compensação Início */}
                                         <div className="form-control">
                                             <label
                                                 className="label"
@@ -453,7 +485,6 @@ const Edit = ({
                                                 }
                                             />
                                         </div>
-                                        {/* Compensação Fim */}
                                         <div className="form-control">
                                             <label
                                                 className="label"
@@ -480,7 +511,6 @@ const Edit = ({
                                             />
                                         </div>
                                     </div>
-                                    {/* Lista de Dias de Compensação */}
                                     <div className="space-y-4">
                                         {diasCompensacao.map((dia) => (
                                             <div
@@ -521,6 +551,7 @@ const Edit = ({
                                                                     {hora}h
                                                                 </span>
                                                                 <input
+                                                                    // CORREÇÃO: Uso de crases para template literals
                                                                     id={`compensacao-${dia.data}-${hora}`}
                                                                     name={`compensacao-${dia.data}-${hora}`}
                                                                     type="checkbox"
@@ -547,7 +578,6 @@ const Edit = ({
                                             </div>
                                         ))}
                                     </div>
-                                    {/* Resumo */}
                                     <div className="text-right">
                                         <p className="font-semibold">
                                             Total de horas compensadas:{' '}

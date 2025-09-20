@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\StatusAusencia;
 use App\Models\Ausencia;
+use App\Models\UsuarioProjeto;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,6 +15,16 @@ class AusenciasRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        // Se for uma rota de edição (update), o model 'ausencia' estará disponível via route model binding.
+        if ($this->route('ausencia')) {
+            /** @var Ausencia $ausencia */
+            $ausencia = $this->route('ausencia');
+
+            // A autorização passa apenas se o ID do usuário logado for o mesmo que criou a ausência.
+            return $ausencia->usuario_id === Auth::id() || Auth::user()->isCoordenador();
+        }
+
+        // Para a criação (store), a autorização é sempre permitida.
         return true;
     }
 
@@ -22,25 +33,8 @@ class AusenciasRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        // Adiciona o ID do usuário logado aos dados da requisição antes da validação.
         $this->merge(['usuario_id' => Auth::id()]);
-
-        $compensacao_horarios = json_decode($this->input('compensacao_horarios'), true);
-        $compensacao_data_inicio = null;
-        $compensacao_data_fim = null;
-
-        if (! empty($compensacao_horarios) && is_array($compensacao_horarios)) {
-            $datas = array_column($compensacao_horarios, 'data');
-            if (! empty($datas)) {
-                sort($datas);
-                $compensacao_data_inicio = $datas[0];
-                $compensacao_data_fim = end($datas);
-            }
-        }
-
-        $this->merge([
-            'compensacao_data_inicio' => $compensacao_data_inicio,
-            'compensacao_data_fim' => $compensacao_data_fim,
-        ]);
     }
 
     /**
@@ -52,13 +46,30 @@ class AusenciasRequest extends FormRequest
     {
         return [
             'usuario_id' => ['required', 'uuid', 'exists:users,id'],
-            'projeto_id' => ['required', 'uuid', 'exists:projetos,id'],
+            'projeto_id' => [
+                'required',
+                'uuid',
+                'exists:projetos,id',
+                // Validação customizada para garantir que o usuário tem um vínculo ativo com o projeto.
+                function ($attribute, $value, $fail) {
+                    $vinculoAtivo = UsuarioProjeto::where('usuario_id', Auth::id())
+                        ->where('projeto_id', $value)
+                        ->where('status', 'APROVADO')
+                        ->whereNull('data_fim')
+                        ->exists();
+
+                    if (! $vinculoAtivo) {
+                        $fail('Você não está vinculado a este projeto ou o vínculo não está ativo.');
+                    }
+                },
+            ],
             'titulo' => ['required', 'string', 'max:255'],
             'data_inicio' => ['required', 'date'],
             'data_fim' => [
                 'required',
                 'date',
                 'after_or_equal:data_inicio',
+                // Validação customizada para checar sobreposição de datas.
                 function ($attribute, $value, $fail) {
                     $data_inicio = $this->input('data_inicio');
                     $data_fim = $value;
@@ -68,7 +79,6 @@ class AusenciasRequest extends FormRequest
                     $compensacao_data_inicio = $this->input('compensacao_data_inicio');
                     $compensacao_data_fim = $this->input('compensacao_data_fim');
 
-                    // 1. Ausência vs. Ausência (mesmo projeto)
                     $this->checkForOverlap(
                         $fail, $usuario_id, $ausencia_id, $data_inicio, $data_fim, 'data_inicio', 'data_fim',
                         'O período de ausência se sobrepõe a outra ausência para o mesmo projeto.',
@@ -76,19 +86,14 @@ class AusenciasRequest extends FormRequest
                     );
 
                     if ($compensacao_data_inicio && $compensacao_data_fim) {
-                        // 2. Compensação vs. Compensação (qualquer projeto)
                         $this->checkForOverlap(
                             $fail, $usuario_id, $ausencia_id, $compensacao_data_inicio, $compensacao_data_fim, 'compensacao_data_inicio', 'compensacao_data_fim',
                             'O período de compensação se sobrepõe a outra compensação existente.'
                         );
-
-                        // 3. Ausência vs. Compensação (qualquer projeto)
                         $this->checkForOverlap(
                             $fail, $usuario_id, $ausencia_id, $data_inicio, $data_fim, 'compensacao_data_inicio', 'compensacao_data_fim',
                             'O período de ausência se sobrepõe a um período de compensação existente.'
                         );
-
-                        // 4. Compensação vs. Ausência (qualquer projeto)
                         $this->checkForOverlap(
                             $fail, $usuario_id, $ausencia_id, $compensacao_data_inicio, $compensacao_data_fim, 'data_inicio', 'data_fim',
                             'O período de compensação se sobrepõe a um período de ausência existente.'
@@ -99,8 +104,8 @@ class AusenciasRequest extends FormRequest
             'justificativa' => ['required', 'string'],
             'horas_a_compensar' => ['required', 'integer', 'min:1'],
             'compensacao_horarios' => ['required', 'json'],
-            'compensacao_data_inicio' => ['nullable', 'date'],
-            'compensacao_data_fim' => ['nullable', 'date', 'after_or_equal:compensacao_data_inicio'],
+            'compensacao_data_inicio' => ['required', 'date'],
+            'compensacao_data_fim' => ['required', 'date', 'after_or_equal:compensacao_data_inicio'],
         ];
     }
 
@@ -121,19 +126,8 @@ class AusenciasRequest extends FormRequest
 
     /**
      * Check for overlapping date ranges for absences.
-     *
-     * @param  \Closure  $fail
-     * @param  string  $usuario_id
-     * @param  int|null  $ausencia_id
-     * @param  string  $start
-     * @param  string  $end
-     * @param  string  $db_start_col
-     * @param  string  $db_end_col
-     * @param  string  $message
-     * @param  string|null  $projeto_id
-     * @return void
      */
-    private function checkForOverlap($fail, $usuario_id, $ausencia_id, $start, $end, $db_start_col, $db_end_col, $message, $projeto_id = null)
+    private function checkForOverlap($fail, $usuario_id, $ausencia_id, $start, $end, $db_start_col, $db_end_col, $message, $projeto_id = null): void
     {
         $query = Ausencia::where('usuario_id', $usuario_id)
             ->whereIn('status', [StatusAusencia::PENDENTE, StatusAusencia::APROVADO])

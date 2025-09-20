@@ -12,7 +12,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -192,47 +191,8 @@ class AusenciasController extends Controller
      */
     public function update(AusenciasRequest $request, Ausencia $ausencia): RedirectResponse
     {
-        if ($ausencia->usuario_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para editar esta ausencia.');
-        }
-
-        $validated = $request->validated();
-
-        // Verificar se o usuário está vinculado ao projeto
-        $vinculo = UsuarioProjeto::where('usuario_id', Auth::id())
-            ->where('projeto_id', $validated['projeto_id'])
-            ->where('status', 'APROVADO')
-            ->whereNull('data_fim')
-            ->first();
-
-        if (! $vinculo) {
-            return redirect()->back()
-                ->withErrors(['projeto_id' => 'Você não está vinculado a este projeto ou o vínculo não está ativo.'])
-                ->withInput();
-        }
-
         try {
-            DB::transaction(function () use ($validated, $ausencia) {
-                // Se houver horários de compensação, extrair as datas de início e fim
-                if (! empty($validated['compensacao_horarios'])) {
-                    $horarios = $validated['compensacao_horarios'];
-                    if (is_array($horarios) && count($horarios) > 0) {
-                        $datas = array_column($horarios, 'data');
-                        sort($datas);
-                        $validated['compensacao_data_inicio'] = $datas[0];
-                        $validated['compensacao_data_fim'] = end($datas);
-                    } else {
-                        // Se o array de horários estiver vazio, zera as datas
-                        $validated['compensacao_data_inicio'] = null;
-                        $validated['compensacao_data_fim'] = null;
-                    }
-                } else {
-                    $validated['compensacao_data_inicio'] = null;
-                    $validated['compensacao_data_fim'] = null;
-                }
-
-                $ausencia->update($validated);
-            });
+            $ausencia->update($request->validated());
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausencia atualizada com sucesso!');
@@ -241,7 +201,7 @@ class AusenciasController extends Controller
                 'exception' => $e,
                 'user_id' => Auth::id(),
                 'ausencia_id' => $ausencia->id,
-                'data' => $validated ?? [],
+                'data' => $request->validated() ?? [],
             ]);
 
             return redirect()->back()
@@ -263,7 +223,7 @@ class AusenciasController extends Controller
         }
 
         try {
-            $ausencia->delete();
+            $ausencia->forceDelete();
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausência removida com sucesso!');
