@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 COMPOSE_FILE  := docker-compose.prod.yml
 APP_CONTAINER := sgl-lacina_app_prod
+APP_CONTAINER_DEV := sgl-lacina_app_dev
 DB_CONTAINER  := sgl-lacina_db_prod
 
 BACKUP_DIR   := ./backups
@@ -216,10 +217,10 @@ list-backups:
 .PHONY: reset-dev
 reset-dev:
 	@echo "DEV: Refazendo migrações e seeders..."
-	@docker exec $(APP_CONTAINER) php artisan migrate:fresh --seed
-	@docker exec $(APP_CONTAINER) php artisan db:seed --class=DevelopmentSeeder
-	@docker exec $(APP_CONTAINER) php artisan horarios:criar-usuarios
-	@docker exec $(APP_CONTAINER) php artisan optimize
+	@docker exec $(APP_CONTAINER_DEV) php artisan migrate:fresh --seed
+	@docker exec $(APP_CONTAINER_DEV) php artisan db:seed --class=DevelopmentSeeder
+	@docker exec $(APP_CONTAINER_DEV) php artisan horarios:criar-usuarios
+	@docker exec $(APP_CONTAINER_DEV) php artisan optimize
 
 
 # ==============================================================================

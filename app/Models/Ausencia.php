@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\StatusAusencia;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ausencia extends Model
 {
@@ -41,6 +41,18 @@ class Ausencia extends Model
     public function uniqueIds(): array
     {
         return ['id'];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (Ausencia $ausencia) {
+            if ($ausencia->getOriginal('status') === StatusAusencia::REJEITADO->value) {
+                $ausencia->status = StatusAusencia::PENDENTE->value;
+            }
+        });
     }
 
     /**

@@ -87,7 +87,6 @@ export default function Show({
         'colaboradores' | 'horarios' | 'dailys'
     >('colaboradores');
 
-    // Daily Reports State
     const { url, props } = usePage();
     const [diaDaily, setDiaDaily] = useState<string>(
         initialDiaDaily || new Date().toISOString().slice(0, 10),
@@ -102,11 +101,9 @@ export default function Show({
             : 0,
     );
 
-    // Atualiza a URL e faz reload dos dados da daily ao trocar o dia
     const handleChangeDiaDaily = (dia: string) => {
         setDiaDaily(dia);
         setLoadingDaily(true);
-        // Garante que queryparams é um objeto
         const queryParams =
             props.queryparams && typeof props.queryparams === 'object'
                 ? props.queryparams
@@ -135,6 +132,7 @@ export default function Show({
             },
         );
     };
+
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         dia: string;
@@ -1122,13 +1120,34 @@ export default function Show({
                                                                                 .data
                                                                                 .data_inicio
                                                                         }
-                                                                        max={
-                                                                            new Date()
+                                                                        min={
+                                                                            new Date(
+                                                                                projeto.data_inicio,
+                                                                            )
                                                                                 .toISOString()
                                                                                 .split(
                                                                                     'T',
                                                                                 )[0]
                                                                         }
+                                                                        max={(() => {
+                                                                            if (
+                                                                                !projeto.data_termino
+                                                                            )
+                                                                                return undefined;
+                                                                            const dataAnterior =
+                                                                                new Date(
+                                                                                    projeto.data_termino,
+                                                                                );
+                                                                            dataAnterior.setDate(
+                                                                                dataAnterior.getDate() -
+                                                                                    1,
+                                                                            );
+                                                                            return dataAnterior
+                                                                                .toISOString()
+                                                                                .split(
+                                                                                    'T',
+                                                                                )[0];
+                                                                        })()}
                                                                         onChange={(
                                                                             e: React.ChangeEvent<HTMLInputElement>,
                                                                         ) =>

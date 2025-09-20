@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusAusencia;
 use App\Http\Requests\AusenciasRequest;
 use App\Models\Ausencia;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
 use App\Services\HorariosCacheService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Enums\StatusAusencia;
-use Illuminate\Validation\Rule;
-
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AusenciasController extends Controller
 {
@@ -29,6 +27,7 @@ class AusenciasController extends Controller
     {
         $this->horariosCacheService = $horariosCacheService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -37,10 +36,13 @@ class AusenciasController extends Controller
 
         $user = Auth::user();
 
+        $orderStatement = "CASE status WHEN '".StatusAusencia::PENDENTE->value."' THEN 1 WHEN '".StatusAusencia::APROVADO->value."' THEN 2 WHEN '".StatusAusencia::REJEITADO->value."' THEN 3 ELSE 4 END";
+
         if (Auth::user()->isCoordenador()) {
             return Inertia::render('Ausencias/IndexCoordenador', [
                 'ausencias' => Ausencia::with(['projeto', 'usuario'])
-                    ->orderBy('data_inicio', 'desc', 'status')
+                    ->orderByRaw($orderStatement)
+                    ->orderBy('data_inicio', 'desc')
                     ->paginate(15),
             ]);
         }
@@ -63,15 +65,16 @@ class AusenciasController extends Controller
         // Query base
         $query = Ausencia::with(['projeto'])
             ->where('usuario_id', $user->id)
+            ->orderByRaw($orderStatement)
             ->orderBy('data_inicio', 'desc');
 
         // Aplicar filtros
         if ($filtros['data_inicio']) {
-            $query->where('data', '>=', $filtros['data_inicio']);
+            $query->where('data_inicio', '>=', $filtros['data_inicio']);
         }
 
         if ($filtros['data_fim']) {
-            $query->where('data', '<=', $filtros['data_fim']);
+            $query->where('data_fim', '<=', $filtros['data_fim']);
         }
 
         if ($filtros['projeto_id']) {
@@ -114,23 +117,10 @@ class AusenciasController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(AusenciasRequest $request): RedirectResponse
     {
         try {
-            $validatedData = $request->validated();
-
-            $horarios = json_decode($validatedData['compensacao_horarios'], true);
-            if (!empty($horarios)) {
-                $datas = array_column($horarios, 'data');
-                sort($datas);
-                $validatedData['compensacao_data_inicio'] = $datas[0];
-                $validatedData['compensacao_data_fim'] = end($datas);
-            }
-
-            Ausencia::create($validatedData);
+            Ausencia::create($request->validated());
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausencia criada com sucesso!');
@@ -138,11 +128,11 @@ class AusenciasController extends Controller
             Log::error('Erro ao criar Ausencia', [
                 'exception' => $e,
                 'user_id' => Auth::id(),
-                'data' => $request->all(),
+                'data' => $request->validated(),
             ]);
 
             return redirect()->back()
-                ->withErrors(['error' => 'Erro ao criar Ausencia: ' . $e->getMessage()])
+                ->withErrors(['error' => 'Erro ao criar Ausencia: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -201,47 +191,8 @@ class AusenciasController extends Controller
      */
     public function update(AusenciasRequest $request, Ausencia $ausencia): RedirectResponse
     {
-        if ($ausencia->usuario_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para editar esta ausencia.');
-        }
-
-        $validated = $request->validated();
-
-        // Verificar se o usuário está vinculado ao projeto
-        $vinculo = UsuarioProjeto::where('usuario_id', Auth::id())
-            ->where('projeto_id', $validated['projeto_id'])
-            ->where('status', 'APROVADO')
-            ->whereNull('data_fim')
-            ->first();
-
-        if (!$vinculo) {
-            return redirect()->back()
-                ->withErrors(['projeto_id' => 'Você não está vinculado a este projeto ou o vínculo não está ativo.'])
-                ->withInput();
-        }
-
         try {
-            DB::transaction(function () use ($validated, $ausencia) {
-                // Se houver horários de compensação, extrair as datas de início e fim
-                if (!empty($validated['compensacao_horarios'])) {
-                    $horarios = $validated['compensacao_horarios'];
-                    if (is_array($horarios) && count($horarios) > 0) {
-                        $datas = array_column($horarios, 'data');
-                        sort($datas);
-                        $validated['compensacao_data_inicio'] = $datas[0];
-                        $validated['compensacao_data_fim'] = end($datas);
-                    } else {
-                        // Se o array de horários estiver vazio, zera as datas
-                        $validated['compensacao_data_inicio'] = null;
-                        $validated['compensacao_data_fim'] = null;
-                    }
-                } else {
-                    $validated['compensacao_data_inicio'] = null;
-                    $validated['compensacao_data_fim'] = null;
-                }
-
-                $ausencia->update($validated);
-            });
+            $ausencia->update($request->validated());
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausencia atualizada com sucesso!');
@@ -250,7 +201,7 @@ class AusenciasController extends Controller
                 'exception' => $e,
                 'user_id' => Auth::id(),
                 'ausencia_id' => $ausencia->id,
-                'data' => $validated ?? [],
+                'data' => $request->validated() ?? [],
             ]);
 
             return redirect()->back()
@@ -272,12 +223,13 @@ class AusenciasController extends Controller
         }
 
         try {
-            $ausencia->delete();
+            $ausencia->forceDelete();
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausência removida com sucesso!');
         } catch (\Exception $e) {
             Log::error('Erro ao remover Ausencia', ['exception' => $e, 'ausencia_id' => $ausencia->id]);
+
             return redirect()->back()
                 ->withErrors(['error' => 'Erro ao remover a ausência. Tente novamente.']);
         }
@@ -293,8 +245,8 @@ class AusenciasController extends Controller
         $validated = $request->validate([
             'status' => [
                 'required',
-                Rule::in([StatusAusencia::APROVADO->value, StatusAusencia::REJEITADO->value])
-            ]
+                Rule::in([StatusAusencia::APROVADO->value, StatusAusencia::REJEITADO->value]),
+            ],
         ]);
 
         if ($ausencia->status !== StatusAusencia::PENDENTE->value) {

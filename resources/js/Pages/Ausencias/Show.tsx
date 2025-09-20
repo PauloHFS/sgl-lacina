@@ -28,11 +28,16 @@ const Show = ({ ausencia, auth }: ShowPageProps) => {
             try {
                 return JSON.parse(ausencia.compensacao_horarios);
             } catch (e) {
-                console.error("Erro ao fazer parse dos horários de compensação:", e);
+                console.error(
+                    'Erro ao fazer parse dos horários de compensação:',
+                    e,
+                );
                 return [];
             }
         }
-        return Array.isArray(ausencia.compensacao_horarios) ? ausencia.compensacao_horarios : [];
+        return Array.isArray(ausencia.compensacao_horarios)
+            ? ausencia.compensacao_horarios
+            : [];
     }, [ausencia.compensacao_horarios]);
 
     return (

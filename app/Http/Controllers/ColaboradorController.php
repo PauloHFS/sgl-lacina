@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Genero;
 use App\Enums\StatusCadastro;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\Banco;
-use Inertia\Inertia;
+use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
 use App\Events\CadastroAceito;
-use App\Enums\StatusVinculoProjeto;
+use App\Events\CadastroRecusado;
+use App\Models\Banco;
+use App\Models\Projeto;
+use App\Models\User;
 use App\Models\UsuarioProjeto;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Genero;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Events\CadastroRecusado;
+use Inertia\Inertia;
 
 class ColaboradorController extends Controller
 {
@@ -39,21 +38,21 @@ class ColaboradorController extends Controller
             $usuarios = User::where('status_cadastro', StatusCadastro::PENDENTE)
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
-        } else if ($status == 'vinculo_pendente') {
+        } elseif ($status == 'vinculo_pendente') {
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::PENDENTE);
             })->paginate(10);
-        } else if ($status == 'ativos') {
+        } elseif ($status == 'ativos') {
             $usuarios = User::whereIn('id', function ($query) {
                 $query->select('usuario_id')
                     ->from('usuario_projeto')
                     ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
                     ->where('status', StatusVinculoProjeto::APROVADO);
             })->paginate(10);
-        } else if ($status == 'encerrados') {
+        } elseif ($status == 'encerrados') {
             $usuarios = User::query()
                 ->where('status_cadastro', StatusCadastro::ACEITO) // usuários com cadastro aceito
                 ->where(function ($queryBuilder) {
@@ -89,6 +88,7 @@ class ColaboradorController extends Controller
                 'colaboradores' => $usuarios,
             ]);
         }
+
         return Inertia::render('Colaboradores/Index', []);
     }
 
@@ -106,9 +106,9 @@ class ColaboradorController extends Controller
 
         if ($usuario->status_cadastro === StatusCadastro::PENDENTE) {
             $status_colaborador = 'APROVACAO_PENDENTE';
-        } elseif ($usuario->projetos->contains(fn($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::PENDENTE->value)) {
+        } elseif ($usuario->projetos->contains(fn ($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::PENDENTE->value)) {
             $status_colaborador = 'VINCULO_PENDENTE';
-        } elseif ($usuario->projetos->contains(fn($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::APROVADO->value)) {
+        } elseif ($usuario->projetos->contains(fn ($projeto) => $projeto->vinculo && $projeto->vinculo->status === StatusVinculoProjeto::APROVADO->value)) {
             $status_colaborador = 'ATIVO';
         } else {
             $status_colaborador = 'ENCERRADO';
@@ -120,7 +120,7 @@ class ColaboradorController extends Controller
             'password',
             'remember_token',
             'deleted_at',
-            'projetos' // Exclude original projetos to rebuild with correct vinculo.id
+            'projetos', // Exclude original projetos to rebuild with correct vinculo.id
         ])->all();
 
         $colaboradorData['created_at'] = $usuario->created_at?->toIso8601String();
@@ -137,10 +137,10 @@ class ColaboradorController extends Controller
                     try {
                         $vinculoData['data_inicio'] = ($projeto->vinculo->data_inicio instanceof \Carbon\Carbon)
                             ? $projeto->vinculo->data_inicio->toIso8601String()
-                            : \Carbon\Carbon::parse((string)$projeto->vinculo->data_inicio)->toIso8601String();
+                            : \Carbon\Carbon::parse((string) $projeto->vinculo->data_inicio)->toIso8601String();
                     } catch (\Exception $e) {
-                        Log::error("Error parsing vinculo data_inicio for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
-                        $vinculoData['data_inicio'] = is_string($projeto->vinculo->data_inicio) ? (string)$projeto->vinculo->data_inicio : null;
+                        Log::error("Error parsing vinculo data_inicio for user {$usuario->id}, project {$projeto->id}: ".$e->getMessage());
+                        $vinculoData['data_inicio'] = is_string($projeto->vinculo->data_inicio) ? (string) $projeto->vinculo->data_inicio : null;
                     }
                 } else {
                     $vinculoData['data_inicio'] = null;
@@ -150,10 +150,10 @@ class ColaboradorController extends Controller
                     try {
                         $vinculoData['data_fim'] = ($projeto->vinculo->data_fim instanceof \Carbon\Carbon)
                             ? $projeto->vinculo->data_fim->toIso8601String()
-                            : \Carbon\Carbon::parse((string)$projeto->vinculo->data_fim)->toIso8601String();
+                            : \Carbon\Carbon::parse((string) $projeto->vinculo->data_fim)->toIso8601String();
                     } catch (\Exception $e) {
-                        Log::error("Error parsing vinculo data_fim for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
-                        $vinculoData['data_fim'] = is_string($projeto->vinculo->data_fim) ? (string)$projeto->vinculo->data_fim : null;
+                        Log::error("Error parsing vinculo data_fim for user {$usuario->id}, project {$projeto->id}: ".$e->getMessage());
+                        $vinculoData['data_fim'] = is_string($projeto->vinculo->data_fim) ? (string) $projeto->vinculo->data_fim : null;
                     }
                 } else {
                     $vinculoData['data_fim'] = null;
@@ -163,10 +163,10 @@ class ColaboradorController extends Controller
                     try {
                         $vinculoData['created_at'] = ($projeto->vinculo->created_at instanceof \Carbon\Carbon)
                             ? $projeto->vinculo->created_at->toIso8601String()
-                            : \Carbon\Carbon::parse((string)$projeto->vinculo->created_at)->toIso8601String();
+                            : \Carbon\Carbon::parse((string) $projeto->vinculo->created_at)->toIso8601String();
                     } catch (\Exception $e) {
-                        Log::error("Error parsing vinculo created_at for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
-                        $vinculoData['created_at'] = is_string($projeto->vinculo->created_at) ? (string)$projeto->vinculo->created_at : null;
+                        Log::error("Error parsing vinculo created_at for user {$usuario->id}, project {$projeto->id}: ".$e->getMessage());
+                        $vinculoData['created_at'] = is_string($projeto->vinculo->created_at) ? (string) $projeto->vinculo->created_at : null;
                     }
                 } else {
                     $vinculoData['created_at'] = null;
@@ -176,10 +176,10 @@ class ColaboradorController extends Controller
                     try {
                         $vinculoData['updated_at'] = ($projeto->vinculo->updated_at instanceof \Carbon\Carbon)
                             ? $projeto->vinculo->updated_at->toIso8601String()
-                            : \Carbon\Carbon::parse((string)$projeto->vinculo->updated_at)->toIso8601String();
+                            : \Carbon\Carbon::parse((string) $projeto->vinculo->updated_at)->toIso8601String();
                     } catch (\Exception $e) {
-                        Log::error("Error parsing vinculo updated_at for user {$usuario->id}, project {$projeto->id}: " . $e->getMessage());
-                        $vinculoData['updated_at'] = is_string($projeto->vinculo->updated_at) ? (string)$projeto->vinculo->updated_at : null;
+                        Log::error("Error parsing vinculo updated_at for user {$usuario->id}, project {$projeto->id}: ".$e->getMessage());
+                        $vinculoData['updated_at'] = is_string($projeto->vinculo->updated_at) ? (string) $projeto->vinculo->updated_at : null;
                     }
                 } else {
                     $vinculoData['updated_at'] = null;
@@ -187,6 +187,7 @@ class ColaboradorController extends Controller
             }
 
             $projectDetails = collect($projeto->toArray())->except(['pivot', 'vinculo'])->all();
+
             return array_merge(
                 $projectDetails,
                 ['vinculo' => $vinculoData]
@@ -211,6 +212,10 @@ class ColaboradorController extends Controller
 
         $historico = $colaborador->historicoUsuarioProjeto()
             ->join('projetos', 'historico_usuario_projeto.projeto_id', '=', 'projetos.id')
+            ->whereIn('historico_usuario_projeto.status', [
+                StatusVinculoProjeto::APROVADO,
+                StatusVinculoProjeto::ENCERRADO,
+            ])
             ->with(['projeto'])
             ->orderByDesc('historico_usuario_projeto.data_inicio')
             ->orderBy('projetos.nome')
@@ -219,7 +224,7 @@ class ColaboradorController extends Controller
 
         return inertia('Colaboradores/Historico', [
             'colaborador' => $colaborador,
-            'historico' => $historico
+            'historico' => $historico,
         ]);
     }
 
@@ -278,14 +283,14 @@ class ColaboradorController extends Controller
             $validatedData['data_nascimento'] = $validatedData['data_nascimento'] ? \Carbon\Carbon::createFromFormat('Y-m-d', $validatedData['data_nascimento'])->startOfDay() : null;
         }
 
-
         try {
             $colaborador->fill($validatedData);
             $colaborador->save();
 
             return redirect()->route('colaboradores.show', $colaborador->id)->with('success', 'Dados do colaborador atualizados com sucesso.');
         } catch (\Exception $e) {
-            Log::error("Erro ao atualizar colaborador: " . $e->getMessage());
+            Log::error('Erro ao atualizar colaborador: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Erro ao atualizar os dados do colaborador. Tente novamente.');
         }
     }
@@ -294,7 +299,7 @@ class ColaboradorController extends Controller
     {
         $this->authorize('update', $colaborador);
         $request->validate([
-            'observacao' => 'nullable|string|max:1000'
+            'observacao' => 'nullable|string|max:1000',
         ]);
 
         $observacao = $request->input('observacao', '');
@@ -320,7 +325,7 @@ class ColaboradorController extends Controller
         }
 
         $request->validate([
-            'observacao' => 'nullable|string|max:1000'
+            'observacao' => 'nullable|string|max:1000',
         ]);
 
         try {
@@ -341,7 +346,8 @@ class ColaboradorController extends Controller
             return redirect()->route('colaboradores.index', ['status' => 'cadastro_pendente'])
                 ->with('success', 'Cadastro do colaborador recusado e removido do sistema com sucesso.');
         } catch (\Exception $e) {
-            Log::error("Erro ao recusar colaborador: " . $e->getMessage());
+            Log::error('Erro ao recusar colaborador: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Erro ao recusar o cadastro. Tente novamente.');
         }
     }

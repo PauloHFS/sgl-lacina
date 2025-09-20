@@ -48,6 +48,7 @@ interface ShowPageProps extends PageProps {
     vinculo: Vinculo;
     horarios: Record<string, DiaHorario>;
     can_edit: boolean;
+    horarioLastUpdatedAt: string | null;
 }
 
 const formatarHorario = (horario: number): string => {
@@ -79,7 +80,16 @@ export default function Show({
     projeto,
     vinculo,
     horarios,
+    horarioLastUpdatedAt,
 }: ShowPageProps) {
+    console.log({
+        colaborador,
+        projeto,
+        vinculo,
+        horarios,
+        horarioLastUpdatedAt,
+    });
+
     const diasOrdem = [
         'SEGUNDA',
         'TERCA',
@@ -327,6 +337,22 @@ export default function Show({
                                         </div>
                                     );
                                 })}
+                            </div>
+                            <div>
+                                {horarioLastUpdatedAt && (
+                                    <p className="text-base-content/50 mt-6 text-sm">
+                                        Última atualização dos horários:{' '}
+                                        {new Date(
+                                            horarioLastUpdatedAt.replace(
+                                                ' ',
+                                                'T',
+                                            ) + 'Z',
+                                        ).toLocaleString('pt-BR', {
+                                            dateStyle: 'short',
+                                            timeStyle: 'short',
+                                        })}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

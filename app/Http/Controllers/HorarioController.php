@@ -9,21 +9,19 @@ use App\Models\Horario;
 use App\Models\Sala;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class HorarioController extends Controller
 {
-
     public function index(Request $request)
     {
         $horarios = $request->user()->horarios()
             ->with([
                 'usuarioProjeto.projeto:id,nome',
                 'baia:id,nome,sala_id',
-                'baia.sala:id,nome'
+                'baia.sala:id,nome',
             ])
             ->orderBy('dia_da_semana')
             ->orderBy('horario', 'asc')
@@ -38,7 +36,6 @@ class HorarioController extends Controller
     /**
      * Mostra o formulário para editar horários do usuário.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Inertia\Response
      */
     public function edit(Request $request)
@@ -47,7 +44,7 @@ class HorarioController extends Controller
             ->with([
                 'usuarioProjeto.projeto:id,nome',
                 'baia:id,nome,sala_id',
-                'baia.sala:id,nome'
+                'baia.sala:id,nome',
             ])
             ->orderBy('dia_da_semana')
             ->orderBy('horario', 'asc')
@@ -70,7 +67,6 @@ class HorarioController extends Controller
     /**
      * Atualiza os horários do usuário com base nos dados validados da requisição.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request)
@@ -78,7 +74,7 @@ class HorarioController extends Controller
         $validatedData = $request->validate([
             'horarios' => 'required|array',
             'horarios.*.id' => 'required|exists:horarios,id',
-            'horarios.*.tipo' => 'nullable|string|in:' . implode(',', array_map(fn($e) => $e->value, TipoHorario::cases())),
+            'horarios.*.tipo' => 'nullable|string|in:'.implode(',', array_map(fn ($e) => $e->value, TipoHorario::cases())),
             'horarios.*.usuario_projeto_id' => 'nullable|exists:usuario_projeto,id',
             'horarios.*.baia_id' => 'nullable|exists:baias,id',
             'horarios.*.baia_updated_at' => 'nullable|date', // Timestamp da baia para locking otimista
@@ -87,7 +83,6 @@ class HorarioController extends Controller
             'horarios.*.usuario_projeto_id.exists' => 'O projeto selecionado não existe.',
             'horarios.*.baia_id.exists' => 'A baia selecionada não existe.',
         ]);
-
 
         // Validação customizada para garantir que apenas um campo seja preenchido por vez
         $customErrors = [];
@@ -109,32 +104,35 @@ class HorarioController extends Controller
         foreach ($validatedData['horarios'] as $index => $horario) {
             $oldHorario = $horarios->firstWhere('id', $horario['id']);
 
-            if (!$oldHorario) {
+            if (! $oldHorario) {
                 $customErrors["horarios.{$index}.id"] = 'Horário não encontrado.';
+
                 continue;
             }
 
             // Validação de locking otimista para baias
-            if (!empty($horario['baia_id']) && !empty($horario['baia_updated_at'])) {
+            if (! empty($horario['baia_id']) && ! empty($horario['baia_updated_at'])) {
                 $baia = Baia::find($horario['baia_id']);
 
-                if (!$baia) {
+                if (! $baia) {
                     $customErrors["horarios.{$index}.baia_id"] = 'Baia não encontrada.';
+
                     continue;
                 }
 
                 $baiaUpdatedAt = Carbon::parse($horario['baia_updated_at']);
                 $currentBaiaUpdatedAt = $baia->updated_at;
 
-                if (!$baiaUpdatedAt->equalTo($currentBaiaUpdatedAt)) {
+                if (! $baiaUpdatedAt->equalTo($currentBaiaUpdatedAt)) {
                     $customErrors["horarios.{$index}.baia_id"] = 'A baia foi modificada por outro usuário. Por favor, recarregue a página e tente novamente.';
+
                     continue;
                 }
             }
 
             $tipoAtual = $horario['tipo'] ?? $oldHorario->tipo->value;
 
-            if (!empty($horario['usuario_projeto_id']) && !in_array($tipoAtual, [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value])) {
+            if (! empty($horario['usuario_projeto_id']) && ! in_array($tipoAtual, [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value])) {
                 $customErrors["horarios.{$index}.usuario_projeto_id"] = 'O projeto só pode ser informado para horários de trabalho presencial ou remoto.';
             }
             // else if (!empty($horario['baia_id']) && $oldHorario->tipo !== TipoHorario::TRABALHO_PRESENCIAL) {
@@ -142,11 +140,11 @@ class HorarioController extends Controller
             // }
         }
 
-        if (!empty($customErrors)) {
+        if (! empty($customErrors)) {
             return redirect()->back()->withErrors($customErrors);
         }
 
-        if (!empty($validatedData['horarios'])) {
+        if (! empty($validatedData['horarios'])) {
             DB::transaction(function () use ($validatedData, $request) {
                 foreach ($validatedData['horarios'] as $horarioData) {
                     // Busca o horário atual para obter o tipo se não for fornecido
@@ -164,16 +162,16 @@ class HorarioController extends Controller
                     }
 
                     // Implementação adicional de locking otimista no momento do update
-                    if (!empty($horarioData['baia_id']) && !empty($horarioData['baia_updated_at'])) {
+                    if (! empty($horarioData['baia_id']) && ! empty($horarioData['baia_updated_at'])) {
                         $baia = Baia::lockForUpdate()->find($horarioData['baia_id']);
 
-                        if (!$baia) {
+                        if (! $baia) {
                             throw new \Exception('Baia não encontrada durante o update.');
                         }
 
                         $baiaUpdatedAt = Carbon::parse($horarioData['baia_updated_at']);
 
-                        if (!$baiaUpdatedAt->equalTo($baia->updated_at)) {
+                        if (! $baiaUpdatedAt->equalTo($baia->updated_at)) {
                             throw new \Exception('A baia foi modificada por outro usuário durante o processo. Operação cancelada.');
                         }
 
@@ -219,7 +217,6 @@ class HorarioController extends Controller
     /**
      * Busca salas e baias disponíveis para um horário específico.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getSalasDisponiveis(Request $request)
@@ -260,7 +257,6 @@ class HorarioController extends Controller
     /**
      * Busca projetos ativos do usuário.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function getProjetosAtivos(Request $request)
@@ -285,24 +281,18 @@ class HorarioController extends Controller
     /**
      * Exibe os horários de um colaborador em um projeto específico.
      *
-     * @param  string  $colaboradorId
-     * @param  string  $projetoId
      * @return \Inertia\Response
      */
     public function show(string $colaboradorId, string $projetoId)
     {
-        // Verificar se o usuário atual tem permissão para ver os horários
         $currentUser = Auth::user();
 
-        // Se não for coordenador, só pode ver seus próprios horários
-        if (!$currentUser->isCoordenador() && $currentUser->id !== $colaboradorId) {
+        if (! $currentUser->isCoordenador() && $currentUser->id !== $colaboradorId) {
             abort(403, 'Você não tem permissão para visualizar estes horários.');
         }
 
-        // Buscar o colaborador
         $colaborador = \App\Models\User::findOrFail($colaboradorId);
 
-        // Buscar o vínculo ativo do colaborador com o projeto
         $vinculo = \App\Models\UsuarioProjeto::where('usuario_id', $colaboradorId)
             ->where('projeto_id', $projetoId)
             ->where('status', StatusVinculoProjeto::APROVADO)
@@ -310,23 +300,26 @@ class HorarioController extends Controller
             ->with('projeto:id,nome,cliente')
             ->first();
 
-        if (!$vinculo) {
+        if (! $vinculo) {
             abort(404, 'Colaborador não possui vínculo ativo com este projeto.');
         }
+
+        $horarioLastUpdatedAt = Horario::where('usuario_id', $colaboradorId)
+            ->where('usuario_projeto_id', $vinculo->id)
+            ->max('updated_at');
 
         // Buscar os horários do colaborador para este projeto
         $horarios = Horario::where('usuario_id', $colaboradorId)
             ->where('usuario_projeto_id', $vinculo->id)
             ->with([
                 'baia:id,nome,sala_id',
-                'baia.sala:id,nome'
+                'baia.sala:id,nome',
             ])
             ->orderBy('dia_da_semana')
             ->orderBy('horario', 'asc')
             ->get()
             ->groupBy('dia_da_semana');
 
-        // Estruturar dados para o frontend
         $diasSemana = [
             'SEGUNDA' => 'Segunda-feira',
             'TERCA' => 'Terça-feira',
@@ -334,7 +327,7 @@ class HorarioController extends Controller
             'QUINTA' => 'Quinta-feira',
             'SEXTA' => 'Sexta-feira',
             'SABADO' => 'Sábado',
-            'DOMINGO' => 'Domingo'
+            'DOMINGO' => 'Domingo',
         ];
 
         $horariosFormatados = [];
@@ -351,11 +344,11 @@ class HorarioController extends Controller
                             'nome' => $horario->baia->nome,
                             'sala' => $horario->baia->sala ? [
                                 'id' => $horario->baia->sala->id,
-                                'nome' => $horario->baia->sala->nome
-                            ] : null
-                        ] : null
+                                'nome' => $horario->baia->sala->nome,
+                            ] : null,
+                        ] : null,
                     ];
-                })
+                }),
             ];
         }
 
@@ -363,20 +356,21 @@ class HorarioController extends Controller
             'colaborador' => [
                 'id' => $colaborador->id,
                 'name' => $colaborador->name,
-                'email' => $colaborador->email
+                'email' => $colaborador->email,
             ],
             'projeto' => [
                 'id' => $vinculo->projeto->id,
                 'nome' => $vinculo->projeto->nome,
-                'cliente' => $vinculo->projeto->cliente
+                'cliente' => $vinculo->projeto->cliente,
             ],
             'vinculo' => [
                 'id' => $vinculo->id,
                 'funcao' => $vinculo->funcao,
                 'carga_horaria' => $vinculo->carga_horaria,
-                'data_inicio' => $vinculo->data_inicio
+                'data_inicio' => $vinculo->data_inicio,
             ],
             'horarios' => $horariosFormatados,
+            'horarioLastUpdatedAt' => $horarioLastUpdatedAt,
         ]);
     }
 }
