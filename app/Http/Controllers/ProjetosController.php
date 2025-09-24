@@ -220,6 +220,18 @@ class ProjetosController extends Controller
         ->get();
     }
 
+    $canViewAusencias = $usuarioAutenticado->can('viewAusencias', $projeto);
+    $ausencias = null;
+    if ($canViewAusencias) {
+        $participantesIds = $projeto->usuarios()->pluck('users.id');
+        $ausencias = \App\Models\Ausencia::whereIn('usuario_id', $participantesIds)
+            ->whereIn('status', [\App\Enums\StatusAusencia::APROVADO, \App\Enums\StatusAusencia::PENDENTE])
+            ->with('usuario:id,name')
+            ->orderByRaw("CASE status WHEN 'PENDENTE' THEN 1 WHEN 'APROVADO' THEN 2 ELSE 3 END")
+            ->orderBy('data_inicio', 'desc')
+            ->get();
+    }
+
     return Inertia::render('Projetos/Show', [
       'projeto' => $projeto,
       'funcoes' => array_column(Funcao::cases(), 'value'),
@@ -232,6 +244,8 @@ class ProjetosController extends Controller
       'diaDaily' => $diaDaily,
       'dailyReports' => $dailyReports,
       'totalParticipantes' => $totalParticipantes,
+      'canViewAusencias' => $canViewAusencias,
+      'ausencias' => $ausencias,
     ]);
   }
 

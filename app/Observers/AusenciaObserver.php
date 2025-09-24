@@ -15,11 +15,11 @@ class AusenciaObserver
     public function updated(Ausencia $ausencia): void
     {
         if ($ausencia->isDirty('status')) {
-            if ($ausencia->status === StatusAusencia::Aprovado) {
+            if ($ausencia->status === StatusAusencia::APROVADO) {
                 event(new AusenciaAprovadaEvent($ausencia));
             }
 
-            if ($ausencia->status === StatusAusencia::Rejeitado) {
+            if ($ausencia->status === StatusAusencia::REJEITADO) {
                 event(new AusenciaRejeitadaEvent($ausencia));
             }
         }
