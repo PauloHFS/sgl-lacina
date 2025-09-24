@@ -20,18 +20,6 @@ class EventServiceProvider extends ServiceProvider
      * The event listener mappings for the application.
      */
     protected $listen = [
-        JobProcessed::class => [
-            LogJobProcessedToDiscord::class,
-        ],
-        JobFailed::class => [
-            LogJobFailedToDiscord::class,
-        ],
-        ScheduledTaskFinished::class => [
-            LogScheduledTaskFinishedToDiscord::class,
-        ],
-        NovaAusenciaEvent::class => [
-            NotificarCoordenadoresNovaAusencia::class,
-        ],
     ];
 
     /**
