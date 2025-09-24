@@ -78,18 +78,19 @@ const Create = ({
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
         [],
     );
+    const [totalHorasCalculadas, setTotalHorasCalculadas] = useState(0);
 
     // Efeito para calcular horas a compensar automaticamente
     useEffect(() => {
         if (!data.projeto_id || !data.data_inicio || !data.data_fim) {
-            setData('horas_a_compensar', 0);
+            setTotalHorasCalculadas(0);
             return;
         }
 
         try {
             const projetoHorarios = horasPorProjetoPorDia[data.projeto_id];
             if (!projetoHorarios) {
-                setData('horas_a_compensar', 0);
+                setTotalHorasCalculadas(0);
                 return;
             }
 
@@ -97,7 +98,7 @@ const Create = ({
             const fim = parseISO(data.data_fim);
 
             if (!isValid(inicio) || !isValid(fim) || inicio > fim) {
-                setData('horas_a_compensar', 0);
+                setTotalHorasCalculadas(0);
                 return;
             }
 
@@ -110,10 +111,11 @@ const Create = ({
                 return acc + (projetoHorarios[diaDaSemana] || 0);
             }, 0);
 
-            setData('horas_a_compensar', totalHoras);
+            setTotalHorasCalculadas(totalHoras);
+            setData('horas_a_compensar', totalHoras); // Atualiza o campo do formulário
         } catch (error) {
             console.error('Erro ao calcular horas:', error);
-            setData('horas_a_compensar', 0);
+            setTotalHorasCalculadas(0);
         }
     }, [data.projeto_id, data.data_inicio, data.data_fim]);
 
@@ -393,6 +395,16 @@ const Create = ({
                                                     )
                                                 }
                                             />
+                                            <div className="label">
+                                                <span
+                                                    className={`label-text-alt ${data.horas_a_compensar !== totalHorasCalculadas ? 'text-warning' : ''}`}
+                                                >
+                                                    {data.horas_a_compensar !==
+                                                    totalHorasCalculadas
+                                                        ? `Valor recomendado: ${totalHorasCalculadas}h. O valor inserido está diferente.`
+                                                        : `Total de horas no período: ${totalHorasCalculadas}h`}
+                                                </span>
+                                            </div>
                                             {errors.horas_a_compensar && (
                                                 <p className="text-error mt-2 text-sm">
                                                     {errors.horas_a_compensar}
