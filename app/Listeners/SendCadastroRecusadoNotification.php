@@ -24,7 +24,7 @@ class SendCadastroRecusadoNotification implements ShouldQueue
     {
         $url = config('app.url') . '/register';
 
-        Mail::to($event->dadosColaborador['email'])->send(new CadastroRecusadoMail(
+        Mail::to($event->dadosColaborador['email'])->queue(new CadastroRecusadoMail(
             $event->dadosColaborador,
             $event->url ?? $url,
             $event->observacao ?? ''

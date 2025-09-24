@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VinculoAceito as VinculoAceitoMail;
 
-class SendVinculoAceitoNotification
+class SendVinculoAceitoNotification implements ShouldQueue
 {
     // use InteractsWithQueue;
     /**
@@ -26,7 +26,7 @@ class SendVinculoAceitoNotification
     {
         $url = route('projetos.show', ['projeto' => $event->projeto->id]);
 
-        Mail::to($event->user->email)->send(new VinculoAceitoMail(
+        Mail::to($event->user->email)->queue(new VinculoAceitoMail(
             $event->user, // Correctly typed from the event
             $event->projeto, // Correctly typed from the event
             $url
