@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\NovaAusenciaEvent;
 use App\Listeners\LogJobFailedToDiscord;
 use App\Listeners\LogJobProcessedToDiscord;
 use App\Listeners\LogScheduledTaskFinishedToDiscord;
+use App\Listeners\NotificarCoordenadoresNovaAusencia;
 use App\Listeners\NotificarCoordenadoresSolicitacaoVinculo;
 use App\Events\SolicitacaoVinculoCriada;
 use Illuminate\Console\Events\ScheduledTaskFinished;
@@ -26,6 +28,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ScheduledTaskFinished::class => [
             LogScheduledTaskFinishedToDiscord::class,
+        ],
+        NovaAusenciaEvent::class => [
+            NotificarCoordenadoresNovaAusencia::class,
         ],
     ];
 
