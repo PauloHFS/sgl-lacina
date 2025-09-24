@@ -22,7 +22,7 @@ class SendCadastroRecusadoNotification implements ShouldQueue
      */
     public function handle(CadastroRecusado $event): void
     {
-        $url = config('app.url') . '/register';
+        $url = route('register');
 
         Mail::to($event->dadosColaborador['email'])->queue(new CadastroRecusadoMail(
             $event->dadosColaborador,

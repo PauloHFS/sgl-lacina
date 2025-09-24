@@ -3,10 +3,11 @@
 
 Uma nova solicitação de ausência foi criada por **{{ $ausencia->usuario->name }}** no projeto **{{ $ausencia->projeto->nome }}**.
 
-**Período:** {{ $ausencia->data_inicio->format('d/m/Y') }} - {{ $ausencia->data_fim->format('d/m/Y') }}
-**Observação:** {{ $ausencia->observacao }}
+**Titulo:** {{ $ausencia->titulo }}
 
-<x-mail::button :url="route('ausencias.index', ['ausencia' => $ausencia->id])">
+**Período:** {{ $ausencia->data_inicio->format('d/m/Y') }} - {{ $ausencia->data_fim->format('d/m/Y') }}
+
+<x-mail::button :url="route('ausencias.show', ['ausencia' => $ausencia->id])">
 Ver solicitação
 </x-mail::button>
 
