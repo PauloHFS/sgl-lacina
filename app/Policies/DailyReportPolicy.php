@@ -21,8 +21,17 @@ class DailyReportPolicy
      */
     public function view(User $user, DailyReport $dailyReport): bool
     {
-        // return $user->id === $dailyReport->user_id;
-        return true;
+        // User can view the report if they are the owner
+        if ($user->id === $dailyReport->usuario_id) {
+            return true;
+        }
+
+        // User can view the report if they are a coordinator of the project
+        if ($user->isCoordenador($dailyReport->projeto)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

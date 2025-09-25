@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use App\Models\Projeto;
 
-class VinculoAceito extends Mailable
+class VinculoAceito extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
