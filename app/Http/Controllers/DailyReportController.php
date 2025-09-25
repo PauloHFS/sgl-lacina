@@ -168,10 +168,7 @@ class DailyReportController extends Controller
      */
     public function show(DailyReport $dailyReport): Response
     {
-        // Verificar se o usuário tem permissão para ver este daily report
-        if ($dailyReport->usuario_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para ver este daily report.');
-        }
+        $this->authorize('view', $dailyReport);
 
         $dailyReport->load(['projeto', 'usuario']);
 

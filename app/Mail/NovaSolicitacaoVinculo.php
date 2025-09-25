@@ -4,10 +4,11 @@ namespace App\Mail;
 
 use App\Models\UsuarioProjeto;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class NovaSolicitacaoVinculo extends Mailable
+class NovaSolicitacaoVinculo extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

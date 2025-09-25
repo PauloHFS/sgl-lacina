@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
+use App\Enums\StatusVinculoProjeto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -54,6 +56,11 @@ class Projeto extends Model
         return $this->belongsToMany(User::class, 'usuario_projeto', 'projeto_id', 'usuario_id')
             ->withPivot('id', 'tipo_vinculo', 'funcao', 'status', 'carga_horaria', 'valor_bolsa', 'data_inicio', 'data_fim')
             ->withTimestamps();
+    }
+
+    public function coordenadores(): BelongsToMany
+    {
+        return $this->usuarios()->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR)->wherePivot('status', StatusVinculoProjeto::APROVADO);
     }
 
     public function getUsuarioVinculo(string $usuarioId)

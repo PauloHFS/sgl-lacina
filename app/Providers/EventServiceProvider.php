@@ -2,15 +2,13 @@
 
 namespace App\Providers;
 
-use App\Listeners\LogJobFailedToDiscord;
-use App\Listeners\LogJobProcessedToDiscord;
-use App\Listeners\LogScheduledTaskFinishedToDiscord;
-use App\Listeners\NotificarCoordenadoresSolicitacaoVinculo;
-use App\Events\SolicitacaoVinculoCriada;
-use Illuminate\Console\Events\ScheduledTaskFinished;
+use App\Events\AusenciaAprovadaEvent;
+use App\Events\AusenciaRejeitadaEvent;
+use App\Listeners\NotificarColaboradorAusenciaAprovada;
+use App\Listeners\NotificarColaboradorAusenciaRejeitada;
+use App\Models\Ausencia;
+use App\Observers\AusenciaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Queue\Events\JobProcessed;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,14 +16,11 @@ class EventServiceProvider extends ServiceProvider
      * The event listener mappings for the application.
      */
     protected $listen = [
-        JobProcessed::class => [
-            LogJobProcessedToDiscord::class,
+        AusenciaAprovadaEvent::class => [
+            NotificarColaboradorAusenciaAprovada::class,
         ],
-        JobFailed::class => [
-            LogJobFailedToDiscord::class,
-        ],
-        ScheduledTaskFinished::class => [
-            LogScheduledTaskFinishedToDiscord::class,
+        AusenciaRejeitadaEvent::class => [
+            NotificarColaboradorAusenciaRejeitada::class,
         ],
     ];
 
@@ -35,6 +30,8 @@ class EventServiceProvider extends ServiceProvider
     public function boot(): void
     {
         parent::boot();
+
+        Ausencia::observe(AusenciaObserver::class);
     }
 
     /**

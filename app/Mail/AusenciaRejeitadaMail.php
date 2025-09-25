@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Ausencia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -9,18 +10,15 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class CadastroRecusado extends Mailable implements ShouldQueue
+class AusenciaRejeitadaMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public array $dadosColaborador,
-        public string $url,
-        public ?string $observacao = null
-    ) {
+    public function __construct(public Ausencia $ausencia)
+    {
         //
     }
 
@@ -30,7 +28,7 @@ class CadastroRecusado extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Status do Cadastro - ' . config('app.name'),
+            subject: 'Sua solicitação de ausência foi rejeitada',
         );
     }
 
@@ -40,17 +38,7 @@ class CadastroRecusado extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.cadastro-recusado',
+            markdown: 'emails.ausencia-rejeitada',
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }

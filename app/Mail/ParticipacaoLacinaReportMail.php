@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Mail\Mailables\Attachment;
 
-class ParticipacaoLacinaReportMail extends Mailable
+class ParticipacaoLacinaReportMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

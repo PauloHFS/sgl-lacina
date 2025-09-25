@@ -86,10 +86,10 @@ class SendCadastroAceitoNotification implements ShouldQueue
             return;
         }
 
-        $url = $event->url ?? config('app.url') . '/dashboard';
+        $url = $event->url ?? route('dashboard');
         $observacao = $event->observacao ?? '';
 
-        Mail::to($event->user->email)->send(
+        Mail::to($event->user->email)->queue(
             new CadastroAceitoMail($event->user, $url, $observacao)
         );
 

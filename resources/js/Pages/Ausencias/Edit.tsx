@@ -105,16 +105,16 @@ const useAusenciaForm = ({
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
         () => safeJsonParse<CompensacaoDia[]>(data.compensacao_horarios) ?? [],
     );
+    const [totalHorasCalculadas, setTotalHorasCalculadas] = useState(0);
 
     const isInitialMount = useRef(true);
 
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
+        const { projeto_id, data_inicio, data_fim } = data;
+        if (!projeto_id || !data_inicio || !data_fim) {
+            setTotalHorasCalculadas(0);
             return;
         }
-        const { projeto_id, data_inicio, data_fim } = data;
-        if (!projeto_id || !data_inicio || !data_fim) return;
 
         const projetoHorarios = horasPorProjetoPorDia[projeto_id];
         const inicio = parseISO(data_inicio);
@@ -126,19 +126,25 @@ const useAusenciaForm = ({
             !isValid(fim) ||
             inicio > fim
         ) {
-            setData('horas_a_compensar', 0);
+            setTotalHorasCalculadas(0);
             return;
         }
 
-        const totalHoras = eachDayOfInterval({
-            start: inicio,
-            end: fim,
-        }).reduce((acc, dia) => {
-            const diaSemana = DIAS_DA_SEMANA_MAP[getDay(dia)];
-            return acc + (projetoHorarios[diaSemana] || 0);
-        }, 0);
-        setData('horas_a_compensar', totalHoras);
-    }, [data.projeto_id, data.data_inicio, data.data_fim]);
+        const totalHoras = eachDayOfInterval({ start: inicio, end: fim }).reduce(
+            (acc, dia) => {
+                const diaSemana = DIAS_DA_SEMANA_MAP[getDay(dia)];
+                return acc + (projetoHorarios[diaSemana] || 0);
+            },
+            0,
+        );
+
+        setTotalHorasCalculadas(totalHoras);
+
+        if (isInitialMount.current) {
+            setData('horas_a_compensar', totalHoras);
+            isInitialMount.current = false;
+        }
+    }, [data.projeto_id, data.data_inicio, data.data_fim, horasPorProjetoPorDia]);
 
     useEffect(() => {
         const { compensacao_data_inicio, compensacao_data_fim } = data;
@@ -227,6 +233,7 @@ const useAusenciaForm = ({
         diasCompensacao,
         totalHorasCompensadas,
         handleHoraChange,
+        totalHorasCalculadas,
     };
 };
 
@@ -241,6 +248,7 @@ const Edit = (props: EditPageProps) => {
         diasCompensacao,
         totalHorasCompensadas,
         handleHoraChange,
+        totalHorasCalculadas,
     } = useAusenciaForm(props);
 
     return (
@@ -454,6 +462,16 @@ const Edit = (props: EditPageProps) => {
                                                     )
                                                 }
                                             />
+                                            <div className="label">
+                                                <span
+                                                    className={`label-text-alt ${data.horas_a_compensar !== totalHorasCalculadas ? 'text-warning' : ''}`}
+                                                >
+                                                    {data.horas_a_compensar !==
+                                                    totalHorasCalculadas
+                                                        ? `Valor recomendado: ${totalHorasCalculadas}h. O valor inserido está diferente.`
+                                                        : `Total de horas no período: ${totalHorasCalculadas}h`}
+                                                </span>
+                                            </div>
                                             {errors.horas_a_compensar && (
                                                 <p className="text-error mt-2 text-sm">
                                                     {errors.horas_a_compensar}

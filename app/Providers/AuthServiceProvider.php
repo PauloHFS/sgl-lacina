@@ -10,6 +10,7 @@ class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
         Ausencia::class => AusenciaPolicy::class,
+        \App\Models\Projeto::class => \App\Policies\ProjetoPolicy::class,
     ];
 
     public function boot()

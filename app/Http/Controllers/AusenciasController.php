@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusAusencia;
+use App\Events\NovaAusenciaEvent;
 use App\Http\Requests\AusenciasRequest;
 use App\Models\Ausencia;
 use App\Models\Projeto;
@@ -120,7 +121,9 @@ class AusenciasController extends Controller
     public function store(AusenciasRequest $request): RedirectResponse
     {
         try {
-            Ausencia::create($request->validated());
+            $ausencia = Ausencia::create($request->validated());
+
+            event(new NovaAusenciaEvent($ausencia));
 
             return redirect()->route('ausencias.index')
                 ->with('success', 'Ausencia criada com sucesso!');

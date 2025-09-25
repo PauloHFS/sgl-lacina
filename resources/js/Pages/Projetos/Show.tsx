@@ -5,6 +5,7 @@ import { TIME_SLOTS_HORARIO } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
+    Ausencia,
     Baia,
     Coordenador,
     DailyReport,
@@ -13,7 +14,6 @@ import {
     Horario,
     PageProps,
     Projeto,
-    StatusVinculoProjeto,
     TipoVinculo,
     User,
     UsuarioProjeto,
@@ -22,6 +22,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React, { useState } from 'react';
+import AusenciasTab from './Abas/Ausencias';
 
 const DIAS_SEMANA_HORARIO = [
     { id: 'SEGUNDA', nome: 'Segunda' },
@@ -52,6 +53,8 @@ interface ShowPageProps extends PageProps {
     jaTemTrocaEmAndamento: boolean;
     coordenadoresDoProjeto: Coordenador[];
     horariosDosProjetos?: Record<DiaDaSemana, Array<Horario>>;
+    canViewAusencias: boolean;
+    ausencias: Ausencia[] | null;
 }
 
 type VinculoCreateForm = {
@@ -77,14 +80,16 @@ export default function Show({
     diaDaily: initialDiaDaily,
     dailyReports: initialDailyReports,
     totalParticipantes: initialTotalParticipantes,
+    canViewAusencias,
+    ausencias,
 }: ShowPageProps & {
     diaDaily?: string;
     dailyReports?: DailyReport[];
-    totalParticipantes?: number;
+    totalParticipantes: number;
 }) {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState<
-        'colaboradores' | 'horarios' | 'dailys'
+        'colaboradores' | 'horarios' | 'dailys' | 'ausencias'
     >('colaboradores');
 
     const { url, props } = usePage();
@@ -210,11 +215,6 @@ export default function Show({
         data_inicio: '',
     });
 
-    // TODO: migrar para o back end
-    const isCoordenadorDoProjetoAtual =
-        usuarioVinculo?.tipo_vinculo === ('COORDENADOR' as TipoVinculo) &&
-        usuarioVinculo?.status === ('APROVADO' as StatusVinculoProjeto);
-
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         form.post(route('vinculo.create', projeto.id), {
@@ -324,7 +324,7 @@ export default function Show({
                                         Cliente: {projeto.cliente}
                                     </p>
                                 </div>
-                                {isCoordenadorDoProjetoAtual && (
+                                {canViewAusencias && (
                                     <Link
                                         href={route(
                                             'projetos.edit',
@@ -1262,7 +1262,7 @@ export default function Show({
                     )}
 
                     {/* Tabs Section */}
-                    {(isCoordenadorDoProjetoAtual ||
+                    {(canViewAusencias ||
                         usuarioVinculo?.status === 'APROVADO') && (
                         <div className="card bg-base-100 mt-8 shadow-xl">
                             <div className="card-body">
@@ -1294,6 +1294,17 @@ export default function Show({
                                     >
                                         Daily Reports
                                     </button>
+                                    {canViewAusencias && (
+                                        <button
+                                            role="tab"
+                                            className={`tab ${activeTab === 'ausencias' ? 'tab-active' : ''}`}
+                                            onClick={() =>
+                                                setActiveTab('ausencias')
+                                            }
+                                        >
+                                            Ausências
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Tab Content */}
@@ -1311,7 +1322,7 @@ export default function Show({
                                                             <th>Nome</th>
                                                             <th>Email</th>
                                                             <th>Função</th>
-                                                            {isCoordenadorDoProjetoAtual && (
+                                                            {canViewAusencias && (
                                                                 <>
                                                                     <th>
                                                                         Carga
@@ -1329,7 +1340,7 @@ export default function Show({
                                                                     <th>Fim</th>
                                                                 </>
                                                             )}
-                                                            {isCoordenadorDoProjetoAtual && (
+                                                            {canViewAusencias && (
                                                                 <th>Ações</th>
                                                             )}
                                                         </tr>
@@ -1378,7 +1389,7 @@ export default function Show({
                                                                             }
                                                                         </span>
                                                                     </td>
-                                                                    {isCoordenadorDoProjetoAtual && (
+                                                                    {canViewAusencias && (
                                                                         <>
                                                                             <td>
                                                                                 {typeof participante.carga_horaria !==
@@ -1631,6 +1642,10 @@ export default function Show({
                                         dailyReports={dailyReports}
                                         totalParticipantes={totalParticipantes}
                                     />
+                                )}
+
+                                {activeTab === 'ausencias' && ausencias && (
+                                    <AusenciasTab ausencias={ausencias} />
                                 )}
 
                                 {activeTab === 'colaboradores' &&

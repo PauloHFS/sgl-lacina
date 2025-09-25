@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\StatusAusencia;
 use App\Models\Ausencia;
 use App\Models\UsuarioProjeto;
+use App\Rules\TotalHorasAusencia;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -102,7 +103,7 @@ class AusenciasRequest extends FormRequest
                 },
             ],
             'justificativa' => ['required', 'string'],
-            'horas_a_compensar' => ['required', 'integer', 'min:1'],
+            'horas_a_compensar' => ['required', 'integer', 'min:1', new TotalHorasAusencia()],
             'compensacao_horarios' => ['required', 'json'],
             'compensacao_data_inicio' => ['required', 'date'],
             'compensacao_data_fim' => ['required', 'date', 'after_or_equal:compensacao_data_inicio'],

@@ -2,28 +2,26 @@
 
 namespace App\Mail;
 
+use App\Models\Ausencia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
-use App\Models\Projeto;
 
-class VinculoAceito extends Mailable implements ShouldQueue
+class NovaAusenciaMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public Ausencia $ausencia;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public User $colaborador,
-        public Projeto $projeto,
-        public string $url
-    ) {
-        //
+    public function __construct(Ausencia $ausencia)
+    {
+        $this->ausencia = $ausencia;
     }
 
     /**
@@ -32,7 +30,7 @@ class VinculoAceito extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vínculo ao Projeto Aceito',
+            subject: 'Nova Solicitação de Ausência',
         );
     }
 
@@ -42,11 +40,9 @@ class VinculoAceito extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.vinculo-aceito',
+            markdown: 'mail.nova-ausencia-mail',
             with: [
-                'colaborador' => $this->colaborador,
-                'projeto' => $this->projeto,
-                'url' => $this->url,
+                'ausencia' => $this->ausencia,
             ],
         );
     }
@@ -54,7 +50,7 @@ class VinculoAceito extends Mailable implements ShouldQueue
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \\Illuminate\\Mail\\Mailables\\Attachment>
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {
