@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
             'validarTipoVinculo' => \App\Http\Middleware\ValidarTipoVinculoMiddleware::class,
             'posCadastroNecessario' => \App\Http\Middleware\PosCadastroNecessarioMiddleware::class,
             'coordenador' => \App\Http\Middleware\VerificarCoordenadorMiddleware::class,

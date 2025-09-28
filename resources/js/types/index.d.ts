@@ -70,10 +70,14 @@ export interface SoftDeletes extends Timestamps {
     deleted_at?: string | null;
 }
 
+export const ROLES = ['coordenador_master', 'coordenador', 'colaborador'] as const;
+export type Role = (typeof ROLES)[number];
+
 export interface User extends SoftDeletes {
     id: string;
     name: string;
     email: string;
+    role: Role;
     email_verified_at?: string | null;
     password?: string;
     remember_token?: string | null;
@@ -110,9 +114,8 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
-        isCoordenador: boolean;
-        isColaborador: boolean;
         isVinculoProjetoPendente: boolean;
+        isCoordenador: boolean;
     };
 };
 
