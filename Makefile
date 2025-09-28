@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-COMPOSE_FILE  := docker-compose.prod.yml
+COMPOSE_FILE  := docker/docker-compose.prod.yml
 APP_CONTAINER := sgl-lacina_app_prod
 APP_CONTAINER_DEV := sgl-lacina_app_dev
 DB_CONTAINER  := sgl-lacina_db_prod
