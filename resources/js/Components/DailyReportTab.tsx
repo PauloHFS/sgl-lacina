@@ -1,4 +1,5 @@
 import { DailyReport } from '@/types';
+import { Paginated } from './Paggination';
 import { addDays, format, subDays } from 'date-fns';
 import React from 'react';
 import { Table, ColumnDefinition } from './Table';

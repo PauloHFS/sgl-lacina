@@ -1,4 +1,5 @@
 import { Table, ColumnDefinition } from '@/Components/Table';
+import { Paginated } from '@/Components/Paggination';
 import { Ausencia } from '@/types';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';

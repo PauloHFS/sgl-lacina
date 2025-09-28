@@ -1579,7 +1579,7 @@ export default function Show({
 
                                 {activeTab === 'dailys' && (
                                     <DailyReportTab
-                                        dia={queryParams.dia as string || initialDiaDaily}
+                                        dia={(queryParams.dia as string) || initialDiaDaily || format(new Date(), 'yyyy-MM-dd')}
                                         onChangeDia={(dia) => {
                                             setLoadingDaily(true);
                                             updateQuery(
