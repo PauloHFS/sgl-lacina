@@ -9,6 +9,7 @@ import { Banco, Genero, User } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Link, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
+import SearchableSelect from '@/Components/SearchableSelect';
 import { useState } from 'react';
 import { IMaskInput } from 'react-imask';
 
@@ -31,6 +32,12 @@ export default function UpdateProfileInformation({
         ...user,
         foto_url: user.foto_url ?? null,
     });
+
+    const [selectedOrgao, setSelectedOrgao] = useState(
+        data.orgao_emissor_rg
+            ? { id: data.orgao_emissor_rg, nome: data.orgao_emissor_rg, sigla: data.orgao_emissor_rg }
+            : null
+    );
 
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -538,14 +545,14 @@ export default function UpdateProfileInformation({
                             htmlFor="orgao_emissor_rg"
                             value="Órgão Emissor"
                         />
-                        <TextInput
-                            id="orgao_emissor_rg"
-                            className={`input input-bordered w-full ${errors.orgao_emissor_rg ? 'input-error' : ''}`}
-                            value={data.orgao_emissor_rg || ''}
-                            onChange={(e) =>
-                                setData('orgao_emissor_rg', e.target.value)
-                            }
-                            required
+                        <SearchableSelect
+                            apiUrl={route('api.orgaos-emissores.search')}
+                            value={selectedOrgao}
+                            onChange={(selected) => {
+                                setSelectedOrgao(selected as any);
+                                setData('orgao_emissor_rg', selected ? selected.sigla : '');
+                            }}
+                            placeholder="Selecione o órgão emissor..."
                         />
                         <InputError
                             className="mt-2"
