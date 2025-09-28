@@ -46,7 +46,6 @@ export default function Index({ auth, configuracoes, orgaosEmissores }: Configur
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
             header={
                 <h2 className="text-base-content text-xl leading-tight font-semibold">
                     Configurações do Sistema
