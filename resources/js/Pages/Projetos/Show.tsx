@@ -1,3 +1,4 @@
+import { Table, ColumnDefinition } from '@/Components/Table';
 import DailyReportTab from '@/Components/DailyReportTab';
 import HorarioModal from '@/Components/HorarioModal';
 import Pagination, { Paginated } from '@/Components/Paggination'; // Updated import
@@ -93,18 +94,132 @@ export default function Show({
     >('colaboradores');
 
     const { url, props } = usePage();
-    const [diaDaily, setDiaDaily] = useState<string>(
-        initialDiaDaily || new Date().toISOString().slice(0, 10),
-    );
-    const [loadingDaily, setLoadingDaily] = useState(false);
-    const [dailyReports, setDailyReports] = useState<DailyReport[]>(
-        Array.isArray(initialDailyReports) ? initialDailyReports : [],
-    );
-    const [totalParticipantes, setTotalParticipantes] = useState<number>(
-        typeof initialTotalParticipantes === 'number'
-            ? initialTotalParticipantes
-            : 0,
-    );
+
+    const participantesColumns: ColumnDefinition<ParticipanteProjeto>[] = [
+        {
+            header: 'Nome',
+            accessor: 'name',
+            render: (participante) => (
+                <div className="flex items-center gap-3">
+                    <div className="avatar">
+                        <div className="mask mask-squircle h-12 w-12">
+                            <img
+                                src={
+                                    participante.foto_url ||
+                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                        participante.name,
+                                    )}&background=random&color=fff`
+                                }
+                                alt={`Foto de ${participante.name}`}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="font-bold">{participante.name}</div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            header: 'Email',
+            accessor: 'email',
+        },
+        {
+            header: 'Função',
+            accessor: 'funcao',
+            render: (participante) => (
+                <span className="badge badge-primary badge-sm">
+                    {participante.funcao}
+                </span>
+            ),
+        },
+    ];
+
+    if (canViewAusencias) {
+        participantesColumns.push(
+            {
+                header: 'Carga Horária (horas/mês)',
+                accessor: 'carga_horaria',
+            },
+            {
+                header: 'Valor da Bolsa',
+                accessor: 'valor_bolsa',
+                render: (participante) =>
+                    typeof participante.valor_bolsa !== 'undefined'
+                        ? `R$ ${(participante.valor_bolsa / 100).toFixed(2)}`
+                        : '---',
+            },
+            {
+                header: 'Início',
+                accessor: 'data_inicio',
+                render: (participante) =>
+                    participante.data_inicio
+                        ? format(new Date(participante.data_inicio), 'dd/MM/yyyy', {
+                              locale: ptBR,
+                          })
+                        : '---',
+            },
+            {
+                header: 'Fim',
+                accessor: 'data_fim',
+                render: (participante) =>
+                    participante.data_fim
+                        ? format(new Date(participante.data_fim), 'dd/MM/yyyy', {
+                              locale: ptBR,
+                          })
+                        : '---',
+            },
+            {
+                header: 'Ações',
+                accessor: 'id',
+                render: (participante) => (
+                    <div className="join">
+                        <Link
+                            href={route('colaboradores.show', participante.id)}
+                            className="btn btn-ghost btn-xs join-item"
+                            title="Ver Detalhes do Colaborador"
+                        >
+                            <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                            </svg>
+                        </Link>
+                        <Link
+                            href={route('horarios.show', {
+                                colaborador: participante.id,
+                                projeto: projeto.id,
+                            })}
+                            className="btn btn-ghost btn-xs join-item"
+                            title="Ver Horários do Colaborador"
+                        >
+                            <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                        </Link>
+                    </div>
+                ),
+            },
+        );
+    }
 
     const handleChangeDiaDaily = (dia: string) => {
         setDiaDaily(dia);
@@ -1315,185 +1430,11 @@ export default function Show({
                                             <h3 className="card-title mb-4 text-xl">
                                                 Participantes do Projeto
                                             </h3>
-                                            <div className="overflow-x-auto">
-                                                <table className="table-zebra table w-full">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nome</th>
-                                                            <th>Email</th>
-                                                            <th>Função</th>
-                                                            {canViewAusencias && (
-                                                                <>
-                                                                    <th>
-                                                                        Carga
-                                                                        Horária
-                                                                        <br />
-                                                                        (horas/mês)
-                                                                    </th>
-                                                                    <th>
-                                                                        Valor da
-                                                                        Bolsa
-                                                                    </th>
-                                                                    <th>
-                                                                        Início
-                                                                    </th>
-                                                                    <th>Fim</th>
-                                                                </>
-                                                            )}
-                                                            {canViewAusencias && (
-                                                                <th>Ações</th>
-                                                            )}
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {participantesProjeto.data.map(
-                                                            (
-                                                                participante: ParticipanteProjeto,
-                                                            ) => (
-                                                                <tr
-                                                                    key={
-                                                                        participante.id
-                                                                    }
-                                                                >
-                                                                    <td>
-                                                                        <div className="flex items-center gap-3">
-                                                                            <div className="avatar">
-                                                                                <div className="mask mask-squircle h-12 w-12">
-                                                                                    <img
-                                                                                        src={
-                                                                                            participante.foto_url ||
-                                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(participante.name)}&background=random&color=fff`
-                                                                                        }
-                                                                                        alt={`Foto de ${participante.name}`}
-                                                                                    />
-                                                                                </div>
-                                                                            </div>
-                                                                            <div>
-                                                                                <div className="font-bold">
-                                                                                    {
-                                                                                        participante.name
-                                                                                    }
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        {
-                                                                            participante.email
-                                                                        }
-                                                                    </td>
-                                                                    <td>
-                                                                        <span className="badge badge-primary badge-sm">
-                                                                            {
-                                                                                participante.funcao
-                                                                            }
-                                                                        </span>
-                                                                    </td>
-                                                                    {canViewAusencias && (
-                                                                        <>
-                                                                            <td>
-                                                                                {typeof participante.carga_horaria !==
-                                                                                'undefined'
-                                                                                    ? participante.carga_horaria
-                                                                                    : '---'}
-                                                                            </td>
-                                                                            <td>
-                                                                                {typeof participante.valor_bolsa !==
-                                                                                'undefined'
-                                                                                    ? `R$ ${(participante.valor_bolsa / 100).toFixed(2)}`
-                                                                                    : '---'}
-                                                                            </td>
-                                                                            <td>
-                                                                                {participante.data_inicio
-                                                                                    ? format(
-                                                                                          new Date(
-                                                                                              participante.data_inicio,
-                                                                                          ),
-                                                                                          'dd/MM/yyyy',
-                                                                                          {
-                                                                                              locale: ptBR,
-                                                                                          },
-                                                                                      )
-                                                                                    : '---'}
-                                                                            </td>
-                                                                            <td>
-                                                                                {participante.data_fim
-                                                                                    ? format(
-                                                                                          new Date(
-                                                                                              participante.data_fim,
-                                                                                          ),
-                                                                                          'dd/MM/yyyy',
-                                                                                          {
-                                                                                              locale: ptBR,
-                                                                                          },
-                                                                                      )
-                                                                                    : '---'}
-                                                                            </td>
-                                                                            <td>
-                                                                                <div className="join">
-                                                                                    <Link
-                                                                                        href={route(
-                                                                                            'colaboradores.show',
-                                                                                            participante.id,
-                                                                                        )}
-                                                                                        className="btn btn-ghost btn-xs join-item"
-                                                                                        title="Ver Detalhes do Colaborador"
-                                                                                    >
-                                                                                        <svg
-                                                                                            className="h-4 w-4"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            viewBox="0 0 24 24"
-                                                                                        >
-                                                                                            <path
-                                                                                                strokeLinecap="round"
-                                                                                                strokeLinejoin="round"
-                                                                                                strokeWidth={
-                                                                                                    2
-                                                                                                }
-                                                                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                                                            />
-                                                                                        </svg>
-                                                                                    </Link>
-                                                                                    <Link
-                                                                                        href={route(
-                                                                                            'horarios.show',
-                                                                                            {
-                                                                                                colaborador:
-                                                                                                    participante.id,
-                                                                                                projeto:
-                                                                                                    projeto.id,
-                                                                                            },
-                                                                                        )}
-                                                                                        className="btn btn-ghost btn-xs join-item"
-                                                                                        title="Ver Horários do Colaborador"
-                                                                                    >
-                                                                                        <svg
-                                                                                            className="h-4 w-4"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            viewBox="0 0 24 24"
-                                                                                        >
-                                                                                            <path
-                                                                                                strokeLinecap="round"
-                                                                                                strokeLinejoin="round"
-                                                                                                strokeWidth={
-                                                                                                    2
-                                                                                                }
-                                                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                                                            />
-                                                                                        </svg>
-                                                                                    </Link>
-                                                                                </div>
-                                                                            </td>
-                                                                        </>
-                                                                    )}
-                                                                </tr>
-                                                            ),
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <Table
+                                                data={participantesProjeto}
+                                                columns={participantesColumns}
+                                                emptyMessage="Nenhum participante encontrado."
+                                            />
                                             {/* Pagination */}
                                             {participantesProjeto &&
                                                 participantesProjeto.data
@@ -1502,6 +1443,9 @@ export default function Show({
                                                         paginated={
                                                             participantesProjeto
                                                         }
+                                                        onPageChange={(page) => {
+                                                            router.get(url, { page }, { preserveState: true });
+                                                        }}
                                                     />
                                                 )}
                                         </div>

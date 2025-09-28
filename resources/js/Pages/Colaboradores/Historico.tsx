@@ -1,6 +1,8 @@
-import { Paginated } from '@/Components/Paggination';
+import Paggination, { Paginated } from '@/Components/Paggination';
+import { Table, ColumnDefinition } from '@/Components/Table';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { PageProps, User, UsuarioProjeto } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 
 interface ShowPageProps extends PageProps {
     colaborador: User;
@@ -11,6 +13,67 @@ export default function HistoricoPage({
     colaborador,
     historico,
 }: ShowPageProps) {
+    const { url } = usePage();
+
+    const columns: ColumnDefinition<UsuarioProjeto>[] = [
+        {
+            header: 'Projeto',
+            accessor: 'projeto',
+            render: (item) => item.projeto?.nome ?? '-',
+        },
+        {
+            header: 'Função',
+            accessor: 'funcao',
+        },
+        {
+            header: 'Tipo de Vínculo',
+            accessor: 'tipo_vinculo',
+        },
+        {
+            header: 'Status',
+            accessor: 'status',
+            render: (item) => (
+                <span className="badge badge-outline">{item.status}</span>
+            ),
+        },
+        {
+            header: 'Bolsa',
+            accessor: 'valor_bolsa',
+            render: (item) =>
+                item.valor_bolsa ? (
+                    <span className="badge badge-success">
+                        {(item.valor_bolsa / 100).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                        })}
+                    </span>
+                ) : (
+                    <span className="badge badge-secondary">---</span>
+                ),
+        },
+        {
+            header: 'Carga Horária',
+            accessor: 'carga_horaria',
+            render: (item) => `${item.carga_horaria}h`,
+        },
+        {
+            header: 'Data Início',
+            accessor: 'data_inicio',
+            render: (item) =>
+                item.data_inicio
+                    ? new Date(item.data_inicio).toLocaleDateString('pt-BR')
+                    : '-',
+        },
+        {
+            header: 'Data Fim',
+            accessor: 'data_fim',
+            render: (item) =>
+                item.data_fim
+                    ? new Date(item.data_fim).toLocaleDateString('pt-BR')
+                    : '-',
+        },
+    ];
+
     return (
         <Authenticated
             header={
@@ -43,77 +106,19 @@ export default function HistoricoPage({
                         </div>
                     </div>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="table-zebra table">
-                        <thead>
-                            <tr>
-                                <th>Projeto</th>
-                                <th>Função</th>
-                                <th>Tipo de Vínculo</th>
-                                <th>Status</th>
-                                <th>Bolsa</th>
-                                <th>Carga Horária</th>
-                                <th>Data Início</th>
-                                <th>Data Fim</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {historico.data.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center">
-                                        Nenhum histórico encontrado.
-                                    </td>
-                                </tr>
-                            ) : (
-                                historico.data.map((item) => (
-                                    <tr key={item.id}>
-                                        <td>{item.projeto?.nome ?? '-'}</td>
-                                        <td>{item.funcao}</td>
-                                        <td>{item.tipo_vinculo}</td>
-                                        <td>
-                                            <span className="badge badge-outline">
-                                                {item.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {item.valor_bolsa ? (
-                                                <span className="badge badge-success">
-                                                    {(
-                                                        item.valor_bolsa / 100
-                                                    ).toLocaleString('pt-BR', {
-                                                        style: 'currency',
-                                                        currency: 'BRL',
-                                                    })}
-                                                </span>
-                                            ) : (
-                                                <span className="badge badge-secondary">
-                                                    ---
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td>{item.carga_horaria}h</td>
-                                        <td>
-                                            {item.data_inicio
-                                                ? new Date(
-                                                      item.data_inicio,
-                                                  ).toLocaleDateString('pt-BR')
-                                                : '-'}
-                                        </td>
-                                        <td>
-                                            {item.data_fim
-                                                ? new Date(
-                                                      item.data_fim,
-                                                  ).toLocaleDateString('pt-BR')
-                                                : '-'}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                <Table
+                    data={historico}
+                    columns={columns}
+                    emptyMessage="Nenhum histórico encontrado."
+                />
+                <div className="mt-6 flex justify-center">
+                    <Paggination
+                        paginated={historico}
+                        onPageChange={(page) => {
+                            router.get(url, { page }, { preserveState: true });
+                        }}
+                    />
                 </div>
-                {/* Paginação, se necessário */}
-                {/* <Pagination ... /> */}
             </div>
         </Authenticated>
     );

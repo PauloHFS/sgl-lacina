@@ -14,101 +14,49 @@ use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoHorario;
 use App\Models\IntervenienteFinanceiro;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ProjetosController extends Controller
 {
-  public function index()
-  {
-    $search = request()->input('search', '');
-    $tab = request()->input('tab', 'todos');
-    $user = Auth::user();
+    public function index(Request $request)
+    {
+        $user = Auth::user();
 
-    $projetosQuery = Projeto::query();
+        $projetos = QueryBuilder::for(Projeto::class)
+            ->allowedFilters([
+                AllowedFilter::scope('search'),
+                AllowedFilter::callback('tab', function (Builder $query, $value) use ($user) {
+                    if ($value === 'colaborador') {
+                        $query->whereHas('usuarios', function ($query) use ($user) {
+                            $query->where('users.id', $user->id)
+                                ->where('usuario_projeto.tipo_vinculo', '!=', TipoVinculo::COORDENADOR);
+                        });
+                    } elseif ($value === 'coordenador') {
+                        $query->whereHas('usuarios', function ($query) use ($user) {
+                            $query->where('users.id', $user->id)
+                                ->where('usuario_projeto.tipo_vinculo', '=', TipoVinculo::COORDENADOR);
+                        });
+                    }
+                }),
+            ])
+            ->with(['usuarios' => function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            }])
+            ->defaultSort('nome')
+            ->paginate($request->input('per_page', 10))
+            ->appends($request->query());
 
-    if ($search) {
-      $projetosQuery->where(function ($query) use ($search) {
-        $query->where('nome', 'ilike', "%{$search}%")
-          ->orWhere('cliente', 'ilike', "%{$search}%")
-          ->orWhere('tipo', 'ilike', "%{$search}%");
-      });
+        return Inertia::render('Projetos/Index', [
+            'projetos' => $projetos,
+        ]);
     }
-
-    // Join com usuario_projeto para obter informações do vínculo do usuário logado
-    $projetosQuery->leftJoin('usuario_projeto as up_status', function ($join) use ($user) {
-      $join->on('projetos.id', '=', 'up_status.projeto_id')
-        ->where('up_status.usuario_id', $user->id);
-    });
-
-    $selectRawCase = "CASE up_order.status " .
-      "WHEN '" . StatusVinculoProjeto::APROVADO->value . "' THEN 1 " .
-      "WHEN '" . StatusVinculoProjeto::PENDENTE->value . "' THEN 2 " .
-      "WHEN '" . StatusVinculoProjeto::RECUSADO->value . "' THEN 3 " .
-      "WHEN '" . StatusVinculoProjeto::ENCERRADO->value . "' THEN 4 " .
-      "ELSE 5 END";
-
-    $tabConfigs = [
-      'colaborador' => [
-        'vinculo' => '!=',
-        'tipo' => TipoVinculo::COORDENADOR
-      ],
-      'coordenador' => [
-        'vinculo' => '=',
-        'tipo' => TipoVinculo::COORDENADOR
-      ]
-    ];
-
-    $finalSelectColumns = [
-      'projetos.id',
-      'projetos.nome',
-      'projetos.cliente',
-      'projetos.tipo',
-      'up_status.status as user_status',
-      'up_status.tipo_vinculo as user_tipo_vinculo'
-    ];
-
-    if (isset($tabConfigs[$tab])) {
-      $config = $tabConfigs[$tab];
-
-      $projetosQuery->whereHas('usuarios', function ($query) use ($user, $config) {
-        $query->where('users.id', $user->id)
-          ->where('usuario_projeto.tipo_vinculo', $config['vinculo'], $config['tipo']);
-      });
-
-      $projetosQuery->leftJoin('usuario_projeto as up_order', function ($join) use ($user, $config) {
-        $join->on('projetos.id', '=', 'up_order.projeto_id')
-          ->where('up_order.usuario_id', $user->id)
-          ->where('up_order.tipo_vinculo', $config['vinculo'], $config['tipo']);
-      });
-
-      $finalSelectColumns = array_merge($finalSelectColumns, [
-        'up_order.status',
-        DB::raw($selectRawCase . " as sort_priority")
-      ]);
-    }
-
-    if ($tab === 'colaborador' || $tab === 'coordenador') {
-      $projetosQuery->orderBy('sort_priority', 'asc')->orderBy('projetos.nome', 'asc');
-    } else { // 'todos' tab
-      $projetosQuery->orderBy('projetos.nome', 'asc');
-    }
-
-    $projetos = $projetosQuery->select($finalSelectColumns)
-      ->distinct()
-      ->get();
-
-    return Inertia::render('Projetos/Index', [
-      'projetos' => $projetos,
-      'queryparams' => [
-        'search' => $search,
-        'tab' => $tab,
-      ],
-    ]);
-  }
 
   public function show()
   {

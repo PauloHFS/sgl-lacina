@@ -12,6 +12,7 @@ use App\Models\Banco;
 use App\Models\Projeto;
 use App\Models\User;
 use App\Models\UsuarioProjeto;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ColaboradorController extends Controller
 {
@@ -27,69 +30,59 @@ class ColaboradorController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'status' => 'required|in:cadastro_pendente,vinculo_pendente,ativos,encerrados',
+            'status' => 'sometimes|in:cadastro_pendente,vinculo_pendente,ativos,encerrados',
         ]);
 
-        $status = $request->input('status');
-
-        $usuarios = null;
-
-        if ($status == 'cadastro_pendente') {
-            $usuarios = User::where('status_cadastro', StatusCadastro::PENDENTE)
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-        } elseif ($status == 'vinculo_pendente') {
-            $usuarios = User::whereIn('id', function ($query) {
-                $query->select('usuario_id')
-                    ->from('usuario_projeto')
-                    ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                    ->where('status', StatusVinculoProjeto::PENDENTE);
-            })->paginate(10);
-        } elseif ($status == 'ativos') {
-            $usuarios = User::whereIn('id', function ($query) {
-                $query->select('usuario_id')
-                    ->from('usuario_projeto')
-                    ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                    ->where('status', StatusVinculoProjeto::APROVADO);
-            })->paginate(10);
-        } elseif ($status == 'encerrados') {
-            $usuarios = User::query()
-                ->where('status_cadastro', StatusCadastro::ACEITO) // usuários com cadastro aceito
-                ->where(function ($queryBuilder) {
-                    // Condição 1: Usuários que possuem vínculos, e TODOS esses vínculos em 'usuario_projeto' estão com status ENCERRADO
-                    $queryBuilder->where(function ($qAllInactive) {
-                        // Sub-condição 1.1: O usuário DEVE ter pelo menos um vínculo.
-                        $qAllInactive->whereExists(function ($subQueryExists) {
-                            $subQueryExists->select(DB::raw(1))
+        $usuarios = QueryBuilder::for(User::class)
+            ->allowedFilters([
+                AllowedFilter::callback('status', function (Builder $query, $value) {
+                    if ($value === 'cadastro_pendente') {
+                        $query->where('status_cadastro', StatusCadastro::PENDENTE);
+                    } elseif ($value === 'vinculo_pendente') {
+                        $query->whereIn('id', function ($query) {
+                            $query->select('usuario_id')
                                 ->from('usuario_projeto')
-                                ->whereColumn('usuario_projeto.usuario_id', 'users.id');
+                                ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                                ->where('status', StatusVinculoProjeto::PENDENTE);
                         });
-                        // Sub-condição 1.2: E NÃO DEVE existir nenhum vínculo para este usuário com status DIFERENTE de ENCERRADO.
-                        $qAllInactive->whereNotExists(function ($subQueryNotOtherStatus) {
-                            $subQueryNotOtherStatus->select(DB::raw(1))
+                    } elseif ($value === 'ativos') {
+                        $query->whereIn('id', function ($query) {
+                            $query->select('usuario_id')
                                 ->from('usuario_projeto')
-                                ->whereColumn('usuario_projeto.usuario_id', 'users.id')
-                                ->where('status', '!=', StatusVinculoProjeto::ENCERRADO);
+                                ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
+                                ->where('status', StatusVinculoProjeto::APROVADO);
                         });
-                    });
+                    } elseif ($value === 'encerrados') {
+                        $query->where('status_cadastro', StatusCadastro::ACEITO)
+                            ->where(function ($queryBuilder) {
+                                $queryBuilder->where(function ($qAllInactive) {
+                                    $qAllInactive->whereExists(function ($subQueryExists) {
+                                        $subQueryExists->select(DB::raw(1))
+                                            ->from('usuario_projeto')
+                                            ->whereColumn('usuario_projeto.usuario_id', 'users.id');
+                                    })->whereNotExists(function ($subQueryNotOtherStatus) {
+                                        $subQueryNotOtherStatus->select(DB::raw(1))
+                                            ->from('usuario_projeto')
+                                            ->whereColumn('usuario_projeto.usuario_id', 'users.id')
+                                            ->where('status', '!=', StatusVinculoProjeto::ENCERRADO);
+                                    });
+                                })->orWhereNotExists(function ($subQuery) {
+                                    $subQuery->select(DB::raw(1))
+                                        ->from('usuario_projeto')
+                                        ->whereColumn('usuario_projeto.usuario_id', 'users.id');
+                                });
+                            });
+                    }
+                }),
+                AllowedFilter::scope('search'),
+            ])
+            ->defaultSort('-created_at')
+            ->paginate($request->input('per_page', 10))
+            ->appends($request->query());
 
-                    // Condição 2: OU usuários que não possuem nenhum vínculo na tabela 'usuario_projeto'
-                    $queryBuilder->orWhereNotExists(function ($subQuery) {
-                        $subQuery->select(DB::raw(1))
-                            ->from('usuario_projeto')
-                            ->whereColumn('usuario_projeto.usuario_id', 'users.id');
-                    });
-                })
-                ->paginate(10);
-        }
-
-        if ($usuarios) {
-            return Inertia::render('Colaboradores/Index', [
-                'colaboradores' => $usuarios,
-            ]);
-        }
-
-        return Inertia::render('Colaboradores/Index', []);
+        return Inertia::render('Colaboradores/Index', [
+            'colaboradores' => $usuarios,
+        ]);
     }
 
     public function show(Request $request, $id)

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Projeto extends Model
 {
@@ -45,6 +46,15 @@ class Projeto extends Model
         'data_termino' => 'date',
         'tipo' => TipoProjeto::class,
     ];
+
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        return $query->where(function ($query) use ($search) {
+            $query->where('nome', 'ilike', "%{$search}%")
+                ->orWhere('cliente', 'ilike', "%{$search}%")
+                ->orWhere('tipo', 'ilike', "%{$search}%");
+        });
+    }
 
     public function uniqueIds(): array
     {
