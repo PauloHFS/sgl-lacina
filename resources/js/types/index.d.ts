@@ -279,3 +279,9 @@ export interface DailyReport {
     usuario?: User; // precisa de load eagerly
     projeto?: Projeto; // precisa de load eagerly
 }
+
+export interface OrgaoEmissor extends Timestamps {
+    id: string;
+    nome: string;
+    sigla: string;
+}
