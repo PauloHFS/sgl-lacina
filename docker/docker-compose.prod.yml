@@ -1,8 +1,8 @@
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: docker/Dockerfile.prod
     container_name: sgl-lacina_app_prod
     restart: unless-stopped
     working_dir: /var/www/html
@@ -28,8 +28,8 @@ services:
 
   scheduler:
     build:
-      context: .
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: docker/Dockerfile.prod
     container_name: sgl-lacina_scheduler_prod
     restart: unless-stopped
     working_dir: /var/www/html
@@ -49,8 +49,8 @@ services:
 
   queue:
     build:
-      context: .
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: docker/Dockerfile.prod
     container_name: sgl-lacina_queue_prod
     restart: unless-stopped
     working_dir: /var/www/html
