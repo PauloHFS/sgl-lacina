@@ -115,6 +115,7 @@ export type PageProps<
     auth: {
         user: User;
         isVinculoProjetoPendente: boolean;
+        isCoordenador: boolean;
     };
 };
 
