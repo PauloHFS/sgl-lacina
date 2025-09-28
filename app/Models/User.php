@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use App\Enums\Genero; // Added Genero enum import
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
@@ -89,6 +90,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'area_atuacao' => 'array',
             'tecnologias' => 'array',
         ];
+    }
+
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        return $query->where(function ($query) use ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+        });
     }
 
     public function vinculos(): HasMany

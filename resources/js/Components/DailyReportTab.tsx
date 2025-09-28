@@ -1,6 +1,9 @@
 import { DailyReport } from '@/types';
+import { Paginated } from './Paggination';
 import { addDays, format, subDays } from 'date-fns';
 import React from 'react';
+import { Table, ColumnDefinition } from './Table';
+import { router } from '@inertiajs/react';
 
 interface DailyReportTabProps {
     dia: string; // yyyy-MM-dd
@@ -31,6 +34,63 @@ export default function DailyReportTab({
     };
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChangeDia(e.target.value);
+    };
+
+    const handleRowClick = (dr: DailyReport) => {
+        router.visit(route('daily-reports.show', dr.id));
+    };
+
+    const columns: ColumnDefinition<DailyReport>[] = [
+        {
+            header: 'Colaborador',
+            accessor: 'usuario',
+            render: (dr) => (
+                <div className="flex items-center gap-3">
+                    <div className="avatar">
+                        <div className="mask mask-squircle h-12 w-12">
+                            <img
+                                src={
+                                    dr.usuario?.foto_url
+                                        ? dr.usuario?.foto_url
+                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                              dr.usuario?.name ?? 'Usuário Lacina',
+                                          )}&background=random&color=fff`
+                                }
+                                alt={`Foto de ${dr.usuario?.name}`}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="font-bold">
+                            {dr.usuario?.name || 'Usuário Desconhecido'}
+                        </div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            header: 'Horas Trabalhadas',
+            accessor: 'horas_trabalhadas',
+            render: (dr) => (
+                <span className="badge badge-info">{dr.horas_trabalhadas}h</span>
+            ),
+        },
+    ];
+
+    const paginatedDailyReports: Paginated<DailyReport> = {
+        data: dailyReports,
+        current_page: 1,
+        first_page_url: '',
+        from: 1,
+        last_page: 1,
+        last_page_url: '',
+        links: [],
+        next_page_url: null,
+        path: '',
+        per_page: dailyReports.length,
+        prev_page_url: null,
+        to: dailyReports.length,
+        total: dailyReports.length,
     };
 
     return (
@@ -68,42 +128,13 @@ export default function DailyReportTab({
             <div className="min-h-96 space-y-4">
                 {loading ? (
                     <div className="text-center">Carregando...</div>
-                ) : dailyReports.length === 0 ? (
-                    <div className="text-base-content/60 text-center">
-                        Nenhuma daily report encontrada para este dia.
-                    </div>
                 ) : (
-                    dailyReports.map((dr) => (
-                        <a
-                            href={route('daily-reports.show', dr.id)}
-                            key={dr.id}
-                            className="card card-bordered bg-base-100 hover:bg-base-200 transition-colors duration-200"
-                        >
-                            <div className="card-body p-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="avatar">
-                                        <div className="mask mask-squircle h-12 w-12">
-                                            <img
-                                                src={
-                                                    dr.usuario?.foto_url
-                                                        ? dr.usuario?.foto_url
-                                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(dr.usuario?.name ?? 'Usuário Lacina')}&background=random&color=fff`
-                                                }
-                                                alt={`Foto de ${dr.usuario?.name}`}
-                                            />
-                                        </div>
-                                    </div>
-                                    <span className="content-start self-start">
-                                        {dr.usuario?.name ||
-                                            'Usuário Desconhecido'}
-                                    </span>
-                                    <span className="badge badge-info">
-                                        {dr.horas_trabalhadas}h
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-                    ))
+                    <Table
+                        data={paginatedDailyReports}
+                        columns={columns}
+                        onRowClick={handleRowClick}
+                        emptyMessage="Nenhuma daily report encontrada para este dia."
+                    />
                 )}
             </div>
         </div>

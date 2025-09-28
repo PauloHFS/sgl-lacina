@@ -1,7 +1,9 @@
 import Paggination, { Paginated } from '@/Components/Paggination';
+import { Table, ColumnDefinition } from '@/Components/Table';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import { useTable } from '@/hooks/useTable';
+import { Head } from '@inertiajs/react';
+import React from 'react';
 
 interface Colaborador {
     id: number;
@@ -18,44 +20,69 @@ interface Colaborador {
 }
 
 interface IndexProps {
-    colaboradores?: Paginated<Colaborador>;
+    colaboradores: Paginated<Colaborador>;
 }
 
-type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'encerrados';
-
-// TODO melhorar a tipagem
-// TODO concertar o search
-// TODO permitir filtrar pelo project_id
-
 export default function Index({ colaboradores }: IndexProps) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState<Tabs | null>(null);
+    const { queryParams, updateQuery } = useTable({
+        routeName: 'colaboradores.index',
+        initialState: {
+            status: 'cadastro_pendente',
+        },
+    });
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const status = params.get('status') as Tabs | null;
-        setActiveTab(status);
-        const search = params.get('search') || '';
-        setSearchTerm(search);
-    }, []);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(
-            route('colaboradores.index'),
-            { search: searchTerm },
-            { preserveState: true },
-        );
-    };
-
-    const handleTabChange = (tab: Tabs) => {
-        setActiveTab(tab);
-        router.get(
-            route('colaboradores.index'),
-            { status: tab },
-            { preserveState: true },
-        );
-    };
+    const columns: ColumnDefinition<Colaborador>[] = [
+        {
+            header: 'Foto',
+            accessor: 'foto_url',
+            render: (colaborador) => (
+                <div className="avatar">
+                    <div className="mask mask-squircle h-12 w-12">
+                        <img
+                            src={
+                                colaborador.foto_url
+                                    ? colaborador.foto_url
+                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                          colaborador.name,
+                                      )}&background=random&color=fff`
+                            }
+                            alt={`Foto de ${colaborador.name}`}
+                        />
+                    </div>
+                </div>
+            ),
+        },
+        {
+            header: 'Nome',
+            accessor: 'name',
+            render: (colaborador) => (
+                <span className="text-base-content font-medium">
+                    {colaborador.name}
+                </span>
+            ),
+        },
+        {
+            header: 'Email',
+            accessor: 'email',
+            render: (colaborador) => (
+                <span className="text-base-content/70">
+                    {colaborador.email}
+                </span>
+            ),
+        },
+        {
+            header: 'Ações',
+            accessor: 'id',
+            render: (colaborador) => (
+                <a
+                    href={route('colaboradores.show', colaborador.id)}
+                    className="btn btn-sm btn-outline btn-primary"
+                >
+                    Ver
+                </a>
+            ),
+        },
+    ];
 
     return (
         <Authenticated>
@@ -67,7 +94,10 @@ export default function Index({ colaboradores }: IndexProps) {
                             {/* Header with search */}
                             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <form
-                                    onSubmit={handleSearch}
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        updateQuery({ search: queryParams.search });
+                                    }}
                                     className="flex items-center gap-2"
                                 >
                                     <label className="input input-bordered flex items-center gap-2">
@@ -89,9 +119,9 @@ export default function Index({ colaboradores }: IndexProps) {
                                             type="text"
                                             className="grow"
                                             placeholder="Buscar colaborador..."
-                                            value={searchTerm}
+                                            value={queryParams.search || ''}
                                             onChange={(e) =>
-                                                setSearchTerm(e.target.value)
+                                                updateQuery({ search: e.target.value })
                                             }
                                         />
                                     </label>
@@ -106,174 +136,43 @@ export default function Index({ colaboradores }: IndexProps) {
 
                             {/* Tabs */}
                             <div role="tablist" className="tabs tabs-box mb-6">
-                                <div
-                                    className="tooltip"
-                                    data-tip="Colaboradores com cadastro pendente de aprovação"
-                                >
+                                {[
+                                    'cadastro_pendente',
+                                    'vinculo_pendente',
+                                    'ativos',
+                                    'encerrados',
+                                ].map((tab) => (
                                     <button
+                                        key={tab}
                                         role="tab"
-                                        className={`tab ${activeTab === 'cadastro_pendente' ? 'tab-active' : ''}`}
+                                        className={`tab ${
+                                            queryParams.status === tab
+                                                ? 'tab-active'
+                                                : ''
+                                        }`}
                                         onClick={() =>
-                                            handleTabChange('cadastro_pendente')
+                                            updateQuery({ status: tab })
                                         }
                                     >
-                                        Cadastro Pendente
+                                        {tab.replace('_', ' ')}
                                     </button>
-                                </div>
-                                <div
-                                    className="tooltip"
-                                    data-tip="Colaboradores com vínculo a projeto pendente de aprovação"
-                                >
-                                    <button
-                                        role="tab"
-                                        className={`tab ${activeTab === 'vinculo_pendente' ? 'tab-active' : ''}`}
-                                        onClick={() =>
-                                            handleTabChange('vinculo_pendente')
-                                        }
-                                    >
-                                        Vínculo Pendente
-                                    </button>
-                                </div>
-                                <div
-                                    className="tooltip"
-                                    data-tip="Colaboradores ativos em projetos"
-                                >
-                                    <button
-                                        role="tab"
-                                        className={`tab ${activeTab === 'ativos' ? 'tab-active' : ''}`}
-                                        onClick={() =>
-                                            handleTabChange('ativos')
-                                        }
-                                    >
-                                        Ativos
-                                    </button>
-                                </div>
-                                <div
-                                    className="tooltip"
-                                    data-tip="Colaboradores com vinculos encerrados"
-                                >
-                                    <button
-                                        role="tab"
-                                        className={`tab ${activeTab === 'encerrados' ? 'tab-active' : ''}`}
-                                        onClick={() =>
-                                            handleTabChange('encerrados')
-                                        }
-                                    >
-                                        Encerrados
-                                    </button>
-                                </div>
+                                ))}
                             </div>
 
-                            {activeTab === null ? (
-                                <div className="text-base-content/60 mb-4 text-sm">
-                                    Selecione uma aba para filtrar os
-                                    colaboradores.
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="table-zebra table">
-                                        <thead>
-                                            <tr>
-                                                <th>Foto</th>
-                                                <th>Nome</th>
-                                                <th>Email</th>
-                                                <th>Ações</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {colaboradores &&
-                                            colaboradores.data.length > 0 ? (
-                                                colaboradores.data.map(
-                                                    (colaborador) => (
-                                                        <tr
-                                                            key={colaborador.id}
-                                                        >
-                                                            <td>
-                                                                <div className="avatar">
-                                                                    <div className="mask mask-squircle h-12 w-12">
-                                                                        <img
-                                                                            src={
-                                                                                colaborador.foto_url
-                                                                                    ? colaborador.foto_url
-                                                                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(colaborador.name)}&background=random&color=fff`
-                                                                            }
-                                                                            alt={`Foto de ${colaborador.name}`}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <span className="text-base-content font-medium">
-                                                                    {
-                                                                        colaborador.name
-                                                                    }
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <span className="text-base-content/70">
-                                                                    {
-                                                                        colaborador.email
-                                                                    }
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <a
-                                                                    href={route(
-                                                                        'colaboradores.show',
-                                                                        colaborador.id,
-                                                                    )}
-                                                                    className="btn btn-sm btn-outline btn-primary"
-                                                                >
-                                                                    Ver
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )
-                                            ) : (
-                                                <tr>
-                                                    <td
-                                                        colSpan={4}
-                                                        className="text-base-content/60 text-center"
-                                                    >
-                                                        Nenhum colaborador
-                                                        encontrado.
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                            <Table
+                                data={colaboradores}
+                                columns={columns}
+                                emptyMessage="Nenhum colaborador encontrado."
+                            />
 
                             {/* Pagination */}
                             {colaboradores && (
                                 <div className="mt-6 flex justify-center">
                                     <Paggination
                                         paginated={colaboradores}
-                                        onPageChange={(page) => {
-                                            const queryParams: {
-                                                page: number;
-                                                status?: Tabs;
-                                                search?: string;
-                                            } = { page };
-                                            if (activeTab) {
-                                                queryParams.status = activeTab;
-                                            }
-                                            if (searchTerm) {
-                                                queryParams.search = searchTerm;
-                                            }
-                                            router.get(
-                                                route('colaboradores.index'),
-                                                queryParams,
-                                                {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                },
-                                            );
-                                        }}
-                                        preserveScroll={true}
-                                        preserveState={true}
+                                        onPageChange={(page) =>
+                                            updateQuery({ page })
+                                        }
                                     />
                                 </div>
                             )}

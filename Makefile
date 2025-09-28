@@ -277,7 +277,7 @@ backup-files:
 	@if docker exec $(APP_CONTAINER) [ -d "storage/app/public/fotos" ]; then \
 		docker exec $(APP_CONTAINER) tar -czf - -C storage/app/public fotos/ > $(BACKUP_DIR)/files_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz; \
 	else \
-		echo "WARN: Diretório de fotos não encontrado. Pulando."; \
+		echo "WARN: Diretório de fotos não en3contrado. Pulando."; \
 	fi
 
 .PHONY: backup-env
