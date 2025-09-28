@@ -45,6 +45,9 @@ class DevelopmentSeeder extends Seeder
             'conta_bancaria' => '12345-6',
         ]);
 
+        $maxwell->is_coordenador_master = true;
+        $maxwell->save();
+
         $campelo = $this->createUser([
             'name' => 'Campelo',
             'email' => 'campelo@computacao.ufcg.edu.br',
