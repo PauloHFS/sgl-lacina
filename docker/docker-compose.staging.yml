@@ -1,8 +1,7 @@
 services:
-  app:
     build:
-      context: .
-      dockerfile: Dockerfile.staging
+      context: ..
+      dockerfile: docker/Dockerfile.staging
     container_name: lacina_app_staging
     restart: unless-stopped
     working_dir: /var/www/html
