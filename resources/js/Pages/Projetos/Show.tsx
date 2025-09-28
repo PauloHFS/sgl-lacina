@@ -23,6 +23,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React, { useState } from 'react';
+import { useTable } from '@/hooks/useTable';
 import AusenciasTab from './Abas/Ausencias';
 
 const DIAS_SEMANA_HORARIO = [
@@ -89,11 +90,21 @@ export default function Show({
     totalParticipantes: number;
 }) {
     const { toast } = useToast();
-    const [activeTab, setActiveTab] = useState<
-        'colaboradores' | 'horarios' | 'dailys' | 'ausencias'
-    >('colaboradores');
 
-    const { url, props } = usePage();
+    const { queryParams, updateQuery } = useTable({
+        routeName: 'projetos.show',
+        routeParams: { projeto: projeto.id },
+        initialState: {
+            tab: 'colaboradores',
+        },
+    });
+    const activeTab = queryParams.tab;
+
+    const [loadingDaily, setLoadingDaily] = useState(false);
+
+
+
+
 
     const participantesColumns: ColumnDefinition<ParticipanteProjeto>[] = [
         {
@@ -221,37 +232,7 @@ export default function Show({
         );
     }
 
-    const handleChangeDiaDaily = (dia: string) => {
-        setDiaDaily(dia);
-        setLoadingDaily(true);
-        const queryParams =
-            props.queryparams && typeof props.queryparams === 'object'
-                ? props.queryparams
-                : {};
-        router.get(
-            url.split('?')[0],
-            { ...queryParams, dia },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['dailyReports', 'diaDaily', 'totalParticipantes'],
-                onSuccess: (page) => {
-                    setDailyReports(
-                        Array.isArray(page.props.dailyReports)
-                            ? page.props.dailyReports
-                            : [],
-                    );
-                    setTotalParticipantes(
-                        typeof page.props.totalParticipantes === 'number'
-                            ? page.props.totalParticipantes
-                            : 0,
-                    );
-                    setLoadingDaily(false);
-                },
-                onError: () => setLoadingDaily(false),
-            },
-        );
-    };
+
 
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
@@ -343,10 +324,7 @@ export default function Show({
         });
     };
 
-    const dailyReportTabOnClick = () => {
-        handleChangeDiaDaily(format(new Date(), 'yyyy-MM-dd'));
-        setActiveTab('dailys');
-    };
+
 
     const renderVinculoStatus = () => {
         if (usuarioVinculo) {
@@ -1390,7 +1368,7 @@ export default function Show({
                                         role="tab"
                                         className={`tab ${activeTab === 'colaboradores' ? 'tab-active' : ''}`}
                                         onClick={() =>
-                                            setActiveTab('colaboradores')
+                                            updateQuery({ tab: 'colaboradores' })
                                         }
                                     >
                                         Colaboradores
@@ -1398,14 +1376,35 @@ export default function Show({
                                     <button
                                         role="tab"
                                         className={`tab ${activeTab === 'horarios' ? 'tab-active' : ''}`}
-                                        onClick={() => setActiveTab('horarios')}
+                                        onClick={() => updateQuery({ tab: 'horarios' })}
                                     >
                                         Horários do Projeto
                                     </button>
                                     <button
                                         role="tab"
                                         className={`tab ${activeTab === 'dailys' ? 'tab-active' : ''}`}
-                                        onClick={dailyReportTabOnClick}
+                                        onClick={() => {
+                                            setLoadingDaily(true);
+                                            updateQuery(
+                                                {
+                                                    tab: 'dailys',
+                                                    dia: format(
+                                                        new Date(),
+                                                        'yyyy-MM-dd',
+                                                    ),
+                                                },
+                                                {
+                                                    only: [
+                                                        'dailyReports',
+                                                        'diaDaily',
+                                                        'totalParticipantes',
+                                                    ],
+                                                    onFinish: () => {
+                                                        setLoadingDaily(false);
+                                                    },
+                                                },
+                                            );
+                                        }}
                                     >
                                         Daily Reports
                                     </button>
@@ -1414,7 +1413,7 @@ export default function Show({
                                             role="tab"
                                             className={`tab ${activeTab === 'ausencias' ? 'tab-active' : ''}`}
                                             onClick={() =>
-                                                setActiveTab('ausencias')
+                                                updateQuery({ tab: 'ausencias' })
                                             }
                                         >
                                             Ausências
@@ -1444,7 +1443,7 @@ export default function Show({
                                                             participantesProjeto
                                                         }
                                                         onPageChange={(page) => {
-                                                            router.get(url, { page }, { preserveState: true });
+                                                            updateQuery({ page });
                                                         }}
                                                     />
                                                 )}
@@ -1580,11 +1579,26 @@ export default function Show({
 
                                 {activeTab === 'dailys' && (
                                     <DailyReportTab
-                                        dia={diaDaily}
-                                        onChangeDia={handleChangeDiaDaily}
+                                        dia={queryParams.dia as string || initialDiaDaily}
+                                        onChangeDia={(dia) => {
+                                            setLoadingDaily(true);
+                                            updateQuery(
+                                                { dia },
+                                                {
+                                                    only: [
+                                                        'dailyReports',
+                                                        'diaDaily',
+                                                        'totalParticipantes',
+                                                    ],
+                                                    onFinish: () => {
+                                                        setLoadingDaily(false);
+                                                    },
+                                                },
+                                            );
+                                        }}
                                         loading={loadingDaily}
-                                        dailyReports={dailyReports}
-                                        totalParticipantes={totalParticipantes}
+                                        dailyReports={initialDailyReports || []}
+                                        totalParticipantes={initialTotalParticipantes || 0}
                                     />
                                 )}
 

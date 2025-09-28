@@ -36,12 +36,12 @@ class ProjetosController extends Controller
                     if ($value === 'colaborador') {
                         $query->whereHas('usuarios', function ($query) use ($user) {
                             $query->where('users.id', $user->id)
-                                ->where('usuario_projeto.tipo_vinculo', '!=', TipoVinculo::COORDENADOR);
+                                ->where('usuario_projeto.tipo_vinculo', '!=', TipoVinculo::COORDENADOR->value);
                         });
                     } elseif ($value === 'coordenador') {
                         $query->whereHas('usuarios', function ($query) use ($user) {
                             $query->where('users.id', $user->id)
-                                ->where('usuario_projeto.tipo_vinculo', '=', TipoVinculo::COORDENADOR);
+                                ->where('usuario_projeto.tipo_vinculo', '=', TipoVinculo::COORDENADOR->value);
                         });
                     }
                 }),

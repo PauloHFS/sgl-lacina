@@ -7,9 +7,14 @@ type QueryParams = Record<string, string | number | undefined>;
 interface UseTableProps {
     initialState?: QueryParams;
     routeName: string;
+    routeParams?: Record<string, any>;
 }
 
-export function useTable({ initialState = {}, routeName }: UseTableProps) {
+export function useTable({
+    initialState = {},
+    routeName,
+    routeParams = {},
+}: UseTableProps) {
     const [queryParams, setQueryParams] = useState<QueryParams>(initialState);
 
     useEffect(() => {
@@ -22,7 +27,10 @@ export function useTable({ initialState = {}, routeName }: UseTableProps) {
         setQueryParams(newParams);
     }, []);
 
-    const updateQuery = (newParams: Partial<QueryParams>) => {
+    const updateQuery = (
+        newParams: Partial<QueryParams>,
+        options: object = {},
+    ) => {
         const updatedParams = { ...queryParams, ...newParams };
 
         // Reset page on filter change
@@ -32,9 +40,10 @@ export function useTable({ initialState = {}, routeName }: UseTableProps) {
 
         setQueryParams(updatedParams);
 
-        router.get(route(routeName), updatedParams, {
+        router.get(route(routeName, routeParams), updatedParams, {
             preserveState: true,
             preserveScroll: true,
+            ...options,
         });
     };
 

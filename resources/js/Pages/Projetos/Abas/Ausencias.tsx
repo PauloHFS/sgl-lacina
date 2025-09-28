@@ -56,19 +56,20 @@ const AusenciasTab: React.FC<AusenciasTabProps> = ({ ausencias }) => {
     ];
 
     // Wrap the array in a Paginated structure
-    const paginatedAusencias = {
+    const paginatedAusencias: Paginated<Ausencia> = {
         data: ausencias,
+        current_page: 1,
+        first_page_url: '',
+        from: 1,
+        last_page: 1,
+        last_page_url: '',
         links: [],
-        meta: {
-            current_page: 1,
-            from: 1,
-            last_page: 1,
-            links: [],
-            path: '',
-            per_page: ausencias.length,
-            to: ausencias.length,
-            total: ausencias.length,
-        },
+        next_page_url: null,
+        path: '',
+        per_page: ausencias.length,
+        prev_page_url: null,
+        to: ausencias.length,
+        total: ausencias.length,
     };
 
     return (

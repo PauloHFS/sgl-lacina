@@ -76,19 +76,20 @@ export default function DailyReportTab({
         },
     ];
 
-    const paginatedDailyReports = {
+    const paginatedDailyReports: Paginated<DailyReport> = {
         data: dailyReports,
+        current_page: 1,
+        first_page_url: '',
+        from: 1,
+        last_page: 1,
+        last_page_url: '',
         links: [],
-        meta: {
-            current_page: 1,
-            from: 1,
-            last_page: 1,
-            links: [],
-            path: '',
-            per_page: dailyReports.length,
-            to: dailyReports.length,
-            total: dailyReports.length,
-        },
+        next_page_url: null,
+        path: '',
+        per_page: dailyReports.length,
+        prev_page_url: null,
+        to: dailyReports.length,
+        total: dailyReports.length,
     };
 
     return (
