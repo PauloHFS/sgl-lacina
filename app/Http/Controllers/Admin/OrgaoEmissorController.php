@@ -55,11 +55,7 @@ class OrgaoEmissorController extends Controller
     {
         $term = $request->input('q');
 
-        $results = OrgaoEmissor::query()
-            ->where('nome', 'LIKE', "%{$term}%")
-            ->orWhere('sigla', 'LIKE', "%{$term}%")
-            ->take(10)
-            ->get(['id', 'nome', 'sigla']);
+        $results = OrgaoEmissor::search($term)->get();
 
         return response()->json($results);
     }

@@ -15,7 +15,7 @@ const Modal = ({ show, onClose, children }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
             <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
-            <div className="relative w-full max-w-lg p-8 mx-auto bg-white rounded-lg shadow-lg">
+            <div className="relative w-full max-w-lg p-8 mx-auto bg-base-100 rounded-lg shadow-lg">
                 {children}
             </div>
         </div>
@@ -69,12 +69,12 @@ export default function OrgaoEmissorManager({ orgaos }) {
     };
 
     return (
-        <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+        <div className="p-4 sm:p-8 bg-base-100 shadow sm:rounded-lg">
             <section>
                 <header className="flex justify-between items-center">
                     <div>
-                        <h2 className="text-lg font-medium text-gray-900">Órgãos Emissores de RG</h2>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <h2 className="text-lg font-medium text-base-content">Órgãos Emissores de RG</h2>
+                        <p className="mt-1 text-sm text-base-content/70">
                             Gerencie os órgãos emissores que podem ser selecionados pelos usuários.
                         </p>
                     </div>
@@ -114,7 +114,7 @@ export default function OrgaoEmissorManager({ orgaos }) {
 
                 <Modal show={isModalOpen} onClose={closeModal}>
                     <form onSubmit={handleSubmit} className="p-6">
-                        <h2 className="text-lg font-medium text-gray-900">
+                        <h2 className="text-lg font-medium text-base-content">
                             {editingOrgao ? 'Editar Órgão Emissor' : 'Adicionar Novo Órgão Emissor'}
                         </h2>
 
