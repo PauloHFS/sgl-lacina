@@ -10,6 +10,7 @@ O servidor de produção deve ter os seguintes componentes instalados:
 - Ambiente de Containerização:
     - Docker Engine 24.0+
     - Docker Compose v2.0+
+    - Meilisearch
 - Gerenciamento de Código: Git
 - Utilitário de Build: Make
 
@@ -27,7 +28,10 @@ cd /opt/sgl-lacina
 2. Configurar Variáveis de Ambiente:
 
 - Crie o arquivo `.env` para produção a partir do `.env.example`.
-- Preencha as variáveis de ambiente com as informações do seu ambiente.
+- Preencha as variáveis de ambiente com as informações do seu ambiente. As variáveis mais importantes são:
+    - `DB_PASSWORD`
+    - `MEILISEARCH_HOST`
+    - `MEILISEARCH_KEY` (deve ser uma chave forte e gerada aleatoriamente)
 
 3. Executar o Deploy:
 
@@ -42,7 +46,7 @@ Este comando executa a seguinte sequência de ações:
 - `stop-app`: Para os contêineres da aplicação para garantir consistência.
 - `build`: Reconstrói as imagens Docker.
 - `start`: Inicia todos os contêineres da aplicação.
-- `post-deploy`: Executa migrações, otimiza caches e ajusta permissões.
+- `post-deploy`: Executa migrações, otimiza caches, ajusta permissões e importa dados para o Meilisearch.
 
 ## Comandos de Gerenciamento
 

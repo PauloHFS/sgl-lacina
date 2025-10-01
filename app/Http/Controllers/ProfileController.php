@@ -128,7 +128,7 @@ class ProfileController extends Controller
             'cpf' => ['required', 'string', 'max:14', new ValidCpf(), 'unique:users,cpf,' . $user->id],
             'rg' => 'required|string|min:2|max:16|unique:users,rg,' . $user->id,
             'uf_rg' => 'required|string|max:2',
-            'orgao_emissor_rg' => 'required|string|max:255',
+            'orgao_emissor_rg' => 'required|string|exists:orgaos_emissores,sigla',
 
             // Endereço
             'cep' => ['required', 'string', 'size:8', 'regex:/^[0-9]{8}$/'],

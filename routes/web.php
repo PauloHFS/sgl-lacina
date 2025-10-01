@@ -36,6 +36,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('pos-cadastro');
     Route::post('/pos-cadastro', [ProfileController::class, 'completarCadastro'])->name('profile.completarCadastro');
+
+    // Rota da API para busca de Órgãos Emissores
+    Route::get('/api/orgaos-emissores/search', [\App\Http\Controllers\Admin\OrgaoEmissorController::class, 'search'])->name('api.orgaos-emissores.search');
 });
 
 // Rotas Autenticadas e Verificadas
@@ -118,6 +121,11 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
         Route::prefix('/configuracoes')->name('configuracoes.')->group(function () {
             Route::get('/', [ConfiguracaoController::class, 'index'])->name('index');
             Route::patch('/senha-laboratorio', [ConfiguracaoController::class, 'atualizarSenhaLaboratorio'])->name('senha-laboratorio.update');
+
+            // Rotas para Orgaos Emissores
+            Route::post('/orgaos-emissores', [\App\Http\Controllers\Admin\OrgaoEmissorController::class, 'store'])->name('orgaos-emissores.store');
+            Route::put('/orgaos-emissores/{orgaoEmissor}', [\App\Http\Controllers\Admin\OrgaoEmissorController::class, 'update'])->name('orgaos-emissores.update');
+            Route::delete('/orgaos-emissores/{orgaoEmissor}', [\App\Http\Controllers\Admin\OrgaoEmissorController::class, 'destroy'])->name('orgaos-emissores.destroy');
         });
     });
 });

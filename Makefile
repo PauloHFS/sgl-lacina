@@ -243,7 +243,7 @@ build:
 	@docker compose -f $(COMPOSE_FILE) build
 
 .PHONY: post-deploy
-post-deploy: migrate optimize permissions
+post-deploy: migrate optimize permissions scout-import
 	@echo "SUCCESS: Tarefas de pós-deploy concluídas."
 
 .PHONY: migrate
@@ -261,6 +261,11 @@ permissions:
 	@echo "INFO: Ajustando permissões de diretórios..."
 	@docker exec $(APP_CONTAINER) chown -R www-data:www-data storage bootstrap/cache
 	@docker exec $(APP_CONTAINER) chmod -R 775 storage bootstrap/cache
+
+.PHONY: scout-import
+scout-import:
+	@echo "INFO: Importando dados para o Meilisearch..."
+	@docker exec $(APP_CONTAINER) php artisan scout:import "App\Models\OrgaoEmissor"
 
 .PHONY: create-backup-dir
 create-backup-dir:

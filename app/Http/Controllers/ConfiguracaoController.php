@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConfiguracaoSistema;
+use App\Models\OrgaoEmissor; // Import the model
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,7 +28,8 @@ class ConfiguracaoController extends Controller
             'configuracoes' => [
                 'senha_laboratorio_existe' => $senhaExiste,
                 'senha_laboratorio' => $senha,
-            ]
+            ],
+            'orgaosEmissores' => OrgaoEmissor::all(),
         ]);
     }
 

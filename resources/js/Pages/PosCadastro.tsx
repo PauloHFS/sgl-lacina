@@ -1,3 +1,4 @@
+import SearchableSelect from '@/Components/SearchableSelect';
 import MultiSelect from '@/Components/MultiSelect';
 import { AREAS_ATUACAO, ESTADOS, TECNOLOGIAS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
@@ -12,28 +13,14 @@ interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
 
-const ORGAOS_EMISSORES = [
-    {
-        sigla: 'Não se aplica',
-        nome: 'Não se aplica',
-    },
-    {
-        sigla: 'SSP',
-        nome: 'Secretaria de Segurança Pública',
-    },
-    {
-        sigla: 'SESDS',
-        nome: 'Secretaria Estadual de Segurança e Defesa Social',
-    },
-    { sigla: 'DPF', nome: 'Departamento de Polícia Federal' },
-    { sigla: 'MRE', nome: 'Ministério das Relações Exteriores' },
-    { sigla: 'COMAER', nome: 'Comando da Aeronáutica' },
-    { sigla: 'COLOG', nome: 'Comando Logístico do Exército' },
-    { sigla: 'DGePM', nome: 'Diretoria-Geral do Pessoal da Marinha' },
-    // { sigla: 'OUTROS', nome: 'Outros/Conselhos Profissionais' },
-];
+
 
 export default function PosCadastro({ bancos }: PosCadastroProps) {
+    const [selectedOrgao, setSelectedOrgao] = useState<{
+        id: string;
+        nome: string;
+        sigla: string;
+    } | null>(null);
     const { data, setData, post, errors, processing } = useForm<{
         foto_url: File | null;
         genero: string;
@@ -693,35 +680,15 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             <span className="label-text mb-1">
                                                 Orgão Emissor RG*
                                             </span>
-                                            <select
-                                                id="orgao_emissor_rg"
-                                                className={`select select-bordered w-full ${errors.orgao_emissor_rg ? 'select-error' : ''}`}
-                                                value={
-                                                    data.orgao_emissor_rg || ''
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'orgao_emissor_rg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                required
-                                            >
-                                                <option value="" disabled>
-                                                    Selecione o órgão emissor...
-                                                </option>
-                                                {ORGAOS_EMISSORES.map(
-                                                    (orgao) => (
-                                                        <option
-                                                            key={orgao.sigla}
-                                                            value={orgao.sigla}
-                                                        >
-                                                            {orgao.sigla} -{' '}
-                                                            {orgao.nome}
-                                                        </option>
-                                                    ),
-                                                )}
-                                            </select>
+                                            <SearchableSelect
+                                                apiUrl={route('api.orgaos-emissores.search')}
+                                                value={selectedOrgao}
+                                                onChange={(selected) => {
+                                                    setSelectedOrgao(selected as any);
+                                                    setData('orgao_emissor_rg', selected ? selected.sigla : '');
+                                                }}
+                                                placeholder="Selecione o órgão emissor..."
+                                            />
                                             {errors.orgao_emissor_rg && (
                                                 <span className="label-text-alt text-error">
                                                     {errors.orgao_emissor_rg}
