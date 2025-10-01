@@ -56,7 +56,7 @@ export default function Index({ auth, configuracoes, orgaosEmissores }: Configur
 
             <div className="py-12">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8 space-y-6">
-                    <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                    <div className="p-4 sm:p-8 bg-base-100 shadow sm:rounded-lg">
                         <div className="mb-10">
                             <div className="mb-8">
                                 <h3 className="text-base-content mb-3 text-xl font-semibold">
