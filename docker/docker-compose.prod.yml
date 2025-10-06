@@ -76,7 +76,7 @@ services:
       - '16000:80'
       # - '443:443'
     volumes:
-      - ./docker/prod/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./prod/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - sgl-lacina_app_public_all:/var/www/html/public
       - sgl-lacina_app_storage:/var/www/html/storage
     depends_on:
