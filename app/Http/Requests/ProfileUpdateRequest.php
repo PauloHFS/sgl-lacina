@@ -57,7 +57,7 @@ class ProfileUpdateRequest extends FormRequest
             'cpf' => ['nullable', 'string', 'max:14', new ValidCpf, Rule::unique(User::class, 'cpf')->ignore($userId)],
             'rg' => ['nullable', 'string', 'min:6', 'max:16', Rule::unique('users', 'rg')->ignore($userId)],
             'uf_rg' => ['nullable', 'string', 'max:2'],
-            'orgao_emissor_rg' => ['nullable', 'string', 'max:255'],
+            'orgao_emissor_rg' => ['nullable', 'string', 'exists:orgaos_emissores,sigla'],
 
             // Endereço
             'cep' => ['nullable', 'string', 'max:9'],
