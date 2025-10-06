@@ -197,7 +197,7 @@ help-rollback:
 .PHONY: shell
 shell:
 	@echo "🐚 Acessando o terminal do container da aplicação..."
-	@docker exec -it $(APP_CONTAINER) bash
+	@docker exec -it $(APP_CONTAINER) sh
 
 .PHONY: db
 db:
