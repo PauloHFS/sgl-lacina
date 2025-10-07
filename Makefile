@@ -63,8 +63,14 @@ restore:
 	@echo "✅ Confirmação recebida. Iniciando restauração..."
 	$(MAKE) stop-app
 	$(MAKE) restore-db
-	@if [ -n "$(FOTOS)" ]; then $(MAKE) restore-files; fi
+	@if [ -n "$(FOTOS)" ]; then \
+		echo "INFO: Iniciando container 'app' para restaurar os arquivos..."; \
+		docker compose -f $(COMPOSE_FILE) start app; \
+		$(MAKE) restore-files; \
+	fi
 	$(MAKE) start
+	@echo "INFO: Criando link simbólico do storage..."
+	@docker exec $(APP_CONTAINER) php artisan storage:link
 	@echo "🎉 Restore concluído!"
 
 .PHONY: rollback
@@ -274,7 +280,7 @@ create-backup-dir:
 .PHONY: backup-db
 backup-db:
 	@echo "INFO: Fazendo backup do banco de dados..."
-	@docker exec $(DB_CONTAINER) pg_dump -U sail -d laravel | gzip > $(BACKUP_DIR)/db_backup_$(shell date +%Y%m%d_%H%M%S).sql.gz
+	@docker exec $(DB_CONTAINER) pg_dump --clean -U sail -d laravel | gzip > $(BACKUP_DIR)/db_backup_$(shell date +%Y%m%d_%H%M%S).sql.gz
 
 .PHONY: backup-files
 backup-files:
@@ -297,6 +303,8 @@ clean-old-backups:
 
 .PHONY: restore-db
 restore-db:
+	@echo "🧹 Limpando banco de dados atual..."
+	@docker exec $(DB_CONTAINER) psql -U sail -d laravel -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 	@echo "🗄️  Restaurando banco de dados..."
 	@if [[ $(DB) == *.gz ]]; then \
 		gunzip -c $(BACKUP_DIR)/$(DB) | docker exec -i $(DB_CONTAINER) psql -U sail -d laravel; \
@@ -308,5 +316,7 @@ restore-db:
 restore-files:
 	@echo "📸 Restaurando fotos..."
 	@if [ ! -f "$(BACKUP_DIR)/$(FOTOS)" ]; then echo "❌ ERRO: Arquivo de fotos não encontrado."; exit 1; fi
+	@echo "INFO: Criando diretório de destino no container..."
+	@docker exec $(APP_CONTAINER) mkdir -p storage/app/public
 	@cat $(BACKUP_DIR)/$(FOTOS) | docker exec -i $(APP_CONTAINER) tar -xzf - -C storage/app/public/
 	@docker exec $(APP_CONTAINER) chown -R www-data:www-data storage/app/public/fotos
