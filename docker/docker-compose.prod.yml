@@ -9,7 +9,7 @@ services:
     volumes:
       - ./docker/prod/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
       - ./docker/prod/php/php.ini:/usr/local/etc/php/php.ini
-      - sgl-lacina_app_public_all:/var/www/html/public-shared
+      - sgl-lacina_app_public_all:/var/www/html/public
       - sgl-lacina_app_storage:/var/www/html/storage
     depends_on:
       db:
