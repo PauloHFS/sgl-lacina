@@ -7,6 +7,7 @@ use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\HasRole;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, Notifiable, HasUuids, HasRole;
 
     public $incrementing = false;
 
@@ -27,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'id',
+        'is_coordenador_master',
         'name',
         'email',
         'password',
@@ -80,6 +82,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
+            'is_coordenador_master' => 'boolean',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status_cadastro' => StatusCadastro::class,
@@ -119,35 +122,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(HistoricoUsuarioProjeto::class, 'usuario_id');
     }
 
-    public function isCoordenador(?Projeto $projeto = null)
-    {
-        if ($projeto === null) {
-            return $this->vinculos()
-                ->where('tipo_vinculo', TipoVinculo::COORDENADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->exists();
-        }
-        return $this->projetos()
-            ->where('projeto_id', $projeto->id)
-            ->where('tipo_vinculo', TipoVinculo::COORDENADOR)
-            ->where('status', StatusVinculoProjeto::APROVADO)
-            ->exists();
-    }
 
-    public function isColaborador(?Projeto $projeto = null)
-    {
-        if ($projeto === null) {
-            return $this->vinculos()
-                ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-                ->where('status', StatusVinculoProjeto::APROVADO)
-                ->exists();
-        }
-        return $this->projetos()
-            ->where('projeto_id', $projeto->id)
-            ->where('tipo_vinculo', TipoVinculo::COLABORADOR)
-            ->where('status', StatusVinculoProjeto::APROVADO)
-            ->exists();
-    }
 
     public function isVinculoProjetoPendente(?Projeto $projeto = null)
     {

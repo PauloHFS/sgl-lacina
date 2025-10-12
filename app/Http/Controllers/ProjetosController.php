@@ -18,10 +18,13 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Log;
 
 class ProjetosController extends Controller
 {
+  use AuthorizesRequests;
+
   public function index()
   {
     $search = request()->input('search', '');
@@ -107,27 +110,15 @@ class ProjetosController extends Controller
         'search' => $search,
         'tab' => $tab,
       ],
+      'can_create_project' => Auth::user()->can('create', Projeto::class),
     ]);
   }
 
-  public function show()
+  public function show(Projeto $projeto)
   {
-    $projeto = Projeto::with('intervenienteFinanceiro')->findOrFail(request()->route('projeto'));
+    $this->authorize('view', $projeto);
 
-    if (!$projeto) {
-      return Redirect::route('projetos.index')->with('error', 'Projeto não encontrado.');
-    }
-
-    $usuarioAutenticado = Auth::user();
-    $usuarioVinculo = $projeto->getUsuarioVinculo($usuarioAutenticado->id);
-
-    if (
-      !$usuarioVinculo ||
-      $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value ||
-      $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value
-    ) {
-      $projeto->makeHidden(['campos_extras', 'meses_execucao', 'valor_total']);
-    }
+    $projeto->load('intervenienteFinanceiro');
 
     $vinculosDoUsuarioLogadoNoProjeto = UsuarioProjeto::where('usuario_id', $usuarioAutenticado->id)
       ->with('projeto') // Eager load project data
@@ -246,11 +237,15 @@ class ProjetosController extends Controller
       'totalParticipantes' => $totalParticipantes,
       'canViewAusencias' => $canViewAusencias,
       'ausencias' => $ausencias,
+      'can_update_project' => Auth::user()->can('update', $projeto),
+      'can_delete_project' => Auth::user()->can('delete', $projeto),
     ]);
   }
 
   public function create()
   {
+    $this->authorize('create', Projeto::class);
+
     $interveniente = IntervenienteFinanceiro::all();
 
     return Inertia::render('Projetos/Create', [
@@ -260,10 +255,7 @@ class ProjetosController extends Controller
 
   public function edit(Projeto $projeto)
   {
-    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
-    if (!$usuarioVinculo || $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value || $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value) {
-      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Você não tem permissão para editar este projeto.');
-    }
+    $this->authorize('update', $projeto);
 
     $interveniente = IntervenienteFinanceiro::all();
 
@@ -275,6 +267,8 @@ class ProjetosController extends Controller
 
   public function store(Request $request)
   {
+    $this->authorize('create', Projeto::class);
+
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
       'descricao' => 'nullable|string|max:2000',
@@ -326,11 +320,7 @@ class ProjetosController extends Controller
 
   public function update(Request $request, Projeto $projeto)
   {
-    // Authorization: Check if the authenticated user is a coordinator of this project
-    $usuarioVinculo = $projeto->getUsuarioVinculo(Auth::user()->id);
-    if (!$usuarioVinculo || $usuarioVinculo->tipo_vinculo !== TipoVinculo::COORDENADOR->value || $usuarioVinculo->status !== StatusVinculoProjeto::APROVADO->value) {
-      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Você não tem permissão para editar este projeto.');
-    }
+    $this->authorize('update', $projeto);
 
     $validatedData = $request->validate([
       'nome' => 'required|string|max:255',
@@ -373,5 +363,14 @@ class ProjetosController extends Controller
     }
 
     return Redirect::route('projetos.show', $projeto->id)->with('success', 'Projeto atualizado com sucesso!');
+  }
+
+  public function destroy(Projeto $projeto)
+  {
+    $this->authorize('delete', $projeto);
+
+    $projeto->delete();
+
+    return Redirect::route('projetos.index')->with('success', 'Projeto deletado com sucesso!');
   }
 }

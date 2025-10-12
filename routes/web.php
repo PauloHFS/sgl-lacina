@@ -72,12 +72,15 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     Route::prefix('/projeto')->group(function () {
         Route::get('/', [ProjetosController::class, 'index'])->name('projetos.index');
 
-        Route::get('/new', [ProjetosController::class, 'create'])->name('projetos.create');
-        Route::post('/new', [ProjetosController::class, 'store'])->name('projetos.store');
+        Route::middleware('role:coordenador_master')->group(function () {
+            Route::get('/new', [ProjetosController::class, 'create'])->name('projetos.create');
+            Route::post('/new', [ProjetosController::class, 'store'])->name('projetos.store');
+        });
 
         Route::get('/{projeto}', [ProjetosController::class, 'show'])->name('projetos.show');
         Route::get('/{projeto}/edit', [ProjetosController::class, 'edit'])->name('projetos.edit');
         Route::patch('/{projeto}', [ProjetosController::class, 'update'])->name('projetos.update');
+        Route::delete('/{projeto}', [ProjetosController::class, 'destroy'])->name('projetos.destroy');
     });
 
     // Rotas para Solicitação de Vínculo a Projeto
@@ -93,7 +96,7 @@ Route::middleware(['auth', 'verified', 'posCadastroNecessario'])->group(function
     Route::resource('ausencias', AusenciasController::class);
 
     // Rotas Específicas para Coordenadores
-    Route::middleware('validarTipoVinculo:coordenador')->group(function () {
+    Route::middleware('role:coordenador')->group(function () {
         Route::prefix('/colaboradores')->group(function () {
             Route::get('/', [ColaboradorController::class, 'index'])->name('colaboradores.index');
             Route::get('/{id}', [ColaboradorController::class, 'show'])->name('colaboradores.show');
