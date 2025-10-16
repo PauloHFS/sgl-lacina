@@ -53,7 +53,6 @@ class ProjetoPolicy
         return false;
     }
 
-
     /**
      * Determine whether the user can view the absences of a project.
      */

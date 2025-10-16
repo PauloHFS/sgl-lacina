@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\TipoProjeto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Enums\TipoProjeto;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Projeto>

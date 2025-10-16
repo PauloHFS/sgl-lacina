@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Models\HistoricoUsuarioProjeto;
+use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
-use App\Enums\Funcao;
+use App\Models\HistoricoUsuarioProjeto;
+use App\Models\Projeto;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 
 test('observer registra histórico quando vínculo é criado aprovado', function () {
     $user = User::factory()->create();

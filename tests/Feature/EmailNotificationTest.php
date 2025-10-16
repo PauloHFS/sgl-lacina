@@ -1,15 +1,15 @@
 <?php
 
+use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
-use App\Enums\Funcao;
-use App\Models\User;
 use App\Models\Projeto;
+use App\Models\User;
 use App\Models\UsuarioProjeto;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 
 test('email de aprovação de cadastro é enviado quando usuário é aceito', function () {
     Mail::fake();
@@ -220,7 +220,7 @@ test('job falha graciosamente quando usuário não existe', function () {
 
     $job = new \App\Jobs\GerarRelatorioParticipacao('non-existent-id', 'test@example.com');
 
-    expect(fn() => $job->handle())->toThrow(\Exception::class);
+    expect(fn () => $job->handle())->toThrow(\Exception::class);
 
     // Email de erro não deve ser enviado
     Mail::assertNothingSent();
@@ -235,7 +235,7 @@ test('notificações são enviadas via múltiplos canais', function () {
     ]);
 
     // Enviar notificação
-    $user->notify(new \App\Notifications\CadastroAprovado());
+    $user->notify(new \App\Notifications\CadastroAprovado);
 
     // Verificar que notificação foi enviada
     Notification::assertSentTo($user, \App\Notifications\CadastroAprovado::class);

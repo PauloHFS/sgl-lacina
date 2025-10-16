@@ -59,7 +59,7 @@ describe('HorarioService', function () {
         $this->user->horarios()->create([
             'horario' => 9,
             'dia_da_semana' => DiaDaSemana::SEGUNDA,
-            'tipo' => TipoHorario::TRABALHO_PRESENCIAL
+            'tipo' => TipoHorario::TRABALHO_PRESENCIAL,
         ]);
 
         $this->horarioService->criarHorariosParaUsuario($this->user);

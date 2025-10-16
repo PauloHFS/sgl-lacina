@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\User;
-use App\Models\Banco;
-use App\Enums\StatusCadastro;
 use App\Enums\Genero;
+use App\Enums\StatusCadastro;
+use App\Models\Banco;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('usuário pode acessar página de pós cadastro', function () {
@@ -70,8 +70,7 @@ test('usuário pode editar perfil', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn($page) =>
-        $page->component('Profile/Edit')
+        fn ($page) => $page->component('Profile/Edit')
     );
 });
 
@@ -109,7 +108,7 @@ test('usuário não pode deletar conta com senha incorreta', function () {
 
     $response = $this->actingAs($user)
         ->delete('/profile', [
-            'password' => 'senha-errada'
+            'password' => 'senha-errada',
         ]);
 
     $response->assertSessionHasErrors('password');
@@ -450,7 +449,7 @@ test('perfil pode ser visualizado com todos os dados', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn(Assert $page) => $page
+        fn (Assert $page) => $page
             ->component('Profile/Edit')
             ->has('auth.user')
             ->has('bancos')
@@ -690,7 +689,7 @@ test('validação de tamanho máximo funciona no update do perfil', function () 
     $response = $this->actingAs($user)
         ->patch('/profile', [
             'name' => str_repeat('a', 256), // Acima do limite de 255
-            'email' => str_repeat('a', 250) . '@teste.com', // Email muito longo
+            'email' => str_repeat('a', 250).'@teste.com', // Email muito longo
         ]);
 
     $response->assertSessionHasErrors(['name', 'email']);
@@ -974,8 +973,8 @@ test('reproduzir problema upload foto real com dados mistos', function () {
     $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
 
     // Log para debug
-    Log::info('Teste problema upload - foto_url no DB: ' . $user->foto_url);
-    Log::info('Teste problema upload - arquivo existe: ' . (Storage::disk('public')->exists($user->foto_url) ? 'SIM' : 'NÃO'));
+    Log::info('Teste problema upload - foto_url no DB: '.$user->foto_url);
+    Log::info('Teste problema upload - arquivo existe: '.(Storage::disk('public')->exists($user->foto_url) ? 'SIM' : 'NÃO'));
 });
 
 test('problema frontend - dados sem arquivo real enviado', function () {
@@ -1043,7 +1042,7 @@ test('upload de foto funciona após correção do frontend', function () {
     $this->assertTrue(Storage::disk('public')->exists($user->foto_url));
 
     // Log para documentar o sucesso
-    Log::info('Upload corrigido - foto salva em: ' . $user->foto_url);
+    Log::info('Upload corrigido - foto salva em: '.$user->foto_url);
 });
 
 test('integração completa - upload de foto com atualização de perfil', function () {
@@ -1101,5 +1100,5 @@ test('integração completa - upload de foto com atualização de perfil', funct
     expect($user->email_verified_at)->toBeNull();
 
     Log::info('Teste integração completa - Upload realizado com sucesso');
-    Log::info('Arquivo salvo em: ' . $user->foto_url);
+    Log::info('Arquivo salvo em: '.$user->foto_url);
 });

@@ -1,12 +1,12 @@
 <?php
 
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Enums\StatusCadastro;
-use App\Enums\TipoVinculo;
-use App\Enums\StatusVinculoProjeto;
 use App\Enums\Funcao;
+use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\Projeto;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 
 test('usuário com cadastro aceito pode criar solicitação de vínculo a projeto', function () {
     $usuario = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
@@ -304,10 +304,10 @@ test('colaborador não coordenador não pode aprovar vínculo de terceiros', fun
 
     // Usuário 1 tenta aprovar o vínculo do usuário 2
     $response = $this->actingAs($usuario1)->put("/vinculos/{$vinculo->id}", [
-        'status' => StatusVinculoProjeto::APROVADO->value
+        'status' => StatusVinculoProjeto::APROVADO->value,
     ]);
 
-    // Deve retornar erro 403 (Forbidden) 
+    // Deve retornar erro 403 (Forbidden)
     $response->assertForbidden();
 });
 
@@ -338,7 +338,7 @@ test('coordenador só pode aprovar vínculos do próprio projeto', function () {
     ]);
 
     $response = $this->actingAs($usuario)->put("/vinculos/{$vinculo->id}", [
-        'status' => StatusVinculoProjeto::APROVADO->value
+        'status' => StatusVinculoProjeto::APROVADO->value,
     ]);
 
     $response->assertForbidden();
@@ -372,7 +372,7 @@ test('solicitação de vínculo sem campos obrigatórios é rejeitada', function
         'data_inicio',
         'carga_horaria',
         'tipo_vinculo',
-        'funcao'
+        'funcao',
     ]);
 });
 
@@ -394,7 +394,7 @@ test('solicitação de vínculo com dados inválidos retorna erros de validaçã
         'data_inicio',
         'carga_horaria',
         'tipo_vinculo',
-        'funcao'
+        'funcao',
     ]);
 });
 
@@ -446,14 +446,14 @@ test('coordenador não pode atualizar vínculo com carga horária inválida', fu
 
     // Teste com carga horária muito alta
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
-        'carga_horaria' => 233
+        'carga_horaria' => 233,
     ]);
 
     $response->assertSessionHasErrors(['carga_horaria']);
 
     // Teste com carga horária zero (abaixo do mínimo de 1)
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
-        'carga_horaria' => 0
+        'carga_horaria' => 0,
     ]);
 
     $response->assertSessionHasErrors(['carga_horaria']);
@@ -486,7 +486,7 @@ test('coordenador não pode atualizar vínculo com enums inválidos', function (
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
         'status' => 'STATUS_INEXISTENTE',
         'funcao' => 'FUNCAO_INEXISTENTE',
-        'tipo_vinculo' => 'TIPO_INEXISTENTE'
+        'tipo_vinculo' => 'TIPO_INEXISTENTE',
     ]);
 
     $response->assertSessionHasErrors(['status', 'funcao', 'tipo_vinculo']);
@@ -520,7 +520,7 @@ test('coordenador não pode definir data fim anterior à data início no update'
     // Incluir data_inicio no request para que a validação funcione corretamente
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
         'data_inicio' => $dataInicio->format('Y-m-d'),
-        'data_fim' => $dataInicio->subDays(5)->format('Y-m-d') // 5 dias antes da data de início
+        'data_fim' => $dataInicio->subDays(5)->format('Y-m-d'), // 5 dias antes da data de início
     ]);
 
     $response->assertSessionHasErrors(['data_fim']);
@@ -551,13 +551,13 @@ test('coordenador pode aprovar vínculo pendente (PENDENTE → APROVADO)', funct
 
     // Coordenador aprova vínculo (PENDENTE -> APROVADO)
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
-        'status' => StatusVinculoProjeto::APROVADO->value
+        'status' => StatusVinculoProjeto::APROVADO->value,
     ]);
 
     $response->assertRedirect();
     $this->assertDatabaseHas('usuario_projeto', [
         'id' => $vinculo->id,
-        'status' => StatusVinculoProjeto::APROVADO->value
+        'status' => StatusVinculoProjeto::APROVADO->value,
     ]);
 });
 
@@ -583,12 +583,12 @@ test('coordenador pode rejeitar vínculo pendente (PENDENTE → RECUSADO)', func
     ]);
 
     $response = $this->actingAs($coordenador)->put("/vinculos/{$vinculo->id}", [
-        'status' => StatusVinculoProjeto::RECUSADO->value
+        'status' => StatusVinculoProjeto::RECUSADO->value,
     ]);
 
     $response->assertRedirect();
     $this->assertDatabaseHas('usuario_projeto', [
         'id' => $vinculo->id,
-        'status' => StatusVinculoProjeto::RECUSADO->value
+        'status' => StatusVinculoProjeto::RECUSADO->value,
     ]);
 });

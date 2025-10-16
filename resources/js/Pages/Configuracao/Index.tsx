@@ -5,9 +5,7 @@ import OrgaoEmissorManager from '@/Components/OrgaoEmissorManager'; // Import th
 import { OrgaoEmissor } from '@/types'; // Assuming a type definition exists
 
 interface ConfiguracaoIndexProps {
-    auth: {
-        user: any; // Replace with a proper user type
-    };
+
     configuracoes: {
         senha_laboratorio_existe: boolean;
         senha_laboratorio?: string;
@@ -15,7 +13,7 @@ interface ConfiguracaoIndexProps {
     orgaosEmissores: OrgaoEmissor[]; // Add the new prop
 }
 
-export default function Index({ auth, configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) { // Destructure the prop
+export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) { // Destructure the prop
     const [showForm, setShowForm] = useState(false);
     const [copied, setCopied] = useState(false);
 

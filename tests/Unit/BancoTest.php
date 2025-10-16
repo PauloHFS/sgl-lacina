@@ -26,13 +26,13 @@ test('banco tem relacionamento um-para-muitos com usuários', function () {
 });
 
 test('banco não tem timestamps', function () {
-    $banco = new Banco();
+    $banco = new Banco;
 
     expect($banco->timestamps)->toBeFalse();
 });
 
 test('banco fillable deve incluir código e nome', function () {
-    $banco = new Banco();
+    $banco = new Banco;
 
     expect($banco->getFillable())->toContain('codigo');
     expect($banco->getFillable())->toContain('nome');

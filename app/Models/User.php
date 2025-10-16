@@ -5,22 +5,20 @@ namespace App\Models;
 use App\Enums\Genero; // Added Genero enum import
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasRole;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids, HasRole;
+    use HasFactory, HasRole, HasUuids, Notifiable;
 
     public $incrementing = false;
 
@@ -122,14 +120,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(HistoricoUsuarioProjeto::class, 'usuario_id');
     }
 
-
-
     public function isVinculoProjetoPendente(?Projeto $projeto = null)
     {
         if ($projeto === null) {
             return $this->vinculos()
                 ->where('status', StatusVinculoProjeto::PENDENTE)->exists();
         }
+
         return $this->projetos()
             ->where('projeto_id', $projeto->id)
             ->where('status', StatusVinculoProjeto::PENDENTE)
@@ -185,7 +182,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getFotoUrlAttribute($value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -200,6 +197,6 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         // Se é um caminho relativo, adiciona /storage/
-        return '/storage/' . $value;
+        return '/storage/'.$value;
     }
 }

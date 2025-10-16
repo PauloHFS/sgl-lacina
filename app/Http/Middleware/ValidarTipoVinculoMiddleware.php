@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class ValidarTipoVinculoMiddleware
 {
@@ -22,18 +22,18 @@ class ValidarTipoVinculoMiddleware
         }
 
         // Validar se o usuário tá authenticado
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($role === 'colaborador' && !$user->isColaborador()) {
+        if ($role === 'colaborador' && ! $user->isColaborador()) {
             abort(403, 'Acesso permitido apenas para colaboradores.');
         }
 
-        if ($role === 'coordenador' && !$user->isCoordenador()) {
+        if ($role === 'coordenador' && ! $user->isCoordenador()) {
             abort(403, 'Acesso permitido apenas para coordenadores.');
         }
 

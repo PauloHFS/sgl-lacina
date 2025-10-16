@@ -1,16 +1,16 @@
 <?php
 
-use App\Enums\StatusCadastro;
-use App\Enums\TipoVinculo;
-use App\Enums\StatusVinculoProjeto;
 use App\Enums\Funcao;
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Models\Salas;
+use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use App\Models\Baias;
-use App\Models\Horarios;
 use App\Models\HorarioBaia;
+use App\Models\Horarios;
+use App\Models\Projeto;
+use App\Models\Salas;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 
 test('docente pode criar sala', function () {
     $docente = User::factory()->cadastroCompleto()->create([

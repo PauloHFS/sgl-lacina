@@ -1,13 +1,13 @@
 <?php
 
-use App\Models\User;
+use App\Enums\Genero;
+use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use App\Models\Banco;
 use App\Models\Projeto;
+use App\Models\User;
 use App\Models\UsuarioProjeto;
-use App\Enums\StatusCadastro;
-use App\Enums\Genero;
-use App\Enums\TipoVinculo;
-use App\Enums\StatusVinculoProjeto;
 
 test('user pode ser criado com dados básicos', function () {
     $user = User::factory()->create([

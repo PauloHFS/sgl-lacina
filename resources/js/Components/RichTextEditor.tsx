@@ -12,7 +12,7 @@ import Typography from '@tiptap/extension-typography';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 interface RichTextEditorProps {
     content?: string;
@@ -80,7 +80,7 @@ const RichTextEditor = ({
         },
     });
 
-    const [showColorPicker, setShowColorPicker] = useState(false);
+
 
     const setLink = useCallback(() => {
         const previousUrl = editor?.getAttributes('link').href;
@@ -125,7 +125,7 @@ const RichTextEditor = ({
     const setTextColor = useCallback(
         (color: string) => {
             editor?.chain().focus().setColor(color).run();
-            setShowColorPicker(false);
+
         },
         [editor],
     );

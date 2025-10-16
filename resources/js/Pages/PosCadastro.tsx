@@ -3,17 +3,16 @@ import MultiSelect from '@/Components/MultiSelect';
 import { AREAS_ATUACAO, ESTADOS, TECNOLOGIAS } from '@/constants';
 import { useToast } from '@/Context/ToastProvider';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Banco, PageProps } from '@/types';
+import { Banco, OrgaoEmissor, PageProps } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import axios from 'axios';
-import React, { FormEventHandler, useEffect, useState } from 'react';
+import { useCountdown } from '@/hooks/useCountdown';
+import React, { FormEventHandler, useState } from 'react';
 import { IMaskInput } from 'react-imask';
 
 interface PosCadastroProps extends PageProps {
     bancos: Array<Banco>; // TODO Refatorar isso para buscar paginado no select (isso pode crescer muito)
 }
-
-
 
 export default function PosCadastro({ bancos }: PosCadastroProps) {
     const [selectedOrgao, setSelectedOrgao] = useState<{
@@ -76,25 +75,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
     const { toast } = useToast();
     const [cpfValido, setCpfValido] = useState<boolean | null>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [countdown, setCountdown] = useState<number>(0);
-    const [isCountdownActive, setIsCountdownActive] = useState(false);
-
-    // Effect para gerenciar o temporizador
-    useEffect(() => {
-        let interval: NodeJS.Timeout | null = null;
-
-        if (isCountdownActive && countdown > 0) {
-            interval = setInterval(() => {
-                setCountdown((prev) => prev - 1);
-            }, 1000);
-        } else if (countdown === 0) {
-            setIsCountdownActive(false);
-        }
-
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [isCountdownActive, countdown]);
+    const { seconds: countdown, start: startCountdown, stop: stopCountdown } = useCountdown(2);
 
     // Função para validar CPF
     const validarCPF = (cpf: string): boolean => {
@@ -140,8 +121,7 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
 
         // Mostrar modal de confirmação e iniciar temporizador
         setShowConfirmModal(true);
-        setCountdown(2);
-        setIsCountdownActive(true);
+        startCountdown();
     };
 
     const confirmSubmit = () => {
@@ -161,22 +141,19 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
             onSuccess: () => {
                 toast('Cadastro realizado com sucesso!', 'success');
                 setShowConfirmModal(false);
-                setCountdown(0);
-                setIsCountdownActive(false);
+                stopCountdown();
             },
             onError: () => {
                 toast('Erro ao realizar cadastro. Tente novamente.', 'error');
                 setShowConfirmModal(false);
-                setCountdown(0);
-                setIsCountdownActive(false);
+                stopCountdown();
             },
         });
     };
 
     const closeModal = () => {
         setShowConfirmModal(false);
-        setCountdown(0);
-        setIsCountdownActive(false);
+        stopCountdown();
     };
 
     // TODO: travar os dados de endereço até fazer a request, depois libera achando ou não o cep
@@ -683,8 +660,8 @@ export default function PosCadastro({ bancos }: PosCadastroProps) {
                                             <SearchableSelect
                                                 apiUrl={route('api.orgaos-emissores.search')}
                                                 value={selectedOrgao}
-                                                onChange={(selected) => {
-                                                    setSelectedOrgao(selected as any);
+                                                onChange={(selected: OrgaoEmissor | null) => {
+                                                    setSelectedOrgao(selected);
                                                     setData('orgao_emissor_rg', selected ? selected.sigla : '');
                                                 }}
                                                 placeholder="Selecione o órgão emissor..."

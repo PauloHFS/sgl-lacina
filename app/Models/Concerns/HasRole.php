@@ -2,16 +2,14 @@
 
 namespace App\Models\Concerns;
 
-use App\Enums\Role;
 use App\Enums\Funcao;
+use App\Enums\Role;
 use App\Enums\StatusVinculoProjeto;
 
 trait HasRole
 {
     /**
      * Get the user's role.
-     *
-     * @return \App\Enums\Role
      */
     public function getRoleAttribute(): Role
     {
@@ -28,8 +26,6 @@ trait HasRole
 
     /**
      * Check if the user is a master coordinator.
-     *
-     * @return bool
      */
     public function isCoordenadorMaster(): bool
     {
@@ -38,8 +34,6 @@ trait HasRole
 
     /**
      * Check if the user is a project coordinator.
-     *
-     * @return bool
      */
     public function isCoordenador(): bool
     {
@@ -48,8 +42,6 @@ trait HasRole
 
     /**
      * Check if the user is a collaborator.
-     *
-     * @return bool
      */
     public function isColaborador(): bool
     {
@@ -58,8 +50,6 @@ trait HasRole
 
     /**
      * Helper function to check if a user is a coordinator of any active project.
-     *
-     * @return bool
      */
     protected function isCoordenadorDeProjeto(): bool
     {

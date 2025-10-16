@@ -1,15 +1,13 @@
 <?php
 
+use App\Enums\Funcao;
+use App\Enums\Genero;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
-use App\Enums\Funcao;
 use App\Enums\TipoProjeto;
-use App\Enums\Genero;
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
+use App\Enums\TipoVinculo;
 use App\Models\Banco;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
 test('validação de CPF deve aceitar formato correto', function () {

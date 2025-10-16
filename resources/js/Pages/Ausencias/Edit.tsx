@@ -10,7 +10,6 @@ import {
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from 'react';
 
@@ -105,15 +104,12 @@ const useAusenciaForm = ({
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
         () => safeJsonParse<CompensacaoDia[]>(data.compensacao_horarios) ?? [],
     );
-    const [totalHorasCalculadas, setTotalHorasCalculadas] = useState(0);
 
-    const isInitialMount = useRef(true);
 
-    useEffect(() => {
+    const totalHorasCalculadas = useMemo(() => {
         const { projeto_id, data_inicio, data_fim } = data;
         if (!projeto_id || !data_inicio || !data_fim) {
-            setTotalHorasCalculadas(0);
-            return;
+            return 0;
         }
 
         const projetoHorarios = horasPorProjetoPorDia[projeto_id];
@@ -126,25 +122,21 @@ const useAusenciaForm = ({
             !isValid(fim) ||
             inicio > fim
         ) {
-            setTotalHorasCalculadas(0);
-            return;
+            return 0;
         }
 
-        const totalHoras = eachDayOfInterval({ start: inicio, end: fim }).reduce(
+        return eachDayOfInterval({ start: inicio, end: fim }).reduce(
             (acc, dia) => {
                 const diaSemana = DIAS_DA_SEMANA_MAP[getDay(dia)];
                 return acc + (projetoHorarios[diaSemana] || 0);
             },
             0,
         );
+    }, [data, horasPorProjetoPorDia]);
 
-        setTotalHorasCalculadas(totalHoras);
-
-        if (isInitialMount.current) {
-            setData('horas_a_compensar', totalHoras);
-            isInitialMount.current = false;
-        }
-    }, [data.projeto_id, data.data_inicio, data.data_fim, horasPorProjetoPorDia]);
+    useEffect(() => {
+        setData('horas_a_compensar', totalHorasCalculadas);
+    }, [totalHorasCalculadas, setData]);
 
     useEffect(() => {
         const { compensacao_data_inicio, compensacao_data_fim } = data;
@@ -172,14 +164,14 @@ const useAusenciaForm = ({
                 );
             });
         });
-    }, [data.compensacao_data_inicio, data.compensacao_data_fim]);
+    }, [data]);
 
     useEffect(() => {
         const compensacaoFormatada = diasCompensacao.filter(
             (dia) => dia.horario.length > 0,
         );
         setData('compensacao_horarios', JSON.stringify(compensacaoFormatada));
-    }, [diasCompensacao]);
+    }, [diasCompensacao, setData]);
 
     const totalHorasCompensadas = useMemo(
         () => diasCompensacao.reduce((acc, dia) => acc + dia.horario.length, 0),

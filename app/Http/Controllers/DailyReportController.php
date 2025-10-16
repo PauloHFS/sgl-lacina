@@ -23,6 +23,7 @@ class DailyReportController extends Controller
     {
         $this->horariosCacheService = $horariosCacheService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -129,7 +130,7 @@ class DailyReportController extends Controller
             ->whereNull('data_fim')
             ->first();
 
-        if (!$vinculo) {
+        if (! $vinculo) {
             return redirect()->back()
                 ->withErrors(['projeto_id' => 'Você não está vinculado a este projeto ou o vínculo não está ativo.'])
                 ->withInput();
@@ -141,7 +142,7 @@ class DailyReportController extends Controller
                 $dailyReport->usuario_id = $user->id;
 
                 // Se não informou as horas, calcular automaticamente
-                if (!isset($validated['horas_trabalhadas']) || $validated['horas_trabalhadas'] === null) {
+                if (! isset($validated['horas_trabalhadas']) || $validated['horas_trabalhadas'] === null) {
                     $dailyReport->horas_trabalhadas = $dailyReport->calcularHorasTrabalhadasAutomaticamente();
                 }
 
@@ -257,7 +258,7 @@ class DailyReportController extends Controller
             ->whereNull('data_fim')
             ->first();
 
-        if (!$vinculo) {
+        if (! $vinculo) {
             return redirect()->back()
                 ->withErrors(['projeto_id' => 'Você não está vinculado a este projeto ou o vínculo não está ativo.'])
                 ->withInput();
@@ -268,7 +269,7 @@ class DailyReportController extends Controller
                 $dailyReport->fill($validated);
 
                 // Se não informou as horas, recalcular automaticamente
-                if (!isset($validated['horas_trabalhadas']) || $validated['horas_trabalhadas'] === null) {
+                if (! isset($validated['horas_trabalhadas']) || $validated['horas_trabalhadas'] === null) {
                     $dailyReport->horas_trabalhadas = $dailyReport->calcularHorasTrabalhadasAutomaticamente();
                 }
 

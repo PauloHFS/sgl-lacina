@@ -1,13 +1,11 @@
 <?php
 
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
 use App\Enums\StatusCadastro;
-use App\Enums\TipoVinculo;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\Funcao;
-use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\Projeto;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 
 test('coordenador pode ver lista de colaboradores com cadastro pendente', function () {
     $coordenador = User::factory()->cadastroCompleto()->create([

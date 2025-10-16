@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\Funcao;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Enums\TipoVinculo;
-use App\Enums\Funcao;
-use App\Enums\StatusVinculoProjeto;
 
 class HistoricoUsuarioProjeto extends Model
 {

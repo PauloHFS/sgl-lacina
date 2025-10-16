@@ -54,10 +54,7 @@ export default function Projetos({
         }
     }, [debouncedSearchValue, activeTab, queryparams.search, queryparams.tab]);
 
-    useEffect(() => {
-        setSearchValue(queryparams.search || '');
-        setActiveTab(queryparams.tab || 'todos');
-    }, [queryparams.search, queryparams.tab]);
+
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchValue(e.target.value);

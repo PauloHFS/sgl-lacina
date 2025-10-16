@@ -1,0 +1,31 @@
+# lefthook.yml
+# Configuração dos hooks de Git gerenciados pelo Lefthook
+
+pre-commit:
+  # Roda os comandos em paralelo para agilizar o processo
+  parallel: true
+  commands:
+    # Comando para o linter de PHP (Pint)
+    pint:
+      # Executa apenas se arquivos .php forem modificados
+      glob: "**/*.php"
+      # O --test não altera os arquivos, apenas verifica a formatação
+      run: vendor/bin/pint
+
+    # Comando para o linter de JS/TS (ESLint)
+    eslint:
+      # Executa apenas se arquivos relevantes em resources/js forem modificados
+      glob: "resources/js/**/*.{js,jsx,ts,tsx}"
+      run: npm run lint
+
+    # Comando para os testes de PHP (Pest)
+    # php-tests:
+    #   # Executa se qualquer arquivo .php for modificado
+    #   glob: "**/*.php"
+    #   run: docker-compose exec -T app php artisan test
+
+    # Comando para os testes de JS/TS (Vitest)
+    js-tests:
+      # Executa se arquivos em resources/js forem modificados
+      glob: "resources/js/**/*.{js,jsx,ts,tsx}"
+      run: npm run test:run

@@ -2,17 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Role;
 use Closure;
 use Illuminate\Http\Request;
-use App\Enums\Role;
 
 class CheckRole
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @param  string  ...$roles
      * @return mixed
      */
@@ -20,7 +18,7 @@ class CheckRole
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             // This case should ideally be handled by the 'auth' middleware first
             return response()->json(['message' => 'Unauthorized'], 401);
         }

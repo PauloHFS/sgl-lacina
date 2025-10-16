@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Enums\StatusVinculoProjeto;
 use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
-use App\Enums\StatusVinculoProjeto;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class EncerrarVinculosExpirados extends Command
 {
@@ -53,6 +53,7 @@ class EncerrarVinculosExpirados extends Command
 
             if ($projetosExpirados->isEmpty()) {
                 $this->info('✅ Nenhum projeto expirado encontrado com vínculos ativos.');
+
                 return 0;
             }
 
@@ -110,7 +111,7 @@ class EncerrarVinculosExpirados extends Command
                                 ->update([
                                     'status' => StatusVinculoProjeto::ENCERRADO,
                                     'data_fim' => $projeto->data_termino,
-                                    'updated_at' => Carbon::now()
+                                    'updated_at' => Carbon::now(),
                                 ]);
 
                             $totalVinculosEncerrados++;
@@ -124,21 +125,23 @@ class EncerrarVinculosExpirados extends Command
             if ($dryRun && $e->getMessage() === 'Dry run - reverting transaction') {
                 // Esperado em modo dry-run
                 $this->newLine();
-                $this->info("📊 Resumo da simulação:");
+                $this->info('📊 Resumo da simulação:');
                 $this->info("   • Projetos que seriam afetados: {$projetosAfetados}");
                 $this->info("   • Vínculos que seriam encerrados: {$totalVinculosEncerrados}");
                 $this->newLine();
                 $this->warn('⚠️  Nenhuma alteração foi feita (modo simulação).');
                 $this->info('💡 Para executar as alterações, rode o comando sem a flag --dry-run');
+
                 return 0;
             }
 
-            Log::error('Erro ao encerrar vínculos expirados: ' . $e->getMessage(), [
+            Log::error('Erro ao encerrar vínculos expirados: '.$e->getMessage(), [
                 'exception' => $e,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->error("❌ Erro durante a execução: {$e->getMessage()}");
+
             return 1;
         }
 
@@ -146,12 +149,12 @@ class EncerrarVinculosExpirados extends Command
         Log::info('Vínculos expirados encerrados automaticamente', [
             'projetos_afetados' => $projetosAfetados,
             'vinculos_encerrados' => $totalVinculosEncerrados,
-            'executado_em' => Carbon::now()->toDateTimeString()
+            'executado_em' => Carbon::now()->toDateTimeString(),
         ]);
 
         $this->newLine();
-        $this->info("✅ Processo concluído com sucesso!");
-        $this->info("📊 Resumo:");
+        $this->info('✅ Processo concluído com sucesso!');
+        $this->info('📊 Resumo:');
         $this->info("   • Projetos afetados: {$projetosAfetados}");
         $this->info("   • Vínculos encerrados: {$totalVinculosEncerrados}");
 

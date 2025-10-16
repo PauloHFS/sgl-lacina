@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\StatusCadastro;
-use App\Models\User;
-use App\Models\Sala;
 use App\Models\Baia;
+use App\Models\Sala;
+use App\Models\User;
 
 test('docente pode editar sala e suas baias', function () {
     $user = User::factory()->cadastroCompleto()->create([

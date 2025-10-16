@@ -17,7 +17,7 @@ class BaiaFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'nome' => 'Baia ' . $this->faker->unique()->numberBetween(1, 50),
+            'nome' => 'Baia '.$this->faker->unique()->numberBetween(1, 50),
             'descricao' => $this->faker->optional()->sentence(),
             'ativa' => true,
             'sala_id' => Sala::factory(),

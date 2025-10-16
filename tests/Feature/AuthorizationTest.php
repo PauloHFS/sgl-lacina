@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Projeto;
 use App\Enums\Funcao;
-use App\Enums\StatusVinculoProjeto;
 use App\Enums\Role;
+use App\Enums\StatusVinculoProjeto;
+use App\Models\Projeto;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 class AuthorizationTest extends TestCase
 {

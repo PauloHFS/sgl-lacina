@@ -5,7 +5,6 @@ namespace App\Events;
 use App\Models\UsuarioProjeto;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class SolicitacaoVinculoCriada
 {

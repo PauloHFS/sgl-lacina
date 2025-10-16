@@ -2,375 +2,378 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Models\Horario;
-use App\Models\DailyReport;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Enums\TipoProjeto;
-use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoHorario;
+use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\DailyReport;
+use App\Models\Horario;
 use App\Models\IntervenienteFinanceiro;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Str;
+use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ProjetosController extends Controller
 {
-  use AuthorizesRequests;
+    use AuthorizesRequests;
 
-  public function index()
-  {
-    $search = request()->input('search', '');
-    $tab = request()->input('tab', 'todos');
-    $user = Auth::user();
+    public function index()
+    {
+        $search = request()->input('search', '');
+        $tab = request()->input('tab', 'todos');
+        $user = Auth::user();
 
-    $projetosQuery = Projeto::query();
+        $projetosQuery = Projeto::query();
 
-    if ($search) {
-      $projetosQuery->where(function ($query) use ($search) {
-        $query->where('nome', 'ilike', "%{$search}%")
-          ->orWhere('cliente', 'ilike', "%{$search}%")
-          ->orWhere('tipo', 'ilike', "%{$search}%");
-      });
-    }
-
-    // Join com usuario_projeto para obter informações do vínculo do usuário logado
-    $projetosQuery->leftJoin('usuario_projeto as up_status', function ($join) use ($user) {
-      $join->on('projetos.id', '=', 'up_status.projeto_id')
-        ->where('up_status.usuario_id', $user->id);
-    });
-
-    $selectRawCase = "CASE up_order.status " .
-      "WHEN '" . StatusVinculoProjeto::APROVADO->value . "' THEN 1 " .
-      "WHEN '" . StatusVinculoProjeto::PENDENTE->value . "' THEN 2 " .
-      "WHEN '" . StatusVinculoProjeto::RECUSADO->value . "' THEN 3 " .
-      "WHEN '" . StatusVinculoProjeto::ENCERRADO->value . "' THEN 4 " .
-      "ELSE 5 END";
-
-    $tabConfigs = [
-      'colaborador' => [
-        'vinculo' => '!=',
-        'tipo' => TipoVinculo::COORDENADOR
-      ],
-      'coordenador' => [
-        'vinculo' => '=',
-        'tipo' => TipoVinculo::COORDENADOR
-      ]
-    ];
-
-    $finalSelectColumns = [
-      'projetos.id',
-      'projetos.nome',
-      'projetos.cliente',
-      'projetos.tipo',
-      'up_status.status as user_status',
-      'up_status.tipo_vinculo as user_tipo_vinculo'
-    ];
-
-    if (isset($tabConfigs[$tab])) {
-      $config = $tabConfigs[$tab];
-
-      $projetosQuery->whereHas('usuarios', function ($query) use ($user, $config) {
-        $query->where('users.id', $user->id)
-          ->where('usuario_projeto.tipo_vinculo', $config['vinculo'], $config['tipo']);
-      });
-
-      $projetosQuery->leftJoin('usuario_projeto as up_order', function ($join) use ($user, $config) {
-        $join->on('projetos.id', '=', 'up_order.projeto_id')
-          ->where('up_order.usuario_id', $user->id)
-          ->where('up_order.tipo_vinculo', $config['vinculo'], $config['tipo']);
-      });
-
-      $finalSelectColumns = array_merge($finalSelectColumns, [
-        'up_order.status',
-        DB::raw($selectRawCase . " as sort_priority")
-      ]);
-    }
-
-    if ($tab === 'colaborador' || $tab === 'coordenador') {
-      $projetosQuery->orderBy('sort_priority', 'asc')->orderBy('projetos.nome', 'asc');
-    } else { // 'todos' tab
-      $projetosQuery->orderBy('projetos.nome', 'asc');
-    }
-
-    $projetos = $projetosQuery->select($finalSelectColumns)
-      ->distinct()
-      ->get();
-
-    return Inertia::render('Projetos/Index', [
-      'projetos' => $projetos,
-      'queryparams' => [
-        'search' => $search,
-        'tab' => $tab,
-      ],
-      'can_create_project' => Auth::user()->can('create', Projeto::class),
-    ]);
-  }
-
-  public function show(Projeto $projeto)
-  {
-    $this->authorize('view', $projeto);
-
-    $projeto->load('intervenienteFinanceiro');
-
-    $vinculosDoUsuarioLogadoNoProjeto = UsuarioProjeto::where('usuario_id', $usuarioAutenticado->id)
-      ->with('projeto') // Eager load project data
-      ->orderBy('data_inicio', 'desc')
-      ->get();
-
-    $coordenadoresDoProjeto = $projeto->usuarios()
-      ->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR->value)
-      ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
-      ->orderBy('name')
-      ->get(['users.id', 'users.name', 'users.foto_url']);
-
-    $participantesProjeto = null;
-    $temVinculosPendentes = false;
-
-    if (
-      $usuarioVinculo &&
-      $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
-    ) {
-      $isCoordenador = $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value;
-      $participantesQuery = $projeto->usuarios()
-        ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
-        ->orderBy('name');
-
-      $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) use ($isCoordenador) {
-        $base = [
-          'id' => $user->id,
-          'name' => $user->name,
-          'email' => $user->email,
-          'foto_url' => $user->foto_url,
-          'funcao' => $user->pivot->funcao,
-          'tipo_vinculo' => $user->pivot->tipo_vinculo,
-        ];
-        if ($isCoordenador) {
-          $base['data_inicio'] = $user->pivot->data_inicio;
-          $base['data_fim'] = $user->pivot->data_fim;
-          $base['carga_horaria'] = $user->pivot->carga_horaria;
-          $base['valor_bolsa'] = $user->pivot->valor_bolsa;
+        if ($search) {
+            $projetosQuery->where(function ($query) use ($search) {
+                $query->where('nome', 'ilike', "%{$search}%")
+                    ->orWhere('cliente', 'ilike', "%{$search}%")
+                    ->orWhere('tipo', 'ilike', "%{$search}%");
+            });
         }
-        return $base;
-      });
 
-      $temVinculosPendentes = $projeto->usuarios()
-        ->wherePivot('status', StatusVinculoProjeto::PENDENTE)
-        ->exists();
+        // Join com usuario_projeto para obter informações do vínculo do usuário logado
+        $projetosQuery->leftJoin('usuario_projeto as up_status', function ($join) use ($user) {
+            $join->on('projetos.id', '=', 'up_status.projeto_id')
+                ->where('up_status.usuario_id', $user->id);
+        });
+
+        $selectRawCase = 'CASE up_order.status '.
+          "WHEN '".StatusVinculoProjeto::APROVADO->value."' THEN 1 ".
+          "WHEN '".StatusVinculoProjeto::PENDENTE->value."' THEN 2 ".
+          "WHEN '".StatusVinculoProjeto::RECUSADO->value."' THEN 3 ".
+          "WHEN '".StatusVinculoProjeto::ENCERRADO->value."' THEN 4 ".
+          'ELSE 5 END';
+
+        $tabConfigs = [
+            'colaborador' => [
+                'vinculo' => '!=',
+                'tipo' => TipoVinculo::COORDENADOR,
+            ],
+            'coordenador' => [
+                'vinculo' => '=',
+                'tipo' => TipoVinculo::COORDENADOR,
+            ],
+        ];
+
+        $finalSelectColumns = [
+            'projetos.id',
+            'projetos.nome',
+            'projetos.cliente',
+            'projetos.tipo',
+            'up_status.status as user_status',
+            'up_status.tipo_vinculo as user_tipo_vinculo',
+        ];
+
+        if (isset($tabConfigs[$tab])) {
+            $config = $tabConfigs[$tab];
+
+            $projetosQuery->whereHas('usuarios', function ($query) use ($user, $config) {
+                $query->where('users.id', $user->id)
+                    ->where('usuario_projeto.tipo_vinculo', $config['vinculo'], $config['tipo']);
+            });
+
+            $projetosQuery->leftJoin('usuario_projeto as up_order', function ($join) use ($user, $config) {
+                $join->on('projetos.id', '=', 'up_order.projeto_id')
+                    ->where('up_order.usuario_id', $user->id)
+                    ->where('up_order.tipo_vinculo', $config['vinculo'], $config['tipo']);
+            });
+
+            $finalSelectColumns = array_merge($finalSelectColumns, [
+                'up_order.status',
+                DB::raw($selectRawCase.' as sort_priority'),
+            ]);
+        }
+
+        if ($tab === 'colaborador' || $tab === 'coordenador') {
+            $projetosQuery->orderBy('sort_priority', 'asc')->orderBy('projetos.nome', 'asc');
+        } else { // 'todos' tab
+            $projetosQuery->orderBy('projetos.nome', 'asc');
+        }
+
+        $projetos = $projetosQuery->select($finalSelectColumns)
+            ->distinct()
+            ->get();
+
+        return Inertia::render('Projetos/Index', [
+            'projetos' => $projetos,
+            'queryparams' => [
+                'search' => $search,
+                'tab' => $tab,
+            ],
+            'can_create_project' => Auth::user()->can('create', Projeto::class),
+        ]);
     }
 
-    // Buscar horários dos colaboradores do projeto (somente trabalho presencial e remoto)
-    $horariosDosProjetos = null;
-    if (
-      $usuarioVinculo &&
-      (($usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
-        $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value) ||
-        $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value)
-    ) {
+    public function show(Projeto $projeto)
+    {
+        $this->authorize('view', $projeto);
 
-      $horariosDosProjetos = Horario::query()
-        ->whereHas('usuarioProjeto', function ($query) use ($projeto) {
-          $query->where('projeto_id', $projeto->id)
-            ->where('status', StatusVinculoProjeto::APROVADO);
-        })
-        ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])
-        ->with([
-          'usuario:id,name,email,foto_url',
-          'baia:id,nome,sala_id',
-          'baia.sala:id,nome'
-        ])
-        ->orderBy('dia_da_semana')
-        ->orderBy('horario')
-        ->get()
-        ->groupBy('dia_da_semana');
-    }
+        $projeto->load('intervenienteFinanceiro');
 
-    // Daily Reports - Recebe o parâmetro 'dia' (formato: Y-m-d)
-    $diaDaily = request()->input('dia');
-    $dailyReports = null;
-    $totalParticipantes = 0;
-    if ($diaDaily) {
-      // Buscar todos os participantes aprovados do projeto
-      $participantesIds = $projeto->usuarios()
-        ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
-        ->pluck('users.id');
-      $totalParticipantes = $participantesIds->count();
-
-      // Buscar dailys desse projeto para o dia informado
-      $dailyReports = DailyReport::whereIn('usuario_id', $participantesIds)
-        ->where('projeto_id', $projeto->id)
-        ->with('usuario')
-        ->whereDate('data', $diaDaily)
-        ->get();
-    }
-
-    $canViewAusencias = $usuarioAutenticado->can('viewAusencias', $projeto);
-    $ausencias = null;
-    if ($canViewAusencias) {
-        $participantesIds = $projeto->usuarios()->pluck('users.id');
-        $ausencias = \App\Models\Ausencia::whereIn('usuario_id', $participantesIds)
-            ->whereIn('status', [\App\Enums\StatusAusencia::APROVADO, \App\Enums\StatusAusencia::PENDENTE])
-            ->with('usuario:id,name')
-            ->orderByRaw("CASE status WHEN 'PENDENTE' THEN 1 WHEN 'APROVADO' THEN 2 ELSE 3 END")
+        $vinculosDoUsuarioLogadoNoProjeto = UsuarioProjeto::where('usuario_id', $usuarioAutenticado->id)
+            ->with('projeto') // Eager load project data
             ->orderBy('data_inicio', 'desc')
             ->get();
-    }
 
-    return Inertia::render('Projetos/Show', [
-      'projeto' => $projeto,
-      'funcoes' => array_column(Funcao::cases(), 'value'),
-      'usuarioVinculo' => $usuarioVinculo,
-      'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
-      'participantesProjeto' => $participantesProjeto,
-      'temVinculosPendentes' => $temVinculosPendentes,
-      'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
-      'horariosDosProjetos' => $horariosDosProjetos,
-      'diaDaily' => $diaDaily,
-      'dailyReports' => $dailyReports,
-      'totalParticipantes' => $totalParticipantes,
-      'canViewAusencias' => $canViewAusencias,
-      'ausencias' => $ausencias,
-      'can_update_project' => Auth::user()->can('update', $projeto),
-      'can_delete_project' => Auth::user()->can('delete', $projeto),
-    ]);
-  }
+        $coordenadoresDoProjeto = $projeto->usuarios()
+            ->wherePivot('tipo_vinculo', TipoVinculo::COORDENADOR->value)
+            ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+            ->orderBy('name')
+            ->get(['users.id', 'users.name', 'users.foto_url']);
 
-  public function create()
-  {
-    $this->authorize('create', Projeto::class);
+        $participantesProjeto = null;
+        $temVinculosPendentes = false;
 
-    $interveniente = IntervenienteFinanceiro::all();
+        if (
+            $usuarioVinculo &&
+            $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value
+        ) {
+            $isCoordenador = $usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value;
+            $participantesQuery = $projeto->usuarios()
+                ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+                ->orderBy('name');
 
-    return Inertia::render('Projetos/Create', [
-      'intervenientes_financeiros' => $interveniente,
-    ]);
-  }
+            $participantesProjeto = $participantesQuery->paginate(10)->through(function ($user) use ($isCoordenador) {
+                $base = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'foto_url' => $user->foto_url,
+                    'funcao' => $user->pivot->funcao,
+                    'tipo_vinculo' => $user->pivot->tipo_vinculo,
+                ];
+                if ($isCoordenador) {
+                    $base['data_inicio'] = $user->pivot->data_inicio;
+                    $base['data_fim'] = $user->pivot->data_fim;
+                    $base['carga_horaria'] = $user->pivot->carga_horaria;
+                    $base['valor_bolsa'] = $user->pivot->valor_bolsa;
+                }
 
-  public function edit(Projeto $projeto)
-  {
-    $this->authorize('update', $projeto);
+                return $base;
+            });
 
-    $interveniente = IntervenienteFinanceiro::all();
+            $temVinculosPendentes = $projeto->usuarios()
+                ->wherePivot('status', StatusVinculoProjeto::PENDENTE)
+                ->exists();
+        }
 
-    return Inertia::render('Projetos/Edit', [
-      'projeto' => $projeto,
-      'intervenientes_financeiros' => $interveniente,
-    ]);
-  }
+        // Buscar horários dos colaboradores do projeto (somente trabalho presencial e remoto)
+        $horariosDosProjetos = null;
+        if (
+            $usuarioVinculo &&
+            (($usuarioVinculo->tipo_vinculo === TipoVinculo::COORDENADOR->value &&
+              $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value) ||
+              $usuarioVinculo->status === StatusVinculoProjeto::APROVADO->value)
+        ) {
 
-  public function store(Request $request)
-  {
-    $this->authorize('create', Projeto::class);
+            $horariosDosProjetos = Horario::query()
+                ->whereHas('usuarioProjeto', function ($query) use ($projeto) {
+                    $query->where('projeto_id', $projeto->id)
+                        ->where('status', StatusVinculoProjeto::APROVADO);
+                })
+                ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL, TipoHorario::TRABALHO_REMOTO])
+                ->with([
+                    'usuario:id,name,email,foto_url',
+                    'baia:id,nome,sala_id',
+                    'baia.sala:id,nome',
+                ])
+                ->orderBy('dia_da_semana')
+                ->orderBy('horario')
+                ->get()
+                ->groupBy('dia_da_semana');
+        }
 
-    $validatedData = $request->validate([
-      'nome' => 'required|string|max:255',
-      'descricao' => 'nullable|string|max:2000',
-      'valor_total' => 'sometimes|integer|min:0',
-      'meses_execucao' => 'sometimes|numeric|min:0',
-      'campos_extras' => 'sometimes|array',
-      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
-      'data_inicio' => 'required|date',
-      'data_termino' => 'nullable|date|after_or_equal:data_inicio',
-      'cliente' => 'required|string|max:255',
-      'slack_url' => 'nullable|url|max:255',
-      'discord_url' => 'nullable|url|max:255',
-      'board_url' => 'nullable|url|max:255',
-      'git_url' => 'nullable|url|max:255',
-      'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
-      'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
-      'numero_convenio' => 'nullable|string|max:255',
-    ]);
+        // Daily Reports - Recebe o parâmetro 'dia' (formato: Y-m-d)
+        $diaDaily = request()->input('dia');
+        $dailyReports = null;
+        $totalParticipantes = 0;
+        if ($diaDaily) {
+            // Buscar todos os participantes aprovados do projeto
+            $participantesIds = $projeto->usuarios()
+                ->wherePivot('status', StatusVinculoProjeto::APROVADO->value)
+                ->pluck('users.id');
+            $totalParticipantes = $participantesIds->count();
 
-    if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
-      $validatedData['interveniente_financeiro_id'] = null;
-    }
+            // Buscar dailys desse projeto para o dia informado
+            $dailyReports = DailyReport::whereIn('usuario_id', $participantesIds)
+                ->where('projeto_id', $projeto->id)
+                ->with('usuario')
+                ->whereDate('data', $diaDaily)
+                ->get();
+        }
 
-    try {
-      DB::transaction(function () use ($validatedData) {
-        $projeto = new Projeto($validatedData);
-        $projeto->id = Str::uuid();
-        $projeto->save();
+        $canViewAusencias = $usuarioAutenticado->can('viewAusencias', $projeto);
+        $ausencias = null;
+        if ($canViewAusencias) {
+            $participantesIds = $projeto->usuarios()->pluck('users.id');
+            $ausencias = \App\Models\Ausencia::whereIn('usuario_id', $participantesIds)
+                ->whereIn('status', [\App\Enums\StatusAusencia::APROVADO, \App\Enums\StatusAusencia::PENDENTE])
+                ->with('usuario:id,name')
+                ->orderByRaw("CASE status WHEN 'PENDENTE' THEN 1 WHEN 'APROVADO' THEN 2 ELSE 3 END")
+                ->orderBy('data_inicio', 'desc')
+                ->get();
+        }
 
-        $projeto->usuarios()->attach(Auth::user()->id, [
-          'id' => Str::uuid(),
-          'tipo_vinculo' => TipoVinculo::COORDENADOR,
-          'funcao' => Funcao::COORDENADOR,
-          'status' => StatusVinculoProjeto::APROVADO,
-          'carga_horaria' => 0,
-          'data_inicio' => now(),
+        return Inertia::render('Projetos/Show', [
+            'projeto' => $projeto,
+            'funcoes' => array_column(Funcao::cases(), 'value'),
+            'usuarioVinculo' => $usuarioVinculo,
+            'vinculosDoUsuarioLogadoNoProjeto' => $vinculosDoUsuarioLogadoNoProjeto,
+            'participantesProjeto' => $participantesProjeto,
+            'temVinculosPendentes' => $temVinculosPendentes,
+            'coordenadoresDoProjeto' => $coordenadoresDoProjeto,
+            'horariosDosProjetos' => $horariosDosProjetos,
+            'diaDaily' => $diaDaily,
+            'dailyReports' => $dailyReports,
+            'totalParticipantes' => $totalParticipantes,
+            'canViewAusencias' => $canViewAusencias,
+            'ausencias' => $ausencias,
+            'can_update_project' => Auth::user()->can('update', $projeto),
+            'can_delete_project' => Auth::user()->can('delete', $projeto),
         ]);
-      });
-    } catch (\Throwable $th) {
-      Log::error('Erro ao cadastrar projeto:', [
-        'error' => $th->getMessage(),
-        'stack' => $th->getTraceAsString(),
-      ]);
-      return Redirect::route('projetos.index')->with('error', 'Erro ao cadastrar o projeto. Tente novamente mais tarde.');
     }
 
-    return Redirect::route('projetos.index')->with('success', 'Projeto cadastrado com sucesso!');
-  }
+    public function create()
+    {
+        $this->authorize('create', Projeto::class);
 
-  public function update(Request $request, Projeto $projeto)
-  {
-    $this->authorize('update', $projeto);
+        $interveniente = IntervenienteFinanceiro::all();
 
-    $validatedData = $request->validate([
-      'nome' => 'required|string|max:255',
-      'descricao' => 'nullable|string',
-      'valor_total' => 'sometimes|integer|min:0',
-      'meses_execucao' => 'sometimes|numeric|min:0',
-      'campos_extras' => 'sometimes|array',
-      'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
-      'data_inicio' => 'required|date',
-      'data_termino' => 'nullable|date|after_or_equal:data_inicio',
-      'cliente' => 'required|string|max:255',
-      'slack_url' => 'nullable|url|max:255',
-      'discord_url' => 'nullable|url|max:255',
-      'board_url' => 'nullable|url|max:255',
-      'git_url' => 'nullable|url|max:255',
-      'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
-      'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
-      'numero_convenio' => 'nullable|string|max:255',
-    ]);
-
-    // Convert empty string to null for UUID foreign key fields
-    if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
-      $validatedData['interveniente_financeiro_id'] = null;
+        return Inertia::render('Projetos/Create', [
+            'intervenientes_financeiros' => $interveniente,
+        ]);
     }
 
-    Log::info('Atualizando projeto:', [
-      'projeto_id' => $projeto->id,
-      'dados' => $validatedData,
-    ]);
+    public function edit(Projeto $projeto)
+    {
+        $this->authorize('update', $projeto);
 
-    try {
-      $projeto->update($validatedData);
-    } catch (\Throwable $th) {
-      Log::error('Erro ao atualizar projeto:', [
-        'error' => $th->getMessage(),
-        'stack' => $th->getTraceAsString(),
-        'projeto_id' => $projeto->id,
-      ]);
-      return Redirect::route('projetos.show', $projeto->id)->with('error', 'Erro ao atualizar o projeto. Tente novamente mais tarde.');
+        $interveniente = IntervenienteFinanceiro::all();
+
+        return Inertia::render('Projetos/Edit', [
+            'projeto' => $projeto,
+            'intervenientes_financeiros' => $interveniente,
+        ]);
     }
 
-    return Redirect::route('projetos.show', $projeto->id)->with('success', 'Projeto atualizado com sucesso!');
-  }
+    public function store(Request $request)
+    {
+        $this->authorize('create', Projeto::class);
 
-  public function destroy(Projeto $projeto)
-  {
-    $this->authorize('delete', $projeto);
+        $validatedData = $request->validate([
+            'nome' => 'required|string|max:255',
+            'descricao' => 'nullable|string|max:2000',
+            'valor_total' => 'sometimes|integer|min:0',
+            'meses_execucao' => 'sometimes|numeric|min:0',
+            'campos_extras' => 'sometimes|array',
+            'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
+            'data_inicio' => 'required|date',
+            'data_termino' => 'nullable|date|after_or_equal:data_inicio',
+            'cliente' => 'required|string|max:255',
+            'slack_url' => 'nullable|url|max:255',
+            'discord_url' => 'nullable|url|max:255',
+            'board_url' => 'nullable|url|max:255',
+            'git_url' => 'nullable|url|max:255',
+            'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
+            'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
+            'numero_convenio' => 'nullable|string|max:255',
+        ]);
 
-    $projeto->delete();
+        if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
+            $validatedData['interveniente_financeiro_id'] = null;
+        }
 
-    return Redirect::route('projetos.index')->with('success', 'Projeto deletado com sucesso!');
-  }
+        try {
+            DB::transaction(function () use ($validatedData) {
+                $projeto = new Projeto($validatedData);
+                $projeto->id = Str::uuid();
+                $projeto->save();
+
+                $projeto->usuarios()->attach(Auth::user()->id, [
+                    'id' => Str::uuid(),
+                    'tipo_vinculo' => TipoVinculo::COORDENADOR,
+                    'funcao' => Funcao::COORDENADOR,
+                    'status' => StatusVinculoProjeto::APROVADO,
+                    'carga_horaria' => 0,
+                    'data_inicio' => now(),
+                ]);
+            });
+        } catch (\Throwable $th) {
+            Log::error('Erro ao cadastrar projeto:', [
+                'error' => $th->getMessage(),
+                'stack' => $th->getTraceAsString(),
+            ]);
+
+            return Redirect::route('projetos.index')->with('error', 'Erro ao cadastrar o projeto. Tente novamente mais tarde.');
+        }
+
+        return Redirect::route('projetos.index')->with('success', 'Projeto cadastrado com sucesso!');
+    }
+
+    public function update(Request $request, Projeto $projeto)
+    {
+        $this->authorize('update', $projeto);
+
+        $validatedData = $request->validate([
+            'nome' => 'required|string|max:255',
+            'descricao' => 'nullable|string',
+            'valor_total' => 'sometimes|integer|min:0',
+            'meses_execucao' => 'sometimes|numeric|min:0',
+            'campos_extras' => 'sometimes|array',
+            'campos_extras.*' => 'string|max:255', // Validar cada campo extra como string
+            'data_inicio' => 'required|date',
+            'data_termino' => 'nullable|date|after_or_equal:data_inicio',
+            'cliente' => 'required|string|max:255',
+            'slack_url' => 'nullable|url|max:255',
+            'discord_url' => 'nullable|url|max:255',
+            'board_url' => 'nullable|url|max:255',
+            'git_url' => 'nullable|url|max:255',
+            'tipo' => ['required', new \Illuminate\Validation\Rules\Enum(TipoProjeto::class)],
+            'interveniente_financeiro_id' => 'nullable|exists:intervenientes_financeiros,id',
+            'numero_convenio' => 'nullable|string|max:255',
+        ]);
+
+        // Convert empty string to null for UUID foreign key fields
+        if (isset($validatedData['interveniente_financeiro_id']) && $validatedData['interveniente_financeiro_id'] === '') {
+            $validatedData['interveniente_financeiro_id'] = null;
+        }
+
+        Log::info('Atualizando projeto:', [
+            'projeto_id' => $projeto->id,
+            'dados' => $validatedData,
+        ]);
+
+        try {
+            $projeto->update($validatedData);
+        } catch (\Throwable $th) {
+            Log::error('Erro ao atualizar projeto:', [
+                'error' => $th->getMessage(),
+                'stack' => $th->getTraceAsString(),
+                'projeto_id' => $projeto->id,
+            ]);
+
+            return Redirect::route('projetos.show', $projeto->id)->with('error', 'Erro ao atualizar o projeto. Tente novamente mais tarde.');
+        }
+
+        return Redirect::route('projetos.show', $projeto->id)->with('success', 'Projeto atualizado com sucesso!');
+    }
+
+    public function destroy(Projeto $projeto)
+    {
+        $this->authorize('delete', $projeto);
+
+        $projeto->delete();
+
+        return Redirect::route('projetos.index')->with('success', 'Projeto deletado com sucesso!');
+    }
 }

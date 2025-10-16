@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\HistoricoUsuarioProjeto;
-use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\HistoricoUsuarioProjeto;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\HistoricoUsuarioProjeto>

@@ -6,19 +6,22 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
-use Illuminate\Mail\Mailables\Attachment;
 
 class ParticipacaoLacinaReportMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public User $user;
+
     public Collection $historico;
+
     public ?string $pdfContent;
+
     public ?string $pdfFilename;
 
     /**
@@ -65,9 +68,10 @@ class ParticipacaoLacinaReportMail extends Mailable implements ShouldQueue
     {
         $attachments = [];
         if ($this->pdfContent) {
-            $attachments[] = Attachment::fromData(fn() => $this->pdfContent, $this->pdfFilename)
+            $attachments[] = Attachment::fromData(fn () => $this->pdfContent, $this->pdfFilename)
                 ->withMime('application/pdf');
         }
+
         return $attachments;
     }
 }

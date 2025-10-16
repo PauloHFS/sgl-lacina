@@ -4,16 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusCadastro;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Banco;
 use App\Rules\ValidCpf;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Banco;
 
 class ProfileController extends Controller
 {
@@ -52,7 +51,7 @@ class ProfileController extends Controller
             $cleanedData['cep'] = preg_replace('/\D/', '', $request->input('cep'));
         }
 
-        if (!empty($cleanedData)) {
+        if (! empty($cleanedData)) {
             $request->merge($cleanedData);
         }
 
@@ -98,10 +97,9 @@ class ProfileController extends Controller
         return Redirect::to('/');
     }
 
-
     /**
      * Completa o cadastro do usuário.
-     * 
+     *
      * Veja a interface do forms em resources/js/Pages/PosCadastro.jsx
      */
     public function completarCadastro(Request $request): RedirectResponse
@@ -125,8 +123,8 @@ class ProfileController extends Controller
             'data_nascimento' => 'required|date',
 
             // Documentos
-            'cpf' => ['required', 'string', 'max:14', new ValidCpf(), 'unique:users,cpf,' . $user->id],
-            'rg' => 'required|string|min:2|max:16|unique:users,rg,' . $user->id,
+            'cpf' => ['required', 'string', 'max:14', new ValidCpf, 'unique:users,cpf,'.$user->id],
+            'rg' => 'required|string|min:2|max:16|unique:users,rg,'.$user->id,
             'uf_rg' => 'required|string|max:2',
             'orgao_emissor_rg' => 'required|string|exists:orgaos_emissores,sigla',
 
@@ -154,7 +152,6 @@ class ProfileController extends Controller
             'website_url' => 'nullable|url|max:255',
         ]);
 
-
         $user->status_cadastro = StatusCadastro::PENDENTE;
 
         $fillData = $request->except(['foto_url', 'estado']);
@@ -173,7 +170,7 @@ class ProfileController extends Controller
         // Reautenticar o usuário para garantir que as informações atualizadas sejam refletidas
         Auth::login($user);
 
-        if (!$request->routeIs('waiting-approval')) {
+        if (! $request->routeIs('waiting-approval')) {
             return Redirect::route('waiting-approval');
         }
 

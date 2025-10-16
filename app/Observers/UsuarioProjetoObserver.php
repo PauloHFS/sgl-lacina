@@ -3,8 +3,8 @@
 namespace App\Observers;
 
 use App\Enums\StatusVinculoProjeto;
-use App\Models\UsuarioProjeto;
 use App\Models\HistoricoUsuarioProjeto;
+use App\Models\UsuarioProjeto;
 
 class UsuarioProjetoObserver
 {
@@ -43,13 +43,14 @@ class UsuarioProjetoObserver
                     // Only update if the new end date is valid and after the second to last history's start date
                     if ($newEndDateForSecondToLast && $secondToLastHistory->data_inicio->lte($newEndDateForSecondToLast)) {
                         $secondToLastHistory->update(['data_fim' => $newEndDateForSecondToLast]);
-                    } else if ($newEndDateForSecondToLast && $secondToLastHistory->data_inicio->gt($newEndDateForSecondToLast)) {
+                    } elseif ($newEndDateForSecondToLast && $secondToLastHistory->data_inicio->gt($newEndDateForSecondToLast)) {
                         // If the calculated end date is before the start date, end on its start date.
                         $secondToLastHistory->update(['data_fim' => $secondToLastHistory->data_inicio]);
                     }
                 }
             }
             $this->updateLastHistory($usuarioProjeto);
+
             return;
         }
 
@@ -57,13 +58,13 @@ class UsuarioProjetoObserver
 
         // Check if only 'data_fim' has changed
         $onlyDataFimChanged = $usuarioProjeto->isDirty('data_fim') &&
-                              !$usuarioProjeto->isDirty('data_inicio') &&
-                              !$usuarioProjeto->isDirty('status') &&
-                              !$usuarioProjeto->isDirty('funcao') &&
-                              !$usuarioProjeto->isDirty('carga_horaria') &&
-                              !$usuarioProjeto->isDirty('tipo_vinculo') &&
-                              !$usuarioProjeto->isDirty('valor_bolsa') &&
-                              !$usuarioProjeto->isDirty('trocar');
+                              ! $usuarioProjeto->isDirty('data_inicio') &&
+                              ! $usuarioProjeto->isDirty('status') &&
+                              ! $usuarioProjeto->isDirty('funcao') &&
+                              ! $usuarioProjeto->isDirty('carga_horaria') &&
+                              ! $usuarioProjeto->isDirty('tipo_vinculo') &&
+                              ! $usuarioProjeto->isDirty('valor_bolsa') &&
+                              ! $usuarioProjeto->isDirty('trocar');
 
         if ($onlyDataFimChanged) {
             // If only data_fim changed, update the last history entry's data_fim
@@ -75,6 +76,7 @@ class UsuarioProjetoObserver
             if ($lastHistory) {
                 $lastHistory->update(['data_fim' => $usuarioProjeto->data_fim]);
             }
+
             return; // Exit, as no new history entry is needed
         }
 
@@ -136,7 +138,7 @@ class UsuarioProjetoObserver
                 // Only update if the previousHistoryEndDate is valid and after the history's start date
                 if ($previousHistoryEndDate && $lastActiveHistory->data_inicio->lte($previousHistoryEndDate)) {
                     $lastActiveHistory->update(['data_fim' => $previousHistoryEndDate]);
-                } else if ($previousHistoryEndDate && $lastActiveHistory->data_inicio->gt($previousHistoryEndDate)) {
+                } elseif ($previousHistoryEndDate && $lastActiveHistory->data_inicio->gt($previousHistoryEndDate)) {
                     // If the calculated end date is before the start date, end on its start date.
                     $lastActiveHistory->update(['data_fim' => $lastActiveHistory->data_inicio]);
                 }

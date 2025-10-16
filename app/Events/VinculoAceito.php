@@ -2,18 +2,19 @@
 
 namespace App\Events;
 
-use App\Models\User;
 use App\Models\Projeto;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
 
 class VinculoAceito
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public User $user;
+
     public Projeto $projeto;
 
     /**

@@ -1,15 +1,15 @@
 <?php
 
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Models\SolicitacaoTrocaProjeto;
-use App\Enums\TipoProjeto;
-use App\Enums\StatusCadastro;
-use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
+use App\Enums\StatusCadastro;
 use App\Enums\StatusSolicitacaoTroca;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\Projeto;
+use App\Models\SolicitacaoTrocaProjeto;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -79,7 +79,7 @@ describe('Project Coordination Dashboard', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->component('Projetos/Show')
                     ->has('projeto')
                     ->has('usuarios') // Team members
@@ -108,7 +108,7 @@ describe('Project Coordination Dashboard', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->where('usuarios.total', 3) // Including coordinator
                     ->where('usuarios.APROVADOs', 2) // Coordinator + discente1
             );
@@ -131,7 +131,7 @@ describe('Project Coordination Dashboard', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->has('solicitacoes')
                     ->where('solicitacoes.0.status', StatusVinculoProjeto::PENDENTE->value)
             );
@@ -325,7 +325,7 @@ describe('Project Switching Coordination', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->has('solicitacoesTrocaPendentes')
             );
     });
@@ -461,7 +461,7 @@ describe('Project Member Reporting', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->has('projeto')
                     ->has('membros', 3) // Including coordinator
                     ->has('estatisticas')
@@ -504,7 +504,7 @@ describe('Project Member Reporting', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->where('estatisticas.carga_horaria_total', 75) // 40 + 20 + 15
                     ->where('estatisticas.media_carga_horaria', 25) // 75 / 3
             );
@@ -616,7 +616,7 @@ describe('Edge Cases and Error Handling', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn(Assert $page) => $page
+                fn (Assert $page) => $page
                     ->has('projetosCoordenados', 2)
             );
     });
