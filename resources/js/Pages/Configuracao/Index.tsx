@@ -41,6 +41,12 @@ export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIn
         });
     };
 
+    const orgaoEmissorUrls = {
+        store: route('configuracoes.orgaos-emissores.store'),
+        update: route('configuracoes.orgaos-emissores.update', { id: '{id}' }),
+        destroy: route('configuracoes.orgaos-emissores.destroy', { id: '{id}' }),
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -283,7 +289,7 @@ export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIn
                     </div>
 
                     {/* Render the new component here */}
-                    <OrgaoEmissorManager orgaos={orgaosEmissores} />
+                    <OrgaoEmissorManager orgaos={orgaosEmissores} urls={orgaoEmissorUrls} />
 
                 </div>
             </div>
