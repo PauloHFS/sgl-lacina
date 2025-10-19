@@ -1,19 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
-import OrgaoEmissorManager from '@/Components/OrgaoEmissorManager'; // Import the new component
-import { OrgaoEmissor } from '@/types'; // Assuming a type definition exists
+import OrgaoEmissorManager from '@/Components/OrgaoEmissorManager';
+import { OrgaoEmissor } from '@/types';
 
 interface ConfiguracaoIndexProps {
-
     configuracoes: {
         senha_laboratorio_existe: boolean;
         senha_laboratorio?: string;
     };
-    orgaosEmissores: OrgaoEmissor[]; // Add the new prop
+    orgaosEmissores: OrgaoEmissor[];
 }
 
-export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) { // Destructure the prop
+export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) {
     const [showForm, setShowForm] = useState(false);
     const [copied, setCopied] = useState(false);
 
