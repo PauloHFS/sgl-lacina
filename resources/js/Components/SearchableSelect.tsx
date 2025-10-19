@@ -4,7 +4,7 @@ import { useDebounce } from 'use-debounce';
 import TextInput from './TextInput';
 
 interface SelectOption {
-    id: number | string;
+    id: string;
     nome: string;
     sigla: string;
 }
