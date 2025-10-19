@@ -1,11 +1,11 @@
 <?php
 
 use App\Enums\DiaDaSemana;
+use App\Enums\TipoHorario;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use App\Enums\TipoHorario;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -68,11 +68,11 @@ return new class extends Migration
                 ->whereIn('tipo', [TipoHorario::TRABALHO_PRESENCIAL->value, TipoHorario::TRABALHO_REMOTO->value]);
         });
 
-        DB::statement("
+        DB::statement('
             CREATE UNIQUE INDEX horarios_baia_dia_horario_unique
             ON horarios (baia_id, dia_da_semana, horario)
             WHERE baia_id IS NOT NULL AND deleted_at IS NULL
-        ");
+        ');
     }
 
     /**
@@ -80,7 +80,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("DROP INDEX IF EXISTS horarios_baia_dia_horario_unique");
+        DB::statement('DROP INDEX IF EXISTS horarios_baia_dia_horario_unique');
         Schema::dropIfExists('horarios');
         Schema::dropIfExists('baias');
         Schema::dropIfExists('salas');

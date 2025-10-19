@@ -2,14 +2,13 @@
 
 namespace App\Listeners;
 
-use App\Events\SolicitacaoVinculoCriada;
-use App\Enums\TipoVinculo;
 use App\Enums\StatusVinculoProjeto;
-use App\Models\User;
+use App\Enums\TipoVinculo;
+use App\Events\SolicitacaoVinculoCriada;
 use App\Mail\NovaSolicitacaoVinculo;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Mail;
 
 class NotificarCoordenadoresSolicitacaoVinculo implements ShouldQueue
 {

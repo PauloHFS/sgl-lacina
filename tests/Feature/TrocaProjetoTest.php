@@ -1,9 +1,9 @@
 <?php
 
+use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
-use App\Enums\Funcao;
 use App\Models\HistoricoUsuarioProjeto;
 use App\Models\Projeto;
 use App\Models\User;

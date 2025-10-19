@@ -73,13 +73,15 @@ class DailyReport extends Model
 
         $diaDaSemanaEnum = $mapeamentoDias[$diaDaSemana] ?? null;
 
-        if (!$diaDaSemanaEnum) {
+        if (! $diaDaSemanaEnum) {
             Log::warning("Dia da semana não mapeado: {$diaDaSemana}");
+
             return 0;
         }
 
-        if (!$this->usuario) {
-            Log::warning("Usuário não encontrado para o daily report");
+        if (! $this->usuario) {
+            Log::warning('Usuário não encontrado para o daily report');
+
             return 0;
         }
 

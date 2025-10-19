@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoProjeto;
+use App\Enums\TipoVinculo;
 use App\Models\Projeto;
 use App\Models\User;
 use App\Models\UsuarioProjeto;
-use App\Enums\TipoProjeto;
-use App\Enums\TipoVinculo;
-use App\Enums\StatusVinculoProjeto;
 
 test('projeto pode ser criado com dados obrigatórios', function () {
     $projeto = Projeto::factory()->create([
@@ -118,7 +118,7 @@ test('projeto datas devem ser castadas corretamente', function () {
 });
 
 test('projeto unique ids deve incluir id', function () {
-    $projeto = new Projeto();
+    $projeto = new Projeto;
 
     expect($projeto->uniqueIds())->toContain('id');
 });

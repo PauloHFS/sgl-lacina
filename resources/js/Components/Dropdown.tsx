@@ -58,24 +58,16 @@ const Trigger = ({ children }: PropsWithChildren) => {
 };
 
 const Content = ({
-    align = 'right',
     width = '48',
     contentClasses = '',
     children,
 }: PropsWithChildren<{
-    align?: 'left' | 'right';
     width?: '48';
     contentClasses?: string;
 }>) => {
     const { open, setOpen } = useContext(DropDownContext);
 
-    let alignmentClasses = '';
 
-    if (align === 'left') {
-        alignmentClasses = 'dropdown-start';
-    } else if (align === 'right') {
-        alignmentClasses = 'dropdown-end';
-    }
 
     let widthClasses = 'w-52';
 

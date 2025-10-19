@@ -66,17 +66,16 @@ test('authenticated user who is an approved coordinator can access project edit 
         ->get(route('projetos.edit', $projeto))
         ->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Projetos/Edit')
                 ->has(
                     'projeto',
-                    fn(Assert $prop) => $prop
-                        ->where('id', (string)$projeto->id) // Ensure $projeto->id is cast to string for comparison
+                    fn (Assert $prop) => $prop
+                        ->where('id', (string) $projeto->id) // Ensure $projeto->id is cast to string for comparison
                         ->etc()
                 )
         );
 });
-
 
 // Testes para a rota PATCH /projeto/{projeto} (projetos.update)
 
@@ -208,7 +207,7 @@ test('updating a project with invalid data returns validation errors', function 
 test('data_termino can be null when updating', function () {
     $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create([
-        'data_termino' => '2025-12-31'
+        'data_termino' => '2025-12-31',
     ]);
     UsuarioProjeto::factory()->create([
         'usuario_id' => $user->id,
@@ -465,7 +464,7 @@ test('can update project with valid campos_extras', function () {
         'gerente' => 'João Silva',
         'departamento' => 'TI',
         'prioridade' => 'Alta',
-        'observacoes' => 'Projeto estratégico'
+        'observacoes' => 'Projeto estratégico',
     ];
 
     $updateData = [
@@ -495,7 +494,7 @@ test('can update project with valid campos_extras', function () {
 test('can update project with empty campos_extras', function () {
     $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create([
-        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2']
+        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2'],
     ]);
     UsuarioProjeto::factory()->create([
         'usuario_id' => $user->id,
@@ -526,7 +525,7 @@ test('can update project with empty campos_extras', function () {
 test('can update project with null campos_extras', function () {
     $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create([
-        'campos_extras' => ['campo1' => 'valor1']
+        'campos_extras' => ['campo1' => 'valor1'],
     ]);
     UsuarioProjeto::factory()->create([
         'usuario_id' => $user->id,
@@ -559,7 +558,7 @@ test('can update project with null campos_extras', function () {
 test('can explicitly clear campos_extras by sending empty array', function () {
     $user = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
     $projeto = Projeto::factory()->create([
-        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2']
+        'campos_extras' => ['campo1' => 'valor1', 'campo2' => 'valor2'],
     ]);
     UsuarioProjeto::factory()->create([
         'usuario_id' => $user->id,
@@ -685,7 +684,7 @@ test('can update project with both valor_total and campos_extras', function () {
     $camposExtras = [
         'gerente' => 'Maria Santos',
         'budget_aprovado' => 'Sim',
-        'criticidade' => 'Média'
+        'criticidade' => 'Média',
     ];
 
     $updateData = [
@@ -726,7 +725,7 @@ test('campos_extras persist as json in database', function () {
     $camposExtras = [
         'responsavel_tecnico' => 'Pedro Oliveira',
         'tecnologias' => 'Laravel, React',
-        'deadline_critico' => '2025-06-30'
+        'deadline_critico' => '2025-06-30',
     ];
 
     $updateData = [

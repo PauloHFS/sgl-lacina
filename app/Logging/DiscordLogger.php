@@ -11,12 +11,13 @@ use Monolog\LogRecord;
 class DiscordLogHandler extends AbstractProcessingHandler
 {
     private string $webhookUrl;
+
     private Client $httpClient;
 
     public function __construct(string $webhookUrl, $level = Logger::ERROR, bool $bubble = true)
     {
         $this->webhookUrl = $webhookUrl;
-        $this->httpClient = new Client();
+        $this->httpClient = new Client;
         parent::__construct($level, $bubble);
     }
 
@@ -30,27 +31,27 @@ class DiscordLogHandler extends AbstractProcessingHandler
                 [
                     'name' => 'Ambiente',
                     'value' => Config::get('app.env'),
-                    'inline' => true
+                    'inline' => true,
                 ],
                 [
                     'name' => 'Nível',
                     'value' => $record->level->name,
-                    'inline' => true
+                    'inline' => true,
                 ],
                 [
                     'name' => 'Mensagem',
                     'value' => $this->truncateMessage($record->message),
-                    'inline' => false
-                ]
-            ]
+                    'inline' => false,
+                ],
+            ],
         ];
 
         // Adicionar contexto se existir
-        if (!empty($record->context)) {
+        if (! empty($record->context)) {
             $embed['fields'][] = [
                 'name' => 'Contexto',
-                'value' => '```json' . "\n" . json_encode($record->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n" . '```',
-                'inline' => false
+                'value' => '```json'."\n".json_encode($record->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n".'```',
+                'inline' => false,
             ];
         }
 
@@ -60,27 +61,27 @@ class DiscordLogHandler extends AbstractProcessingHandler
             if ($exception instanceof \Throwable) {
                 $embed['fields'][] = [
                     'name' => 'Arquivo',
-                    'value' => $exception->getFile() . ':' . $exception->getLine(),
-                    'inline' => false
+                    'value' => $exception->getFile().':'.$exception->getLine(),
+                    'inline' => false,
                 ];
 
                 $embed['fields'][] = [
                     'name' => 'Stack Trace',
-                    'value' => '```' . "\n" . $this->truncateMessage($exception->getTraceAsString()) . "\n" . '```',
-                    'inline' => false
+                    'value' => '```'."\n".$this->truncateMessage($exception->getTraceAsString())."\n".'```',
+                    'inline' => false,
                 ];
             }
         }
 
         $payload = [
             'username' => 'SGL - LaCInA',
-            'embeds' => [$embed]
+            'embeds' => [$embed],
         ];
 
         try {
             $this->httpClient->post($this->webhookUrl, [
                 'json' => $payload,
-                'timeout' => 5
+                'timeout' => 5,
             ]);
         } catch (\Exception $e) {
             // Não fazer nada se falhar ao enviar para Discord
@@ -92,12 +93,12 @@ class DiscordLogHandler extends AbstractProcessingHandler
     {
         return match ($level) {
             Logger::DEBUG => 0x808080,      // Cinza
-            Logger::INFO => 0x0099ff,       // Azul
-            Logger::NOTICE => 0x00ff99,     // Verde claro
-            Logger::WARNING => 0xff9900,    // Laranja
-            Logger::ERROR => 0xff0000,      // Vermelho
+            Logger::INFO => 0x0099FF,       // Azul
+            Logger::NOTICE => 0x00FF99,     // Verde claro
+            Logger::WARNING => 0xFF9900,    // Laranja
+            Logger::ERROR => 0xFF0000,      // Vermelho
             Logger::CRITICAL => 0x990000,   // Vermelho escuro
-            Logger::ALERT => 0xff0099,      // Rosa
+            Logger::ALERT => 0xFF0099,      // Rosa
             Logger::EMERGENCY => 0x000000,  // Preto
             default => 0x808080
         };
@@ -109,7 +110,7 @@ class DiscordLogHandler extends AbstractProcessingHandler
             return $message;
         }
 
-        return substr($message, 0, $limit - 3) . '...';
+        return substr($message, 0, $limit - 3).'...';
     }
 }
 

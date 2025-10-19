@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
-use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
-use App\Mail\Auth\VerifyEmail as VerifyEmailMailable;
 use App\Mail\Auth\ResetPassword as ResetPasswordMailable;
+use App\Mail\Auth\VerifyEmail as VerifyEmailMailable;
+use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
+use Illuminate\Support\ServiceProvider;
 
 class AuthMailableServiceProvider extends ServiceProvider
 {

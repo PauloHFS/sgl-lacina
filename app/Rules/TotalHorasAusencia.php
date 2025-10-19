@@ -4,7 +4,6 @@ namespace App\Rules;
 
 use App\Enums\DiaDaSemana;
 use App\Enums\TipoHorario;
-use App\Models\Horario;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;

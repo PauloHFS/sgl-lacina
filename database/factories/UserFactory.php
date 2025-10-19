@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\Genero;
+use App\Enums\StatusCadastro;
+use App\Models\Banco;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Enums\StatusCadastro;
-use App\Enums\Genero;
-use App\Models\Banco;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -44,7 +44,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
@@ -58,13 +58,13 @@ class UserFactory extends Factory
                 'cpf' => fake()->unique()->numerify('###########'),
 
                 'campos_extras' => [
-                    'Matricula' => "",
-                    'Tamanho da Camisa' => "",
+                    'Matricula' => '',
+                    'Tamanho da Camisa' => '',
                 ],
 
                 'curriculo_lattes_url' => fake()->numerify('http://lattes.cnpq.br/################'),
-                'linkedin_url' => fake()->optional()->passthrough('https://www.linkedin.com/in/' . fake()->userName()),
-                'github_url' => fake()->optional()->passthrough('https://github.com/' . fake()->userName()),
+                'linkedin_url' => fake()->optional()->passthrough('https://www.linkedin.com/in/'.fake()->userName()),
+                'github_url' => fake()->optional()->passthrough('https://github.com/'.fake()->userName()),
                 'website_url' => fake()->optional()->passthrough(fake()->url()),
 
                 'area_atuacao' => fake()->jobTitle(),

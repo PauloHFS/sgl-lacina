@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\StatusVinculoProjeto;
-use App\Models\User;
 use App\Models\Projeto;
+use App\Models\User;
 use App\Models\UsuarioProjeto;
 
 test('endpoint projetos ativos inclui carga horária', function () {
@@ -28,8 +28,8 @@ test('endpoint projetos ativos inclui carga horária', function () {
                     'projeto_id' => $projeto->id,
                     'projeto_nome' => $projeto->nome,
                     'carga_horaria' => 20,
-                ]
-            ]
+                ],
+            ],
         ]);
 });
 
@@ -78,7 +78,7 @@ test('endpoint projetos ativos filtra apenas projetos aprovados e ativos', funct
                     'projeto_id' => $projeto1->id,
                     'projeto_nome' => $projeto1->nome,
                     'carga_horaria' => 20,
-                ]
-            ]
+                ],
+            ],
         ]);
 });

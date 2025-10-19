@@ -44,17 +44,7 @@ export default function HorarioTrabalhoModal({
 
     const baias = useMemo(() => selectedSala?.baias || [], [selectedSala]);
 
-    useEffect(() => {
-        if (initialSalaId) {
-            setSelectedSalaId(initialSalaId);
-        }
-        if (initialBaiaId) {
-            setSelectedBaiaId(initialBaiaId);
-        }
-        if (initialProjetoId) {
-            setSelectedProjetoId(initialProjetoId);
-        }
-    }, [initialSalaId, initialBaiaId, initialProjetoId]);
+
 
     // Reset baia selection when sala changes
     useEffect(() => {
@@ -67,15 +57,7 @@ export default function HorarioTrabalhoModal({
         }
     }, [selectedSalaId, selectedBaiaId, baias]);
 
-    // Reset form when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            setError(null);
-            setSelectedSalaId(initialSalaId || '');
-            setSelectedBaiaId(initialBaiaId || '');
-            setSelectedProjetoId(initialProjetoId || '');
-        }
-    }, [isOpen, initialSalaId, initialBaiaId, initialProjetoId]);
+
 
     const handleConfirm = () => {
         setError(null);

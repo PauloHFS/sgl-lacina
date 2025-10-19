@@ -26,12 +26,9 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        // Permite que o próprio usuário visualize seu perfil
-        if ($user->id === $model->id) {
-            return true;
-        }
-        // Permite que coordenadores visualizem qualquer perfil
-        return $user->isCoordenador();
+        // Permite que o próprio usuário visualize seu perfil.
+        // O COORDENADOR_MASTER pode visualizar qualquer perfil através do Gate::before.
+        return $user->id === $model->id;
     }
 
     /**
@@ -51,13 +48,9 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        // Permite que o próprio usuário atualize seu perfil
-        if ($user->id === $model->id) {
-            return true;
-        }
-
-        // Permite que coordenadores atualizem qualquer perfil
-        return $user->isCoordenador(); // Assumindo que você tenha um método isCoordenador() no seu modelo User
+        // Permite que o próprio usuário atualize seu perfil.
+        // O COORDENADOR_MASTER pode atualizar qualquer perfil através do Gate::before.
+        return $user->id === $model->id;
     }
 
     /**

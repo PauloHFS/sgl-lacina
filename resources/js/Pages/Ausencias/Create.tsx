@@ -78,28 +78,24 @@ const Create = ({
     const [diasCompensacao, setDiasCompensacao] = useState<CompensacaoDia[]>(
         [],
     );
-    const [totalHorasCalculadas, setTotalHorasCalculadas] = useState(0);
 
-    // Efeito para calcular horas a compensar automaticamente
-    useEffect(() => {
+
+    const totalHorasCalculadas = useMemo(() => {
         if (!data.projeto_id || !data.data_inicio || !data.data_fim) {
-            setTotalHorasCalculadas(0);
-            return;
+            return 0;
         }
 
         try {
             const projetoHorarios = horasPorProjetoPorDia[data.projeto_id];
             if (!projetoHorarios) {
-                setTotalHorasCalculadas(0);
-                return;
+                return 0;
             }
 
             const inicio = parseISO(data.data_inicio);
             const fim = parseISO(data.data_fim);
 
             if (!isValid(inicio) || !isValid(fim) || inicio > fim) {
-                setTotalHorasCalculadas(0);
-                return;
+                return 0;
             }
 
             const diasNoIntervalo = eachDayOfInterval({
@@ -111,13 +107,17 @@ const Create = ({
                 return acc + (projetoHorarios[diaDaSemana] || 0);
             }, 0);
 
-            setTotalHorasCalculadas(totalHoras);
-            setData('horas_a_compensar', totalHoras); // Atualiza o campo do formulário
+            return totalHoras;
         } catch (error) {
             console.error('Erro ao calcular horas:', error);
-            setTotalHorasCalculadas(0);
+            return 0;
         }
-    }, [data.projeto_id, data.data_inicio, data.data_fim]);
+    }, [data.projeto_id, data.data_inicio, data.data_fim, horasPorProjetoPorDia]);
+
+    // Efeito para calcular horas a compensar automaticamente
+    useEffect(() => {
+        setData('horas_a_compensar', totalHorasCalculadas);
+    }, [totalHorasCalculadas, setData]);
 
     // Efeito para gerar/atualizar os dias de compensação
     useEffect(() => {
@@ -139,7 +139,7 @@ const Create = ({
         } else {
             setDiasCompensacao([]);
         }
-    }, [data.compensacao_data_inicio, data.compensacao_data_fim]);
+    }, [data.compensacao_data_inicio, data.compensacao_data_fim, diasCompensacao]);
 
     // Efeito para sincronizar o estado dos dias de compensação com o form
     useEffect(() => {
@@ -147,7 +147,7 @@ const Create = ({
             .filter((dia) => dia.horas.length > 0)
             .map(({ data, horas }) => ({ data, horario: horas }));
         setData('compensacao_horarios', JSON.stringify(compensacaoFormatada));
-    }, [diasCompensacao]);
+    }, [diasCompensacao, setData]);
 
     const totalHorasCompensadas = useMemo(() => {
         return diasCompensacao.reduce((acc, dia) => acc + dia.horas.length, 0);

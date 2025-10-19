@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\StatusCadastro;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use App\Enums\StatusCadastro;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
 
-            $table->jsonb("campos_extras")->default(DB::raw("'{}'::jsonb"));
+            $table->jsonb('campos_extras')->default(DB::raw("'{}'::jsonb"));
 
             $table->enum('status_cadastro', array_column(StatusCadastro::cases(), 'value'))->default(StatusCadastro::PENDENTE->value);
 

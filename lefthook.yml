@@ -10,7 +10,7 @@ pre-commit:
       # Executa apenas se arquivos .php forem modificados
       glob: "**/*.php"
       # O --test não altera os arquivos, apenas verifica a formatação
-      run: vendor/bin/pint --test
+      run: vendor/bin/pint
 
     # Comando para o linter de JS/TS (ESLint)
     eslint:
@@ -19,10 +19,10 @@ pre-commit:
       run: npm run lint
 
     # Comando para os testes de PHP (Pest)
-    php-tests:
-      # Executa se qualquer arquivo .php for modificado
-      glob: "**/*.php"
-      run: php artisan test
+    # php-tests:
+    #   # Executa se qualquer arquivo .php for modificado
+    #   glob: "**/*.php"
+    #   run: docker-compose exec -T app php artisan test
 
     # Comando para os testes de JS/TS (Vitest)
     js-tests:

@@ -2,16 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
-use App\Models\Horario;
 use App\Enums\DiaDaSemana;
 use App\Enums\TipoHorario;
+use App\Models\Horario;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 class CriarHorariosUsuarios extends Command
 {
     protected $signature = 'horarios:criar-usuarios {--force : Força recriação mesmo se já existirem}';
+
     protected $description = 'Cria horários completos para usuários que não possuem';
 
     public function handle()

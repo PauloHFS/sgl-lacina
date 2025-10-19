@@ -3,13 +3,13 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
             'validarTipoVinculo' => \App\Http\Middleware\ValidarTipoVinculoMiddleware::class,
             'posCadastroNecessario' => \App\Http\Middleware\PosCadastroNecessarioMiddleware::class,
             'coordenador' => \App\Http\Middleware\VerificarCoordenadorMiddleware::class,
@@ -51,8 +52,8 @@ return Application::configure(basePath: dirname(__DIR__))
                     ]);
                 }
             } catch (\Throwable $logException) {
-                Log::error('Falha ao logar no Discord. Erro original: ' . $e->getMessage());
-                Log::error('Exceção do logger: ' . $logException->getMessage());
+                Log::error('Falha ao logar no Discord. Erro original: '.$e->getMessage());
+                Log::error('Exceção do logger: '.$logException->getMessage());
             }
         });
     })->create();

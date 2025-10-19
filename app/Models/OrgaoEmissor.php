@@ -9,7 +9,7 @@ use Laravel\Scout\Searchable;
 
 class OrgaoEmissor extends Model
 {
-    use HasFactory, SoftDeletes, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     /**
      * The table associated with the model.

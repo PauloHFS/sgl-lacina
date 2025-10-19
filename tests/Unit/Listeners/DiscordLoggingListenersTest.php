@@ -1,9 +1,9 @@
 <?php
 
-use App\Listeners\LogJobProcessedToDiscord;
 use App\Listeners\LogJobFailedToDiscord;
-use Illuminate\Queue\Events\JobProcessed;
+use App\Listeners\LogJobProcessedToDiscord;
 use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Log;
 
 describe('Discord Logging Listeners', function () {
@@ -32,7 +32,7 @@ describe('Discord Logging Listeners', function () {
             }));
 
         // Act
-        $listener = new LogJobProcessedToDiscord();
+        $listener = new LogJobProcessedToDiscord;
         $listener->handle($event);
     });
 
@@ -61,7 +61,7 @@ describe('Discord Logging Listeners', function () {
             );
 
         // Act
-        $listener = new LogJobFailedToDiscord();
+        $listener = new LogJobFailedToDiscord;
         $listener->handle($event);
     });
 });

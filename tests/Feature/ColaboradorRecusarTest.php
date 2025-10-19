@@ -1,11 +1,11 @@
 <?php
 
 use App\Enums\StatusCadastro;
-use App\Models\User;
-use App\Models\Projeto;
-use App\Models\UsuarioProjeto;
-use App\Enums\TipoVinculo;
 use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
+use App\Models\Projeto;
+use App\Models\User;
+use App\Models\UsuarioProjeto;
 use Illuminate\Support\Facades\Mail;
 
 test('coordenador pode recusar cadastro de colaborador e o usuário é deletado', function () {

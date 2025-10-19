@@ -67,7 +67,7 @@ describe('SendCadastroAceitoNotification Listener', function () {
         $listener = new SendCadastroAceitoNotification($this->horarioService);
         $event = new CadastroAceito($this->user);
 
-        expect(fn() => $listener->handle($event))
+        expect(fn () => $listener->handle($event))
             ->toThrow(Exception::class, 'Email service failed');
     });
 

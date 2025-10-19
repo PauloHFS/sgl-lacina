@@ -3,10 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\VinculoAceito as VinculoAceitoEvent;
-use Illuminate\Contracts\Queue\ShouldQueue;
-// use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\VinculoAceito as VinculoAceitoMail;
+// use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Mail;
 
 class SendVinculoAceitoNotification implements ShouldQueue
 {

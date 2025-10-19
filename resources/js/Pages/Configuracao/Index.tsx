@@ -1,21 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
-import OrgaoEmissorManager from '@/Components/OrgaoEmissorManager'; // Import the new component
-import { OrgaoEmissor } from '@/types'; // Assuming a type definition exists
+import OrgaoEmissorManager from '@/Components/OrgaoEmissorManager';
+import { OrgaoEmissor } from '@/types';
 
 interface ConfiguracaoIndexProps {
-    auth: {
-        user: any; // Replace with a proper user type
-    };
     configuracoes: {
         senha_laboratorio_existe: boolean;
         senha_laboratorio?: string;
     };
-    orgaosEmissores: OrgaoEmissor[]; // Add the new prop
+    orgaosEmissores: OrgaoEmissor[];
 }
 
-export default function Index({ auth, configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) { // Destructure the prop
+export default function Index({ configuracoes, orgaosEmissores }: ConfiguracaoIndexProps) {
     const [showForm, setShowForm] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -42,6 +39,12 @@ export default function Index({ auth, configuracoes, orgaosEmissores }: Configur
                 setShowForm(false);
             },
         });
+    };
+
+    const orgaoEmissorUrls = {
+        store: route('configuracoes.orgaos-emissores.store'),
+        update: route('configuracoes.orgaos-emissores.update', { id: '{id}' }),
+        destroy: route('configuracoes.orgaos-emissores.destroy', { id: '{id}' }),
     };
 
     return (
@@ -286,7 +289,7 @@ export default function Index({ auth, configuracoes, orgaosEmissores }: Configur
                     </div>
 
                     {/* Render the new component here */}
-                    <OrgaoEmissorManager orgaos={orgaosEmissores} />
+                    <OrgaoEmissorManager orgaos={orgaosEmissores} urls={orgaoEmissorUrls} />
 
                 </div>
             </div>

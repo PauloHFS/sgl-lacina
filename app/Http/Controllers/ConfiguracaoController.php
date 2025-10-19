@@ -6,7 +6,6 @@ use App\Models\ConfiguracaoSistema;
 use App\Models\OrgaoEmissor; // Import the model
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 

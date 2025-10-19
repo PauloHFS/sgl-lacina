@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 
 class UsuarioProjeto extends Model
 {
@@ -19,9 +18,10 @@ class UsuarioProjeto extends Model
     protected $table = 'usuario_projeto';
 
     protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
 
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
@@ -49,8 +49,8 @@ class UsuarioProjeto extends Model
 
     /**
      * Indica se o observer deve pular o log de histórico.
+     *
      * @see App\Observers\UsuarioProjetoObserver
-     * @var bool
      */
     public bool $skipHistoryLog = false;
 

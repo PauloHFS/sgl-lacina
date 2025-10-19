@@ -548,8 +548,8 @@ export default function UpdateProfileInformation({
                         <SearchableSelect
                             apiUrl={route('api.orgaos-emissores.search')}
                             value={selectedOrgao}
-                            onChange={(selected) => {
-                                setSelectedOrgao(selected as any);
+                            onChange={(selected: { id: string; nome: string; sigla: string } | null) => {
+                                setSelectedOrgao(selected);
                                 setData('orgao_emissor_rg', selected ? selected.sigla : '');
                             }}
                             placeholder="Selecione o órgão emissor..."

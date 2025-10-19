@@ -67,7 +67,7 @@ test('cache é invalidado quando horário é alterado', function () {
     $horasInicial = $service->getHorasPorDiaDaSemana($user);
 
     // Verificar se está no cache
-    $cacheKey = 'horarios_usuario_' . $user->id;
+    $cacheKey = 'horarios_usuario_'.$user->id;
     expect(Cache::has($cacheKey))->toBeTrue();
 
     // Criar novo horário (deve invalidar cache)

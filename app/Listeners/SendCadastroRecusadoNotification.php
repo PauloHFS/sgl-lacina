@@ -3,9 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\CadastroRecusado;
+use App\Mail\CadastroRecusado as CadastroRecusadoMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\CadastroRecusado as CadastroRecusadoMail;
 
 class SendCadastroRecusadoNotification implements ShouldQueue
 {

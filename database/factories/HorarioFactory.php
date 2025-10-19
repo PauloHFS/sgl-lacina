@@ -35,18 +35,18 @@ class HorarioFactory extends Factory
         return $this->state(['usuario_id' => $user->id]);
     }
 
-    public function comProjeto(UsuarioProjeto $usuarioProjeto = null): static
+    public function comProjeto(?UsuarioProjeto $usuarioProjeto = null): static
     {
         return $this->state([
             'usuario_projeto_id' => $usuarioProjeto?->id ?? UsuarioProjeto::factory(),
             'tipo' => $this->faker->randomElement([
                 TipoHorario::TRABALHO_PRESENCIAL,
-                TipoHorario::TRABALHO_REMOTO
+                TipoHorario::TRABALHO_REMOTO,
             ]),
         ]);
     }
 
-    public function comBaia(Baia $baia = null): static
+    public function comBaia(?Baia $baia = null): static
     {
         return $this->state([
             'baia_id' => $baia?->id ?? Baia::factory(),

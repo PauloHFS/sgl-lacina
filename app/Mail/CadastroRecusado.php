@@ -30,7 +30,7 @@ class CadastroRecusado extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Status do Cadastro - ' . config('app.name'),
+            subject: 'Status do Cadastro - '.config('app.name'),
         );
     }
 

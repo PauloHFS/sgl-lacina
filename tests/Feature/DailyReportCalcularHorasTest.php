@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\DailyReport;
 use App\Models\Horario;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +29,7 @@ test('pode calcular horas trabalhadas baseado no horário cadastrado', function 
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-06' // Uma segunda-feira
+            'data' => '2025-01-06', // Uma segunda-feira
         ]);
 
     // Assert
@@ -38,7 +37,7 @@ test('pode calcular horas trabalhadas baseado no horário cadastrado', function 
         ->assertStatus(200)
         ->assertJson([
             'horas_trabalhadas' => 2,
-            'success' => true
+            'success' => true,
         ]);
 });
 
@@ -50,7 +49,7 @@ test('retorna 0 horas quando usuário não tem horários cadastrados', function 
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-06' // Uma segunda-feira
+            'data' => '2025-01-06', // Uma segunda-feira
         ]);
 
     // Assert
@@ -58,7 +57,7 @@ test('retorna 0 horas quando usuário não tem horários cadastrados', function 
         ->assertStatus(200)
         ->assertJson([
             'horas_trabalhadas' => 0,
-            'success' => true
+            'success' => true,
         ]);
 });
 
@@ -92,7 +91,7 @@ test('ignora horários que não são de trabalho', function () {
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-06' // Uma segunda-feira
+            'data' => '2025-01-06', // Uma segunda-feira
         ]);
 
     // Assert
@@ -100,7 +99,7 @@ test('ignora horários que não são de trabalho', function () {
         ->assertStatus(200)
         ->assertJson([
             'horas_trabalhadas' => 1, // Apenas 1 hora de trabalho
-            'success' => true
+            'success' => true,
         ]);
 });
 
@@ -148,16 +147,16 @@ test('calcula horas corretamente para diferentes dias da semana', function () {
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-06' // Segunda-feira
+            'data' => '2025-01-06', // Segunda-feira
         ]);
 
     $response->assertJson(['horas_trabalhadas' => 2]);
 
-    // Act & Assert - Terça-feira  
+    // Act & Assert - Terça-feira
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-07' // Terça-feira
+            'data' => '2025-01-07', // Terça-feira
         ]);
 
     $response->assertJson(['horas_trabalhadas' => 1]);
@@ -166,7 +165,7 @@ test('calcula horas corretamente para diferentes dias da semana', function () {
     $response = $this->actingAs($user)
         ->withoutMiddleware()
         ->postJson(route('daily-reports.calcular-horas'), [
-            'data' => '2025-01-08' // Quarta-feira
+            'data' => '2025-01-08', // Quarta-feira
         ]);
 
     $response->assertJson(['horas_trabalhadas' => 0]);

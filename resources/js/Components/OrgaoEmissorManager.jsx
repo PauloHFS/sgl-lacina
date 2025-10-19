@@ -22,7 +22,7 @@ const Modal = ({ show, onClose, children }) => {
     );
 };
 
-export default function OrgaoEmissorManager({ orgaos }) {
+export default function OrgaoEmissorManager({ orgaos, urls }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingOrgao, setEditingOrgao] = useState(null);
 
@@ -52,11 +52,11 @@ export default function OrgaoEmissorManager({ orgaos }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingOrgao) {
-            put(route('configuracoes.orgaos-emissores.update', editingOrgao.id), {
+            put(urls.update.replace('{id}', editingOrgao.id), {
                 onSuccess: () => closeModal(),
             });
         } else {
-            post(route('configuracoes.orgaos-emissores.store'), {
+            post(urls.store, {
                 onSuccess: () => closeModal(),
             });
         }
@@ -64,7 +64,7 @@ export default function OrgaoEmissorManager({ orgaos }) {
 
     const handleDelete = (orgao) => {
         if (confirm(`Tem certeza que deseja excluir o órgão "${orgao.nome}"?`)) {
-            destroy(route('configuracoes.orgaos-emissores.destroy', orgao.id));
+            destroy(urls.destroy.replace('{id}', orgao.id));
         }
     };
 
