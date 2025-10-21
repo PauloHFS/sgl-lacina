@@ -84,7 +84,8 @@ RUN apk update && apk add --no-cache \
   libjpeg-turbo \
   freetype \
   libwebp \
-  postgresql-libs
+  postgresql-libs \
+  netcat-openbsd
 
 # Copy PHP extensions and configurations
 COPY --from=php_base /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
