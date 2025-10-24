@@ -1,22 +1,23 @@
 <?php
 
-use App\Enums\Funcao;
-use App\Enums\StatusCadastro;
-use App\Enums\StatusSolicitacaoTroca;
-use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoProjeto;
-use App\Enums\TipoVinculo;
-use App\Models\Banco;
-use App\Models\HistoricoUsuarioProjeto;
-use App\Models\Projeto;
-use App\Models\SolicitacaoTrocaProjeto;
 use App\Models\User;
+use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
+use App\Models\HistoricoUsuarioProjeto;
+use App\Models\SolicitacaoTrocaProjeto;
+use App\Models\Banco;
+use App\Enums\TipoProjeto;
+use App\Enums\StatusCadastro;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
+use App\Enums\StatusSolicitacaoTroca;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -405,7 +406,7 @@ describe('Comprehensive Report Generation Workflow', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->has('projetos', 2)
                     ->has('estatisticas')
                     ->where('estatisticas.total_colaboradores', 7) // 3 + 2 + 2 coordinators

@@ -1,7 +1,7 @@
 import Paggination, { Paginated } from '@/Components/Paggination';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Colaborador {
     id: number;
@@ -28,12 +28,16 @@ type Tabs = 'cadastro_pendente' | 'vinculo_pendente' | 'ativos' | 'encerrados';
 // TODO permitir filtrar pelo project_id
 
 export default function Index({ colaboradores }: IndexProps) {
-    const [searchTerm, setSearchTerm] = useState(
-        new URLSearchParams(window.location.search).get('search') || '',
-    );
-    const [activeTab, setActiveTab] = useState<Tabs | null>(
-        new URLSearchParams(window.location.search).get('status') as Tabs | null,
-    );
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState<Tabs | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status') as Tabs | null;
+        setActiveTab(status);
+        const search = params.get('search') || '';
+        setSearchTerm(search);
+    }, []);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

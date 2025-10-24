@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Baia extends Model
@@ -50,17 +50,14 @@ class Baia extends Model
     {
         return $this->hasMany(Horario::class);
     }
-
     public function scopeAtivas($query)
     {
         return $query->where('ativa', true);
     }
-
     public function scopeInativas($query)
     {
         return $query->where('ativa', false);
     }
-
     public function scopePorSala($query, $salaId)
     {
         return $query->where('sala_id', $salaId);

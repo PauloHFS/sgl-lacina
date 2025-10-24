@@ -1,12 +1,13 @@
 <?php
 
-use App\Enums\StatusCadastro;
-use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
+use App\Models\User;
 use App\Models\Banco;
 use App\Models\Projeto;
-use App\Models\User;
 use App\Models\UsuarioProjeto;
+use App\Enums\StatusCadastro;
+use App\Enums\TipoVinculo;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\Funcao;
 
 test('coordenador pode visualizar lista de colaboradores sem vínculo', function () {
     $coordenador = User::factory()->create(['status_cadastro' => StatusCadastro::ACEITO]);
@@ -36,7 +37,8 @@ test('coordenador pode visualizar lista de colaboradores sem vínculo', function
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Colaboradores/Index')
+        fn($page) =>
+        $page->component('Colaboradores/Index')
     );
 });
 
@@ -154,7 +156,8 @@ test('coordenador pode visualizar detalhes de um colaborador específico', funct
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Colaboradores/Show')
+        fn($page) =>
+        $page->component('Colaboradores/Show')
             ->has('colaborador')
     );
 });

@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Config;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 uses(TestCase::class);
 
 describe('Discord Logger Integration', function () {
     test('pode enviar erro para discord quando webhook está configurado', function () {
-        if (! config('logging.channels.discord.webhook_url')) {
+        if (!config('logging.channels.discord.webhook_url')) {
             $this->markTestSkipped('Discord webhook não configurado');
         }
 
@@ -22,7 +23,7 @@ describe('Discord Logger Integration', function () {
     });
 
     test('pode enviar diferentes níveis de log', function () {
-        if (! config('logging.channels.discord.webhook_url')) {
+        if (!config('logging.channels.discord.webhook_url')) {
             $this->markTestSkipped('Discord webhook não configurado');
         }
 
@@ -34,7 +35,7 @@ describe('Discord Logger Integration', function () {
     });
 
     test('pode enviar log com exception', function () {
-        if (! config('logging.channels.discord.webhook_url')) {
+        if (!config('logging.channels.discord.webhook_url')) {
             $this->markTestSkipped('Discord webhook não configurado');
         }
 
@@ -77,7 +78,7 @@ describe('Discord Logger Integration', function () {
     });
 
     test('funciona com contexto vazio', function () {
-        if (! config('logging.channels.discord.webhook_url')) {
+        if (!config('logging.channels.discord.webhook_url')) {
             $this->markTestSkipped('Discord webhook não configurado');
         }
 
@@ -87,7 +88,7 @@ describe('Discord Logger Integration', function () {
     });
 
     test('funciona com contexto complexo', function () {
-        if (! config('logging.channels.discord.webhook_url')) {
+        if (!config('logging.channels.discord.webhook_url')) {
             $this->markTestSkipped('Discord webhook não configurado');
         }
 

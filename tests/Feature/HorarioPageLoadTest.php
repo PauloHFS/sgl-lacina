@@ -10,7 +10,7 @@ test('página de edição de horários carrega corretamente', function () {
 
     $response->assertStatus(200)
         ->assertInertia(
-            fn (Assert $page) => $page
+            fn(Assert $page) => $page
                 ->component('Horarios/Edit')
                 ->has('horarios')
                 ->has('salas')

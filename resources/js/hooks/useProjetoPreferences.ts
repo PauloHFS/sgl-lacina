@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const PROJETO_STORAGE_KEY = 'horario_projeto_preferences';
 
@@ -13,17 +13,19 @@ interface UseProjetoPreferencesReturn {
 }
 
 export function useProjetoPreferences(): UseProjetoPreferencesReturn {
-    const [preferences, setPreferences] = useState<ProjetoPreferences>(() => {
+    const [preferences, setPreferences] = useState<ProjetoPreferences>({});
+
+    // Carrega as preferências do localStorage na inicialização
+    useEffect(() => {
         try {
             const storedPreferences = localStorage.getItem(PROJETO_STORAGE_KEY);
             if (storedPreferences) {
-                return JSON.parse(storedPreferences);
+                setPreferences(JSON.parse(storedPreferences));
             }
         } catch (error) {
             console.warn('Erro ao carregar preferências de projeto:', error);
         }
-        return {};
-    });
+    }, []);
 
     // Função para atualizar e salvar preferências
     const updatePreferences = useCallback((newPreferences: ProjetoPreferences) => {

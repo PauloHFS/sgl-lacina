@@ -55,7 +55,7 @@ class SendCadastroAceitoNotification implements ShouldQueue
             Log::info('Processamento de cadastro aceito finalizado com sucesso', [
                 'user_id' => $event->user->id,
                 'email' => $event->user->email,
-                'attempt' => $this->attempts(),
+                'attempt' => $this->attempts()
             ]);
         } catch (Exception $e) {
             Log::error('Erro ao processar cadastro aceito', [
@@ -64,7 +64,7 @@ class SendCadastroAceitoNotification implements ShouldQueue
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'attempt' => $this->attempts(),
-                'max_attempts' => $this->tries,
+                'max_attempts' => $this->tries
             ]);
 
             // Re-throw para que o job seja marcado como falhado e possa ser tentado novamente
@@ -81,9 +81,8 @@ class SendCadastroAceitoNotification implements ShouldQueue
 
         if (Cache::get($cacheKey)) {
             Log::info('Email já foi enviado anteriormente, pulando envio', [
-                'user_id' => $event->user->id,
+                'user_id' => $event->user->id
             ]);
-
             return;
         }
 
@@ -96,9 +95,10 @@ class SendCadastroAceitoNotification implements ShouldQueue
 
         Cache::put($cacheKey, true, now()->addDay());
 
+
         Log::info('Email de cadastro aceito enviado', [
             'user_id' => $event->user->id,
-            'email' => $event->user->email,
+            'email' => $event->user->email
         ]);
     }
 
@@ -127,17 +127,17 @@ class SendCadastroAceitoNotification implements ShouldQueue
             'error' => $exception->getMessage(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
-            'attempts' => $this->attempts(),
+            'attempts' => $this->attempts()
         ];
 
         Log::error('Job de cadastro aceito falhou completamente', $errorData);
 
         Log::channel('discord')->critical('🚨 FALHA CRÍTICA: Cadastro aceito não processado', [
-            'usuario' => $event->user->name.' ('.$event->user->email.')',
+            'usuario' => $event->user->name . ' (' . $event->user->email . ')',
             'erro' => $exception->getMessage(),
-            'tentativas' => $this->attempts().'/'.$this->tries,
-            'comando_retry' => $this->job ? "php artisan queue:retry {$this->job->getJobId()}" : 'php artisan queue:retry all',
-            'user_id' => $event->user->id,
+            'tentativas' => $this->attempts() . '/' . $this->tries,
+            'comando_retry' => $this->job ? "php artisan queue:retry {$this->job->getJobId()}" : "php artisan queue:retry all",
+            'user_id' => $event->user->id
         ]);
     }
 }

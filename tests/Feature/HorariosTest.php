@@ -2,8 +2,8 @@
 
 use App\Enums\StatusCadastro;
 use App\Enums\TipoHorario;
-use App\Models\Horarios;
 use App\Models\User;
+use App\Models\Horarios;
 use Carbon\WeekDay;
 
 test('usuário autenticado pode visualizar página de horários', function () {
@@ -16,7 +16,7 @@ test('usuário autenticado pode visualizar página de horários', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page
+        fn($page) => $page
             ->component('Horarios/MeuHorario')
             ->has('auth.user')
     );

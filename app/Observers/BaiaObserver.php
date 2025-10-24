@@ -12,7 +12,7 @@ class BaiaObserver
     public function updating(Baia $baia): void
     {
         // Verifica se a baia está sendo desativada
-        if ($baia->isDirty('ativa') && ! $baia->ativa) {
+        if ($baia->isDirty('ativa') && !$baia->ativa) {
             $baia->horarios()->update(['baia_id' => null]);
         }
     }

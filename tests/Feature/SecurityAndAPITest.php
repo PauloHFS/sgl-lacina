@@ -1,18 +1,20 @@
 <?php
 
-use App\Enums\Funcao;
+use App\Models\User;
+use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
+use App\Models\SolicitacaoTrocaProjeto;
+use App\Enums\TipoProjeto;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
-use App\Models\Projeto;
-use App\Models\User;
-use App\Models\UsuarioProjeto;
+use App\Enums\Funcao;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -222,10 +224,11 @@ describe('Authorization and Access Control', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn ($page) => $page
+                fn($page) => $page
                     ->where(
                         'usuarios',
-                        fn ($users) => collect($users)->pluck('id')->doesntContain($vinculo2->usuario_id)
+                        fn($users) =>
+                        collect($users)->pluck('id')->doesntContain($vinculo2->usuario_id)
                     )
             );
     });

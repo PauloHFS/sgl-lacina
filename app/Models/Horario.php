@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Horario extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use SoftDeletes, HasUuids, HasFactory;
 
     protected $fillable = [
         'id',

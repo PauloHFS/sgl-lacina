@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\User;
+use App\Models\Horario;
 use App\Enums\DiaDaSemana;
 use App\Enums\TipoHorario;
-use App\Models\Horario;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,9 +20,8 @@ class HorarioService
         if ($user->horarios()->exists()) {
             Log::info('Usuário já possui horários, pulando criação', [
                 'user_id' => $user->id,
-                'horarios_count' => $user->horarios()->count(),
+                'horarios_count' => $user->horarios()->count()
             ]);
-
             return;
         }
 
@@ -37,7 +36,7 @@ class HorarioService
 
         Log::info('Horários criados com sucesso', [
             'user_id' => $user->id,
-            'total_horarios' => count(DiaDaSemana::cases()) * 24,
+            'total_horarios' => count(DiaDaSemana::cases()) * 24
         ]);
     }
 

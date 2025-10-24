@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Banco;
 use App\Models\User;
+use App\Models\Banco;
 
 /**
  * Helper function to generate valid profile data
@@ -59,7 +59,7 @@ test('profile information can be updated', function () {
     $updateData = getValidProfileData($user, [
         'name' => 'Test User Updated',
         'email' => 'testupdated@example.com',
-        'cpf' => '11144477735',
+        'cpf' => "11144477735",
         'rg' => $user->rg,
     ]);
 
@@ -84,7 +84,7 @@ test('email verification status is unchanged when the email address is unchanged
     $updateData = getValidProfileData($user, [
         'name' => $user->name,
         'email' => $user->email,
-        'cpf' => '11144477735',
+        'cpf' => "11144477735",
         'rg' => $user->rg,
     ]);
 

@@ -26,14 +26,12 @@ type QueryParams = {
 interface ProjetosPageProps extends PageProps {
     projetos: Projeto[];
     queryparams: QueryParams;
-    can_create_project: boolean;
 }
 
 export default function Projetos({
     projetos,
     auth,
     queryparams,
-    can_create_project,
 }: ProjetosPageProps) {
     const [searchValue, setSearchValue] = useState(queryparams.search || '');
     const [debouncedSearchValue] = useDebounce(searchValue, 300);
@@ -54,7 +52,10 @@ export default function Projetos({
         }
     }, [debouncedSearchValue, activeTab, queryparams.search, queryparams.tab]);
 
-
+    useEffect(() => {
+        setSearchValue(queryparams.search || '');
+        setActiveTab(queryparams.tab || 'todos');
+    }, [queryparams.search, queryparams.tab]);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchValue(e.target.value);
@@ -104,7 +105,7 @@ export default function Projetos({
                                         onChange={handleSearchChange}
                                     />
                                 </div>
-                                {can_create_project && (
+                                {auth.isCoordenador && (
                                     <a
                                         href={route('projetos.create')}
                                         className="btn btn-primary w-full sm:w-auto"

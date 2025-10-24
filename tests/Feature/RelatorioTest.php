@@ -1,13 +1,14 @@
 <?php
 
-use App\Enums\Funcao;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
 use App\Mail\ParticipacaoLacinaReportMail;
 use App\Models\HistoricoUsuarioProjeto;
 use App\Models\Projeto;
 use App\Models\User;
+use App\Models\UsuarioProjeto;
 use Illuminate\Support\Facades\Mail;
 
 test('usuário pode solicitar relatório de participação por email', function () {
@@ -208,7 +209,7 @@ test('nome do arquivo PDF deve incluir ID do usuário e timestamp', function () 
     $response = $this->actingAs($user)->post('/relatorio/participacao');
 
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) use ($user) {
-        return str_contains($mail->pdfFilename, 'relatorio_participacao_'.$user->id.'_') &&
+        return str_contains($mail->pdfFilename, 'relatorio_participacao_' . $user->id . '_') &&
             str_contains($mail->pdfFilename, '.pdf');
     });
 });
@@ -224,7 +225,7 @@ test('email deve conter PDF como anexo', function () {
     $response = $this->actingAs($user)->post('/relatorio/participacao');
 
     Mail::assertSent(ParticipacaoLacinaReportMail::class, function ($mail) {
-        return ! is_null($mail->pdfContent) && ! empty($mail->pdfContent);
+        return !is_null($mail->pdfContent) && !empty($mail->pdfContent);
     });
 });
 

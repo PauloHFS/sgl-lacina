@@ -24,7 +24,11 @@ class AusenciaPolicy
     public function view(User $user, Ausencia $ausencia): bool
     {
         // O usuário pode ver a ausência se for o dono ou se for coordenador do projeto.
-        return $ausencia->usuario_id === $user->id || $this->isCoordenadorDoProjeto($user, $ausencia->projeto_id);
+        if ($ausencia->usuario_id === $user->id || $user->isCoordenador()) {
+            return true;
+        }
+
+        return $this->isCoordenadorDoProjeto($user, $ausencia->projeto_id);
     }
 
     /**
@@ -40,9 +44,8 @@ class AusenciaPolicy
      */
     public function update(User $user, Ausencia $ausencia): bool
     {
-        // Apenas o dono pode editar uma ausência RECUSADA e PENDENTE, ou um coordenador do projeto.
-        return ($ausencia->usuario_id === $user->id && $ausencia->status !== \App\Enums\StatusAusencia::APROVADO->value)
-            || $this->isCoordenadorDoProjeto($user, $ausencia->projeto_id);
+        // Apenas o dono pode editar uma ausência RECUSADA e PENDENTE.
+        return $ausencia->usuario_id === $user->id && $ausencia->status !== \App\Enums\StatusAusencia::APROVADO->value || $user->isCoordenador();
     }
 
     /**

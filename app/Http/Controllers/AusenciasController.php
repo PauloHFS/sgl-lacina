@@ -120,8 +120,6 @@ class AusenciasController extends Controller
 
     public function store(AusenciasRequest $request): RedirectResponse
     {
-        $this->authorize('create', Ausencia::class);
-
         try {
             $ausencia = Ausencia::create($request->validated());
 

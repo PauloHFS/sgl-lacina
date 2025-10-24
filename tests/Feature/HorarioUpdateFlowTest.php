@@ -15,7 +15,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create([
-        'status_cadastro' => StatusCadastro::ACEITO,
+        'status_cadastro' => StatusCadastro::ACEITO
     ]);
 
     $this->sala = Sala::factory()->create();
@@ -26,13 +26,13 @@ beforeEach(function () {
         'usuario_id' => $this->user->id,
         'projeto_id' => $this->projeto->id,
         'status' => StatusVinculoProjeto::APROVADO,
-        'data_fim' => null,
+        'data_fim' => null
     ]);
 
     $this->horario = Horario::factory()
         ->paraUsuario($this->user)
         ->create([
-            'tipo' => TipoHorario::EM_AULA,
+            'tipo' => TipoHorario::EM_AULA
         ]);
 });
 
@@ -46,8 +46,8 @@ test('deve permitir atualizar horário para trabalho presencial com baia e proje
                     'baia_id' => $this->baia->id,
                     'usuario_projeto_id' => $this->usuarioProjeto->id,
                     'baia_updated_at' => $this->baia->updated_at->toDateTimeString(),
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -67,8 +67,8 @@ test('deve permitir atualizar horário para trabalho remoto apenas com projeto',
                     'id' => $this->horario->id,
                     'tipo' => TipoHorario::TRABALHO_REMOTO->value,
                     'usuario_projeto_id' => $this->usuarioProjeto->id,
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -85,7 +85,7 @@ test('deve limpar campos quando mudar para em aula', function () {
     $this->horario->update([
         'tipo' => TipoHorario::TRABALHO_PRESENCIAL,
         'baia_id' => $this->baia->id,
-        'usuario_projeto_id' => $this->usuarioProjeto->id,
+        'usuario_projeto_id' => $this->usuarioProjeto->id
     ]);
 
     $response = $this->actingAs($this->user)
@@ -94,8 +94,8 @@ test('deve limpar campos quando mudar para em aula', function () {
                 [
                     'id' => $this->horario->id,
                     'tipo' => TipoHorario::EM_AULA->value,
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -111,7 +111,7 @@ test('deve permitir atualizar apenas o projeto sem especificar tipo', function (
     // Horário já está como TRABALHO_PRESENCIAL
     $this->horario->update([
         'tipo' => TipoHorario::TRABALHO_PRESENCIAL,
-        'baia_id' => $this->baia->id,
+        'baia_id' => $this->baia->id
     ]);
 
     $response = $this->actingAs($this->user)
@@ -120,8 +120,8 @@ test('deve permitir atualizar apenas o projeto sem especificar tipo', function (
                 [
                     'id' => $this->horario->id,
                     'usuario_projeto_id' => $this->usuarioProjeto->id,
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -141,8 +141,8 @@ test('deve rejeitar projeto em horário de aula', function () {
                     'id' => $this->horario->id,
                     'tipo' => TipoHorario::EM_AULA->value,
                     'usuario_projeto_id' => $this->usuarioProjeto->id,
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertSessionHasErrors(['horarios.0.usuario_projeto_id']);
@@ -157,8 +157,8 @@ test('endpoint de salas disponíveis deve retornar dados corretos', function () 
     $response->assertOk()
         ->assertJsonStructure([
             'salas' => [
-                '*' => ['id', 'nome', 'baias'],
-            ],
+                '*' => ['id', 'nome', 'baias']
+            ]
         ]);
 });
 
@@ -169,8 +169,8 @@ test('endpoint de projetos ativos deve retornar dados corretos', function () {
     $response->assertOk()
         ->assertJsonStructure([
             'projetos' => [
-                '*' => ['id', 'projeto_id', 'projeto_nome'],
-            ],
+                '*' => ['id', 'projeto_id', 'projeto_nome']
+            ]
         ]);
 
     $data = $response->json();
