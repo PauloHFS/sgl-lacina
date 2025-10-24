@@ -24,7 +24,6 @@ class ConfiguracaoSistema extends Model
     public static function obterValor(string $chave): ?string
     {
         $config = self::where('chave', $chave)->first();
-
         return $config?->valor;
     }
 

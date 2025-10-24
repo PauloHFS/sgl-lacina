@@ -1,12 +1,13 @@
 <?php
 
+use App\Models\User;
+use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
+use App\Enums\TipoProjeto;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
-use App\Models\Projeto;
-use App\Models\User;
-use App\Models\UsuarioProjeto;
+use App\Enums\Funcao;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -153,7 +154,7 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->component('Projetos/Index')
                     ->has('projetos.data')
             );
@@ -173,7 +174,8 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn ($page) => $page->component('Projetos/Index')
+            fn($page) =>
+            $page->component('Projetos/Index')
                 ->has('projetos')
         );
     });
@@ -192,7 +194,8 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn ($page) => $page->component('Projetos/Index')
+            fn($page) =>
+            $page->component('Projetos/Index')
         );
     });
 
@@ -212,7 +215,7 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->component('Projetos/Show')
                     ->where('projeto.nome', 'Projeto Específico')
             );
@@ -250,7 +253,8 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn ($page) => $page->component('Projetos/Show')
+            fn($page) =>
+            $page->component('Projetos/Show')
                 ->has('participantesProjeto.data')
         );
     });
@@ -266,7 +270,7 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->component('Projetos/Index')
                     ->has('projetos.data', 2)
             );
@@ -280,7 +284,8 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn ($page) => $page->component('Projetos/Index')
+            fn($page) =>
+            $page->component('Projetos/Index')
                 ->has('projetos')
         );
     });
@@ -296,7 +301,7 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->component('Projetos/Index')
                     ->has('projetos.data', 2)
             );
@@ -307,7 +312,8 @@ describe('Listagem e Visualização de Projetos', function () {
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn ($page) => $page->component('Projetos/Create')
+            fn($page) =>
+            $page->component('Projetos/Create')
         );
     });
 });
@@ -479,7 +485,7 @@ describe('Busca e Filtros de Projetos', function () {
         $response = $this->get(route('projetos.index', ['search' => 'Sistema']));
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->has('projetos.data', 1)
             );
 
@@ -487,7 +493,7 @@ describe('Busca e Filtros de Projetos', function () {
         $response = $this->get(route('projetos.index', ['search' => 'Empresa A']));
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->has('projetos.data', 1)
             );
     });
@@ -501,7 +507,7 @@ describe('Busca e Filtros de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->has('projetos.data', 0)
             );
     });
@@ -525,7 +531,7 @@ describe('Busca e Filtros de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->has('projetos.data', 2)
             );
     });
@@ -608,7 +614,7 @@ describe('Performance de Projetos', function () {
 
         $response->assertOk()
             ->assertInertia(
-                fn (Assert $page) => $page
+                fn(Assert $page) => $page
                     ->component('Projetos/Index')
                     ->has('projetos.data')
                     ->has('projetos.links')

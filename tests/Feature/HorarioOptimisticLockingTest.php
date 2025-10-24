@@ -12,7 +12,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create([
-        'status_cadastro' => StatusCadastro::ACEITO,
+        'status_cadastro' => StatusCadastro::ACEITO
     ]);
     $this->baia = Baia::factory()->create();
     $this->horario = Horario::factory()
@@ -39,8 +39,8 @@ test('deve falhar ao tentar atualizar horário com baia modificada por outro pro
                     'tipo' => TipoHorario::TRABALHO_PRESENCIAL->value,
                     'baia_id' => $this->baia->id,
                     'baia_updated_at' => $originalBaiaUpdatedAt->toDateTimeString(), // Timestamp antigo
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertSessionHasErrors(['horarios.0.baia_id']);
@@ -59,8 +59,8 @@ test('deve permitir atualização quando timestamp da baia está correto', funct
                     'tipo' => TipoHorario::TRABALHO_PRESENCIAL->value,
                     'baia_id' => $this->baia->id,
                     'baia_updated_at' => $this->baia->updated_at->toDateTimeString(),
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -79,8 +79,8 @@ test('deve permitir atualização sem validação de timestamp quando baia_updat
                     'tipo' => TipoHorario::TRABALHO_PRESENCIAL->value,
                     'baia_id' => $this->baia->id,
                     // Sem baia_updated_at
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios')
@@ -105,8 +105,8 @@ test('deve atualizar o updated_at da baia quando horário é atribuído a ela', 
                     'tipo' => TipoHorario::TRABALHO_PRESENCIAL->value,
                     'baia_id' => $this->baia->id,
                     'baia_updated_at' => $originalBaiaUpdatedAt->toDateTimeString(),
-                ],
-            ],
+                ]
+            ]
         ]);
 
     $response->assertRedirect('/horarios');
@@ -118,7 +118,7 @@ test('deve atualizar o updated_at da baia quando horário é atribuído a ela', 
 });
 
 test('deve falhar durante transação se baia for modificada entre validação e update', function () {
-    // Este teste verifica se mesmo passando na primeira validação,
+    // Este teste verifica se mesmo passando na primeira validação, 
     // a verificação na transação ainda funciona
     Carbon::setTestNow('2025-06-18 10:00:00');
     $this->baia->touch();
@@ -135,8 +135,8 @@ test('deve falhar durante transação se baia for modificada entre validação e
                     'tipo' => TipoHorario::TRABALHO_PRESENCIAL->value,
                     'baia_id' => $this->baia->id,
                     'baia_updated_at' => $originalBaiaUpdatedAt->toDateTimeString(),
-                ],
-            ],
+                ]
+            ]
         ]);
 
     // Se a validação inicial passou, deve processar normalmente

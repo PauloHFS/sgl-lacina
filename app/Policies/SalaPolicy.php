@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Sala;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class SalaPolicy
 {
@@ -30,8 +31,10 @@ class SalaPolicy
      */
     public function create(User $user): bool
     {
-        // Apenas COORDENADOR_MASTER pode criar salas (via Gate).
-        return false;
+        // Apenas administradores ou docentes podem criar salas
+        // Por enquanto, permitindo para todos os usuários autenticados
+        // Implementar lógica de roles quando necessário
+        return true;
     }
 
     /**
@@ -39,8 +42,10 @@ class SalaPolicy
      */
     public function updateAny(User $user): bool
     {
-        // Apenas COORDENADOR_MASTER pode atualizar salas (via Gate).
-        return false;
+        // Apenas administradores ou docentes podem atualizar salas
+        // Por enquanto, permitindo para todos os usuários autenticados
+        // Implementar lógica de roles quando necessário
+        return true;
     }
 
     /**
@@ -48,8 +53,10 @@ class SalaPolicy
      */
     public function update(User $user, Sala $sala): bool
     {
-        // Apenas COORDENADOR_MASTER pode atualizar salas (via Gate).
-        return false;
+        // Apenas administradores ou docentes podem atualizar salas
+        // Por enquanto, permitindo para todos os usuários autenticados
+        // Implementar lógica de roles quando necessário
+        return true;
     }
 
     /**
@@ -57,8 +64,10 @@ class SalaPolicy
      */
     public function deleteAny(User $user): bool
     {
-        // Apenas COORDENADOR_MASTER pode deletar salas (via Gate).
-        return false;
+        // Apenas administradores ou docentes podem deletar salas
+        // Por enquanto, permitindo para todos os usuários autenticados
+        // Implementar lógica de roles quando necessário
+        return true;
     }
 
     /**
@@ -66,8 +75,10 @@ class SalaPolicy
      */
     public function delete(User $user, Sala $sala): bool
     {
-        // Apenas COORDENADOR_MASTER pode deletar salas (via Gate).
-        return false;
+        // Apenas administradores ou docentes podem deletar salas
+        // Por enquanto, permitindo para todos os usuários autenticados
+        // Implementar lógica de roles quando necessário
+        return true;
     }
 
     /**

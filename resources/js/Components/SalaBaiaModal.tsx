@@ -35,7 +35,14 @@ export default function SalaBaiaModal({
 
     const baias = useMemo(() => selectedSala?.baias || [], [selectedSala]);
 
-
+    useEffect(() => {
+        if (initialSalaId) {
+            setSelectedSalaId(initialSalaId);
+        }
+        if (initialBaiaId) {
+            setSelectedBaiaId(initialBaiaId);
+        }
+    }, [initialSalaId, initialBaiaId]);
 
     // Reset baia selection when sala changes
     useEffect(() => {

@@ -30,7 +30,7 @@ class OrgaoEmissorController extends Controller
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
-            'sigla' => 'required|string|max:50|unique:orgaos_emissores,sigla,'.$orgaoEmissor->id,
+            'sigla' => 'required|string|max:50|unique:orgaos_emissores,sigla,' . $orgaoEmissor->id,
         ]);
 
         $orgaoEmissor->update($validated);

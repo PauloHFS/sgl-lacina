@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Enums\StatusVinculoProjeto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Projeto extends Model
@@ -36,7 +36,7 @@ class Projeto extends Model
         'board_url',
         'git_url',
         'tipo',
-        'interveniente_financeiro_id',
+        'interveniente_financeiro_id'
     ];
 
     protected $casts = [
@@ -69,7 +69,7 @@ class Projeto extends Model
             ->where('usuario_id', $usuarioId)
             ->first();
 
-        if (! $vinculo) {
+        if (!$vinculo) {
             return null;
         }
 

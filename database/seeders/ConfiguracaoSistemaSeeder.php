@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\ConfiguracaoSistema;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\ConfiguracaoSistema;
 
 class ConfiguracaoSistemaSeeder extends Seeder
 {

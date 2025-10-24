@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Enums\Funcao;
-use App\Enums\TipoVinculo;
-use App\Models\UsuarioProjeto;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\UsuarioProjeto;
+use App\Enums\TipoVinculo;
+use App\Enums\Funcao;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UsuarioProjeto>

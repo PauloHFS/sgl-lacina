@@ -16,7 +16,7 @@ class CadastroRecusado
     public function __construct(public array $dadosColaborador, public ?string $url = null, public ?string $observacao = null)
     {
         $this->dadosColaborador = $dadosColaborador;
-        $this->url = $url ?? config('app.url').'/register';
+        $this->url = $url ?? config('app.url') . '/register';
         $this->observacao = $observacao;
     }
 }

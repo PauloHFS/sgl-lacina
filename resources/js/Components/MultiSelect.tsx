@@ -1,4 +1,3 @@
-/* eslint-disable react-you-might-not-need-an-effect/no-pass-data-to-parent */
 import InputError from '@/Components/InputError'; // Adicionado import
 import React, {
     useCallback,
@@ -12,7 +11,6 @@ function useClickOutside(
     ref: React.RefObject<HTMLElement>,
     handler: () => void,
 ) {
-    // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent
     useEffect(() => {
         const listener = (event: MouseEvent | TouchEvent) => {
             if (!ref.current || ref.current.contains(event.target as Node)) {
@@ -63,11 +61,7 @@ export default function MultiSelect({
     const searchInputRef = useRef<HTMLInputElement>(null);
     const optionsListRef = useRef<HTMLUListElement>(null);
 
-    const closeDropdown = useCallback(() => {
-        setIsOpen(false);
-    }, []);
-
-    useClickOutside(dropdownRef, closeDropdown);
+    useClickOutside(dropdownRef, () => setIsOpen(false));
 
     const isMaxedOut = useMemo(
         () => maxSelections !== undefined && value.length >= maxSelections,

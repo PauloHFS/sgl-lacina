@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use App\Models\Sala;
+use App\Models\Baia;
+use App\Models\Horario;
 use App\Enums\DiaDaSemana;
 use App\Enums\TipoHorario;
-use App\Models\Horario;
-use App\Models\Sala;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class SalaController extends Controller
 {
+
     public function index(Request $request)
     {
         // Validação dos parâmetros de busca
@@ -186,7 +190,7 @@ class SalaController extends Controller
         $horarios = Horario::with([
             'usuario:id,name,email,foto_url',
             'usuarioProjeto.projeto:id,nome',
-            'baia:id,nome,sala_id',
+            'baia:id,nome,sala_id'
         ])
             ->whereIn('baia_id', $baiaIds)
             ->where('tipo', TipoHorario::TRABALHO_PRESENCIAL)
@@ -220,7 +224,7 @@ class SalaController extends Controller
                                 'nome' => $horario->usuarioProjeto->projeto->nome,
                             ] : null,
                         ];
-                    })->values(),
+                    })->values()
                 ];
             }
         }

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 class HorariosCacheService
 {
     private const CACHE_TTL = 86400; // 24 horas
-
     private const CACHE_PREFIX = 'horarios_usuario_';
 
     /**
@@ -17,7 +16,7 @@ class HorariosCacheService
      */
     public function getHorasPorDiaDaSemana(User $user): array
     {
-        $cacheKey = self::CACHE_PREFIX.$user->id;
+        $cacheKey = self::CACHE_PREFIX . $user->id;
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user) {
             return $this->calcularHorasPorDiaDaSemana($user);
@@ -29,7 +28,7 @@ class HorariosCacheService
      */
     public function getHorasPorDiaDaSemanaProjetoPorProjeto(User $user): array
     {
-        $cacheKey = self::CACHE_PREFIX.'projetos_'.$user->id;
+        $cacheKey = self::CACHE_PREFIX . 'projetos_' . $user->id;
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user) {
             return $this->calcularHorasPorProjetoEDia($user);
@@ -41,8 +40,8 @@ class HorariosCacheService
      */
     public function invalidarCacheUsuario(User $user): void
     {
-        $cacheKey = self::CACHE_PREFIX.$user->id;
-        $cacheKeyProjetos = self::CACHE_PREFIX.'projetos_'.$user->id;
+        $cacheKey = self::CACHE_PREFIX . $user->id;
+        $cacheKeyProjetos = self::CACHE_PREFIX . 'projetos_' . $user->id;
 
         Cache::forget($cacheKey);
         Cache::forget($cacheKeyProjetos);
@@ -116,20 +115,20 @@ class HorariosCacheService
     public function invalidarTodoCache(): void
     {
         // Buscar todas as chaves que começam com o prefixo
-        $pattern = self::CACHE_PREFIX.'*';
+        $pattern = self::CACHE_PREFIX . '*';
 
         if (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
             // Para Redis
             $keys = Cache::getRedis()->keys($pattern);
-            if (! empty($keys)) {
+            if (!empty($keys)) {
                 Cache::getRedis()->del($keys);
             }
         } else {
             // Para outros drivers, invalidar manualmente (menos eficiente)
-            Log::warning('Cache invalidation não otimizada para driver '.config('cache.default'));
+            Log::warning("Cache invalidation não otimizada para driver " . config('cache.default'));
         }
 
-        Log::info('Cache de horários invalidado para todos os usuários');
+        Log::info("Cache de horários invalidado para todos os usuários");
     }
 
     /**

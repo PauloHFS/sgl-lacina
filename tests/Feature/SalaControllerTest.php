@@ -1,29 +1,26 @@
 <?php
 
-use App\Enums\StatusCadastro;
-use App\Models\Baia;
 use App\Models\Sala;
+use App\Models\Baia;
 use App\Models\User;
+use App\Enums\StatusCadastro;
 
 beforeEach(function () {
     $this->user = User::factory()->create([
-        'status_cadastro' => StatusCadastro::ACEITO,
+        'status_cadastro' => StatusCadastro::ACEITO
     ]);
     $this->actingAs($this->user);
 });
 
-function createSalaWithBaias($salaData, $baiasData)
-{
+function createSalaWithBaias($salaData, $baiasData) {
     $sala = Sala::factory()->create($salaData);
     $baias = collect($baiasData)->map(function ($baiaData) use ($sala) {
         return Baia::factory()->create(array_merge($baiaData, ['sala_id' => $sala->id]));
     });
-
     return [$sala, $baias];
 }
 
-function assertSalaAndBaiasUpdated($sala, $expectedSalaData, $baias, $expectedBaiasData, $deletedBaiaIds)
-{
+function assertSalaAndBaiasUpdated($sala, $expectedSalaData, $baias, $expectedBaiasData, $deletedBaiaIds) {
     $sala->refresh();
     expect($sala->nome)->toBe($expectedSalaData['nome']);
     expect($sala->descricao)->toBe($expectedSalaData['descricao']);

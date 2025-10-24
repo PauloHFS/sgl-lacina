@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SalaBaiaPreferences {
     trabalhoPresencial?: {
@@ -13,17 +13,18 @@ interface SalaBaiaPreferences {
 const STORAGE_KEY = 'horarios-sala-baia-preferences';
 
 export function useSalaBaiaPreferences() {
-    const [preferences, setPreferences] = useState<SalaBaiaPreferences>(() => {
+    const [preferences, setPreferences] = useState<SalaBaiaPreferences>({});
+
+    useEffect(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                return JSON.parse(stored);
+                setPreferences(JSON.parse(stored));
             }
         } catch (error) {
             console.error('Erro ao carregar preferências do localStorage:', error);
         }
-        return {};
-    });
+    }, []);
 
     const savePreferences = (newPreferences: SalaBaiaPreferences) => {
         try {

@@ -7,6 +7,8 @@ use App\Models\Horario;
 use App\Models\Projeto;
 use App\Models\User;
 use App\Models\UsuarioProjeto;
+use App\Services\HorariosCacheService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -62,16 +64,16 @@ test('daily report create page recebe horas por dia da semana do cache', functio
 
     $response->assertStatus(200)
         ->assertInertia(
-            fn (Assert $page) => $page
+            fn(Assert $page) => $page
                 ->component('DailyReports/Create')
                 ->has('horasPorProjetoPorDia')
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 4)  // 4 horas na segunda
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.TERCA', 2)    // 2 horas na terça
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.QUARTA', 0)   // 0 horas na quarta
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.QUINTA', 0)   // 0 horas na quinta
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEXTA', 6)    // 6 horas na sexta
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.SABADO', 0)   // 0 horas no sábado
-                ->where('horasPorProjetoPorDia.'.$projeto->id.'.DOMINGO', 0)  // 0 horas no domingo
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 4)  // 4 horas na segunda
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.TERCA', 2)    // 2 horas na terça
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.QUARTA', 0)   // 0 horas na quarta
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.QUINTA', 0)   // 0 horas na quinta
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEXTA', 6)    // 6 horas na sexta
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.SABADO', 0)   // 0 horas no sábado
+                ->where('horasPorProjetoPorDia.' . $projeto->id . '.DOMINGO', 0)  // 0 horas no domingo
         );
 });
 
@@ -127,19 +129,19 @@ test('daily report edit page recebe horas por dia da semana do cache', function 
 
     // Verificar se o daily report foi criado corretamente
     expect($dailyReport->usuario_id)->toBe($user->id);
-
+    
     // Verificar se o usuário tem projetos ativos
     $projetosAtivos = \App\Models\UsuarioProjeto::with('projeto')
         ->where('usuario_id', $user->id)
         ->where('status', 'APROVADO')
         ->whereNull('data_fim')
         ->get();
-
+    
     expect($projetosAtivos)->toHaveCount(1);
 
     // Acessar página de edição de daily report
     $response = $this->get(route('daily-reports.edit', $dailyReport));
-
+    
     // Debug information
     if ($response->status() === 403) {
         $content = $response->getContent();
@@ -192,9 +194,9 @@ test('cache é invalidado quando horário é alterado e daily report pages refle
     // Acessar página de criação e verificar estado inicial
     $response1 = $this->get(route('daily-reports.create'));
     $response1->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 1)
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.TERCA', 0)
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 1)
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.TERCA', 0)
     );
 
     // Adicionar mais horários na segunda-feira
@@ -218,9 +220,9 @@ test('cache é invalidado quando horário é alterado e daily report pages refle
     // Acessar página novamente e verificar que o cache foi invalidado e atualizado
     $response2 = $this->get(route('daily-reports.create'));
     $response2->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 2)  // Agora 2 horas na segunda
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.TERCA', 1)    // Agora 1 hora na terça
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 2)  // Agora 2 horas na segunda
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.TERCA', 1)    // Agora 1 hora na terça
     );
 
     // Atualizar horário existente
@@ -229,9 +231,9 @@ test('cache é invalidado quando horário é alterado e daily report pages refle
     // Verificar que a mudança foi refletida (segunda deve voltar para 1)
     $response3 = $this->get(route('daily-reports.create'));
     $response3->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 1)  // Voltou para 1 hora na segunda
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.TERCA', 1)    // Terça permanece 1 hora
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 1)  // Voltou para 1 hora na segunda
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.TERCA', 1)    // Terça permanece 1 hora
     );
 
     // Remover horário da terça
@@ -241,9 +243,9 @@ test('cache é invalidado quando horário é alterado e daily report pages refle
     // Verificar que a remoção foi refletida
     $response4 = $this->get(route('daily-reports.create'));
     $response4->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 1)  // Segunda permanece 1 hora
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.TERCA', 0)    // Terça voltou para 0 horas
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 1)  // Segunda permanece 1 hora
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.TERCA', 0)    // Terça voltou para 0 horas
     );
 });
 
@@ -312,15 +314,15 @@ test('service de cache funciona corretamente com múltiplos usuários', function
     $this->actingAs($user1);
     $response1 = $this->get(route('daily-reports.create'));
     $response1->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 2)
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 2)
     );
 
     // Testar como user2
     $this->actingAs($user2);
     $response2 = $this->get(route('daily-reports.create'));
     $response2->assertInertia(
-        fn (Assert $page) => $page
-            ->where('horasPorProjetoPorDia.'.$projeto->id.'.SEGUNDA', 3)
+        fn(Assert $page) => $page
+            ->where('horasPorProjetoPorDia.' . $projeto->id . '.SEGUNDA', 3)
     );
 });

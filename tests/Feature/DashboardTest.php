@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\Funcao;
-use App\Enums\StatusCadastro;
-use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
-use App\Models\Projeto;
 use App\Models\User;
+use App\Models\Projeto;
 use App\Models\UsuarioProjeto;
+use App\Enums\StatusCadastro;
+use App\Enums\TipoVinculo;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\Funcao;
 
 test('usuário pode acessar dashboard', function () {
     $user = User::factory()->cadastroCompleto()->create([
@@ -18,7 +18,8 @@ test('usuário pode acessar dashboard', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Dashboard')
+        fn($page) =>
+        $page->component('Dashboard')
     );
 });
 
@@ -34,7 +35,8 @@ test('dashboard exibe projetos disponíveis para colaborador', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Dashboard')
+        fn($page) =>
+        $page->component('Dashboard')
             ->has('projetos', 3)
     );
 });
@@ -58,7 +60,8 @@ test('dashboard exibe projetos do coordenador', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Dashboard')
+        fn($page) =>
+        $page->component('Dashboard')
             ->has('meusProjetos', 1)
     );
 });
@@ -122,7 +125,8 @@ test('dashboard carrega dados corretos para colaborador', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('Dashboard')
+        fn($page) =>
+        $page->component('Dashboard')
             ->has('meusVinculos', 1)
             ->where('meusVinculos.0.projeto.id', $projeto->id)
             ->where('meusVinculos.0.funcao', 'DESENVOLVEDOR')
@@ -144,7 +148,8 @@ test('coordenador acessa dashboard específico com estatísticas', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->component('DashboardCoordenador')
+        fn($page) =>
+        $page->component('DashboardCoordenador')
             ->where('projetosCount', 5)
             ->where('usuariosCount', 14) // 10 + 3 + 1 (coordenador)
             ->where('solicitacoesPendentes', 3)
@@ -163,7 +168,7 @@ test('dashboard coordenador mostra últimos 5 projetos ordenados por data', func
     for ($i = 0; $i < 7; $i++) {
         $projetos->push(
             Projeto::factory()->create([
-                'nome' => 'Projeto '.($i + 1),
+                'nome' => "Projeto " . ($i + 1),
                 'created_at' => now()->subDays($i),
             ])
         );
@@ -172,10 +177,12 @@ test('dashboard coordenador mostra últimos 5 projetos ordenados por data', func
     $response = $this->actingAs($coordenador)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->has('ultimosProjetos', 5)
+        fn($page) =>
+        $page->has('ultimosProjetos', 5)
             ->has(
                 'ultimosProjetos.0',
-                fn ($projeto) => $projeto->where('nome', 'Projeto 1')
+                fn($projeto) =>
+                $projeto->where('nome', 'Projeto 1')
                     ->has('id')
                     ->has('cliente')
                     ->etc()
@@ -215,11 +222,13 @@ test('dashboard colaborador mostra vínculos com informações completas', funct
     $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 2)
+        fn($page) =>
+        $page->has('projetos', 2)
             ->where('projetosCount', 2)
             ->has(
                 'projetos.0',
-                fn ($projeto) => $projeto->where('projeto_nome', 'Sistema Web')
+                fn($projeto) =>
+                $projeto->where('projeto_nome', 'Sistema Web')
                     ->where('status', StatusVinculoProjeto::APROVADO->value)
                     ->etc()
             )
@@ -255,11 +264,13 @@ test('colaborador vê apenas seus próprios vínculos', function () {
     $response = $this->actingAs($user1)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 1)
+        fn($page) =>
+        $page->has('projetos', 1)
             ->where('projetosCount', 1)
             ->has(
                 'projetos.0',
-                fn ($projeto) => $projeto->where('usuario_id', $user1->id)->etc()
+                fn($projeto) =>
+                $projeto->where('usuario_id', $user1->id)->etc()
             )
     );
 });
@@ -298,7 +309,8 @@ test('dashboard não mostra vínculos cancelados ou rejeitados', function () {
     $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 1)
+        fn($page) =>
+        $page->has('projetos', 1)
             ->where('projetosCount', 1)
     );
 });
@@ -321,7 +333,8 @@ test('dashboard coordenador não conta usuários excluídos nas estatísticas', 
     $response = $this->actingAs($coordenador)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->where('usuariosCount', 6) // 5 + 1 (coordenador)
+        fn($page) =>
+        $page->where('usuariosCount', 6) // 5 + 1 (coordenador)
     );
 });
 
@@ -349,10 +362,12 @@ test('dashboard com projetos sem dados opcionais', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 1)
+        fn($page) =>
+        $page->has('projetos', 1)
             ->has(
                 'projetos.0',
-                fn ($projeto) => $projeto->where('projeto_nome', 'Projeto Mínimo')
+                fn($projeto) =>
+                $projeto->where('projeto_nome', 'Projeto Mínimo')
                     ->etc()
             )
     );
@@ -381,7 +396,8 @@ test('dashboard mantém performance com muitos vínculos', function () {
 
     $response->assertStatus(200);
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 50)
+        fn($page) =>
+        $page->has('projetos', 50)
             ->where('projetosCount', 50)
     );
 
@@ -398,7 +414,8 @@ test('dashboard coordenador com zero estatísticas', function () {
     $response = $this->actingAs($coordenador)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->where('projetosCount', 0)
+        fn($page) =>
+        $page->where('projetosCount', 0)
             ->where('usuariosCount', 1) // apenas o coordenador
             ->where('solicitacoesPendentes', 0)
             ->has('ultimosProjetos', 0)
@@ -414,7 +431,8 @@ test('dashboard colaborador sem vínculos', function () {
     $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertInertia(
-        fn ($page) => $page->has('projetos', 0)
+        fn($page) =>
+        $page->has('projetos', 0)
             ->where('projetosCount', 0)
     );
 });

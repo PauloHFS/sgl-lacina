@@ -16,7 +16,7 @@ class VerificarCoordenadorMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Verifica se o usuário está autenticado
-        if (! auth()->check()) {
+        if (!auth()->check()) {
             return redirect()->route('login');
         }
 
@@ -29,7 +29,7 @@ class VerificarCoordenadorMiddleware
             ->where('status', \App\Enums\StatusVinculoProjeto::APROVADO)
             ->exists();
 
-        if (! $isCoordenador) {
+        if (!$isCoordenador) {
             abort(403, 'Acesso negado. Apenas coordenadores podem acessar esta área.');
         }
 

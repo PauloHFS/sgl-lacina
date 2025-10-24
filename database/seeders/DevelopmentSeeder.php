@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Funcao;
-use App\Enums\Genero;
-use App\Enums\StatusCadastro;
-use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoHorario;
-use App\Enums\TipoProjeto;
 use App\Enums\TipoVinculo;
-use App\Models\Baia;
+use App\Enums\Funcao;
+use App\Enums\StatusVinculoProjeto;
+use App\Enums\TipoProjeto;
+use App\Enums\StatusCadastro;
+use App\Enums\Genero;
+use App\Enums\TipoHorario;
 use App\Models\Banco;
+use App\Models\Baia;
 use App\Models\HistoricoUsuarioProjeto;
 use App\Models\Horario;
 use App\Models\Projeto;
@@ -44,9 +44,6 @@ class DevelopmentSeeder extends Seeder
             'rg' => '1234567',
             'conta_bancaria' => '12345-6',
         ]);
-
-        $maxwell->is_coordenador_master = true;
-        $maxwell->save();
 
         $campelo = $this->createUser([
             'name' => 'Campelo',
@@ -195,7 +192,7 @@ class DevelopmentSeeder extends Seeder
 
         $totalComCoordenador = $projetosComCoordenador + $projetosComCoordenadorHistorico;
 
-        $this->command->info('   👑 Coordenadores:');
+        $this->command->info("   👑 Coordenadores:");
         $this->command->info("      - Projetos com coordenador ativo: {$projetosComCoordenador}");
         $this->command->info("      - Projetos com coordenador (histórico): {$projetosComCoordenadorHistorico}");
         $this->command->info("      - Total projetos com coordenador: {$totalComCoordenador}");
@@ -211,7 +208,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->info("      - Pendentes: {$vinculosPendentes}");
         $this->command->info("      - Recusados: {$vinculosRecusados}");
 
-        $this->command->info('   📜 Histórico de Vínculos: '.HistoricoUsuarioProjeto::count().' registros');
+        $this->command->info("   📜 Histórico de Vínculos: " . HistoricoUsuarioProjeto::count() . " registros");
 
         // Salas e baias
         $totalSalas = Sala::count();
@@ -235,7 +232,6 @@ class DevelopmentSeeder extends Seeder
 
         if ($usuariosExistentes >= $targetTotal) {
             $this->command->info("Já existem {$usuariosExistentes} usuários (meta: {$targetTotal}), pulando criação...");
-
             return;
         }
 
@@ -394,7 +390,7 @@ class DevelopmentSeeder extends Seeder
                 ])
             );
         }
-        $this->command->info('👨‍🏫 Docentes principais criados/atualizados.');
+        $this->command->info("👨‍🏫 Docentes principais criados/atualizados.");
     }
 
     /**
@@ -408,7 +404,6 @@ class DevelopmentSeeder extends Seeder
 
         if ($projetosExistentes >= $targetTotal) {
             $this->command->info("Já existem {$projetosExistentes} projetos (meta: {$targetTotal}), pulando criação...");
-
             return;
         }
 
@@ -433,8 +428,8 @@ class DevelopmentSeeder extends Seeder
         // Projetos ativos (em andamento)
         if ($ativos > 0) {
             Projeto::factory()->count($ativos)->create([
-                'data_inicio' => fn () => now()->subMonths(rand(1, 12)),
-                'data_termino' => fn () => now()->addMonths(rand(6, 24)),
+                'data_inicio' => fn() => now()->subMonths(rand(1, 12)),
+                'data_termino' => fn() => now()->addMonths(rand(6, 24)),
                 'tipo' => $tipos[array_rand($tipos)],
             ]);
         }
@@ -442,8 +437,8 @@ class DevelopmentSeeder extends Seeder
         // Projetos finalizados
         if ($finalizados > 0) {
             Projeto::factory()->count($finalizados)->create([
-                'data_inicio' => fn () => now()->subMonths(rand(12, 36)),
-                'data_termino' => fn () => now()->subMonths(rand(1, 11)),
+                'data_inicio' => fn() => now()->subMonths(rand(12, 36)),
+                'data_termino' => fn() => now()->subMonths(rand(1, 11)),
                 'tipo' => $tipos[array_rand($tipos)],
             ]);
         }
@@ -451,8 +446,8 @@ class DevelopmentSeeder extends Seeder
         // Projetos futuros
         if ($futuros > 0) {
             Projeto::factory()->count($futuros)->create([
-                'data_inicio' => fn () => now()->addMonths(rand(1, 6)),
-                'data_termino' => fn () => now()->addMonths(rand(7, 30)),
+                'data_inicio' => fn() => now()->addMonths(rand(1, 6)),
+                'data_termino' => fn() => now()->addMonths(rand(7, 30)),
                 'tipo' => $tipos[array_rand($tipos)],
             ]);
         }
@@ -460,8 +455,8 @@ class DevelopmentSeeder extends Seeder
         // Projetos cancelados/suspensos (com data de término no passado e curta duração)
         if ($cancelados > 0) {
             Projeto::factory()->count($cancelados)->create([
-                'data_inicio' => fn () => now()->subMonths(rand(2, 6)),
-                'data_termino' => fn () => now()->subMonths(rand(1, 2)),
+                'data_inicio' => fn() => now()->subMonths(rand(2, 6)),
+                'data_termino' => fn() => now()->subMonths(rand(1, 2)),
                 'tipo' => $tipos[array_rand($tipos)],
                 'deleted_at' => now(), // Soft delete para simular cancelamento
             ]);
@@ -498,7 +493,6 @@ class DevelopmentSeeder extends Seeder
 
         if ($usuarios->count() < 3 || $projetos->isEmpty()) {
             $this->command->warn('⚠️  Não há usuários ou projetos suficientes para criar vínculos realistas. Abortando.');
-
             return;
         }
 
@@ -509,7 +503,7 @@ class DevelopmentSeeder extends Seeder
         $coordenadores = collect([$maxwell, $campelo])->filter();
         $outrosColaboradores = $usuarios->diff(collect([$maxwell, $campelo, $paulo])->filter());
 
-        if ($coordenadores->count() < 2 || ! $paulo) {
+        if ($coordenadores->count() < 2 || !$paulo) {
             $this->command->warn('⚠️  Coordenadores principais ou Paulo Hernane não encontrados. O seeder pode não funcionar como esperado.');
         }
 
@@ -580,7 +574,7 @@ class DevelopmentSeeder extends Seeder
                 $projetosDisponiveis = $allProjects->filter(function ($projeto) use ($currentDate, $user) {
                     return $projeto->data_inicio <= $currentDate
                         && $projeto->data_termino >= $currentDate
-                        && ! $user->projetos->contains('id', $projeto->id);
+                        && !$user->projetos->contains('id', $projeto->id);
                 });
 
                 if ($projetosDisponiveis->isNotEmpty()) {
@@ -613,7 +607,7 @@ class DevelopmentSeeder extends Seeder
                 ->where('status', StatusVinculoProjeto::APROVADO)
                 ->exists();
 
-            if (! $temCoordenador) {
+            if (!$temCoordenador) {
                 // Atribuir um coordenador disponível
                 $coordenadorDisponivel = $coordenadores->random();
 
@@ -644,7 +638,7 @@ class DevelopmentSeeder extends Seeder
                 ->where('status', StatusVinculoProjeto::APROVADO)
                 ->exists();
 
-            if (! $temCoordenador) {
+            if (!$temCoordenador) {
                 $projetosSemCoordenador++;
             }
         }
@@ -659,7 +653,7 @@ class DevelopmentSeeder extends Seeder
      */
     private function createSpecialVinculos(Collection $usuarios, Collection $projetos): void
     {
-        $projetosAtivos = $projetos->filter(fn ($p) => $p->data_termino >= now());
+        $projetosAtivos = $projetos->filter(fn($p) => $p->data_termino >= now());
 
         // Criar vínculos pendentes
         if ($usuarios->count() >= 5) {
@@ -667,7 +661,7 @@ class DevelopmentSeeder extends Seeder
             foreach ($usuariosParaPendente as $usuario) {
                 if ($usuario->projetos()->whereNull('data_fim')->count() < 2) {
                     $projetosDisponiveis = $projetosAtivos->filter(function ($projeto) use ($usuario) {
-                        return ! $usuario->projetos->contains('id', $projeto->id);
+                        return !$usuario->projetos->contains('id', $projeto->id);
                     });
 
                     if ($projetosDisponiveis->isNotEmpty()) {
@@ -740,25 +734,25 @@ class DevelopmentSeeder extends Seeder
                     'Baia 02',
                     'Baia 03',
                     'Baia 04',
-                    'Baia 05',
-                ],
+                    'Baia 05'
+                ]
             ],
             [
                 'nome' => 'Sala de Reuniões',
                 'descricao' => 'Sala para reuniões e apresentações',
                 'baias' => [
                     'Mesa Central',
-                    'Estação Apresentação',
-                ],
+                    'Estação Apresentação'
+                ]
             ],
             [
                 'nome' => 'Sala de Servidores',
                 'descricao' => 'Sala com equipamentos de rede e servidores',
                 'baias' => [
                     'Rack Principal',
-                    'Estação Monitoramento',
-                ],
-            ],
+                    'Estação Monitoramento'
+                ]
+            ]
         ];
 
         foreach ($salas as $salaData) {
@@ -766,7 +760,7 @@ class DevelopmentSeeder extends Seeder
                 ['nome' => $salaData['nome']],
                 [
                     'descricao' => $salaData['descricao'],
-                    'ativa' => true,
+                    'ativa' => true
                 ]
             );
 
@@ -775,7 +769,7 @@ class DevelopmentSeeder extends Seeder
                     ['nome' => $baiaNome, 'sala_id' => $sala->id],
                     [
                         'descricao' => "Baia {$baiaNome} na {$sala->nome}",
-                        'ativa' => true,
+                        'ativa' => true
                     ]
                 );
             }
@@ -793,8 +787,8 @@ class DevelopmentSeeder extends Seeder
         StatusVinculoProjeto $status,
         $dataInicio,
         $dataFim = null,
-        ?TipoVinculo $tipoVinculo = null,
-        ?Funcao $funcao = null,
+        TipoVinculo $tipoVinculo = null,
+        Funcao $funcao = null,
         bool $trocar = false
     ): ?UsuarioProjeto {
         return UsuarioProjeto::create([
@@ -859,25 +853,25 @@ class DevelopmentSeeder extends Seeder
 
         // Buscar vínculos ativos do Paulo
         $vinculosTCC = UsuarioProjeto::where('usuario_id', $paulo->id)
-            ->whereHas('projeto', fn ($q) => $q->where('nome', 'like', '%Sistema de Gerenciamento%'))
+            ->whereHas('projeto', fn($q) => $q->where('nome', 'like', '%Sistema de Gerenciamento%'))
             ->first();
 
         $vinculosPDI = UsuarioProjeto::where('usuario_id', $paulo->id)
-            ->whereHas('projeto', fn ($q) => $q->where('nome', 'like', '%TS ETL%'))
+            ->whereHas('projeto', fn($q) => $q->where('nome', 'like', '%TS ETL%'))
             ->first();
 
         // Primeira baia para testes (criar se não existir)
         $baia = Baia::first();
-        if (! $baia) {
+        if (!$baia) {
             $sala = Sala::firstOrCreate(['nome' => 'Sala Principal'], [
                 'descricao' => 'Sala principal do laboratório',
-                'ativa' => true,
+                'ativa' => true
             ]);
             $baia = Baia::create([
                 'nome' => 'Baia 01',
                 'descricao' => 'Primeira baia da sala principal',
                 'ativa' => true,
-                'sala_id' => $sala->id,
+                'sala_id' => $sala->id
             ]);
         }
 
@@ -947,7 +941,7 @@ class DevelopmentSeeder extends Seeder
             ->whereNotIn('email', [
                 'paulo.hernane.silva@ccc.ufcg.edu.br',
                 'maxwell@computacao.ufcg.edu.br',
-                'campelo@computacao.ufcg.edu.br',
+                'campelo@computacao.ufcg.edu.br'
             ])
             ->limit(10) // Apenas 10 usuários para não sobrecarregar
             ->get();
@@ -982,9 +976,7 @@ class DevelopmentSeeder extends Seeder
             // Horário de trabalho: 9h às 17h
             for ($hora = 9; $hora <= 16; $hora++) {
                 // Pular horário de almoço (12h às 13h)
-                if ($hora == 12) {
-                    continue;
-                }
+                if ($hora == 12) continue;
 
                 // Coordenadores trabalham remoto para evitar conflitos de baia
                 Horario::firstOrCreate([
@@ -1025,9 +1017,7 @@ class DevelopmentSeeder extends Seeder
 
                 for ($i = 0; $i < $horasTrabalho; $i++) {
                     $hora = $horaInicio + $i;
-                    if ($hora > 17) {
-                        break;
-                    } // Não passar das 17h
+                    if ($hora > 17) break; // Não passar das 17h
 
                     $tipoTrabalho = rand(1, 100) <= 50 ? TipoHorario::TRABALHO_PRESENCIAL : TipoHorario::TRABALHO_REMOTO;
                     $baia = $tipoTrabalho === TipoHorario::TRABALHO_PRESENCIAL ? $this->findAvailableBaia($dia, $hora) : null;
@@ -1057,14 +1047,14 @@ class DevelopmentSeeder extends Seeder
             // Criar uma baia se não existir nenhuma
             $sala = Sala::firstOrCreate(['nome' => 'Sala Principal'], [
                 'descricao' => 'Sala principal do laboratório',
-                'ativa' => true,
+                'ativa' => true
             ]);
 
             return Baia::create([
-                'nome' => 'Baia '.(Baia::count() + 1),
+                'nome' => 'Baia ' . (Baia::count() + 1),
                 'descricao' => 'Baia automaticamente criada',
                 'ativa' => true,
-                'sala_id' => $sala->id,
+                'sala_id' => $sala->id
             ]);
         }
 
@@ -1075,19 +1065,18 @@ class DevelopmentSeeder extends Seeder
                 ->where('horario', $hora)
                 ->exists();
 
-            if (! $horariosOcupados) {
+            if (!$horariosOcupados) {
                 return $baia;
             }
         }
 
         // Se todas estão ocupadas, criar uma nova baia
         $sala = Sala::first();
-
         return Baia::create([
-            'nome' => 'Baia '.(Baia::count() + 1),
+            'nome' => 'Baia ' . (Baia::count() + 1),
             'descricao' => 'Baia criada para evitar conflitos',
             'ativa' => true,
-            'sala_id' => $sala->id,
+            'sala_id' => $sala->id
         ]);
     }
 }

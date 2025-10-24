@@ -1,11 +1,11 @@
 <?php
 
+use App\Models\UsuarioProjeto;
+use App\Models\User;
+use App\Models\Projeto;
+use App\Enums\TipoVinculo;
 use App\Enums\Funcao;
 use App\Enums\StatusVinculoProjeto;
-use App\Enums\TipoVinculo;
-use App\Models\Projeto;
-use App\Models\User;
-use App\Models\UsuarioProjeto;
 
 test('usuário projeto pode ser criado com dados obrigatórios', function () {
     $user = User::factory()->create();

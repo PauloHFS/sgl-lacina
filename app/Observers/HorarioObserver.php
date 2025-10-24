@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Horario;
 use App\Services\HorariosCacheService;
+use Illuminate\Support\Facades\Log;
 
 class HorarioObserver
 {

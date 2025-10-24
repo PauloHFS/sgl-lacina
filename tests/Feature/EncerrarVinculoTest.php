@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\Funcao;
+use App\Models\User;
+use App\Models\Projeto;
+use App\Models\UsuarioProjeto;
 use App\Enums\StatusCadastro;
 use App\Enums\StatusVinculoProjeto;
 use App\Enums\TipoVinculo;
-use App\Models\Projeto;
-use App\Models\User;
-use App\Models\UsuarioProjeto;
+use App\Enums\Funcao;
 use Carbon\Carbon;
 
 describe('Funcionalidade de Encerrar Vínculo', function () {

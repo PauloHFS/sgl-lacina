@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\StatusCadastro;
 use App\Http\Controllers\Controller;
-use App\Models\ConfiguracaoSistema;
 use App\Models\User;
+use App\Models\Docente;
+use App\Models\ConfiguracaoSistema;
+use App\Events\ColaboradorRegistrado;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,10 +43,10 @@ class RegisteredUserController extends Controller
                     if ($value !== $senhaLaboratorio) {
                         $fail('A senha do laboratório está incorreta.');
                     }
-                },
+                }
             ],
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
